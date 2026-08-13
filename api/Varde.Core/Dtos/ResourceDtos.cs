@@ -14,6 +14,7 @@ public record ResourceDto(
     string Name,
     string Description,
     bool IsFallbackTranslation,
+    string? OpeningHours,
     bool IsNational,
     int? MunicipalityId,
     string? MunicipalityName,

@@ -140,6 +140,45 @@ public class ResourceServiceTests
     }
 
     [Fact]
+    public async Task Opening_hours_come_from_the_requested_language()
+    {
+        var resource = Bilingual();
+        resource.Translations[0].OpeningHours = "Mandag og onsdag 11:30–13:00";
+        resource.Translations[1].OpeningHours = "Monday and Wednesday 11:30–13:00";
+        var service = new ResourceService(new FakeResourceRepository([resource]));
+
+        var norwegian = await service.SearchAsync(null, null, null, "nb", null, null, CancellationToken.None);
+        var english = await service.SearchAsync(null, null, null, "en", null, null, CancellationToken.None);
+
+        Assert.Equal("Mandag og onsdag 11:30–13:00", Assert.Single(norwegian.Items).OpeningHours);
+        Assert.Equal("Monday and Wednesday 11:30–13:00", Assert.Single(english.Items).OpeningHours);
+    }
+
+    [Fact]
+    public async Task Opening_hours_fall_back_with_the_description()
+    {
+        var resource = NorwegianOnly();
+        resource.Translations[0].OpeningHours = "Døgnåpent";
+        var service = new ResourceService(new FakeResourceRepository([resource]));
+
+        var result = await service.SearchAsync(null, null, null, "en", null, null, CancellationToken.None);
+
+        var item = Assert.Single(result.Items);
+        Assert.Equal("Døgnåpent", item.OpeningHours);
+        Assert.True(item.IsFallbackTranslation);
+    }
+
+    [Fact]
+    public async Task Opening_hours_are_null_when_the_service_did_not_state_them()
+    {
+        var service = new ResourceService(new FakeResourceRepository([Bilingual()]));
+
+        var result = await service.SearchAsync(null, null, null, "nb", null, null, CancellationToken.None);
+
+        Assert.Null(Assert.Single(result.Items).OpeningHours);
+    }
+
+    [Fact]
     public async Task Get_maps_categories_ordered_by_slug_with_per_category_fallback()
     {
         var bolig = new Category

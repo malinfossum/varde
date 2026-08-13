@@ -11,4 +11,11 @@ public class ResourceTranslation
 
     /// <summary>Plain text. Never HTML, never markdown.</summary>
     public required string Description { get; set; }
+
+    /// <summary>
+    /// When the service actually answers, in this language — "Mandag og onsdag 11:30–13:00",
+    /// "Døgnåpent". Null means the service did not state its hours; the UI shows nothing rather
+    /// than implying availability. Plain text, like Description.
+    /// </summary>
+    public string? OpeningHours { get; set; }
 }

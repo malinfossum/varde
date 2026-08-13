@@ -38,8 +38,18 @@ public class ResourcesApiTests
                 LastVerified = Verified,
                 Translations =
                 {
-                    new ResourceTranslation { LanguageCode = "nb", Description = "Hjelp med økonomi." },
-                    new ResourceTranslation { LanguageCode = "en", Description = "Help with finances." },
+                    new ResourceTranslation
+                    {
+                        LanguageCode = "nb",
+                        Description = "Hjelp med økonomi.",
+                        OpeningHours = "Hverdager 09:00–15:00",
+                    },
+                    new ResourceTranslation
+                    {
+                        LanguageCode = "en",
+                        Description = "Help with finances.",
+                        OpeningHours = "Weekdays 09:00–15:00",
+                    },
                 },
             });
             db.Resources.Add(new Resource
@@ -173,6 +183,7 @@ public class ResourcesApiTests
         Assert.NotNull(resource);
         Assert.Equal("NAV Hamar", resource.Name);
         Assert.Equal("Help with finances.", resource.Description);
+        Assert.Equal("Weekdays 09:00–15:00", resource.OpeningHours);
         Assert.Equal("Finances", Assert.Single(resource.Categories).Name);
         Assert.Equal(Verified, resource.LastVerified);
     }

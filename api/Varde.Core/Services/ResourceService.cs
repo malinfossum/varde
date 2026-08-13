@@ -41,7 +41,7 @@ public class ResourceService(IResourceRepository repository)
 
     private static ResourceDto ToDto(Resource resource, string language)
     {
-        var (description, isFallback) = ResolveDescription(resource, language);
+        var (description, openingHours, isFallback) = ResolveTranslation(resource, language);
 
         var categories = resource.ResourceCategories
             .Select(rc => rc.Category)
@@ -58,6 +58,7 @@ public class ResourceService(IResourceRepository repository)
             resource.Name,
             description,
             isFallback,
+            openingHours,
             resource.IsNational,
             resource.MunicipalityId,
             resource.Municipality?.Name,
@@ -70,17 +71,18 @@ public class ResourceService(IResourceRepository repository)
     }
 
     /// <summary>
-    /// The requested language, or Norwegian flagged as a fallback. The UI then shows an honest
-    /// note rather than silently serving Norwegian to someone who asked for English.
+    /// The requested language's translation, or Norwegian flagged as a fallback. Description and
+    /// opening hours are resolved together and always come from the same row — mixing an English
+    /// description with Norwegian hours would be worse than either alone.
     /// </summary>
-    private static (string Description, bool IsFallback) ResolveDescription(
+    private static (string Description, string? OpeningHours, bool IsFallback) ResolveTranslation(
         Resource resource,
         string language)
     {
         var requested = resource.Translations.FirstOrDefault(t => t.LanguageCode == language);
-        if (requested is not null) return (requested.Description, false);
+        if (requested is not null) return (requested.Description, requested.OpeningHours, false);
 
         var fallback = resource.Translations.FirstOrDefault(t => t.LanguageCode == Language.Default);
-        return (fallback?.Description ?? "", true);
+        return (fallback?.Description ?? "", fallback?.OpeningHours, true);
     }
 }

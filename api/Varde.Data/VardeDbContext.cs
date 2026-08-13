@@ -43,6 +43,7 @@ public class VardeDbContext(DbContextOptions<VardeDbContext> options) : DbContex
         {
             translation.Property(t => t.LanguageCode).HasMaxLength(5);
             translation.Property(t => t.Description).HasMaxLength(2000);
+            translation.Property(t => t.OpeningHours).HasMaxLength(200);
 
             translation.HasOne(t => t.Resource)
                 .WithMany(r => r.Translations)
