@@ -9,7 +9,7 @@ public static class Language
 {
     public const string Default = "nb";
 
-    public static readonly string[] Supported = [Default, "en"];
+    public static readonly IReadOnlyList<string> Supported = [Default, "en"];
 
     public static string Normalize(string? value)
     {
