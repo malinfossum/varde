@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Varde.Core.Interfaces;
+using Varde.Core.Services;
 using Varde.Data;
+using Varde.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +12,10 @@ var connectionString = builder.Configuration.GetConnectionString("VardeDb")
         "dotnet user-secrets set \"ConnectionStrings:VardeDb\" \"<connection string>\" --project Varde.Api");
 
 builder.Services.AddDbContext<VardeDbContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IMunicipalityRepository, MunicipalityRepository>();
+builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<MunicipalityService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
