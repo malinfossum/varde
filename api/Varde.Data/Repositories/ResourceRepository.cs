@@ -12,7 +12,7 @@ public class ResourceRepository(VardeDbContext db) : IResourceRepository
         ResourceQuery query,
         CancellationToken ct = default)
     {
-        var resources = WithRelations().AsQueryable();
+        var resources = WithRelations();
 
         if (query.MunicipalityId is int municipalityId)
         {
@@ -65,7 +65,13 @@ public class ResourceRepository(VardeDbContext db) : IResourceRepository
             .Include(r => r.Translations)
             .Include(r => r.ResourceCategories)
             .ThenInclude(rc => rc.Category)
-            .ThenInclude(c => c.Translations);
+            .ThenInclude(c => c.Translations)
+            // Two sibling collections (Translations, ResourceCategories) plus a nested one
+            // (ResourceCategories -> Category -> Translations) would otherwise cartesian-product
+            // in a single round trip. Split into one query per collection instead; the ordering
+            // in SearchAsync is a total order (IsNational, Name, Id), so paging stays correct
+            // across the separate round trips.
+            .AsSplitQuery();
 
     /// <summary>
     /// Neutralises LIKE metacharacters so a search for "50%" finds the literal text rather than
