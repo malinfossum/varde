@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Varde.Core.Dtos;
 using Varde.Core.Models;
 using Varde.Tests.Infrastructure;
@@ -96,11 +97,55 @@ public class ResourcesApiTests
         using var factory = new VardeApiFactory();
         SeedDirectory(factory);
 
-        var result = await factory.CreateClient()
-            .GetFromJsonAsync<PagedResult<ResourceDto>>("/api/resources?category=okonomi&category=bolig");
+        // A second, distinguishing category: a resource that belongs to "bolig" but not
+        // "okonomi". If binding drops either query value, one of these three requests below
+        // will return the wrong resource set.
+        factory.Seed(db =>
+        {
+            db.Categories.Add(new Category
+            {
+                Slug = "bolig",
+                Translations =
+                {
+                    new CategoryTranslation { LanguageCode = "nb", Name = "Bolig" },
+                    new CategoryTranslation { LanguageCode = "en", Name = "Housing" },
+                },
+            });
+        });
 
-        Assert.NotNull(result);
-        Assert.Equal("NAV Hamar", Assert.Single(result.Items).Name);
+        factory.Seed(db =>
+        {
+            db.Resources.Add(new Resource
+            {
+                Name = "Husbanken",
+                IsNational = true,
+                Phone = "22 96 16 00",
+                LastVerified = Verified,
+                Translations =
+                {
+                    new ResourceTranslation { LanguageCode = "nb", Description = "Hjelp med bolig." },
+                },
+            });
+        });
+
+        factory.Seed(db => db.ResourceCategories.Add(
+            new ResourceCategory { ResourceId = 3, CategoryId = 2 }));
+
+        var client = factory.CreateClient();
+
+        var both = await client.GetFromJsonAsync<PagedResult<ResourceDto>>(
+            "/api/resources?category=okonomi&category=bolig");
+        var okonomiOnly = await client.GetFromJsonAsync<PagedResult<ResourceDto>>(
+            "/api/resources?category=okonomi");
+        var boligOnly = await client.GetFromJsonAsync<PagedResult<ResourceDto>>(
+            "/api/resources?category=bolig");
+
+        Assert.NotNull(both);
+        // Order comes from the repository's total order (IsNational, then Name): the local
+        // NAV Hamar sorts before the national Husbanken.
+        Assert.Equal(["NAV Hamar", "Husbanken"], both.Items.Select(r => r.Name));
+        Assert.Equal("NAV Hamar", Assert.Single(okonomiOnly!.Items).Name);
+        Assert.Equal("Husbanken", Assert.Single(boligOnly!.Items).Name);
     }
 
     [Fact]
@@ -144,6 +189,10 @@ public class ResourcesApiTests
         Assert.Contains(
             "application/problem+json",
             response.Content.Headers.ContentType?.ToString());
+
+        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        Assert.NotNull(problem);
+        Assert.Equal(404, problem.Status);
     }
 
     [Fact]
