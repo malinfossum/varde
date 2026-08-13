@@ -1,0 +1,31 @@
+# OS junk
+Thumbs.db
+.DS_Store
+
+# Editor
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+
+# .NET build output
+bin/
+obj/
+publish/
+*.publishsettings
+
+# Secrets — never tracked. Connection strings live in dotnet user-secrets.
+appsettings.Development.json
+appsettings.*.Local.json
+.env
+.env.*
+*.pfx
+
+# Node (web/ arrives in plan 2)
+node_modules/
+dist/
+.vite/
+
+# Logs
+*.log

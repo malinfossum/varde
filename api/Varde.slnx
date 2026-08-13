@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Varde.Api/Varde.Api.csproj" />
+  <Project Path="Varde.Core/Varde.Core.csproj" />
+  <Project Path="Varde.Data/Varde.Data.csproj" />
+  <Project Path="Varde.Tests/Varde.Tests.csproj" />
+</Solution>
