@@ -11,9 +11,14 @@ public class ResourceServiceTests
     {
         Id = 1,
         Name = "NAV Hamar",
+        IsNational = false,
         LastVerified = Verified,
         Municipality = new Municipality { Id = 1, Name = "Hamar", County = "Innlandet" },
         MunicipalityId = 1,
+        Address = "Vangsvegen 1, 2317 Hamar",
+        Phone = "62 00 00 00",
+        Email = "nav.hamar@nav.no",
+        Website = "https://nav.no/hamar",
         Translations =
         [
             new ResourceTranslation { LanguageCode = "nb", Description = "Hjelp med økonomi." },
@@ -126,5 +131,63 @@ public class ResourceServiceTests
         Assert.NotNull(dto);
         Assert.Equal(Verified, dto.LastVerified);
         Assert.Equal("Hjelp med økonomi.", dto.Description);
+        Assert.Equal("Vangsvegen 1, 2317 Hamar", dto.Address);
+        Assert.Equal("62 00 00 00", dto.Phone);
+        Assert.Equal("nav.hamar@nav.no", dto.Email);
+        Assert.Equal("https://nav.no/hamar", dto.Website);
+        Assert.Equal(1, dto.MunicipalityId);
+        Assert.False(dto.IsNational);
+    }
+
+    [Fact]
+    public async Task Get_maps_categories_ordered_by_slug_with_per_category_fallback()
+    {
+        var bolig = new Category
+        {
+            Id = 3,
+            Slug = "bolig",
+            Translations =
+            [
+                new CategoryTranslation { LanguageCode = "nb", Name = "Bolig" },
+                new CategoryTranslation { LanguageCode = "en", Name = "Housing" },
+            ],
+        };
+        var utdanning = new Category
+        {
+            Id = 7,
+            Slug = "utdanning",
+            Translations =
+            [
+                new CategoryTranslation { LanguageCode = "nb", Name = "Utdanning" },
+            ],
+        };
+
+        var resource = Bilingual();
+        // Added out of alphabetical order (utdanning, then bolig) so the test proves
+        // ToDto's OrderBy(c => c.Slug) is what puts bolig first, not insertion order.
+        resource.ResourceCategories =
+        [
+            new ResourceCategory { CategoryId = utdanning.Id, Category = utdanning },
+            new ResourceCategory { CategoryId = bolig.Id, Category = bolig },
+        ];
+
+        var service = new ResourceService(new FakeResourceRepository([resource]));
+
+        var dto = await service.GetAsync(1, "en", CancellationToken.None);
+
+        Assert.NotNull(dto);
+        Assert.Equal(2, dto.Categories.Count);
+
+        var first = dto.Categories[0];
+        Assert.Equal(bolig.Id, first.Id);
+        Assert.Equal("bolig", first.Slug);
+        Assert.Equal("Housing", first.Name);
+        Assert.False(first.IsFallbackTranslation);
+
+        var second = dto.Categories[1];
+        Assert.Equal(utdanning.Id, second.Id);
+        Assert.Equal("utdanning", second.Slug);
+        Assert.Equal("Utdanning", second.Name);
+        Assert.True(second.IsFallbackTranslation);
     }
 }
