@@ -14,8 +14,10 @@ var connectionString = builder.Configuration.GetConnectionString("VardeDb")
 builder.Services.AddDbContext<VardeDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IMunicipalityRepository, MunicipalityRepository>();
+builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<MunicipalityService>();
+builder.Services.AddScoped<ResourceService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();

@@ -1,28 +1,28 @@
 @host = http://localhost:5005
 
-### List all notes
-GET {{host}}/api/notes
+### The whole directory, Norwegian, first page
+GET {{host}}/api/resources
 
-### Create a note
-POST {{host}}/api/notes
-Content-Type: application/json
+### English
+GET {{host}}/api/resources?lang=en
 
-{ "title": "First note", "body": "Hello from the scaffold." }
+### Free-text search
+GET {{host}}/api/resources?search=krisesenter
 
-### Get one note
-GET {{host}}/api/notes/1
+### Two categories (OR) in one municipality — national services come along
+GET {{host}}/api/resources?category=okonomi&category=bolig&municipality=1
 
-### Update a note
-PUT {{host}}/api/notes/1
-Content-Type: application/json
+### A mistyped language still returns the directory, in Norwegian
+GET {{host}}/api/resources?lang=klingon
 
-{ "title": "Renamed note", "body": "Edited body." }
+### One service
+GET {{host}}/api/resources/1
 
-### Delete a note
-DELETE {{host}}/api/notes/1
+### A service that does not exist — 404 with ProblemDetails
+GET {{host}}/api/resources/9999
 
-### Validation error — missing title (expect 400 problem+json)
-POST {{host}}/api/notes
-Content-Type: application/json
+### Categories and municipalities
+GET {{host}}/api/categories?lang=en
 
-{ "body": "no title" }
+###
+GET {{host}}/api/municipalities
