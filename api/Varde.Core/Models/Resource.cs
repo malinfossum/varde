@@ -18,6 +18,9 @@ public class Resource
     public string? Email { get; set; }
     public string? Website { get; set; }
 
+    /// <summary>Chat is a first-class contact channel — for some users the only safe one.</summary>
+    public string? ChatUrl { get; set; }
+
     /// <summary>Shown on every card. A dead number on a bad day is the failure this field prevents.</summary>
     public DateOnly LastVerified { get; set; }
 

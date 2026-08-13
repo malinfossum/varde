@@ -19,6 +19,7 @@ public class ResourceServiceTests
         Phone = "62 00 00 00",
         Email = "nav.hamar@nav.no",
         Website = "https://nav.no/hamar",
+        ChatUrl = "https://chat.example.test",
         Translations =
         [
             new ResourceTranslation { LanguageCode = "nb", Description = "Hjelp med økonomi." },
@@ -135,6 +136,7 @@ public class ResourceServiceTests
         Assert.Equal("62 00 00 00", dto.Phone);
         Assert.Equal("nav.hamar@nav.no", dto.Email);
         Assert.Equal("https://nav.no/hamar", dto.Website);
+        Assert.Equal("https://chat.example.test", dto.ChatUrl);
         Assert.Equal(1, dto.MunicipalityId);
         Assert.False(dto.IsNational);
     }

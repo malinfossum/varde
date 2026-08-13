@@ -29,6 +29,7 @@ public class VardeDbContext(DbContextOptions<VardeDbContext> options) : DbContex
             resource.Property(r => r.Phone).HasMaxLength(40);
             resource.Property(r => r.Email).HasMaxLength(200);
             resource.Property(r => r.Website).HasMaxLength(500);
+            resource.Property(r => r.ChatUrl).HasMaxLength(500);
 
             resource.HasOne(r => r.Municipality)
                 .WithMany()

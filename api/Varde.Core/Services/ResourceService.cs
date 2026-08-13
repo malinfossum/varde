@@ -66,6 +66,7 @@ public class ResourceService(IResourceRepository repository)
             resource.Phone,
             resource.Email,
             resource.Website,
+            resource.ChatUrl,
             resource.LastVerified,
             categories);
     }

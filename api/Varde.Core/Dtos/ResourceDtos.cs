@@ -22,5 +22,6 @@ public record ResourceDto(
     string? Phone,
     string? Email,
     string? Website,
+    string? ChatUrl,
     DateOnly LastVerified,
     IReadOnlyList<CategoryDto> Categories);

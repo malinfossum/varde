@@ -35,6 +35,7 @@ public class ResourcesApiTests
                 MunicipalityId = 1,
                 Phone = "55 55 33 33",
                 Website = "https://www.nav.no",
+                ChatUrl = "https://chat.example.test",
                 LastVerified = Verified,
                 Translations =
                 {
@@ -186,6 +187,7 @@ public class ResourcesApiTests
         Assert.Equal("Weekdays 09:00–15:00", resource.OpeningHours);
         Assert.Equal("Finances", Assert.Single(resource.Categories).Name);
         Assert.Equal(Verified, resource.LastVerified);
+        Assert.Equal("https://chat.example.test", resource.ChatUrl);
     }
 
     [Fact]
