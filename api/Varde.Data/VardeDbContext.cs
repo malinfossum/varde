@@ -11,6 +11,7 @@ public class VardeDbContext(DbContextOptions<VardeDbContext> options) : DbContex
     public DbSet<CategoryTranslation> CategoryTranslations => Set<CategoryTranslation>();
     public DbSet<ResourceCategory> ResourceCategories => Set<ResourceCategory>();
     public DbSet<Municipality> Municipalities => Set<Municipality>();
+    public DbSet<ResourceMunicipality> ResourceMunicipalities => Set<ResourceMunicipality>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -87,6 +88,21 @@ public class VardeDbContext(DbContextOptions<VardeDbContext> options) : DbContex
                 .WithMany()
                 .HasForeignKey(rc => rc.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ResourceMunicipality>(coverage =>
+        {
+            coverage.HasKey(rm => new { rm.ResourceId, rm.MunicipalityId });
+
+            coverage.HasOne(rm => rm.Resource)
+                .WithMany(r => r.ServedMunicipalities)
+                .HasForeignKey(rm => rm.ResourceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            coverage.HasOne(rm => rm.Municipality)
+                .WithMany()
+                .HasForeignKey(rm => rm.MunicipalityId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

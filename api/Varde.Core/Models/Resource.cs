@@ -26,4 +26,7 @@ public class Resource
 
     public List<ResourceTranslation> Translations { get; set; } = [];
     public List<ResourceCategory> ResourceCategories { get; set; } = [];
+
+    /// <summary>Municipalities this service also serves. MunicipalityId stays "located in".</summary>
+    public List<ResourceMunicipality> ServedMunicipalities { get; set; } = [];
 }

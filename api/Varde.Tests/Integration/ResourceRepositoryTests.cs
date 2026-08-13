@@ -197,6 +197,34 @@ public class ResourceRepositoryTests
     }
 
     [Fact]
+    public async Task Municipality_filter_includes_services_that_cover_the_municipality()
+    {
+        // A krisesenter sits in one kommune and serves others. Filtering on a served kommune
+        // must find it; filtering on an unrelated kommune must not.
+        using var factory = new VardeApiFactory();
+        factory.Seed(db =>
+        {
+            db.Municipalities.Add(new Municipality { Name = "Hamar", County = "Innlandet" });
+            db.Municipalities.Add(new Municipality { Name = "Ringsaker", County = "Innlandet" });
+            db.Municipalities.Add(new Municipality { Name = "Gjøvik", County = "Innlandet" });
+        });
+        factory.Seed(db => db.Resources.Add(NewResource("Hamar Krisesenter", municipalityId: 1)));
+        factory.Seed(db => db.ResourceMunicipalities.Add(
+            new ResourceMunicipality { ResourceId = 1, MunicipalityId = 2 }));
+
+        using var scope = factory.NewScope();
+        var repository = RepositoryFor(scope);
+
+        var home = await repository.SearchAsync(new ResourceQuery(null, [], 1, "nb", 1, 20));
+        var served = await repository.SearchAsync(new ResourceQuery(null, [], 2, "nb", 1, 20));
+        var unrelated = await repository.SearchAsync(new ResourceQuery(null, [], 3, "nb", 1, 20));
+
+        Assert.Equal(1, home.TotalCount);
+        Assert.Equal(1, served.TotalCount);
+        Assert.Equal(0, unrelated.TotalCount);
+    }
+
+    [Fact]
     public async Task Get_loads_translations_municipality_and_categories()
     {
         using var factory = new VardeApiFactory();

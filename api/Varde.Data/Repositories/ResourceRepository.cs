@@ -16,8 +16,12 @@ public class ResourceRepository(VardeDbContext db) : IResourceRepository
 
         if (query.MunicipalityId is int municipalityId)
         {
-            // National services belong to no municipality and must appear in every one's results.
-            resources = resources.Where(r => r.MunicipalityId == municipalityId || r.IsNational);
+            // Located there, national, or covering it — a shared krisesenter must appear in
+            // every kommune it serves, not only the one holding its address.
+            resources = resources.Where(r =>
+                r.MunicipalityId == municipalityId
+                || r.IsNational
+                || r.ServedMunicipalities.Any(rm => rm.MunicipalityId == municipalityId));
         }
 
         if (query.Categories.Length > 0)
