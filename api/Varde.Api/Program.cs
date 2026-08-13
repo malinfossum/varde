@@ -1,3 +1,5 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Varde.Core.Interfaces;
 using Varde.Core.Services;
@@ -19,6 +21,32 @@ builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<MunicipalityService>();
 builder.Services.AddScoped<ResourceService>();
 builder.Services.AddSingleton(TimeProvider.System);
+
+const string CorsPolicy = "varde-web";
+
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options => options.AddPolicy(CorsPolicy, policy =>
+    policy.WithOrigins(allowedOrigins).AllowAnyHeader().WithMethods("GET")));
+
+// Search runs a case-insensitive scan on a burstable-tier database, and the API is public and
+// unauthenticated. The partition key is a client IP held in memory for one window — never
+// logged, never written anywhere. The Azure spending cap is a backstop, not the control: a cap
+// that trips takes the site down, which fails the user worse than being slow does.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = builder.Configuration.GetValue("RateLimiting:PermitLimit", 60),
+                Window = TimeSpan.FromSeconds(
+                    builder.Configuration.GetValue("RateLimiting:WindowSeconds", 60)),
+                QueueLimit = 0,
+            }));
+});
+
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
@@ -26,6 +54,9 @@ builder.Services.AddOpenApi();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+
+app.UseCors(CorsPolicy);
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {

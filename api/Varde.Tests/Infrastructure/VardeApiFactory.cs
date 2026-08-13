@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using Varde.Data;
 
@@ -16,6 +17,16 @@ namespace Varde.Tests.Infrastructure;
 public sealed class VardeApiFactory : WebApplicationFactory<Program>
 {
     private readonly string _dbName = $"varde_test_{Guid.NewGuid():N}";
+
+    /// <summary>
+    /// The app's real limit is 60 requests a minute per IP. Under TestServer every test shares the
+    /// same (null) client address, so the suite would trip a realistic limit against itself —
+    /// tests run with the limiter effectively open, and RateLimitTests sets its own low value.
+    /// </summary>
+    public int RateLimitPermitLimit { get; init; } = 10_000;
+
+    /// <summary>Every log message the app wrote during this test.</summary>
+    public CapturingLoggerProvider Logs { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -38,6 +49,10 @@ public sealed class VardeApiFactory : WebApplicationFactory<Program>
 
         // Same seam Program.cs reads.
         builder.UseSetting("ConnectionStrings:VardeDb", perTest.ConnectionString);
+
+        builder.UseSetting("RateLimiting:PermitLimit", RateLimitPermitLimit.ToString());
+
+        builder.ConfigureLogging(logging => logging.AddProvider(Logs));
     }
 
     /// <summary>Inserts test fixtures directly through the context. Call before the first request.</summary>
