@@ -33,3 +33,14 @@
 	min-height: 44px;
 	min-width: 44px;
 }
+
+.suggestions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-sm, 0.5rem);
+	list-style: none;
+	padding: 0;
+}
+.suggestions button {
+	min-height: 44px;
+}
