@@ -48,7 +48,7 @@ application logs record result counts, never search terms.
 
 Unified search across name, category and municipality, with suggestions and a national
 toggle. Details on the shift from fastlege to legevakt after hours, when a service's own
-opening hours are known. Bilingual throughout, keyboard-accessible, and built mobile-first.
+opening hours are known. Bilingual throughout, built for keyboard access, and built mobile-first.
 
 ## Run locally
 
