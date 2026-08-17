@@ -13,7 +13,9 @@ import { createContext, useContext } from "react"
 import { AkuttShortcut } from "./components/AkuttShortcut.tsx"
 import { LanguageToggle } from "./components/LanguageToggle.tsx"
 import { ListPage } from "./components/ListPage.tsx"
+import { NotFoundState } from "./components/NotFoundState.tsx"
 import { QuickExit } from "./components/QuickExit.tsx"
+import { ResourceDetail } from "./components/ResourceDetail.tsx"
 import { AnnouncerProvider } from "./components/StatusRegion.tsx"
 import { useUrlState } from "./hooks/useUrlState.ts"
 import { LanguageProvider, useTranslation } from "./i18n/LanguageProvider.tsx"
@@ -55,7 +57,8 @@ function Shell({ route, filters }: { route: Route; filters: Filters }) {
 			</header>
 			<main id="main">
 				{route.kind === "list" && <ListPage filters={filters} />}
-				{/* detail + notFound land in Task 11 */}
+				{route.kind === "detail" && <ResourceDetail id={route.id} />}
+				{route.kind === "notFound" && <NotFoundState />}
 			</main>
 		</div>
 	)
