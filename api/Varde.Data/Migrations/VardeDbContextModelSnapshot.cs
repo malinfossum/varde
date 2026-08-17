@@ -532,7 +532,7 @@ namespace Varde.Data.Migrations
                             Name = "Tjeneste psykisk helse og rus, Hamar kommune",
                             Phone = "916 03 327",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://www.hamar.kommune.no/helseogomsorg/psykisk-helse-og-rus/tjeneste-psykisk-helse-og-rus/"
+                            Website = "https://www.hamar.kommune.no/helseogomsorg/psykisk-helse-og-rus/"
                         },
                         new
                         {
@@ -556,7 +556,7 @@ namespace Varde.Data.Migrations
                             Name = "Rask psykisk helsehjelp, Lillehammer kommune",
                             Phone = "917 13 338",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/rask-psykisk-helsehjelp/informasjon-om-rask-psykisk-helsehjelp/"
+                            Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/"
                         },
                         new
                         {
@@ -581,7 +581,7 @@ namespace Varde.Data.Migrations
                             Name = "Housing First, Lillehammer kommune",
                             Phone = "451 64 131",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/om-psykisk-helse-og-rus/kontaktinformasjon/"
+                            Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/"
                         },
                         new
                         {
@@ -593,7 +593,7 @@ namespace Varde.Data.Migrations
                             Name = "Oppfølgingsteamet, Lillehammer kommune",
                             Phone = "902 43 733",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/om-psykisk-helse-og-rus/kontaktinformasjon/"
+                            Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/"
                         },
                         new
                         {
