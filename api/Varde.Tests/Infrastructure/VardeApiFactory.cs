@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using Varde.Data;
@@ -24,6 +26,13 @@ public sealed class VardeApiFactory : WebApplicationFactory<Program>
     /// tests run with the limiter effectively open, and RateLimitTests sets its own low value.
     /// </summary>
     public int RateLimitPermitLimit { get; init; } = 10_000;
+
+    /// <summary>
+    /// Keep the rows the seed migration inserted. Off by default: a test that seeds its own
+    /// fixtures needs an empty directory, and the pre-existing seeded services would break its
+    /// counts. SeedDataTests turns it on — it is the one suite that asserts on the seed itself.
+    /// </summary>
+    public bool KeepSeedData { get; init; }
 
     /// <summary>Every log message the app wrote during this test.</summary>
     public CapturingLoggerProvider Logs { get; } = new();
@@ -62,6 +71,30 @@ public sealed class VardeApiFactory : WebApplicationFactory<Program>
         var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
         seed(db);
         db.SaveChanges();
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        // base.CreateHost starts the host, which is when Program.cs applies migrations —
+        // so the seed rows exist by the time this returns.
+        var host = base.CreateHost(builder);
+
+        if (!KeepSeedData)
+        {
+            using var scope = host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+            // RESTART IDENTITY matters as much as the delete: tests written against an empty
+            // database assume the first row they insert gets Id 1.
+            db.Database.ExecuteSqlRaw(
+                """
+                TRUNCATE TABLE "ResourceCategories", "ResourceMunicipalities", "ResourceTranslations",
+                               "Resources", "CategoryTranslations", "Categories", "Municipalities"
+                RESTART IDENTITY CASCADE;
+                """);
+        }
+
+        return host;
     }
 
     /// <summary>A scoped context against this factory's database, for tests that skip HTTP.</summary>

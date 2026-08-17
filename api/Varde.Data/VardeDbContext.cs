@@ -105,5 +105,7 @@ public class VardeDbContext(DbContextOptions<VardeDbContext> options) : DbContex
                 .HasForeignKey(rm => rm.MunicipalityId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        Seed.SeedData.Apply(modelBuilder);
     }
 }
