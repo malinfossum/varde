@@ -1,6 +1,8 @@
+using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Varde.Core;
+using Varde.Core.Dtos;
 using Varde.Data;
 using Varde.Tests.Infrastructure;
 
@@ -131,5 +133,57 @@ public class SeedDataTests
             .Where(r => r.IsNational && r.MunicipalityId != null)
             .Select(r => r.Name)
             .ToListAsync());
+    }
+
+    [Fact]
+    public async Task Municipality_filter_for_Loten_includes_the_coverage_joined_resources()
+    {
+        // Løten (municipality id 6) has no seeded services of its own — everything it shows
+        // comes from the ResourceMunicipality coverage joins docs/seed-data-innlandet-ring.md's
+        // "Coverage map" section records for rows 12, 14 and 118 (see
+        // Resource_12_serves_the_ring_municipalities_and_no_national_resource_has_coverage
+        // above for the direct-DB version of this check). This test guards the same fact through
+        // the actual HTTP endpoint the frontend calls.
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+
+        var result = await factory.CreateClient()
+            .GetFromJsonAsync<PagedResult<ResourceDto>>("/api/resources?municipality=6&pageSize=100");
+
+        Assert.NotNull(result);
+        var ids = result.Items.Select(r => r.Id).ToList();
+        Assert.Contains(12, ids);
+        Assert.Contains(14, ids);
+        Assert.Contains(118, ids);
+    }
+
+    [Fact]
+    public async Task Paging_through_every_page_reaches_all_91_seeded_resources()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        var client = factory.CreateClient();
+        const int pageSize = 10;
+
+        var first = await client.GetFromJsonAsync<PagedResult<ResourceDto>>(
+            $"/api/resources?page=1&pageSize={pageSize}");
+
+        Assert.NotNull(first);
+        Assert.Equal(91, first.TotalCount);
+
+        var totalPages = (int)Math.Ceiling(first.TotalCount / (double)pageSize);
+        var seenIds = new HashSet<int>(first.Items.Select(r => r.Id));
+
+        for (var page = 2; page <= totalPages; page++)
+        {
+            var result = await client.GetFromJsonAsync<PagedResult<ResourceDto>>(
+                $"/api/resources?page={page}&pageSize={pageSize}");
+
+            Assert.NotNull(result);
+            foreach (var id in result.Items.Select(r => r.Id))
+            {
+                seenIds.Add(id);
+            }
+        }
+
+        Assert.Equal(91, seenIds.Count);
     }
 }
