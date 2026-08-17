@@ -62,6 +62,7 @@ public class ResourceService(IResourceRepository repository)
             isFallback,
             openingHours,
             resource.IsNational,
+            resource.IsAlwaysOpen,
             resource.MunicipalityId,
             resource.Municipality?.Name,
             resource.Address,

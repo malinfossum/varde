@@ -57,6 +57,7 @@ public class ResourcesApiTests
             {
                 Name = "Mental Helse",
                 IsNational = true,
+                IsAlwaysOpen = true,
                 Phone = "116 123",
                 LastVerified = Verified,
                 Translations =
@@ -277,5 +278,18 @@ public class ResourcesApiTests
             .GetFromJsonAsync<PagedResult<ResourceDto>>("/api/resources?national=false&municipality=1");
 
         Assert.Equal(2, result!.TotalCount); // local + national, same as no national param
+    }
+
+    [Fact]
+    public async Task Get_exposes_is_always_open_on_the_dto()
+    {
+        using var factory = new VardeApiFactory();
+        SeedDirectory(factory);
+
+        var result = await factory.CreateClient()
+            .GetFromJsonAsync<PagedResult<ResourceDto>>("/api/resources?national=true");
+
+        var mentalHelse = Assert.Single(result!.Items);
+        Assert.True(mentalHelse.IsAlwaysOpen);
     }
 }

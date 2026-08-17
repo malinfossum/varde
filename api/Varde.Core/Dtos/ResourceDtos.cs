@@ -10,6 +10,7 @@ public record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, int
 /// <param name="Description">Plain text. Rendered as {description} — never as HTML.</param>
 /// <param name="IsFallbackTranslation">True when the requested language was unavailable and this is Norwegian.</param>
 /// <param name="OpeningHours">Plain text, in the requested language. Null when not recorded for this service.</param>
+/// <param name="IsAlwaysOpen">True only where the verified source records 24/7 service. False is "not recorded", never "closed".</param>
 public record ResourceDto(
     int Id,
     string Name,
@@ -17,6 +18,7 @@ public record ResourceDto(
     bool IsFallbackTranslation,
     string? OpeningHours,
     bool IsNational,
+    bool IsAlwaysOpen,
     int? MunicipalityId,
     string? MunicipalityName,
     string? Address,

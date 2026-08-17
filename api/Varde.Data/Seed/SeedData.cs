@@ -32,6 +32,9 @@ namespace Varde.Data.Seed;
 /// (555 53 333 -> 55 55 33 33), row 14 (40 40 40 15 -> 404 04 015) and row 15
 /// (91 71 33 38 -> 917 13 338). Every regrouping is confirmed against an alternate grouping of
 /// the same digits already present in the row's own Notes in docs/seed-data.md.
+///
+/// IsAlwaysOpen (added plan 2) is true exactly where the nb OpeningHours reads "Døgnåpent" — the
+/// SeedDataTests guard enforces both directions.
 /// </summary>
 public static class SeedData
 {
@@ -73,6 +76,7 @@ public static class SeedData
                 Id = 1,
                 Name = "Hjelpetelefonen (Mental Helse)",
                 IsNational = true,
+                IsAlwaysOpen = true,
                 MunicipalityId = null,
                 Phone = "116 123",
                 Website = "https://mentalhelse.no",
@@ -85,6 +89,7 @@ public static class SeedData
                 Id = 2,
                 Name = "Kirkens SOS",
                 IsNational = true,
+                IsAlwaysOpen = true,
                 MunicipalityId = null,
                 Phone = "22 40 00 40",
                 Website = "https://www.kirkens-sos.no",
@@ -110,6 +115,7 @@ public static class SeedData
                 Id = 4,
                 Name = "Alarmtelefonen for barn og unge",
                 IsNational = true,
+                IsAlwaysOpen = true,
                 MunicipalityId = null,
                 Phone = "116 111",
                 Website = "https://www.116111.no",
@@ -123,6 +129,7 @@ public static class SeedData
                 Id = 5,
                 Name = "VO-linjen",
                 IsNational = true,
+                IsAlwaysOpen = true,
                 MunicipalityId = null,
                 Phone = "116 006",
                 Website = "https://www.volinjen.no",
@@ -207,6 +214,7 @@ public static class SeedData
             {
                 Id = 12,
                 Name = "Hamar interkommunale krisesenter",
+                IsAlwaysOpen = true,
                 MunicipalityId = Hamar,
                 Address = "Kronborgveien 23, 2318 Hamar",
                 Phone = "62 56 18 30",
@@ -310,6 +318,7 @@ public static class SeedData
             {
                 Id = 21,
                 Name = "Gjøvik Krisesenter IKS",
+                IsAlwaysOpen = true,
                 MunicipalityId = Gjovik,
                 // Address deliberately withheld — the centre gives its visiting address only on
                 // contact, for safety. See docs/seed-data.md row 21's Notes. Not missing data.
@@ -789,6 +798,7 @@ public static class SeedData
             {
                 Id = 216,
                 Name = "Oslo Krisesenter",
+                IsAlwaysOpen = true,
                 MunicipalityId = Oslo,
                 // Address deliberately null — hemmelig adresse for safety. The Postboks in the
                 // doc's Notes is a postal address, not a visiting address, so it is not seeded
@@ -816,6 +826,7 @@ public static class SeedData
             {
                 Id = 218,
                 Name = "Overgrepsmottaket, Legevakten i Oslo",
+                IsAlwaysOpen = true,
                 MunicipalityId = Oslo,
                 Address = "Trondheimsveien 233 (Aker sykehus), 0587 Oslo",
                 // Number shared with row 221 (Psykososial akuttjeneste) — two real services
@@ -856,6 +867,7 @@ public static class SeedData
             {
                 Id = 221,
                 Name = "Psykososial akuttjeneste, Legevakten i Oslo",
+                IsAlwaysOpen = true,
                 MunicipalityId = Oslo,
                 Address = "Trondheimsveien 233 (Aker sykehus), 0587 Oslo",
                 // Same number as row 218 — see that row's note.

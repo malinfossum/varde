@@ -10,6 +10,13 @@ public class Resource
     /// <summary>National services belong to no municipality and appear in every municipality's results.</summary>
     public bool IsNational { get; set; }
 
+    /// <summary>
+    /// True only where the verified source records 24/7 service ("Døgnåpent" in the nb hours).
+    /// Absence means "see the hours text", never "closed at night". No prose parsing — the flag
+    /// is set row-by-row at seed time from the same source the hours text was copied from.
+    /// </summary>
+    public bool IsAlwaysOpen { get; set; }
+
     public int? MunicipalityId { get; set; }
     public Municipality? Municipality { get; set; }
 

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Varde.Core;
 using Varde.Core.Dtos;
+using Varde.Core.Models;
 using Varde.Data;
 using Varde.Tests.Infrastructure;
 
@@ -185,5 +186,28 @@ public class SeedDataTests
         }
 
         Assert.Equal(91, seenIds.Count);
+    }
+
+    [Fact]
+    public async Task Always_open_flags_match_recorded_dognapent_hours_exactly()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+        var flagged = await db.Resources
+            .Where(r => r.IsAlwaysOpen)
+            .Select(r => r.Id)
+            .OrderBy(id => id)
+            .ToListAsync();
+
+        var recorded = await db.Set<ResourceTranslation>()
+            .Where(t => t.LanguageCode == "nb" && t.OpeningHours == "Døgnåpent")
+            .Select(t => t.ResourceId)
+            .OrderBy(id => id)
+            .ToListAsync();
+
+        Assert.Equal(recorded, flagged);          // flag ⇔ recorded verbatim hours, both directions
+        Assert.Equal(9, flagged.Count); // literal count from Step 1
     }
 }
