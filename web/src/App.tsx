@@ -12,6 +12,7 @@
 import { createContext, useContext } from "react"
 import { AkuttShortcut } from "./components/AkuttShortcut.tsx"
 import { LanguageToggle } from "./components/LanguageToggle.tsx"
+import { ListPage } from "./components/ListPage.tsx"
 import { QuickExit } from "./components/QuickExit.tsx"
 import { AnnouncerProvider } from "./components/StatusRegion.tsx"
 import { useUrlState } from "./hooks/useUrlState.ts"
@@ -36,10 +37,7 @@ export function App() {
 	)
 }
 
-// route/filters are unused until Task 10 wires a route switch into <main> — kept typed and
-// underscore-prefixed (exempt from noUnusedParameters) rather than dropped, so App.tsx's
-// call site doesn't need to change again when that lands.
-function Shell({ route: _route, filters: _filters }: { route: Route; filters: Filters }) {
+function Shell({ route, filters }: { route: Route; filters: Filters }) {
 	const t = useTranslation()
 	return (
 		<div id="app" className="container stack stack-lg">
@@ -55,7 +53,10 @@ function Shell({ route: _route, filters: _filters }: { route: Route; filters: Fi
 					<QuickExit />
 				</div>
 			</header>
-			<main id="main">{/* route switch grows in Tasks 10–11 */}</main>
+			<main id="main">
+				{route.kind === "list" && <ListPage filters={filters} />}
+				{/* detail + notFound land in Task 11 */}
+			</main>
 		</div>
 	)
 }

@@ -53,3 +53,26 @@
 	min-height: 44px;
 	min-width: 44px;
 }
+
+.badges {
+	display: flex;
+	gap: var(--space-xs, 0.25rem);
+}
+.badge {
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	padding: 0 0.4em;
+}
+.resource-list {
+	list-style: none;
+	padding: 0;
+}
+.pager {
+	display: flex;
+	gap: var(--space-sm, 0.5rem);
+	align-items: center;
+}
+.pager button {
+	min-height: 44px;
+	min-width: 44px;
+}

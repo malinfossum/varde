@@ -46,6 +46,13 @@ export function KommunePicker({
 				onChange={(event) => setFilter(event.target.value)}
 				autoComplete="off"
 			/>
+			<button
+				type="button"
+				aria-pressed={selectedId === null && !nationalSelected}
+				onClick={() => onSelect({ all: true })}
+			>
+				{t("picker.all")}
+			</button>
 			{nationalMatches && (
 				<button
 					type="button"

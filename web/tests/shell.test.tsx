@@ -4,11 +4,11 @@ import { expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
 
 function stubResources() {
-	vi.spyOn(globalThis, "fetch").mockResolvedValue(
-		new Response(JSON.stringify({ items: [], page: 1, pageSize: 20, totalCount: 0 }), {
-			status: 200,
-		})
-	)
+	// Left permanently pending — these tests assert on the shell/toggle only, never on
+	// fetched content, and a resource fetch that actually settled would race the language
+	// toggle's own explicit announcement for the single shared live region (both the "loading"
+	// and "ready" transitions call announce()). Neither test needs the network to resolve.
+	vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}))
 }
 
 test("shell renders skip link, quick exit and akutt shortcut", () => {
