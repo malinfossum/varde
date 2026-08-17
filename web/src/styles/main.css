@@ -44,3 +44,12 @@
 .suggestions button {
 	min-height: 44px;
 }
+
+.kommune-picker ul {
+	list-style: none;
+	padding: 0;
+}
+.kommune-picker button {
+	min-height: 44px;
+	min-width: 44px;
+}
