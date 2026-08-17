@@ -12,7 +12,7 @@ namespace Varde.Tests.Integration;
 ///
 /// Task 9 ships in three batches (see task-9-adaptation.md §9); the resource count grows
 /// 22 → 44 → 91 as each batch's migration lands. This file always asserts against the current
-/// cumulative total — batch 9a is 22 rows across all 8 municipalities and 9 categories.
+/// cumulative total — batch 9b adds the Innlandet ring (rows 101-122), bringing the total to 44.
 /// </summary>
 public class SeedDataTests
 {
@@ -23,8 +23,37 @@ public class SeedDataTests
         using var scope = factory.NewScope();
         var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
 
-        Assert.Equal(22, await db.Resources.CountAsync());
+        Assert.Equal(44, await db.Resources.CountAsync());
         Assert.Equal(8, await db.Municipalities.CountAsync());
+    }
+
+    [Fact]
+    public async Task Resource_12_serves_the_ring_municipalities_and_no_national_resource_has_coverage()
+    {
+        // Row 12 (Hamar interkommunale krisesenter) covers four kommuner beyond the one it sits
+        // in — the ResourceMunicipality coverage join docs/seed-data-innlandet-ring.md's
+        // Coverage map records for it. National resources rely on IsNational alone: they must
+        // never carry coverage rows, or a municipality filter could show them twice.
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+        var servedNames = await db.ResourceMunicipalities
+            .Where(rm => rm.ResourceId == 12)
+            .Include(rm => rm.Municipality)
+            .Select(rm => rm.Municipality.Name)
+            .ToListAsync();
+
+        Assert.Equal(
+            new[] { "Ringsaker", "Stange", "Løten", "Elverum" }.OrderBy(n => n, StringComparer.Ordinal),
+            servedNames.OrderBy(n => n, StringComparer.Ordinal));
+
+        var nationalResourceIdsWithCoverage = await db.ResourceMunicipalities
+            .Where(rm => rm.Resource.IsNational)
+            .Select(rm => rm.ResourceId)
+            .ToListAsync();
+
+        Assert.Empty(nationalResourceIdsWithCoverage);
     }
 
     [Fact]

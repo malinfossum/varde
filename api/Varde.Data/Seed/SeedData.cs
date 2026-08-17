@@ -10,8 +10,12 @@ namespace Varde.Data.Seed;
 /// doc's row numbers so later batches (docs/seed-data-innlandet-ring.md rows 101+,
 /// docs/seed-data-oslo.md rows 201+) can append without renumbering anything already shipped.
 ///
-/// This batch (9a) seeds rows 1–22: nine categories, all eight municipalities, and the 22 core
-/// services. Coverage joins (ResourceMunicipality) and rows 101+ arrive in later batches.
+/// Batch 9a seeded rows 1–22: nine categories, all eight municipalities, and the 22 core
+/// services. This batch (9b) adds rows 101–122 from docs/seed-data-innlandet-ring.md — the
+/// Innlandet ring services — plus the ResourceMunicipality coverage joins that file's
+/// "## Coverage map" section records for existing rows 12 and 14, and for new row 118. Only
+/// non-national resources ever get coverage rows; IsNational already covers every municipality.
+/// docs/seed-data-oslo.md's rows 201+ arrive in batch 9c.
 ///
 /// Every value here is a compile-time constant. HasData compares seed values against the model
 /// on every `migrations add`, so a DateTime.UtcNow or a computed id would produce a spurious
@@ -30,6 +34,10 @@ public static class SeedData
 {
     private static readonly DateTime SeededAt = new(2026, 8, 17, 0, 0, 0, DateTimeKind.Utc);
     private static readonly DateOnly Verified = new(2026, 8, 13);
+
+    // Row 118 (Nok. Hamar) was re-verified 2026-08-17, a source-hierarchy re-check that landed
+    // after the rest of the ring batch — see docs/seed-data-innlandet-ring.md row 118's Notes.
+    private static readonly DateOnly VerifiedRow118 = new(2026, 8, 17);
 
     // Municipality ids — county = Innlandet for 1-7, Oslo for 8.
     private const int Hamar = 1;
@@ -315,6 +323,277 @@ public static class SeedData
                 Name = "Jobbhus Gjøvik",
                 MunicipalityId = Gjovik,
                 Website = "https://www.gjovik.kommune.no/jobbhus/jeg-onsker-jobb/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 101,
+                Name = "Nav Ringsaker",
+                MunicipalityId = Ringsaker,
+                // Besøksadresse conflicts between the kommune page ("Nordåsvegen 4, Brumunddal")
+                // and nav.no ("Nordåsvegen 4, 2382 BRUMUNDDAL"); nav.no is the NAV office's own
+                // page, so it wins per the file's source-hierarchy policy (same precedent as row
+                // 113's postcode).
+                Address = "Nordåsvegen 4, 2382 Brumunddal",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no/kontor/nav-ringsaker",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 102,
+                Name = "Psykisk helse- og rustjenester, Ringsaker kommune",
+                MunicipalityId = Ringsaker,
+                Address = "Brugata 3, 2380 Brumunddal",
+                Email = "postmottak.psykisk.helse@ringsaker.kommune.no",
+                Phone = "62 33 52 20",
+                Website = "https://www.ringsaker.kommune.no/tjenester/helse-og-omsorg/psykisk-helse-og-rustjenester",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 103,
+                Name = "Barneverntjenesten i Ringsaker",
+                MunicipalityId = Ringsaker,
+                // Digits confirmed identical to Ringsaker's own vakttelefon-list grouping
+                // ("474 72 787"); kept as the cited source page prints it per the row's
+                // 2026-08-17 resolution rather than the standard mobile regrouping.
+                Phone = "47 47 27 87",
+                Website = "https://www.ringsaker.kommune.no/tjenester/barn-oppvekst-og-laering/barnevern/melding-til-barneverntjenesten",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 104,
+                Name = "Nav Stange",
+                MunicipalityId = Stange,
+                Address = "Storgata 43, 2335 Stange",
+                Email = "nav.stange@nav.no",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no/kontor/nav-stange",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 105,
+                Name = "Stangehjelpa (avdeling for psykisk helse og rus), Stange kommune",
+                MunicipalityId = Stange,
+                Phone = "62 56 23 00",
+                Website = "https://www.stange.kommune.no/helse-og-mestring/psykisk-helse-og-rus/stangehjelpa/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 106,
+                Name = "Psykososial krisehjelp, Stange kommune",
+                MunicipalityId = Stange,
+                Phone = "908 05 567",
+                Website = "https://www.stange.kommune.no/helse-og-mestring/psykisk-helse-og-rus/psykososial-krisehjelp/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 107,
+                Name = "Barneverntjenesten i Stange",
+                MunicipalityId = Stange,
+                Phone = "905 42 305",
+                Website = "https://www.stange.kommune.no/helse-og-mestring/barn-unge-og-familie/barnevern/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 108,
+                Name = "Nav Løten",
+                MunicipalityId = Loten,
+                Address = "Kildevegen 1, 2340 Løten",
+                Email = "nav.loten@nav.no",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no/kontor/nav-loten",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 109,
+                Name = "Økonomisk rådgivning, Nav Løten",
+                MunicipalityId = Loten,
+                Phone = "55 55 33 33",
+                Website = "https://www.loten.kommune.no/helse-sosial-og-familie/sosiale-tjenester-og-nav/okonomisk-radgivning/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 110,
+                Name = "Psykisk helse og rus-teamet (ROP-team), Løten kommune",
+                MunicipalityId = Loten,
+                Phone = "904 74 982",
+                Website = "https://www.loten.kommune.no/helse-sosial-og-familie/psykisk-helse-og-rus/psykisk-helse-og-rus-kategori/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 111,
+                Name = "Barnevernet i Løten",
+                MunicipalityId = Loten,
+                Phone = "948 70 878",
+                Website = "https://www.loten.kommune.no/helse-sosial-og-familie/barn-unge-og-familie/barnevern/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 112,
+                Name = "Rask psykisk helsehjelp (RPH), Løten kommune",
+                MunicipalityId = Loten,
+                Address = "Kildevegen 1, 2340 Løten",
+                // Phone deliberately empty — the only numbers on the page sit under two
+                // therapists' first names, not a service line. Malin's 2026-08-17 decision.
+                Website = "https://www.loten.kommune.no/helse-sosial-og-familie/psykisk-helse-og-rus/rask-psykisk-helsehjelp-rph/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 113,
+                Name = "Nav Elverum",
+                MunicipalityId = Elverum,
+                // nav.no's own postcode wins over the kommune page's "2406" per the row's
+                // 2026-08-17 resolution (NAV's own source wins for a NAV office).
+                Address = "St. Olavs gate 4, 2414 Elverum",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no/kontor/nav-elverum",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 114,
+                Name = "Barneverntjenesten i Elverum",
+                MunicipalityId = Elverum,
+                Address = "Helsehuset, Kirkevegen 47, 2413 Elverum",
+                Phone = "940 17 770",
+                Website = "https://www.elverum.kommune.no/vare-tjenester/barnehage-og-skole/barnevern/kontakt-barnevernet/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 115,
+                Name = "Lavterskel rus- og psykisk helsehjelp (Annekset og Grip), Elverum kommune",
+                MunicipalityId = Elverum,
+                Phone = "993 72 609",
+                Website = "https://www.elverum.kommune.no/vare-tjenester/helse-omsorg-og-sosiale-tjenester/rus-og-psykisk-helsetjenester/lavterskel-rus-og-psykisk-helsehjelp/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 116,
+                Name = "Ambulant akutt enhet (AAE), DPS Elverum-Hamar",
+                MunicipalityId = Elverum,
+                Phone = "915 06 200",
+                Website = "https://www.elverum.kommune.no/vare-tjenester/helse-omsorg-og-sosiale-tjenester/rus-og-psykisk-helsetjenester/er-du-i-en-krisesituasjon-og-trenger-akutt-hjelp/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 117,
+                Name = "Nok. Elverum Ressurssenter",
+                MunicipalityId = Elverum,
+                Address = "Storgata 10, 2408 Elverum",
+                Email = "post@nokelverum.no",
+                Phone = "971 59 810",
+                Website = "https://www.nokelverum.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 118,
+                Name = "Nok. Hamar",
+                MunicipalityId = Hamar,
+                Email = "post@nokhamar.no",
+                Phone = "916 91 714",
+                Website = "https://www.nokhamar.no",
+                LastVerified = VerifiedRow118,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 119,
+                Name = "Husbanken",
+                IsNational = true,
+                MunicipalityId = null,
+                Email = "post@husbanken.no",
+                Phone = "22 96 16 00",
+                Website = "https://husbanken.no/person/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 120,
+                Name = "Skatteetaten",
+                IsNational = true,
+                MunicipalityId = null,
+                Phone = "800 80 000",
+                Website = "https://www.skatteetaten.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 121,
+                Name = "Kors på halsen (Røde Kors)",
+                IsNational = true,
+                MunicipalityId = null,
+                Phone = "800 33 321",
+                Website = "https://www.korspahalsen.no",
+                ChatUrl = "https://www.korspahalsen.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 122,
+                Name = "Sidetmedord (Mental Helse)",
+                IsNational = true,
+                MunicipalityId = null,
+                Website = "https://sidetmedord.mentalhelse.no/",
+                ChatUrl = "https://sidetmedord.mentalhelse.no/",
                 LastVerified = Verified,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
@@ -662,6 +941,353 @@ public static class SeedData
                 ResourceId = 22,
                 LanguageCode = "en",
                 Description = "Help getting into work for people aged 16 to 30 in Gjøvik, with guidance, job applications, CV writing and work placements. The drop-in service is open to all jobseekers regardless of age or where they live.",
+            },
+            new ResourceTranslation
+            {
+                Id = 45,
+                ResourceId = 101,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for innbyggere i Ringsaker, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i drop-in-tiden, eller avtale time på forhånd.",
+                OpeningHours = "Mandag 12.00-14.00, onsdag 12.00-14.00, fredag 10.00-12.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 46,
+                ResourceId = 101,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in Ringsaker, offering help with financial assistance, work, housing and other social services. You can come without an appointment during drop-in hours, or book a time in advance.",
+                OpeningHours = "Monday 12.00-14.00, Wednesday 12.00-14.00, Friday 10.00-12.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 47,
+                ResourceId = 102,
+                LanguageCode = "nb",
+                Description = "Kommunens tilbud til voksne med psykiske vansker eller rusproblemer, med samtaler, oppfølging og praktisk hjelp i hverdagen. Du kan få inntil fire samtaler uten henvisning.",
+                OpeningHours = "Kan kontaktes i tidsrommet 08-15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 48,
+                ResourceId = 102,
+                LanguageCode = "en",
+                Description = "The municipality's service for adults with mental health or substance use difficulties, offering counselling, follow-up and practical everyday support. You can have up to four conversations without a referral.",
+                OpeningHours = "Reachable between 08.00 and 15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 49,
+                ResourceId = 103,
+                LanguageCode = "nb",
+                Description = "Kommunens barneverntjeneste, som tar imot bekymringsmeldinger og gir hjelp til barn, unge og familier som har det vanskelig. Du kan ringe for å drøfte en bekymring før du melder.",
+                OpeningHours = "Hverdager 08.00–15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 50,
+                ResourceId = 103,
+                LanguageCode = "en",
+                Description = "The municipal child welfare service, which receives reports of concern and helps children, young people and families in difficulty. You can call to discuss a worry before making a formal report.",
+                OpeningHours = "Weekdays 08.00–15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 51,
+                ResourceId = 104,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for innbyggere i Stange, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Veiledningssenteret er åpent for selvbetjening, og du kan komme innom i drop-in-tiden.",
+                OpeningHours = "Drop-in mandag, onsdag og fredag 10.00-12.00; selvbetjening hverdager 09.00-14.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 52,
+                ResourceId = 104,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in Stange, offering help with financial assistance, work, housing and other social services. The guidance centre is open for self-service, and you can come by during drop-in hours.",
+                OpeningHours = "Drop-in Monday, Wednesday and Friday 10.00-12.00; self-service weekdays 09.00-14.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 53,
+                ResourceId = 105,
+                LanguageCode = "nb",
+                Description = "Stange kommunes samlede lavterskeltilbud innen psykisk helse og rus, for både barn, unge og voksne. Du trenger ingen henvisning, og kan ta kontakt selv i telefontiden.",
+                OpeningHours = "Telefontid hverdager 09.00-15.00 (stengt 11.00-11.45)",
+            },
+            new ResourceTranslation
+            {
+                Id = 54,
+                ResourceId = 105,
+                LanguageCode = "en",
+                Description = "Stange municipality's combined low-threshold service for mental health and substance use, for children, young people and adults alike. No referral is needed, and you can get in touch yourself during phone hours.",
+                OpeningHours = "Phone hours weekdays 09.00-15.00 (closed 11.00-11.45)",
+            },
+            new ResourceTranslation
+            {
+                Id = 55,
+                ResourceId = 106,
+                LanguageCode = "nb",
+                Description = "Kommunens telefon for deg som står i en akutt psykisk krise og trenger noen å snakke med nå. På dagtid settes du over til Stangehjelpa, og i helgene til det interkommunale kriseteamet.",
+                OpeningHours = "Hverdager til 15.30 (16.00 fredag) settes over til Stangehjelpa",
+            },
+            new ResourceTranslation
+            {
+                Id = 56,
+                ResourceId = 106,
+                LanguageCode = "en",
+                Description = "The municipality's line for anyone in an acute mental health crisis who needs to talk to someone now. During the day you are put through to Stangehjelpa, and at weekends to the intermunicipal crisis team.",
+                OpeningHours = "Weekdays until 15.30 (16.00 on Fridays) the call goes through to Stangehjelpa",
+            },
+            new ResourceTranslation
+            {
+                Id = 57,
+                ResourceId = 107,
+                LanguageCode = "nb",
+                Description = "Kommunens barneverntjeneste, som tar imot bekymringsmeldinger og følger opp barn, unge og familier. Vakttelefonen er bemannet på dagtid i ukedagene.",
+                OpeningHours = "Vakttelefon mandag–fredag 08.30–15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 58,
+                ResourceId = 107,
+                LanguageCode = "en",
+                Description = "The municipal child welfare service, which receives reports of concern and follows up children, young people and families. The duty phone is staffed during weekday daytime hours.",
+                OpeningHours = "Duty phone Monday–Friday 08.30–15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 59,
+                ResourceId = 108,
+                LanguageCode = "nb",
+                // OpeningHours deliberately null: the row's table cell was cleared by the
+                // 2026-08-17 resolution ("omit the selvbetjening/drop-in detail entirely" —
+                // an unresolvable conflict between the kommune page and nav.no). The doc's
+                // Descriptions section still carries the old hours text; the dated per-row
+                // resolution is treated as authoritative over it. Flagged in the task report.
+                Description = "Nav-kontoret for innbyggere i Løten, med hjelp til arbeid, økonomisk sosialhjelp, bolig og forvaltning av egen økonomi. Veiledningssenteret har PC-er du kan bruke, og du kan avtale time med en veileder.",
+            },
+            new ResourceTranslation
+            {
+                Id = 60,
+                ResourceId = 108,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in Løten, offering help with work, financial assistance, housing and managing your own money. The guidance centre has computers you can use, and you can book a meeting with an adviser.",
+            },
+            new ResourceTranslation
+            {
+                Id = 61,
+                ResourceId = 109,
+                LanguageCode = "nb",
+                Description = "Gratis økonomisk rådgivning for deg som sliter med gjeld eller ikke får budsjettet til å gå opp. Rådgiveren hjelper deg med å få oversikt og ser på muligheter som refinansiering eller gjeldsordning.",
+                OpeningHours = "Mandag, onsdag og fredag 09.00 – 15.00; tirsdag og torsdag 09.00 – 13.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 62,
+                ResourceId = 109,
+                LanguageCode = "en",
+                Description = "Free financial counselling for anyone struggling with debt or unable to make the budget add up. The adviser helps you get an overview and looks at options such as refinancing or a debt settlement.",
+                OpeningHours = "Monday, Wednesday and Friday 09.00 – 15.00; Tuesday and Thursday 09.00 – 13.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 63,
+                ResourceId = 110,
+                LanguageCode = "nb",
+                Description = "Kommunens team for voksne med psykiske vansker, rusproblemer eller begge deler. Krisetelefonen er åpen på dagtid i ukedagene, og bemannes av teamet selv.",
+                OpeningHours = "Krisetelefon mandag – fredag kl. 08.00-15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 64,
+                ResourceId = 110,
+                LanguageCode = "en",
+                Description = "The municipality's team for adults with mental health difficulties, substance use problems or both. The crisis line is open during weekday daytime hours and is staffed by the team itself.",
+                OpeningHours = "Crisis line Monday – Friday 08.00-15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 65,
+                ResourceId = 111,
+                LanguageCode = "nb",
+                Description = "Kommunens barneverntjeneste, som tar imot bekymringsmeldinger og gir hjelp til barn, unge og familier. Resepsjonen kan svare på spørsmål og sette deg i kontakt med rett person.",
+                OpeningHours = "Mandag - fredag kl. 08:00-15:30",
+            },
+            new ResourceTranslation
+            {
+                Id = 66,
+                ResourceId = 111,
+                LanguageCode = "en",
+                Description = "The municipal child welfare service, which receives reports of concern and helps children, young people and families. Reception can answer questions and put you through to the right person.",
+                OpeningHours = "Monday - Friday 08:00-15:30",
+            },
+            new ResourceTranslation
+            {
+                Id = 67,
+                ResourceId = 112,
+                LanguageCode = "nb",
+                Description = "Gratis korttidsbehandling for deg fra 16 år med lettere angst, nedstemthet, stress eller søvnvansker. Hjelpen gis ofte over telefon, med veiledet selvhjelp, og du trenger ingen henvisning.",
+                OpeningHours = "kl. 08.00-15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 68,
+                ResourceId = 112,
+                LanguageCode = "en",
+                Description = "Free short-term treatment for people aged 16 and over with mild anxiety, low mood, stress or sleep problems. Help is often given by phone, using guided self-help, and no referral is needed.",
+                OpeningHours = "08.00-15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 69,
+                ResourceId = 113,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for innbyggere i Elverum, med hjelp til arbeid, økonomisk sosialhjelp, bolig og sosiale tjenester. Er du i en krisesituasjon uten penger til mat, medisin eller strøm, skal du ta kontakt med en gang. Merk: mottaket er midlertidig stengt for ombygging (ca. 12 uker fra 3. august 2026) — ring eller bruk nav.no i denne perioden.",
+                OpeningHours = "Telefontid hverdager kl. 09 - 15",
+            },
+            new ResourceTranslation
+            {
+                Id = 70,
+                ResourceId = 113,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in Elverum, offering help with work, financial assistance, housing and social services. If you are in a crisis with no money for food, medicine or electricity, get in touch straight away. Note: the reception is temporarily closed for renovation (about 12 weeks from 3 August 2026) — call or use nav.no during this period.",
+                OpeningHours = "Phone hours weekdays 09.00 - 15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 71,
+                ResourceId = 114,
+                LanguageCode = "nb",
+                Description = "Kommunens barneverntjeneste, som tar imot bekymringsmeldinger og følger opp barn, unge og familier som trenger hjelp. Både barn selv og voksne som er bekymret kan ta kontakt.",
+                OpeningHours = "Mandag - fredag kl. 08 - 15",
+            },
+            new ResourceTranslation
+            {
+                Id = 72,
+                ResourceId = 114,
+                LanguageCode = "en",
+                Description = "The municipal child welfare service, which receives reports of concern and follows up children, young people and families who need help. Both children themselves and worried adults can get in touch.",
+                OpeningHours = "Monday - Friday 08.00 - 15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 73,
+                ResourceId = 115,
+                LanguageCode = "nb",
+                Description = "Kommunens lavterskeltilbud til voksne med rusproblemer eller psykiske helseutfordringer, med samtaler og oppfølging. Tilbudet er gratis, og du kan ta kontakt selv.",
+            },
+            new ResourceTranslation
+            {
+                Id = 74,
+                ResourceId = 115,
+                LanguageCode = "en",
+                Description = "The municipality's low-threshold service for adults with substance use or mental health difficulties, offering conversations and follow-up. The service is free and you can make contact yourself.",
+            },
+            new ResourceTranslation
+            {
+                Id = 75,
+                ResourceId = 116,
+                LanguageCode = "nb",
+                Description = "Akutteam i spesialisthelsetjenesten for deg som står i en alvorlig psykisk krise og trenger rask vurdering. Teamet kan komme til deg, og er tilgjengelig på dagtid i ukedagene.",
+                OpeningHours = "Mandag – fredag kl. 07.30 - 15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 76,
+                ResourceId = 116,
+                LanguageCode = "en",
+                Description = "An acute team within the specialist health service for people in a serious mental health crisis who need a rapid assessment. The team can come to you and is available during weekday daytime hours.",
+                OpeningHours = "Monday – Friday 07.30 - 15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 77,
+                ResourceId = 117,
+                LanguageCode = "nb",
+                Description = "Ressurssenter for deg som har opplevd seksuelle overgrep, og for pårørende. Du kan få samtaler og støtte gratis, uten henvisning og uten å ha anmeldt forholdet.",
+            },
+            new ResourceTranslation
+            {
+                Id = 78,
+                ResourceId = 117,
+                LanguageCode = "en",
+                Description = "A resource centre for people who have experienced sexual abuse, and for their relatives. You can get conversations and support free of charge, without a referral and without having reported it.",
+            },
+            new ResourceTranslation
+            {
+                Id = 79,
+                ResourceId = 118,
+                LanguageCode = "nb",
+                Description = "Ressurssenter for deg som har opplevd seksuelle overgrep eller incest, og for pårørende. Tilbudet er gratis, og du trenger ingen henvisning.",
+            },
+            new ResourceTranslation
+            {
+                Id = 80,
+                ResourceId = 118,
+                LanguageCode = "en",
+                Description = "A resource centre for people who have experienced sexual abuse or incest, and for their relatives. The service is free and no referral is needed.",
+            },
+            new ResourceTranslation
+            {
+                Id = 81,
+                ResourceId = 119,
+                LanguageCode = "nb",
+                Description = "Statens virkemiddel i boligpolitikken, med bostøtte til deg som har lav inntekt og høye boutgifter, og startlån og tilskudd til å kjøpe eller beholde bolig. Startlån søker du om gjennom kommunen din.",
+                OpeningHours = "Mandag - fredag, kl. 08.00 - 15.45 (15. september - 14. mai); mandag - fredag, kl. 08.00 - 15.00 (15. mai - 14. september)",
+            },
+            new ResourceTranslation
+            {
+                Id = 82,
+                ResourceId = 119,
+                LanguageCode = "en",
+                Description = "The state housing bank, with housing benefit for people on low incomes with high housing costs, and start-up loans and grants to buy or keep a home. Start-up loans are applied for through your municipality.",
+                OpeningHours = "Monday - Friday 08.00 - 15.45 (15 September - 14 May); Monday - Friday 08.00 - 15.00 (15 May - 14 September)",
+            },
+            new ResourceTranslation
+            {
+                Id = 83,
+                ResourceId = 120,
+                LanguageCode = "nb",
+                Description = "Statlig etat med ansvar for skatt, skattemelding og Folkeregisteret. Hit henvender du deg om skattekort, restskatt, flytting, navneendring og attester fra folkeregisteret.",
+                OpeningHours = "Åpningstiden vår er 09:00–14:30 alle hverdager",
+            },
+            new ResourceTranslation
+            {
+                Id = 84,
+                ResourceId = 120,
+                LanguageCode = "en",
+                Description = "The national tax administration, responsible for tax, tax returns and the National Population Register. Contact them about tax cards, underpaid tax, changes of address, name changes and registry certificates.",
+                OpeningHours = "Open 09:00–14:30 every weekday",
+            },
+            new ResourceTranslation
+            {
+                Id = 85,
+                ResourceId = 121,
+                LanguageCode = "nb",
+                Description = "Gratis og anonymt samtaletilbud for barn og unge under 18 år, på telefon, chat og e-post. Du kan snakke med en voksen om akkurat det du har på hjertet, uansett hvor stort eller lite det er.",
+                OpeningHours = "Åpent alle dager, hele året, kl. 14-22 (jule- og sommerferie 16-22)",
+            },
+            new ResourceTranslation
+            {
+                Id = 86,
+                ResourceId = 121,
+                LanguageCode = "en",
+                Description = "A free and anonymous talking service for children and young people under 18, by phone, chat and email. You can talk to an adult about whatever is on your mind, however big or small.",
+                OpeningHours = "Open every day, all year, 14.00-22.00 (16.00-22.00 during the Christmas and summer holidays)",
+            },
+            new ResourceTranslation
+            {
+                Id = 87,
+                ResourceId = 122,
+                LanguageCode = "nb",
+                Description = "Mental Helses nettsted der du kan skrive anonymt om det som er vanskelig, i chat eller i forum. Du kan lese om temaer som ensomhet, angst, depresjon og økonomi, og få svar fra andre.",
+            },
+            new ResourceTranslation
+            {
+                Id = 88,
+                ResourceId = 122,
+                LanguageCode = "en",
+                Description = "Mental Helse's website where you can write anonymously about what is difficult, in chat or on the forum. You can read about topics such as loneliness, anxiety, depression and money, and get replies from others.",
             });
 
         modelBuilder.Entity<ResourceCategory>().HasData(
@@ -705,6 +1331,63 @@ public static class SeedData
             new ResourceCategory { ResourceId = 20, CategoryId = Categories.Bolig },
             new ResourceCategory { ResourceId = 21, CategoryId = Categories.VoldOgOvergrep },
             new ResourceCategory { ResourceId = 21, CategoryId = Categories.Nodtjenester },
-            new ResourceCategory { ResourceId = 22, CategoryId = Categories.Arbeid });
+            new ResourceCategory { ResourceId = 22, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 101, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 101, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 101, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 102, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 102, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 103, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 104, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 104, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 104, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 105, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 105, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 106, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 107, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 108, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 108, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 108, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 109, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 110, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 110, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 111, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 112, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 113, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 113, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 113, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 114, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 115, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 115, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 116, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 117, CategoryId = Categories.VoldOgOvergrep },
+            new ResourceCategory { ResourceId = 118, CategoryId = Categories.VoldOgOvergrep },
+            new ResourceCategory { ResourceId = 119, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 119, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 120, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 121, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 121, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 122, CategoryId = Categories.PsykiskHelse });
+
+        // Coverage joins from docs/seed-data-innlandet-ring.md's "## Coverage map" section, for
+        // non-national resources only. National resources (rows 1, 2, 3, 4, 5, 6, 8, 9, 119, 120,
+        // 121, 122) are never joined here — IsNational already puts them in every municipality's
+        // results, so a coverage row would be redundant at best and double them up at worst.
+        modelBuilder.Entity<ResourceMunicipality>().HasData(
+            // Row 12 — Hamar interkommunale krisesenter. The kommune's own page states it serves
+            // "innbyggerne i Hamar, Ringsaker, Løten, Stange, Elverum, Engerdal, Våler, Trysil og
+            // Åmot kommune" — only the four ring kommuner already in this database are joined.
+            new ResourceMunicipality { ResourceId = 12, MunicipalityId = Ringsaker },
+            new ResourceMunicipality { ResourceId = 12, MunicipalityId = Stange },
+            new ResourceMunicipality { ResourceId = 12, MunicipalityId = Loten },
+            new ResourceMunicipality { ResourceId = 12, MunicipalityId = Elverum },
+            // Row 14 — Ringsaker interkommunale barnevernvakt.
+            new ResourceMunicipality { ResourceId = 14, MunicipalityId = Ringsaker },
+            new ResourceMunicipality { ResourceId = 14, MunicipalityId = Stange },
+            new ResourceMunicipality { ResourceId = 14, MunicipalityId = Loten },
+            new ResourceMunicipality { ResourceId = 14, MunicipalityId = Elverum },
+            // Row 118 — Nok. Hamar, per its own Serves cell (Løten kommune's kriseberedskap
+            // page is the sole source for this coverage claim).
+            new ResourceMunicipality { ResourceId = 118, MunicipalityId = Loten });
     }
 }
