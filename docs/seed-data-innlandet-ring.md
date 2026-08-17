@@ -89,8 +89,8 @@ Services that already exist in `seed-data.md` and simply also cover one of the f
 ### 108. Nav Løten
 - **nb:** Nav-kontoret for innbyggere i Løten, med hjelp til arbeid, økonomisk sosialhjelp, bolig og forvaltning av egen økonomi. Veiledningssenteret har PC-er du kan bruke, og du kan avtale time med en veileder.
 - **en:** The Nav office for people living in Løten, offering help with work, financial assistance, housing and managing your own money. The guidance centre has computers you can use, and you can book a meeting with an adviser.
-- **hours-nb:** Veiledningssenteret åpent for selvbetjening 09.00–15.00
-- **hours-en:** Guidance centre open for self-service 09.00–15.00
+- (hours lines removed 2026-08-17 — the same resolution that cleared the table cell: the
+  selvbetjening detail is omitted entirely; seed OpeningHours = null.)
 
 ### 109. Økonomisk rådgivning, Nav Løten
 - **nb:** Gratis økonomisk rådgivning for deg som sliter med gjeld eller ikke får budsjettet til å gå opp. Rådgiveren hjelper deg med å få oversikt og ser på muligheter som refinansiering eller gjeldsordning.
