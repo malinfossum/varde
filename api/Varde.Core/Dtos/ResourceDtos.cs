@@ -9,6 +9,7 @@ public record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, int
 /// </summary>
 /// <param name="Description">Plain text. Rendered as {description} — never as HTML.</param>
 /// <param name="IsFallbackTranslation">True when the requested language was unavailable and this is Norwegian.</param>
+/// <param name="OpeningHours">Plain text, in the requested language. Null when not recorded for this service.</param>
 public record ResourceDto(
     int Id,
     string Name,
