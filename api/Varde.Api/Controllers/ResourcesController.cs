@@ -14,12 +14,20 @@ public class ResourcesController(ResourceService service, ILogger<ResourcesContr
         [FromQuery] string? search,
         [FromQuery(Name = "category")] string[]? category,
         [FromQuery] int? municipality,
+        [FromQuery] bool? national,
         [FromQuery] string? lang,
         [FromQuery] int? page,
         [FromQuery] int? pageSize,
         CancellationToken ct)
     {
-        var result = await service.SearchAsync(search, category, municipality, lang, page, pageSize, ct);
+        if (national == true && municipality is not null)
+        {
+            ModelState.AddModelError("national",
+                "national=true cannot be combined with municipality — a municipality's results already include national services.");
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await service.SearchAsync(search, category, municipality, national ?? false, lang, page, pageSize, ct);
 
         // Result counts only. The search term never reaches a log — a person looking up a
         // krisesenter leaves no trace on the server.

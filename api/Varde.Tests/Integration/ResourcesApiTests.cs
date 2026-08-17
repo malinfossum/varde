@@ -219,4 +219,63 @@ public class ResourcesApiTests
 
         Assert.Equal(100, result!.PageSize);
     }
+
+    [Fact]
+    public async Task Get_with_national_returns_only_national_resources()
+    {
+        using var factory = new VardeApiFactory();
+        SeedDirectory(factory);
+
+        var result = await factory.CreateClient()
+            .GetFromJsonAsync<PagedResult<ResourceDto>>("/api/resources?national=true");
+
+        Assert.NotNull(result);
+        Assert.Equal(["Mental Helse"], result.Items.Select(r => r.Name));
+        Assert.All(result.Items, r => Assert.True(r.IsNational));
+    }
+
+    [Fact]
+    public async Task Get_national_composes_with_search_and_category()
+    {
+        using var factory = new VardeApiFactory();
+        SeedDirectory(factory);
+        var client = factory.CreateClient();
+
+        // Search narrows within national rows.
+        var bySearch = await client
+            .GetFromJsonAsync<PagedResult<ResourceDto>>("/api/resources?national=true&search=Mental");
+        Assert.Equal(1, bySearch!.TotalCount);
+
+        // The only categorised resource (NAV Hamar, okonomi) is local, so national + okonomi is empty.
+        var byCategory = await client
+            .GetFromJsonAsync<PagedResult<ResourceDto>>("/api/resources?national=true&category=okonomi");
+        Assert.Equal(0, byCategory!.TotalCount);
+    }
+
+    [Fact]
+    public async Task Get_rejects_national_combined_with_municipality()
+    {
+        using var factory = new VardeApiFactory();
+        SeedDirectory(factory);
+
+        var response = await factory.CreateClient()
+            .GetAsync("/api/resources?national=true&municipality=1");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.NotNull(problem);
+        Assert.Contains("national", problem.Errors.Keys);
+    }
+
+    [Fact]
+    public async Task Get_treats_national_false_as_absent()
+    {
+        using var factory = new VardeApiFactory();
+        SeedDirectory(factory);
+
+        var result = await factory.CreateClient()
+            .GetFromJsonAsync<PagedResult<ResourceDto>>("/api/resources?national=false&municipality=1");
+
+        Assert.Equal(2, result!.TotalCount); // local + national, same as no national param
+    }
 }

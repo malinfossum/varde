@@ -47,7 +47,7 @@ public class ResourceRepositoryTests
 
         using var scope = factory.NewScope();
         var (items, total) = await RepositoryFor(scope)
-            .SearchAsync(new ResourceQuery("KRISESENTER", [], null, "nb", 1, 20));
+            .SearchAsync(new ResourceQuery("KRISESENTER", [], null, false, "nb", 1, 20));
 
         Assert.Equal(1, total);
         Assert.Equal("Hamar Krisesenter", Assert.Single(items).Name);
@@ -63,9 +63,9 @@ public class ResourceRepositoryTests
         using var scope = factory.NewScope();
         var repository = RepositoryFor(scope);
 
-        var norwegian = await repository.SearchAsync(new ResourceQuery("økonomi", [], null, "nb", 1, 20));
-        var english = await repository.SearchAsync(new ResourceQuery("debt", [], null, "en", 1, 20));
-        var wrongLanguage = await repository.SearchAsync(new ResourceQuery("debt", [], null, "nb", 1, 20));
+        var norwegian = await repository.SearchAsync(new ResourceQuery("økonomi", [], null, false, "nb", 1, 20));
+        var english = await repository.SearchAsync(new ResourceQuery("debt", [], null, false, "en", 1, 20));
+        var wrongLanguage = await repository.SearchAsync(new ResourceQuery("debt", [], null, false, "nb", 1, 20));
 
         Assert.Equal(1, norwegian.TotalCount);
         Assert.Equal(1, english.TotalCount);
@@ -84,7 +84,7 @@ public class ResourceRepositoryTests
 
         using var scope = factory.NewScope();
         var (items, total) = await RepositoryFor(scope)
-            .SearchAsync(new ResourceQuery("50%", [], null, "nb", 1, 20));
+            .SearchAsync(new ResourceQuery("50%", [], null, false, "nb", 1, 20));
 
         Assert.Equal(1, total);
         Assert.Equal("Rabatt 50% ordningen", Assert.Single(items).Name);
@@ -108,7 +108,7 @@ public class ResourceRepositoryTests
 
         using var scope = factory.NewScope();
         var (items, total) = await RepositoryFor(scope)
-            .SearchAsync(new ResourceQuery(null, [], 1, "nb", 1, 20));
+            .SearchAsync(new ResourceQuery(null, [], 1, false, "nb", 1, 20));
 
         Assert.Equal(2, total);
         Assert.Equal(["Hamar Krisesenter", "Mental Helse"], items.Select(r => r.Name));
@@ -136,7 +136,7 @@ public class ResourceRepositoryTests
 
         using var scope = factory.NewScope();
         var (items, total) = await RepositoryFor(scope)
-            .SearchAsync(new ResourceQuery(null, ["okonomi", "bolig"], null, "nb", 1, 20));
+            .SearchAsync(new ResourceQuery(null, ["okonomi", "bolig"], null, false, "nb", 1, 20));
 
         Assert.Equal(2, total);
         Assert.Equal(["A", "B"], items.Select(r => r.Name));
@@ -156,7 +156,7 @@ public class ResourceRepositoryTests
 
         using var scope = factory.NewScope();
         var (items, _) = await RepositoryFor(scope)
-            .SearchAsync(new ResourceQuery(null, [], null, "nb", 1, 20));
+            .SearchAsync(new ResourceQuery(null, [], null, false, "nb", 1, 20));
 
         Assert.Equal(["Beta Lokal", "Omega Lokal", "Alfa Nasjonal"], items.Select(r => r.Name));
     }
@@ -175,9 +175,9 @@ public class ResourceRepositoryTests
         using var scope = factory.NewScope();
         var repository = RepositoryFor(scope);
 
-        var page1 = await repository.SearchAsync(new ResourceQuery(null, [], null, "nb", 1, 10));
-        var page2 = await repository.SearchAsync(new ResourceQuery(null, [], null, "nb", 2, 10));
-        var page3 = await repository.SearchAsync(new ResourceQuery(null, [], null, "nb", 3, 10));
+        var page1 = await repository.SearchAsync(new ResourceQuery(null, [], null, false, "nb", 1, 10));
+        var page2 = await repository.SearchAsync(new ResourceQuery(null, [], null, false, "nb", 2, 10));
+        var page3 = await repository.SearchAsync(new ResourceQuery(null, [], null, false, "nb", 3, 10));
 
         var ids = page1.Items.Concat(page2.Items).Concat(page3.Items).Select(r => r.Id).ToList();
 
@@ -215,9 +215,9 @@ public class ResourceRepositoryTests
         using var scope = factory.NewScope();
         var repository = RepositoryFor(scope);
 
-        var home = await repository.SearchAsync(new ResourceQuery(null, [], 1, "nb", 1, 20));
-        var served = await repository.SearchAsync(new ResourceQuery(null, [], 2, "nb", 1, 20));
-        var unrelated = await repository.SearchAsync(new ResourceQuery(null, [], 3, "nb", 1, 20));
+        var home = await repository.SearchAsync(new ResourceQuery(null, [], 1, false, "nb", 1, 20));
+        var served = await repository.SearchAsync(new ResourceQuery(null, [], 2, false, "nb", 1, 20));
+        var unrelated = await repository.SearchAsync(new ResourceQuery(null, [], 3, false, "nb", 1, 20));
 
         Assert.Equal(1, home.TotalCount);
         Assert.Equal(1, served.TotalCount);

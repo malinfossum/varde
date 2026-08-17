@@ -44,7 +44,7 @@ public class ResourceServiceTests
         var repository = new FakeResourceRepository();
         var service = new ResourceService(repository);
 
-        await service.SearchAsync("krise", null, null, "klingon", null, null, CancellationToken.None);
+        await service.SearchAsync("krise", null, null, false, "klingon", null, null, CancellationToken.None);
 
         Assert.Equal("nb", repository.LastQuery?.Lang);
     }
@@ -55,7 +55,7 @@ public class ResourceServiceTests
         var repository = new FakeResourceRepository();
         var service = new ResourceService(repository);
 
-        await service.SearchAsync(null, null, null, null, -3, 5000, CancellationToken.None);
+        await service.SearchAsync(null, null, null, false, null, -3, 5000, CancellationToken.None);
 
         Assert.Equal(1, repository.LastQuery?.Page);
         Assert.Equal(100, repository.LastQuery?.PageSize);
@@ -67,7 +67,7 @@ public class ResourceServiceTests
         var repository = new FakeResourceRepository([Bilingual()], totalCount: 137);
         var service = new ResourceService(repository);
 
-        var result = await service.SearchAsync(null, null, null, null, 2, 20, CancellationToken.None);
+        var result = await service.SearchAsync(null, null, null, false, null, 2, 20, CancellationToken.None);
 
         Assert.Equal(2, result.Page);
         Assert.Equal(20, result.PageSize);
@@ -80,7 +80,7 @@ public class ResourceServiceTests
     {
         var service = new ResourceService(new FakeResourceRepository([Bilingual()]));
 
-        var result = await service.SearchAsync(null, null, null, "en", null, null, CancellationToken.None);
+        var result = await service.SearchAsync(null, null, null, false, "en", null, null, CancellationToken.None);
 
         var item = Assert.Single(result.Items);
         Assert.Equal("Help with finances.", item.Description);
@@ -94,7 +94,7 @@ public class ResourceServiceTests
     {
         var service = new ResourceService(new FakeResourceRepository([NorwegianOnly()]));
 
-        var result = await service.SearchAsync(null, null, null, "en", null, null, CancellationToken.None);
+        var result = await service.SearchAsync(null, null, null, false, "en", null, null, CancellationToken.None);
 
         var item = Assert.Single(result.Items);
         Assert.Equal("Tilbud til voldsutsatte.", item.Description);
@@ -107,11 +107,22 @@ public class ResourceServiceTests
         var repository = new FakeResourceRepository();
         var service = new ResourceService(repository);
 
-        await service.SearchAsync(null, null, null, null, null, null, CancellationToken.None);
+        await service.SearchAsync(null, null, null, false, null, null, null, CancellationToken.None);
         Assert.Empty(repository.LastQuery!.Categories);
 
-        await service.SearchAsync(null, ["okonomi", "bolig"], null, null, null, null, CancellationToken.None);
+        await service.SearchAsync(null, ["okonomi", "bolig"], null, false, null, null, null, CancellationToken.None);
         Assert.Equal(["okonomi", "bolig"], repository.LastQuery!.Categories);
+    }
+
+    [Fact]
+    public async Task Search_passes_national_flag_to_query()
+    {
+        var repository = new FakeResourceRepository();
+        var service = new ResourceService(repository);
+
+        await service.SearchAsync(null, null, null, true, null, null, null, CancellationToken.None);
+
+        Assert.True(repository.LastQuery!.NationalOnly);
     }
 
     [Fact]
@@ -149,8 +160,8 @@ public class ResourceServiceTests
         resource.Translations[1].OpeningHours = "Monday and Wednesday 11:30–13:00";
         var service = new ResourceService(new FakeResourceRepository([resource]));
 
-        var norwegian = await service.SearchAsync(null, null, null, "nb", null, null, CancellationToken.None);
-        var english = await service.SearchAsync(null, null, null, "en", null, null, CancellationToken.None);
+        var norwegian = await service.SearchAsync(null, null, null, false, "nb", null, null, CancellationToken.None);
+        var english = await service.SearchAsync(null, null, null, false, "en", null, null, CancellationToken.None);
 
         Assert.Equal("Mandag og onsdag 11:30–13:00", Assert.Single(norwegian.Items).OpeningHours);
         Assert.Equal("Monday and Wednesday 11:30–13:00", Assert.Single(english.Items).OpeningHours);
@@ -163,7 +174,7 @@ public class ResourceServiceTests
         resource.Translations[0].OpeningHours = "Døgnåpent";
         var service = new ResourceService(new FakeResourceRepository([resource]));
 
-        var result = await service.SearchAsync(null, null, null, "en", null, null, CancellationToken.None);
+        var result = await service.SearchAsync(null, null, null, false, "en", null, null, CancellationToken.None);
 
         var item = Assert.Single(result.Items);
         Assert.Equal("Døgnåpent", item.OpeningHours);
@@ -175,7 +186,7 @@ public class ResourceServiceTests
     {
         var service = new ResourceService(new FakeResourceRepository([Bilingual()]));
 
-        var result = await service.SearchAsync(null, null, null, "nb", null, null, CancellationToken.None);
+        var result = await service.SearchAsync(null, null, null, false, "nb", null, null, CancellationToken.None);
 
         Assert.Null(Assert.Single(result.Items).OpeningHours);
     }

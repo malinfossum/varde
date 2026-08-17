@@ -10,6 +10,7 @@ public class ResourceService(IResourceRepository repository)
         string? search,
         string[]? categories,
         int? municipality,
+        bool national,
         string? lang,
         int? page,
         int? pageSize,
@@ -19,6 +20,7 @@ public class ResourceService(IResourceRepository repository)
             Search: search,
             Categories: categories ?? [],
             MunicipalityId: municipality,
+            NationalOnly: national,
             Lang: Language.Normalize(lang),
             Page: Paging.NormalizePage(page),
             PageSize: Paging.NormalizePageSize(pageSize));

@@ -24,6 +24,11 @@ public class ResourceRepository(VardeDbContext db) : IResourceRepository
                 || r.ServedMunicipalities.Any(rm => rm.MunicipalityId == municipalityId));
         }
 
+        if (query.NationalOnly)
+        {
+            resources = resources.Where(r => r.IsNational);
+        }
+
         if (query.Categories.Length > 0)
         {
             resources = resources.Where(r =>
