@@ -673,6 +673,7 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 103,
+                            Address = "Administrasjonsbygget, Furnesvegen 28, 2382 Brumunddal",
                             CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsNational = false,
                             LastVerified = new DateOnly(2026, 8, 13),

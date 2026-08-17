@@ -361,6 +361,7 @@ public static class SeedData
                 Id = 103,
                 Name = "Barneverntjenesten i Ringsaker",
                 MunicipalityId = Ringsaker,
+                Address = "Administrasjonsbygget, Furnesvegen 28, 2382 Brumunddal",
                 // Digits confirmed identical to Ringsaker's own vakttelefon-list grouping
                 // ("474 72 787"); kept as the cited source page prints it per the row's
                 // 2026-08-17 resolution rather than the standard mobile regrouping.
