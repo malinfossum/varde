@@ -27,7 +27,27 @@ test("language toggle switches strings, html lang, keeps focus, announces", asyn
 	await user.click(toggle)
 	expect(document.documentElement.lang).toBe("en")
 	expect(toggle).toHaveFocus()
-	expect(screen.getByText("Language is now English")).toBeInTheDocument() // the live region
+	// ListPage's initial "Laster …" announcement fires at mount, ahead of this click, and lands
+	// in the same live region well within the compose window — so the region now reads
+	// "Laster …. Language is now English" rather than the language text alone. That composition
+	// (see tests/announcer.test.tsx) is exactly what keeps this announcement from being stomped
+	// in the real app, so match on a substring instead of the old exact string.
+	expect(screen.getByText(/Language is now English/)).toBeInTheDocument() // the live region
 	expect(screen.getByRole("button", { name: "Norsk" })).toBeInTheDocument()
 	expect(window.location.search).toContain("lang=en")
+})
+
+test("language toggle resets page to 1 instead of carrying it into the new language", async () => {
+	stubResources()
+	// A prior test's toggle already wrote "en" to the shared in-memory localStorage shim, which
+	// would otherwise make this render start in English (resolveLang falls back to storage when
+	// the URL carries no lang param) and flip the button label out from under this test.
+	localStorage.clear()
+	window.history.pushState(null, "", "/?page=3")
+	const user = userEvent.setup()
+	render(<App />)
+	const toggle = screen.getByRole("button", { name: "English" })
+	await user.click(toggle)
+	expect(window.location.search).toContain("lang=en")
+	expect(window.location.search).not.toContain("page=")
 })

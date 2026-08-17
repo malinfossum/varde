@@ -17,6 +17,9 @@ export function LanguageToggle() {
 		// history entry per toggle, no extra localStorage write beyond the setLang above.
 		const params = new URLSearchParams(window.location.search)
 		params.set("lang", next)
+		// A different language can change the result set entirely, so a language switch resets
+		// paging the same way a search/filter change does (spec).
+		params.delete("page")
 		navigate(window.location.pathname, `?${params.toString()}`)
 	}
 	// The button never unmounts, so focus stays on it through the re-render (spec: Focus).
