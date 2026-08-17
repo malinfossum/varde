@@ -15,8 +15,8 @@ dials it. Varde treats contact data as safety-critical.
 ## Status
 
 Phase 1, the API, is complete: 91 services across 8 municipalities (Innlandet and Oslo)
-plus national services, described in Norwegian and English. The web frontend is next;
-deployment follows.
+plus national services, described in Norwegian and English. Phase 2, the web frontend,
+is complete. Deployment is next.
 
 ## Data verification
 
@@ -30,7 +30,7 @@ address for safety are listed without one by design.
 ## Stack
 
 - API: ASP.NET Core (.NET 10), EF Core, PostgreSQL 17
-- Web (in progress): React, TypeScript, Vite
+- Web: React, TypeScript, Vite
 - Hosting (planned): Azure
 
 ## API
@@ -44,16 +44,30 @@ Municipality filters include services that *serve* a kommune without being locat
 interkommunale krisesentre are the motivating case. The API is rate-limited, and
 application logs record result counts, never search terms.
 
+## Web
+
+Unified search across name, category and municipality, with suggestions and a national
+toggle. Details on the shift from fastlege to legevakt after hours, when a service's own
+opening hours are known. Bilingual throughout, keyboard-accessible, and built mobile-first.
+
 ## Run locally
 
-Prerequisites: .NET 10 SDK and PostgreSQL 17 on localhost.
+Prerequisites: .NET 10 SDK, PostgreSQL 17 on localhost, and Node.js for the web frontend.
 
 ```bash
+# API
 cd api
 dotnet test
 dotnet run --project Varde.Api
+
+# Web (separate terminal)
+cd web
+npm install
+npm test
+npm run dev
 ```
 
 Tests create disposable `varde_test_<guid>` databases. The connection defaults to the
 standard local development setup (`localhost`, `postgres`/`postgres`); override it with the
-`VARDE_TEST_PG` environment variable.
+`VARDE_TEST_PG` environment variable. The web dev server expects the API at
+`http://localhost:5005` by default (`VITE_API_URL` to override).
