@@ -804,7 +804,8 @@ public static class SeedData
             {
                 Id = 217,
                 Name = "Unge Relasjoner",
-                MunicipalityId = Oslo,
+                IsNational = true,
+                MunicipalityId = null,
                 Website = "https://www.ungerelasjoner.no",
                 ChatUrl = "https://www.ungerelasjoner.no/",
                 LastVerified = Verified,

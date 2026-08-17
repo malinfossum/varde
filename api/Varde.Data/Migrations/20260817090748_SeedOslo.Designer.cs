@@ -12,7 +12,7 @@ using Varde.Data;
 namespace Varde.Data.Migrations
 {
     [DbContext(typeof(VardeDbContext))]
-    [Migration("20260817084119_SeedOslo")]
+    [Migration("20260817090748_SeedOslo")]
     partial class SeedOslo
     {
         /// <inheritdoc />
@@ -1133,9 +1133,8 @@ namespace Varde.Data.Migrations
                             Id = 217,
                             ChatUrl = "https://www.ungerelasjoner.no/",
                             CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsNational = false,
+                            IsNational = true,
                             LastVerified = new DateOnly(2026, 8, 13),
-                            MunicipalityId = 8,
                             Name = "Unge Relasjoner",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
                             Website = "https://www.ungerelasjoner.no"
