@@ -6,3 +6,30 @@
    Mobile-first: baseline styles target the smallest screen; layer up with
    @media (min-width: 768px) and (min-width: 1024px).
    ====================================================================== */
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.skip-link {
+	position: absolute;
+	left: -999px;
+}
+.skip-link:focus {
+	position: static;
+}
+
+.app-header-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-sm, 0.5rem);
+}
+.app-header-actions > * {
+	min-height: 44px;
+	min-width: 44px;
+}
