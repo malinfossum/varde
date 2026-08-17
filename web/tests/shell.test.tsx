@@ -29,4 +29,5 @@ test("language toggle switches strings, html lang, keeps focus, announces", asyn
 	expect(toggle).toHaveFocus()
 	expect(screen.getByText("Language is now English")).toBeInTheDocument() // the live region
 	expect(screen.getByRole("button", { name: "Norsk" })).toBeInTheDocument()
+	expect(window.location.search).toContain("lang=en")
 })
