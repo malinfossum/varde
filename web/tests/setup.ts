@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest"
 
-// Ensure localStorage is available in jsdom environment
+// vitest 4.1.10's jsdom environment does not provide localStorage by default (verified: removing this breaks i18n storage tests).
+// Minimal in-memory implementation, installed only when missing.
 if (typeof window !== "undefined" && typeof window.localStorage === "undefined") {
 	const store: Record<string, string> = {}
 	const storage: Storage = {
