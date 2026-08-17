@@ -11,11 +11,14 @@ namespace Varde.Data.Seed;
 /// docs/seed-data-oslo.md rows 201+) can append without renumbering anything already shipped.
 ///
 /// Batch 9a seeded rows 1–22: nine categories, all eight municipalities, and the 22 core
-/// services. This batch (9b) adds rows 101–122 from docs/seed-data-innlandet-ring.md — the
+/// services. Batch 9b added rows 101–122 from docs/seed-data-innlandet-ring.md — the
 /// Innlandet ring services — plus the ResourceMunicipality coverage joins that file's
 /// "## Coverage map" section records for existing rows 12 and 14, and for new row 118. Only
 /// non-national resources ever get coverage rows; IsNational already covers every municipality.
-/// docs/seed-data-oslo.md's rows 201+ arrive in batch 9c.
+/// This batch (9c) adds rows 201–247 from docs/seed-data-oslo.md — all Oslo, no coverage joins
+/// (Oslo is one municipality; bydeler are not municipalities in this database). Row 216 (Oslo
+/// Krisesenter) keeps Address = null deliberately — hemmelig adresse, a safety measure, not
+/// missing data.
 ///
 /// Every value here is a compile-time constant. HasData compares seed values against the model
 /// on every `migrations add`, so a DateTime.UtcNow or a computed id would produce a spurious
@@ -595,6 +598,597 @@ public static class SeedData
                 MunicipalityId = null,
                 Website = "https://sidetmedord.mentalhelse.no/",
                 ChatUrl = "https://sidetmedord.mentalhelse.no/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            // Batch 9c: rows 201-247 from docs/seed-data-oslo.md. Oslo is one municipality in
+            // this database — bydeler are not municipalities, so every row below is
+            // MunicipalityId = Oslo, IsNational = false. No coverage joins in this batch.
+            new Resource
+            {
+                Id = 201,
+                Name = "Nav Alna",
+                MunicipalityId = Oslo,
+                Address = "Trygve Lies plass 5, 1051 Oslo (Furuset senter, Bydelshuset, Innbyggertorget, 1. etasje)",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 202,
+                Name = "Nav Bjerke",
+                MunicipalityId = Oslo,
+                Address = "Ulvenveien 84A, 0581 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 203,
+                Name = "Nav Frogner",
+                MunicipalityId = Oslo,
+                Address = "Drammensveien 60, 0271 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 204,
+                Name = "Nav Gamle Oslo",
+                MunicipalityId = Oslo,
+                Address = "Hagegata 24, 0653 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 205,
+                Name = "Nav Grorud",
+                MunicipalityId = Oslo,
+                Address = "Kakkelovnskroken 3A, 0954 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 206,
+                Name = "Nav Grünerløkka",
+                MunicipalityId = Oslo,
+                Address = "Marstrandgata 6, 0566 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 207,
+                Name = "Nav Nordre Aker",
+                MunicipalityId = Oslo,
+                Address = "Gullhaugveien 7, 0484 Oslo, inngang fra Sandakerveien 130–138",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 208,
+                Name = "Nav Nordstrand",
+                MunicipalityId = Oslo,
+                Address = "Cecilie Thoresens vei 1, 1153 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 209,
+                Name = "Nav Sagene",
+                MunicipalityId = Oslo,
+                Address = "Thorvald Meyers gate 9, 0555 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 210,
+                Name = "Nav St. Hanshaugen",
+                MunicipalityId = Oslo,
+                Address = "Pilestredet 56, 0167 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 211,
+                Name = "Nav Stovner",
+                MunicipalityId = Oslo,
+                Address = "Stovner Senter 17, 0985 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 212,
+                Name = "Nav Søndre Nordstrand",
+                MunicipalityId = Oslo,
+                Address = "Ravnåsveien 3, 1254 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 213,
+                Name = "Nav Ullern",
+                MunicipalityId = Oslo,
+                Address = "Hoffsveien 48, 0377 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 214,
+                Name = "Nav Vestre Aker",
+                MunicipalityId = Oslo,
+                Address = "Sørkedalsveien 150A, 0754 Oslo, inngang til venstre når man kommer inn hovedinngangen",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 215,
+                Name = "Nav Østensjø",
+                MunicipalityId = Oslo,
+                Address = "Olaf Helsets vei 6, 0694 Oslo",
+                Phone = "55 55 33 33",
+                Website = "https://www.nav.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 216,
+                Name = "Oslo Krisesenter",
+                MunicipalityId = Oslo,
+                // Address deliberately null — hemmelig adresse for safety. The Postboks in the
+                // doc's Notes is a postal address, not a visiting address, so it is not seeded
+                // here either. See docs/seed-data-oslo.md row 216's Notes. Not missing data.
+                Address = null,
+                Phone = "22 48 03 80",
+                Website = "https://www.oslokrisesenter.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 217,
+                Name = "Unge Relasjoner",
+                MunicipalityId = Oslo,
+                Website = "https://www.ungerelasjoner.no",
+                ChatUrl = "https://www.ungerelasjoner.no/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 218,
+                Name = "Overgrepsmottaket, Legevakten i Oslo",
+                MunicipalityId = Oslo,
+                Address = "Trondheimsveien 233 (Aker sykehus), 0587 Oslo",
+                // Number shared with row 221 (Psykososial akuttjeneste) — two real services
+                // behind one real switchboard, no keypress invented. Staff line (23 04 04 90)
+                // and barnemottaket (22 98 91 40) are named in the doc's Notes but deliberately
+                // not seeded: staff-only / a different service.
+                Phone = "23 04 05 00",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 219,
+                Name = "Alternativ til Vold (ATV) Oslo",
+                MunicipalityId = Oslo,
+                Address = "Brugata 19, 0186 Oslo",
+                Phone = "22 40 11 10",
+                Website = "https://atv-stiftelsen.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 220,
+                Name = "Vake kirkelig ressurssenter mot seksuelle overgrep",
+                MunicipalityId = Oslo,
+                Address = "Lovisenberggata 15 C, 0456 Oslo",
+                Phone = "23 22 79 30",
+                Website = "https://www.kirkeligressurssenter.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 221,
+                Name = "Psykososial akuttjeneste, Legevakten i Oslo",
+                MunicipalityId = Oslo,
+                Address = "Trondheimsveien 233 (Aker sykehus), 0587 Oslo",
+                // Same number as row 218 — see that row's note.
+                Phone = "23 04 05 00",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 222,
+                Name = "Legevakten i Oslo",
+                MunicipalityId = Oslo,
+                Address = "Trondheimsveien 233 (Aker sykehus)",
+                // 116 117 shown per the 2026-08-17 no-calls resolution — the number on the
+                // service's own page. A second Oslo-specific number (23 48 72 00) is
+                // note-only, not seeded. Overlaps with national row 3 in seed-data.md.
+                Phone = "116 117",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 223,
+                Name = "Uteseksjonen, Oslo kommune",
+                MunicipalityId = Oslo,
+                Address = "Maridalsveien 3, 0178 Oslo",
+                // Shared number and address with row 224 — kept as two rows, distinct services
+                // with their own pages and target groups (2026-08-17 resolution).
+                Phone = "913 03 913",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 224,
+                Name = "Uteseksjonens psykologtjeneste",
+                MunicipalityId = Oslo,
+                Address = "Maridalsveien 3, 0178 Oslo",
+                Phone = "913 03 913",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 225,
+                Name = "Prindsen mottakssenter",
+                MunicipalityId = Oslo,
+                Address = "Hausmannsgate 11, 0182 Oslo",
+                // A second number (23 04 05 00, the legevakt/psykososial line — rows 218/221)
+                // and a Nav-inntak line (91 54 59 71) are named in Notes but not seeded: the
+                // former belongs to a different service, the latter is staff-only per the
+                // never-invent-staff-numbers rule.
+                Phone = "23 42 72 00",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 226,
+                Name = "Feltpleien i Oslo (Frelsesarmeen)",
+                MunicipalityId = Oslo,
+                Address = "Urtegata 16 A, 0187 Oslo",
+                Phone = "22 67 43 45",
+                Website = "https://frelsesarmeen.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 227,
+                Name = "Fyrlyset, Oslo (Frelsesarmeen)",
+                MunicipalityId = Oslo,
+                Address = "Urtegata 16 A, 0187 Oslo",
+                Email = "fyrlyset.oslo@frelsesarmeen.no",
+                Phone = "23 03 66 80",
+                Website = "https://frelsesarmeen.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 228,
+                Name = "LINK Oslo",
+                MunicipalityId = Oslo,
+                Address = "Lilletorget 1, 5. etasje",
+                Phone = "940 30 488",
+                Website = "https://linkoslo.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 229,
+                Name = "Rask psykisk helsehjelp – Bydel Alna",
+                MunicipalityId = Oslo,
+                Address = "Trygve Lies Plass 6, 1051 Oslo",
+                Phone = "22 30 77 12",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 230,
+                Name = "Rask psykisk helsehjelp – Bydel Ullern",
+                MunicipalityId = Oslo,
+                Address = "Hoffsveien 48, 0377 Oslo",
+                Phone = "95 29 83 22",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 231,
+                Name = "Rask psykisk helsehjelp – Bydel Vestre Aker",
+                MunicipalityId = Oslo,
+                Address = "Sørkedalsveien 150 A, 0754 Oslo",
+                Phone = "47 78 13 15",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 232,
+                Name = "Ung Arena Oslo sentrum",
+                MunicipalityId = Oslo,
+                Address = "Hagegata 32, 0653 Oslo",
+                Phone = "904 15 388",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 233,
+                Name = "Kontoret for fri rettshjelp, Oslo kommune",
+                MunicipalityId = Oslo,
+                Address = "Storgata 19, 0184 Oslo",
+                Email = "frirettshjelp@vel.oslo.kommune.no",
+                Phone = "23 48 79 00",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 234,
+                Name = "JURK – Juridisk rådgivning for kvinner",
+                MunicipalityId = Oslo,
+                Address = "Skippergata 23, 0154 Oslo",
+                Phone = "22 84 29 50",
+                Website = "https://foreninger.uio.no/jurk/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 235,
+                Name = "Gatejuristen",
+                MunicipalityId = Oslo,
+                // No phone, address or hours found on the source page — deliberately
+                // contactless, ships website-only. See docs/seed-data-oslo.md row 235's Notes.
+                Website = "https://kirkensbymisjon.no/gatejuristen/",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 236,
+                Name = "Barnevernvakten i Oslo",
+                MunicipalityId = Oslo,
+                // Address and hours NOT FOUND per the doc — no dedicated service page found.
+                Phone = "40 42 77 77",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 237,
+                Name = "Familievernkontoret Christiania",
+                MunicipalityId = Oslo,
+                Address = "Dronningens gate 8 A, 0152 Oslo",
+                Phone = "23 28 39 40",
+                Website = "https://www.bufdir.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 238,
+                Name = "Familievernkontoret Enerhaugen",
+                MunicipalityId = Oslo,
+                Address = "Grønlandsleiret 25, 0190 Oslo",
+                Phone = "466 17 010",
+                Website = "https://www.bufdir.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 239,
+                Name = "Familievernkontoret Homansbyen",
+                MunicipalityId = Oslo,
+                Address = "Oscars gate 20, 0352 Oslo",
+                Phone = "466 16 660",
+                Website = "https://www.bufdir.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 240,
+                Name = "Familievernkontoret Oslo Nord",
+                MunicipalityId = Oslo,
+                Address = "Kabelgata 2, 0581 Oslo",
+                Phone = "46 61 51 20",
+                Website = "https://www.bufdir.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 241,
+                Name = "Gamle Oslo helsestasjon for ungdom (HFU)",
+                MunicipalityId = Oslo,
+                // Seeded as Gamle Oslo per Malin's 2026-08-17 resolution: page content (title +
+                // Hagegata 32, postcode consistent with Gamle Oslo) wins over the URL slug,
+                // which said "grunerlokka". See docs/seed-data-oslo.md's "Verify these first" §1.
+                Address = "Hagegata 32, 0653 Oslo",
+                Phone = "415 65 535",
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 242,
+                Name = "Helsestasjon for ungdom (HFU) i Oslo",
+                MunicipalityId = Oslo,
+                // City-level overview row — no phone number or per-station contact printed on
+                // the central page. Ships website-only, consistent with the Jobbhus/RPH
+                // decisions elsewhere in this batch.
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 243,
+                Name = "Oslohjelpa",
+                MunicipalityId = Oslo,
+                // No phone number printed — the page only says to contact Oslohjelpa in your
+                // own bydel, without listing per-bydel numbers.
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 244,
+                Name = "Boligkontorene i Oslo",
+                MunicipalityId = Oslo,
+                // City-level overview row — the page names no offices and prints no numbers.
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 245,
+                Name = "Stovner boligkontor",
+                MunicipalityId = Oslo,
+                Address = "Bydel Stovner, Boligenheten, Karl Fossums vei 30, 0985 Oslo",
+                // Phone deliberately empty — Malin's 2026-08-17 decision. The page prints only
+                // "55553333", the national Nav line run together, not the office's own number.
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 246,
+                Name = "Økonomisk rådgivning og gjeldsrådgivning, Oslo kommune",
+                MunicipalityId = Oslo,
+                // No phone or hours printed — the page routes to the local Nav office (rows
+                // 201-215). See also seed-data.md row 6, the national gjeld line.
+                Website = "https://www.oslo.kommune.no",
+                LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 247,
+                Name = "Bymisjonssenteret, Oslo (Kirkens Bymisjon)",
+                MunicipalityId = Oslo,
+                Address = "Herslebsgate 43, 0578 Oslo",
+                // No email seeded — the only address on the page is a named employee's
+                // (operations manager), not a service address. Never-invent/never-personal rule.
+                Phone = "22 66 67 80",
+                Website = "https://kirkensbymisjon.no",
                 LastVerified = Verified,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
@@ -1289,6 +1883,734 @@ public static class SeedData
                 ResourceId = 122,
                 LanguageCode = "en",
                 Description = "Mental Helse's website where you can write anonymously about what is difficult, in chat or on the forum. You can read about topics such as loneliness, anxiety, depression and money, and get replies from others.",
+            },
+            new ResourceTranslation
+            {
+                Id = 89,
+                ResourceId = 201,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Alna, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 90,
+                ResourceId = 201,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Alna district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 91,
+                ResourceId = 202,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Bjerke, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 92,
+                ResourceId = 202,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Bjerke district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 93,
+                ResourceId = 203,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Frogner, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 94,
+                ResourceId = 203,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Frogner district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 95,
+                ResourceId = 204,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Gamle Oslo, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 96,
+                ResourceId = 204,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Gamle Oslo district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 97,
+                ResourceId = 205,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Grorud, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 98,
+                ResourceId = 205,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Grorud district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 99,
+                ResourceId = 206,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Grünerløkka. Kontoret hjelper med arbeid, nødhjelp, økonomisk rådgivning, bolig, flyktningtjeneste og oppfølging ved rusproblemer.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 100,
+                ResourceId = 206,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Grünerløkka district. The office helps with work, emergency assistance, money advice, housing, refugee services and substance use follow-up.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 101,
+                ResourceId = 207,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Nordre Aker, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 102,
+                ResourceId = 207,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Nordre Aker district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 103,
+                ResourceId = 208,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Nordstrand, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 104,
+                ResourceId = 208,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Nordstrand district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 105,
+                ResourceId = 209,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Sagene, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Hver onsdag er det drop-in for økonomirådgivning fra klokken 9 til 11.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15. Drop-in økonomirådgivning onsdager 9–11",
+            },
+            new ResourceTranslation
+            {
+                Id = 106,
+                ResourceId = 209,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Sagene district, with help on financial assistance, work, housing and other social services. Every Wednesday there is a drop-in for money advice from 9 to 11.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15. Money-advice drop-in Wednesdays 9–11",
+            },
+            new ResourceTranslation
+            {
+                Id = 107,
+                ResourceId = 210,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel St. Hanshaugen, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 108,
+                ResourceId = 210,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the St. Hanshaugen district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 109,
+                ResourceId = 211,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Stovner, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 110,
+                ResourceId = 211,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Stovner district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 111,
+                ResourceId = 212,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Søndre Nordstrand, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 112,
+                ResourceId = 212,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Søndre Nordstrand district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 113,
+                ResourceId = 213,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Ullern, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 114,
+                ResourceId = 213,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Ullern district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 115,
+                ResourceId = 214,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Vestre Aker, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 116,
+                ResourceId = 214,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Vestre Aker district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 117,
+                ResourceId = 215,
+                LanguageCode = "nb",
+                Description = "Nav-kontoret for deg som bor i bydel Østensjø, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Du kan møte opp uten avtale i åpningstiden.",
+                OpeningHours = "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 118,
+                ResourceId = 215,
+                LanguageCode = "en",
+                Description = "The Nav office for people living in the Østensjø district, with help on financial assistance, work, housing and other social services. You can come without an appointment during opening hours.",
+                OpeningHours = "Drop-in Monday–Friday 11.00–15.00. Phone hours weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 119,
+                ResourceId = 216,
+                LanguageCode = "nb",
+                Description = "Gratis døgnåpent tilbud til deg som er utsatt for vold i nære relasjoner. Du kan ringe for råd og veiledning, og senteret har også botilbud. Adressen er hemmelig av hensyn til sikkerheten.",
+                OpeningHours = "Døgnåpent",
+            },
+            new ResourceTranslation
+            {
+                Id = 120,
+                ResourceId = 216,
+                LanguageCode = "en",
+                Description = "A free 24-hour service for anyone affected by violence in a close relationship. You can call for advice and guidance, and the centre also offers a place to stay. The address is kept secret for safety reasons.",
+                OpeningHours = "Open 24 hours",
+            },
+            new ResourceTranslation
+            {
+                Id = 121,
+                ResourceId = 217,
+                LanguageCode = "nb",
+                Description = "Anonym chat for deg mellom 16 og 25 år som er i en usunn relasjon. Du chatter med fagpersoner som har lang erfaring med vold i nære relasjoner.",
+                OpeningHours = "Chat tirsdag 12–20 og fredag 12–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 122,
+                ResourceId = 217,
+                LanguageCode = "en",
+                Description = "An anonymous chat for people aged 16 to 25 who are in an unhealthy relationship. You chat with professionals who have long experience with violence in close relationships.",
+                OpeningHours = "Chat Tuesday 12–20 and Friday 12–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 123,
+                ResourceId = 218,
+                LanguageCode = "nb",
+                Description = "Gratis døgnåpent helsetilbud for deg fra 14 år som har vært utsatt for voldtekt, voldtektsforsøk eller andre seksuelle overgrep. Du kan komme uten å ha anmeldt forholdet til politiet. Gjelder det et barn under 14 år, skal henvendelsen gå til barnemottaket.",
+                OpeningHours = "Døgnåpent",
+            },
+            new ResourceTranslation
+            {
+                Id = 124,
+                ResourceId = 218,
+                LanguageCode = "en",
+                Description = "A free 24-hour health service for people aged 14 and over who have experienced rape, attempted rape or other sexual assault. You can come without having reported it to the police. For a child under 14, the enquiry goes to the children's unit instead.",
+                OpeningHours = "Open 24 hours",
+            },
+            new ResourceTranslation
+            {
+                Id = 125,
+                ResourceId = 219,
+                LanguageCode = "nb",
+                Description = "Behandlingstilbud til deg over 18 år som bruker vold eller har problemer med sinne og aggresjon. Både kvinner og menn kan få behandling, individuelt eller i gruppe.",
+                OpeningHours = "Telefontid mandag–fredag 09.00–15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 126,
+                ResourceId = 219,
+                LanguageCode = "en",
+                Description = "A treatment service for people over 18 who use violence or struggle with anger and aggression. Both women and men can receive treatment, individually or in a group.",
+                OpeningHours = "Phone hours Monday–Friday 09.00–15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 127,
+                ResourceId = 220,
+                LanguageCode = "nb",
+                Description = "Ressurssenter for deg som har opplevd seksuelle overgrep eller vold, med samtaler og veiledning. Du kan ta kontakt på telefon eller SMS.",
+            },
+            new ResourceTranslation
+            {
+                Id = 128,
+                ResourceId = 220,
+                LanguageCode = "en",
+                Description = "A resource centre for people who have experienced sexual abuse or violence, offering counselling and guidance. You can get in touch by phone or text message.",
+            },
+            new ResourceTranslation
+            {
+                Id = 129,
+                ResourceId = 221,
+                LanguageCode = "nb",
+                Description = "Kommunens døgnåpne tjeneste ved akutt oppståtte kriser. Du kan få samtale på legevakten, på telefon eller video, og tjenesten kan også komme hjem til deg. Du trenger ikke henvisning, og tilbudet er gratis.",
+                OpeningHours = "Døgnåpent",
+            },
+            new ResourceTranslation
+            {
+                Id = 130,
+                ResourceId = 221,
+                LanguageCode = "en",
+                Description = "The city's 24-hour service for people in an acute crisis. You can talk at the emergency clinic, by phone or by video, and the service can also come to your home. No referral is needed and it is free.",
+                OpeningHours = "Open 24 hours",
+            },
+            new ResourceTranslation
+            {
+                Id = 131,
+                ResourceId = 222,
+                LanguageCode = "nb",
+                Description = "Legevakten i Oslo er åpen hele døgnet for deg som trenger rask helsehjelp når fastlegen er stengt. Ved fare for liv og helse skal du ringe 113.",
+                OpeningHours = "Åpent 00–24",
+            },
+            new ResourceTranslation
+            {
+                Id = 132,
+                ResourceId = 222,
+                LanguageCode = "en",
+                Description = "The Oslo emergency clinic is open around the clock for anyone needing urgent medical help when their regular doctor is closed. If there is danger to life, call 113 instead.",
+                OpeningHours = "Open 24 hours",
+            },
+            new ResourceTranslation
+            {
+                Id = 133,
+                ResourceId = 223,
+                LanguageCode = "nb",
+                Description = "Oslo kommunes oppsøkende tjeneste i sentrum, med særlig fokus på unge opptil 25 år. Patruljer er ute hver dag og kveld, og du kan også komme til rådgivningstjenesten eller ringe eller sende SMS.",
+                OpeningHours = "Rådgivningstjenesten i Maridalsveien 3 mandag–fredag 10:00–15:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 134,
+                ResourceId = 223,
+                LanguageCode = "en",
+                Description = "The City of Oslo's outreach service in the city centre, with a particular focus on young people up to 25. Patrols are out every day and evening, and you can also visit the advice service or call or text.",
+                OpeningHours = "Advice service at Maridalsveien 3 Monday–Friday 10:00–15:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 135,
+                ResourceId = 224,
+                LanguageCode = "nb",
+                Description = "Psykologhjelp for deg under 25 år, gjennom Uteseksjonen. Du kan ta kontakt selv på telefon eller SMS, uten henvisning.",
+            },
+            new ResourceTranslation
+            {
+                Id = 136,
+                ResourceId = 224,
+                LanguageCode = "en",
+                Description = "Psychological help for people under 25, through the outreach service. You can get in touch yourself by phone or text, without a referral.",
+            },
+            new ResourceTranslation
+            {
+                Id = 137,
+                ResourceId = 225,
+                LanguageCode = "nb",
+                Description = "Lavterskeltilbud med helse- og sosialtjenester for deg med rusutfordringer, med brukerrom, feltpleie, lege og akutt overnatting. Du trenger ikke henvisning for å komme.",
+                OpeningHours = "Brukerrom mandag–søndag 09:00–22:00. Feltpleie mandag–fredag 09:00–22:00, lørdag–søndag 10:00–20:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 138,
+                ResourceId = 225,
+                LanguageCode = "en",
+                Description = "A low-threshold centre with health and social services for people with substance use difficulties, offering a drug consumption room, field nursing, a doctor and emergency overnight accommodation. No referral is needed.",
+                OpeningHours = "Consumption room Monday–Sunday 09:00–22:00. Field nursing Monday–Friday 09:00–22:00, Saturday–Sunday 10:00–20:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 139,
+                ResourceId = 226,
+                LanguageCode = "nb",
+                Description = "Helsehjelp for deg som lever med rusproblemer, med sårstell, prevensjon og andre helsetjenester uten timeavtale. Lege er til stede onsdag og fredag.",
+                OpeningHours = "Mandag–fredag 09.00–15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 140,
+                ResourceId = 226,
+                LanguageCode = "en",
+                Description = "Health care for people living with substance use problems, with wound care, contraception and other health services without an appointment. A doctor is present on Wednesdays and Fridays.",
+                OpeningHours = "Monday–Friday 09.00–15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 141,
+                ResourceId = 227,
+                LanguageCode = "nb",
+                Description = "Kontaktsenter for deg over 18 år med rusproblemer, der du kan få mat, drikke, klær og mulighet til å vaske deg. Du kan komme innom uten avtale.",
+                OpeningHours = "Hverdager 09.00–14.30, søndager 11.00–13.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 142,
+                ResourceId = 227,
+                LanguageCode = "en",
+                Description = "A drop-in centre for people over 18 with substance use problems, where you can get food, drink, clothes and a chance to wash. You can come without an appointment.",
+                OpeningHours = "Weekdays 09.00–14.30, Sundays 11.00–13.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 143,
+                ResourceId = 228,
+                LanguageCode = "nb",
+                Description = "Senter for selvhjelp og mestring, der du kan få hjelp til å starte eller finne en selvhjelpsgruppe. Tilbudet er gratis og du trenger ingen henvisning.",
+                OpeningHours = "Telefon hverdager 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 144,
+                ResourceId = 228,
+                LanguageCode = "en",
+                Description = "A centre for self-help and coping, where you can get help starting or finding a self-help group. The service is free and needs no referral.",
+                OpeningHours = "Phone weekdays 9–15",
+            },
+            new ResourceTranslation
+            {
+                Id = 145,
+                ResourceId = 229,
+                LanguageCode = "nb",
+                Description = "Kortvarig og gratis behandling for deg med bostedsadresse i bydel Alna som har milde til moderate psykiske plager. Du tar kontakt selv, uten henvisning fra lege.",
+            },
+            new ResourceTranslation
+            {
+                Id = 146,
+                ResourceId = 229,
+                LanguageCode = "en",
+                Description = "Short-term, free treatment for people registered as living in the Alna district with mild to moderate mental health difficulties. You get in touch yourself, without a doctor's referral.",
+            },
+            new ResourceTranslation
+            {
+                Id = 147,
+                ResourceId = 230,
+                LanguageCode = "nb",
+                Description = "Kortvarig og gratis behandling for deg i bydel Ullern som har milde til moderate psykiske plager. Telefonen er bare bemannet én time i uken, så ring innenfor telefontiden.",
+                OpeningHours = "Telefonen er bemannet torsdager 12:00–13:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 148,
+                ResourceId = 230,
+                LanguageCode = "en",
+                Description = "Short-term, free treatment for people in the Ullern district with mild to moderate mental health difficulties. The phone is staffed only one hour a week, so call within the stated time.",
+                OpeningHours = "Phone staffed Thursdays 12:00–13:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 149,
+                ResourceId = 231,
+                LanguageCode = "nb",
+                Description = "Gratis korttidsbehandling for deg over 16 år i bydel Vestre Aker med milde til moderate psykiske utfordringer. Du trenger ikke henvisning.",
+            },
+            new ResourceTranslation
+            {
+                Id = 150,
+                ResourceId = 231,
+                LanguageCode = "en",
+                Description = "Free short-term treatment for people over 16 in the Vestre Aker district with mild to moderate mental health difficulties. No referral is needed.",
+            },
+            new ResourceTranslation
+            {
+                Id = 151,
+                ResourceId = 232,
+                LanguageCode = "nb",
+                Description = "Gratis lavterskeltilbud med samtaler og veiledning for deg mellom 12 og 25 år som har det vanskelig psykisk. Du trenger ingen henvisning, og på torsdager kan du komme på drop-in.",
+                OpeningHours = "Drop-in torsdager 14:00–17:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 152,
+                ResourceId = 232,
+                LanguageCode = "en",
+                Description = "A free low-threshold service offering conversations and guidance for people aged 12 to 25 who are struggling mentally. No referral is needed, and on Thursdays you can drop in.",
+                OpeningHours = "Drop-in Thursdays 14:00–17:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 153,
+                ResourceId = 233,
+                LanguageCode = "nb",
+                Description = "Gratis juridisk rådgivning fra advokater for deg som bor i Oslo og omegn. Alle får inntil en halvtime med advokat, og du kan bestille time eller komme på drop-in på ettermiddagen.",
+                OpeningHours = "Timeavtaler mandag–fredag 08:00–15:30. Drop-in mandag–torsdag 16:00–19:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 154,
+                ResourceId = 233,
+                LanguageCode = "en",
+                Description = "Free legal advice from lawyers for people living in Oslo and the surrounding area. Everyone gets up to half an hour with a lawyer, and you can book a time or come to the afternoon drop-in.",
+                OpeningHours = "Appointments Monday–Friday 08:00–15:30. Drop-in Monday–Thursday 16:00–19:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 155,
+                ResourceId = 234,
+                LanguageCode = "nb",
+                Description = "Gratis rettshjelp fra jusstudenter til kvinner og personer som definerer seg som kvinner, i saker om blant annet vold, familie, arbeid, bolig og gjeld. Nye saker tas imot i egne tider.",
+                OpeningHours = "Nye saker: mandag 12:00–15:00, onsdag 09:00–12:00 (kun telefon) og onsdag 17:00–20:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 156,
+                ResourceId = 234,
+                LanguageCode = "en",
+                Description = "Free legal aid from law students for women and people who identify as women, in areas such as violence, family, work, housing and debt. New cases are taken during separate opening times.",
+                OpeningHours = "New cases: Monday 12:00–15:00, Wednesday 09:00–12:00 (phone only) and Wednesday 17:00–20:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 157,
+                ResourceId = 235,
+                LanguageCode = "nb",
+                Description = "Gratis rettshjelp til deg som har eller har hatt rusproblemer. Kontaktinformasjon må hentes fra Gatejuristens egne nettsider.",
+            },
+            new ResourceTranslation
+            {
+                Id = 158,
+                ResourceId = 235,
+                LanguageCode = "en",
+                Description = "Free legal aid for people who have, or have had, substance use problems. Contact details must be taken from Gatejuristen's own website.",
+            },
+            new ResourceTranslation
+            {
+                Id = 159,
+                ResourceId = 236,
+                LanguageCode = "nb",
+                Description = "Barnevernets akuttberedskap for barn og unge i akutte situasjoner. Både barn selv og voksne som er bekymret for et barn kan ta kontakt.",
+            },
+            new ResourceTranslation
+            {
+                Id = 160,
+                ResourceId = 236,
+                LanguageCode = "en",
+                Description = "The child welfare emergency service for children and young people in urgent situations. Both children themselves and adults worried about a child can get in touch.",
+            },
+            new ResourceTranslation
+            {
+                Id = 161,
+                ResourceId = 237,
+                LanguageCode = "nb",
+                Description = "Gratis tilbud om samtale, parterapi, foreldreveiledning og mekling. Du trenger ingen henvisning for å bestille time. Kontoret samarbeider med bydelene Søndre Nordstrand, Nordstrand, Grünerløkka og Frogner.",
+                OpeningHours = "Åpent 08.15–15.30, telefontid 08.30–15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 162,
+                ResourceId = 237,
+                LanguageCode = "en",
+                Description = "A free service offering counselling, couples therapy, parenting guidance and mediation. No referral is needed to book. The office works with the Søndre Nordstrand, Nordstrand, Grünerløkka and Frogner districts.",
+                OpeningHours = "Open 08.15–15.30, phone hours 08.30–15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 163,
+                ResourceId = 238,
+                LanguageCode = "nb",
+                Description = "Gratis tilbud om samtale, parterapi, foreldreveiledning og mekling. Du trenger ingen henvisning for å bestille time. Kontoret samarbeider med bydelene Alna, Gamle Oslo, Østensjø og Nordre Aker.",
+                OpeningHours = "08.30–15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 164,
+                ResourceId = 238,
+                LanguageCode = "en",
+                Description = "A free service offering counselling, couples therapy, parenting guidance and mediation. No referral is needed to book. The office works with the Alna, Gamle Oslo, Østensjø and Nordre Aker districts.",
+                OpeningHours = "08.30–15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 165,
+                ResourceId = 239,
+                LanguageCode = "nb",
+                Description = "Gratis tilbud om samtale, parterapi, foreldreveiledning og mekling. Du trenger ingen henvisning for å bestille time. Kontoret samarbeider med bydelene St. Hanshaugen, Ullern, Sagene og Vestre Aker.",
+                OpeningHours = "08.30–15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 166,
+                ResourceId = 239,
+                LanguageCode = "en",
+                Description = "A free service offering counselling, couples therapy, parenting guidance and mediation. No referral is needed to book. The office works with the St. Hanshaugen, Ullern, Sagene and Vestre Aker districts.",
+                OpeningHours = "08.30–15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 167,
+                ResourceId = 240,
+                LanguageCode = "nb",
+                Description = "Gratis tilbud om samtale, parterapi, foreldreveiledning og mekling. Du trenger ingen henvisning for å bestille time. Kontoret samarbeider med bydelene Bjerke, Grorud og Stovner.",
+                OpeningHours = "08.30–15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 168,
+                ResourceId = 240,
+                LanguageCode = "en",
+                Description = "A free service offering counselling, couples therapy, parenting guidance and mediation. No referral is needed to book. The office works with the Bjerke, Grorud and Stovner districts.",
+                OpeningHours = "08.30–15.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 169,
+                ResourceId = 241,
+                LanguageCode = "nb",
+                Description = "Gratis helsestasjon for ungdom, med helsesykepleier, lege og samtaler om kropp, seksualitet, psykisk helse og andre ting du lurer på. Du kan bruke hvilken som helst helsestasjon for ungdom i Oslo.",
+                OpeningHours = "Telefontid tirsdag og torsdag 11:00–14:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 170,
+                ResourceId = 241,
+                LanguageCode = "en",
+                Description = "A free youth health clinic with nurses, a doctor and conversations about your body, sexuality, mental health and anything else on your mind. You can use any youth health clinic in Oslo.",
+                OpeningHours = "Phone hours Tuesday and Thursday 11:00–14:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 171,
+                ResourceId = 242,
+                LanguageCode = "nb",
+                Description = "Alle ungdommer i Oslo mellom 12 og 24 år kan bruke helsestasjon for ungdom, og tjenestene er gratis. Du velger fritt hvilken helsestasjon du vil gå til.",
+            },
+            new ResourceTranslation
+            {
+                Id = 172,
+                ResourceId = 242,
+                LanguageCode = "en",
+                Description = "All young people in Oslo aged 12 to 24 can use a youth health clinic, and the services are free. You are free to choose whichever clinic you want to go to.",
+            },
+            new ResourceTranslation
+            {
+                Id = 173,
+                ResourceId = 243,
+                LanguageCode = "nb",
+                Description = "Gratis lavterskeltilbud som skal hjelpe barn, unge og familier raskt når de trenger det. Du trenger ingen henvisning, og du tar kontakt med Oslohjelpa i din egen bydel.",
+            },
+            new ResourceTranslation
+            {
+                Id = 174,
+                ResourceId = 243,
+                LanguageCode = "en",
+                Description = "A free low-threshold service meant to help children, young people and families quickly when they need it. No referral is needed, and you contact Oslohjelpa in your own district.",
+            },
+            new ResourceTranslation
+            {
+                Id = 175,
+                ResourceId = 244,
+                LanguageCode = "nb",
+                Description = "Alle bydeler i Oslo har et boligkontor som hjelper deg med å søke kommunal bolig og kommunal bostøtte. Du finner riktig kontor ved å velge bydelen din eller søke opp adressen din.",
+            },
+            new ResourceTranslation
+            {
+                Id = 176,
+                ResourceId = 244,
+                LanguageCode = "en",
+                Description = "Every district in Oslo has a housing office that helps you apply for municipal housing and municipal housing benefit. You find the right office by choosing your district or searching for your address.",
+            },
+            new ResourceTranslation
+            {
+                Id = 177,
+                ResourceId = 245,
+                LanguageCode = "nb",
+                Description = "Boligkontoret i bydel Stovner, som hjelper deg med å søke kommunal bolig og kommunal bostøtte. Du kan få hjelp til å fylle ut søknaden.",
+            },
+            new ResourceTranslation
+            {
+                Id = 178,
+                ResourceId = 245,
+                LanguageCode = "en",
+                Description = "The housing office in the Stovner district, which helps you apply for municipal housing and municipal housing benefit. You can get help filling in the application.",
+            },
+            new ResourceTranslation
+            {
+                Id = 179,
+                ResourceId = 246,
+                LanguageCode = "nb",
+                Description = "Hjelp til deg som sliter med å betale regninger eller gjeld, med råd om økonomi og gjeldsordning. Du tar kontakt med Nav-kontoret i bydelen din for å avtale time.",
+            },
+            new ResourceTranslation
+            {
+                Id = 180,
+                ResourceId = 246,
+                LanguageCode = "en",
+                Description = "Help for people struggling to pay bills or debt, with advice on finances and debt settlement. You contact the Nav office in your district to book an appointment.",
+            },
+            new ResourceTranslation
+            {
+                Id = 181,
+                ResourceId = 247,
+                LanguageCode = "nb",
+                Description = "Kirkens Bymisjons senter på Grønland, med møteplasser, aktiviteter og oppfølging for mennesker i vanskelige livssituasjoner.",
+            },
+            new ResourceTranslation
+            {
+                Id = 182,
+                ResourceId = 247,
+                LanguageCode = "en",
+                Description = "Kirkens Bymisjon's centre at Grønland, with meeting places, activities and follow-up for people in difficult life situations.",
             });
 
         modelBuilder.Entity<ResourceCategory>().HasData(
@@ -1368,7 +2690,114 @@ public static class SeedData
             new ResourceCategory { ResourceId = 120, CategoryId = Categories.Okonomi },
             new ResourceCategory { ResourceId = 121, CategoryId = Categories.FamilieOgBarn },
             new ResourceCategory { ResourceId = 121, CategoryId = Categories.PsykiskHelse },
-            new ResourceCategory { ResourceId = 122, CategoryId = Categories.PsykiskHelse });
+            new ResourceCategory { ResourceId = 122, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 201, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 201, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 201, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 202, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 202, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 202, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 203, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 203, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 203, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 204, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 204, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 204, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 205, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 205, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 205, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 206, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 206, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 206, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 206, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 207, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 207, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 207, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 208, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 208, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 208, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 209, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 209, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 209, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 210, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 210, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 210, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 211, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 211, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 211, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 212, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 212, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 212, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 213, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 213, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 213, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 214, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 214, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 214, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 215, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 215, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 215, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 216, CategoryId = Categories.VoldOgOvergrep },
+            new ResourceCategory { ResourceId = 216, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 216, CategoryId = Categories.Nodtjenester },
+            new ResourceCategory { ResourceId = 217, CategoryId = Categories.VoldOgOvergrep },
+            new ResourceCategory { ResourceId = 217, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 218, CategoryId = Categories.VoldOgOvergrep },
+            new ResourceCategory { ResourceId = 218, CategoryId = Categories.Nodtjenester },
+            new ResourceCategory { ResourceId = 219, CategoryId = Categories.VoldOgOvergrep },
+            new ResourceCategory { ResourceId = 219, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 220, CategoryId = Categories.VoldOgOvergrep },
+            new ResourceCategory { ResourceId = 220, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 221, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 221, CategoryId = Categories.VoldOgOvergrep },
+            new ResourceCategory { ResourceId = 221, CategoryId = Categories.Nodtjenester },
+            new ResourceCategory { ResourceId = 222, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 222, CategoryId = Categories.Nodtjenester },
+            new ResourceCategory { ResourceId = 223, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 223, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 224, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 224, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 225, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 225, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 225, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 226, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 227, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 227, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 228, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 229, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 229, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 230, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 230, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 231, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 231, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 232, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 232, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 233, CategoryId = Categories.JuridiskHjelp },
+            new ResourceCategory { ResourceId = 233, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 233, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 234, CategoryId = Categories.JuridiskHjelp },
+            new ResourceCategory { ResourceId = 234, CategoryId = Categories.VoldOgOvergrep },
+            new ResourceCategory { ResourceId = 234, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 235, CategoryId = Categories.JuridiskHjelp },
+            new ResourceCategory { ResourceId = 235, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 236, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 236, CategoryId = Categories.VoldOgOvergrep },
+            new ResourceCategory { ResourceId = 236, CategoryId = Categories.Nodtjenester },
+            new ResourceCategory { ResourceId = 237, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 238, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 239, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 240, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 241, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 241, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 242, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 242, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 243, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 243, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 244, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 245, CategoryId = Categories.Bolig },
+            new ResourceCategory { ResourceId = 246, CategoryId = Categories.Okonomi },
+            new ResourceCategory { ResourceId = 247, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 247, CategoryId = Categories.Rus });
 
         // Coverage joins from docs/seed-data-innlandet-ring.md's "## Coverage map" section, for
         // non-national resources only. National resources (rows 1, 2, 3, 4, 5, 6, 8, 9, 119, 120,

@@ -12,7 +12,7 @@ namespace Varde.Tests.Integration;
 ///
 /// Task 9 ships in three batches (see task-9-adaptation.md §9); the resource count grows
 /// 22 → 44 → 91 as each batch's migration lands. This file always asserts against the current
-/// cumulative total — batch 9b adds the Innlandet ring (rows 101-122), bringing the total to 44.
+/// cumulative total — batch 9c adds Oslo (rows 201-247), bringing the total to 91.
 /// </summary>
 public class SeedDataTests
 {
@@ -23,7 +23,7 @@ public class SeedDataTests
         using var scope = factory.NewScope();
         var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
 
-        Assert.Equal(44, await db.Resources.CountAsync());
+        Assert.Equal(91, await db.Resources.CountAsync());
         Assert.Equal(8, await db.Municipalities.CountAsync());
     }
 
