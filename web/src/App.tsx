@@ -21,7 +21,9 @@ import { useUrlState } from "./hooks/useUrlState.ts"
 import { LanguageProvider, useTranslation } from "./i18n/LanguageProvider.tsx"
 import type { Filters, Route } from "./services/urlState.ts"
 
-export const NavigationContext = createContext<(pathname: string, search: string) => void>(() => {})
+export const NavigationContext = createContext<
+	(pathname: string, search: string, options?: { replace?: boolean }) => void
+>(() => {})
 export function useNavigate() {
 	return useContext(NavigationContext)
 }

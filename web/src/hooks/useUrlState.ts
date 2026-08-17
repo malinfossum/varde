@@ -21,10 +21,14 @@ export function useUrlState() {
 		return () => window.removeEventListener("popstate", onPopState)
 	}, [])
 
-	const navigate = useCallback((pathname: string, search: string) => {
-		window.history.pushState(null, "", `${pathname}${search}`)
-		setState(read())
-	}, [])
+	const navigate = useCallback(
+		(pathname: string, search: string, options?: { replace?: boolean }) => {
+			if (options?.replace) window.history.replaceState(null, "", `${pathname}${search}`)
+			else window.history.pushState(null, "", `${pathname}${search}`)
+			setState(read())
+		},
+		[]
+	)
 
 	return { ...state, navigate }
 }

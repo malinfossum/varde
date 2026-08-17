@@ -28,6 +28,12 @@ export function ListPage({ filters }: { filters: Filters }) {
 	const apply = (patch: Partial<Filters>) =>
 		navigate("/", buildSearch(applyPatch(filters, patch), null))
 
+	// Typing in the search box fires on every keystroke; pushing a history entry per keystroke
+	// would flood back/forward with useless states. Replace the current entry instead — every
+	// other filter change (picker, suggestions, pager, clear, toggle) still pushes normally.
+	const applySearch = (patch: Partial<Filters>) =>
+		navigate("/", buildSearch(applyPatch(filters, patch), null), { replace: true })
+
 	const suggestions: Suggestion[] =
 		catalog && filters.search ? suggest(filters.search, catalog) : []
 
@@ -56,7 +62,7 @@ export function ListPage({ filters }: { filters: Filters }) {
 	return (
 		<div className="list-page stack">
 			<HandoverBanner />
-			<SearchBar value={filters.search} onChange={(value) => apply({ search: value })} />
+			<SearchBar value={filters.search} onChange={(value) => applySearch({ search: value })} />
 			<Suggestions suggestions={suggestions} onPick={onPick} />
 			<WayfindingHint query={filters.search} />
 			{catalog && (
