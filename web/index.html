@@ -3,7 +3,10 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="description" content="Project description goes here." />
+		<meta
+			name="description"
+			content="Varde – finn riktig hjelpetjeneste der du bor. Offentlig katalog over sosiale tjenester i Norge."
+		/>
 		<meta name="referrer" content="no-referrer" />
 		<title>Varde</title>
 
@@ -29,9 +32,8 @@
 		<link rel="stylesheet" href="/src/styles/main.css" />
 	</head>
 	<body>
-		<a class="skip-link" href="#main">Skip to content</a>
-
-		<!-- React renders everything inside #root (see src/main.tsx) -->
+		<!-- React renders everything inside #root (see src/main.tsx). The real, localized
+		     skip link is rendered by the app shell (src/App.tsx) — no static duplicate here. -->
 		<div id="root"></div>
 
 		<!-- Theme behavior (click handler — init already done in head).

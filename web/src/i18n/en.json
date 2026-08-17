@@ -42,7 +42,7 @@
 	"notFound.help": "The service may have moved or closed. Go back to search to find an alternative.",
 	"banner.fastlege": "Need healthcare during business hours? Contact your GP.",
 	"banner.fastlegeLink": "Your GP on Helsenorge",
-	"banner.legevakt": "GP closed? Call emergency medical services",
-	"banner.fallback": "In an emergency or if your GP is closed? Call medical helpline 116 117",
+	"banner.legevakt": "GP closed? Call the out-of-hours medical service (legevakt)",
+	"banner.fallback": "In an emergency or if your GP is closed? Call the out-of-hours medical service (legevakt) on 116 117",
 	"hint.helsenorge": "Looking for a GP, prescriptions, or exemption certificate? Visit Helsenorge"
 }
