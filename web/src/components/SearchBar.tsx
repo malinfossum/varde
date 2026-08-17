@@ -11,15 +11,17 @@ export function SearchBar({
 	const t = useTranslation()
 	const id = useId()
 	return (
-		<search onSubmit={(event) => event.preventDefault()}>
-			<label htmlFor={id}>{t("search.label")}</label>
-			<input
-				id={id}
-				type="search"
-				value={value}
-				onChange={(event) => onChange(event.target.value)}
-				autoComplete="off"
-			/>
+		<search>
+			<form onSubmit={(event) => event.preventDefault()}>
+				<label htmlFor={id}>{t("search.label")}</label>
+				<input
+					id={id}
+					type="search"
+					value={value}
+					onChange={(event) => onChange(event.target.value)}
+					autoComplete="off"
+				/>
+			</form>
 		</search>
 	)
 }
