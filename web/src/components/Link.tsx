@@ -1,5 +1,5 @@
 import type { MouseEvent, ReactNode } from "react"
-import { useNavigate } from "../App.tsx"
+import { useNavigate } from "../navigation.ts"
 
 export function Link({
 	to,
@@ -12,7 +12,10 @@ export function Link({
 }) {
 	const navigate = useNavigate()
 	const onClick = (event: MouseEvent) => {
-		if (event.metaKey || event.ctrlKey || event.shiftKey) return // let the browser open tabs
+		// Let the browser handle modified clicks (new tab / save-as) and non-primary buttons
+		// (e.g. middle-click also opens a new tab).
+		if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
+			return
 		event.preventDefault()
 		const url = new URL(to, window.location.origin)
 		navigate(url.pathname, url.search)

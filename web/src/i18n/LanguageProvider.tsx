@@ -46,7 +46,14 @@ export function useLanguage() {
 	return context
 }
 
+// Shared by useTranslation (current language) and callers that need a specific language's
+// string regardless of what's currently active — e.g. announcing a switch in the language
+// being switched to, before the provider's own re-render has caught up.
+export function translate(lang: Lang, key: string): string {
+	return strings[lang][key] ?? strings.nb[key] ?? key
+}
+
 export function useTranslation(): (key: string) => string {
 	const { lang } = useLanguage()
-	return (key) => strings[lang][key] ?? strings.nb[key] ?? key
+	return (key) => translate(lang, key)
 }

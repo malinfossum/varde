@@ -9,7 +9,6 @@
    - components/  rendering + event wiring — no business logic
    ====================================================================== */
 
-import { createContext, useContext } from "react"
 import { AkuttShortcut } from "./components/AkuttShortcut.tsx"
 import { LanguageToggle } from "./components/LanguageToggle.tsx"
 import { ListPage } from "./components/ListPage.tsx"
@@ -19,14 +18,8 @@ import { ResourceDetail } from "./components/ResourceDetail.tsx"
 import { AnnouncerProvider } from "./components/StatusRegion.tsx"
 import { useUrlState } from "./hooks/useUrlState.ts"
 import { LanguageProvider, useTranslation } from "./i18n/LanguageProvider.tsx"
+import { NavigationContext } from "./navigation.ts"
 import type { Filters, Route } from "./services/urlState.ts"
-
-export const NavigationContext = createContext<
-	(pathname: string, search: string, options?: { replace?: boolean }) => void
->(() => {})
-export function useNavigate() {
-	return useContext(NavigationContext)
-}
 
 export function App() {
 	const { route, filters, langParam, navigate } = useUrlState()

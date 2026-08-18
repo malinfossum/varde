@@ -1,5 +1,5 @@
-import { useNavigate } from "../App.tsx"
-import { useLanguage } from "../i18n/LanguageProvider.tsx"
+import { translate, useLanguage } from "../i18n/LanguageProvider.tsx"
+import { useNavigate } from "../navigation.ts"
 import { useAnnounce } from "./StatusRegion.tsx"
 
 export function LanguageToggle() {
@@ -9,9 +9,10 @@ export function LanguageToggle() {
 	const next = lang === "nb" ? "en" : "nb"
 	const onToggle = () => {
 		setLang(next)
-		// Announce in the *new* language; the strings object is keyed per language, so read
-		// the translation after the switch via a microtask-free direct lookup:
-		announce(next === "nb" ? "Språket er nå norsk" : "Language is now English")
+		// Announce in the *new* language; useTranslation() would still read the pre-switch
+		// language until the re-render lands, so look the string up directly in the target
+		// language's dictionary (single source of truth: status.langChanged in i18n/*.json).
+		announce(translate(next, "status.langChanged"))
 		// Reflect the choice in the URL (base spec: provider updates document.lang, URL, and
 		// announces). navigate() replaces state via pushState on the current path — one
 		// history entry per toggle, no extra localStorage write beyond the setLang above.
