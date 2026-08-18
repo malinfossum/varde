@@ -9,6 +9,9 @@ import { afterEach } from "vitest"
 // render() more than once (verified: tests/shell.test.tsx's two App renders).
 afterEach(() => {
 	cleanup()
+	// Favourites/language preference live in localStorage; without this a value written by one
+	// test (e.g. a language toggle) leaks into the next test file's initial render.
+	localStorage.clear()
 })
 
 // vitest 4.1.10's jsdom environment does not provide localStorage by default (verified: removing this breaks i18n storage tests).
