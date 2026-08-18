@@ -91,6 +91,28 @@ function stubCatalogAndResources() {
 	})
 }
 
+test("a page beyond the last page shows EmptyState instead of a blank list", async () => {
+	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
+		const url = String(input)
+		if (url.includes("/api/municipalities")) {
+			return Promise.resolve(new Response(JSON.stringify(municipalities), { status: 200 }))
+		}
+		if (url.includes("/api/categories")) {
+			return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
+		}
+		// Real results exist elsewhere (totalCount > 0), but this page is past the last one —
+		// the API returns an empty items array, distinct from the genuine zero-results case.
+		return Promise.resolve(
+			new Response(JSON.stringify({ items: [], page: 99, pageSize: 20, totalCount: 45 }), {
+				status: 200,
+			})
+		)
+	})
+	window.history.pushState(null, "", "/?page=99")
+	render(<App />)
+	expect(await screen.findByRole("heading", { name: "Ingen treff" })).toBeInTheDocument()
+})
+
 test("Alle clears both municipality and national selection from the URL", async () => {
 	stubCatalogAndResources()
 	window.history.pushState(null, "", "/?municipality=1")

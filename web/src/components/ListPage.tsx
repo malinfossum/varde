@@ -83,7 +83,11 @@ export function ListPage({ filters }: { filters: Filters }) {
 			{catalogState.kind === "error" && <ErrorState onRetry={retryCatalog} />}
 			{state.kind === "loading" && <LoadingState />}
 			{state.kind === "error" && <ErrorState onRetry={retry} />}
-			{state.kind === "ready" && state.data.totalCount === 0 && (
+			{/* Covers both the genuine zero-results case and a page past the last one (e.g. a
+			    stale ?page= after filters narrowed the result set) — the API returns an empty
+			    items array either way, and both deserve the same recovery UI rather than a
+			    blank list. */}
+			{state.kind === "ready" && state.data.items.length === 0 && (
 				<EmptyState
 					onClearFilters={() =>
 						apply({ search: "", categories: [], municipality: null, national: false })
@@ -92,7 +96,7 @@ export function ListPage({ filters }: { filters: Filters }) {
 					onPick={onPick}
 				/>
 			)}
-			{state.kind === "ready" && state.data.totalCount > 0 && (
+			{state.kind === "ready" && state.data.items.length > 0 && (
 				<>
 					<ul className="resource-list stack">
 						{state.data.items.map((resource) => (
