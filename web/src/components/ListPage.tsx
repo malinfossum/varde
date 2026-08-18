@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { useCatalog } from "../hooks/useCatalog.ts"
 import { useResources } from "../hooks/useResources.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
@@ -35,8 +35,12 @@ export function ListPage({ filters }: { filters: Filters }) {
 	const applySearch = (patch: Partial<Filters>) =>
 		navigate("/", buildSearch(applyPatch(filters, patch), null), { replace: true })
 
-	const suggestions: Suggestion[] =
-		catalog && filters.search ? suggest(filters.search, catalog) : []
+	// suggest() re-scans the whole catalog on every call — memoize so it only re-runs when the
+	// search text or the catalog itself actually changes, not on every ListPage render.
+	const suggestions: Suggestion[] = useMemo(
+		() => (catalog && filters.search ? suggest(filters.search, catalog) : []),
+		[catalog, filters.search]
+	)
 
 	const onPick = (suggestion: Suggestion) =>
 		suggestion.kind === "municipality"
