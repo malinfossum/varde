@@ -46,3 +46,18 @@ test("an announcement after the compose window replaces instead of composing", (
 	expect(region.textContent).not.toContain("B")
 	vi.useRealTimers()
 })
+
+test("the compose window is anchored to the first message, not extended by each new one", () => {
+	vi.useFakeTimers()
+	const announce = renderProbe()
+	announce("A") // t=0, opens the window
+	act(() => vi.advanceTimersByTime(1000))
+	announce("B") // t=1000, still within 1500ms of A — composes
+	act(() => vi.advanceTimersByTime(1000))
+	announce("C") // t=2000 — 2000ms past A, the window's anchor, so it must replace, not compose
+	const region = screen.getByText("C")
+	expect(region).toHaveTextContent("C")
+	expect(region.textContent).not.toContain("A")
+	expect(region.textContent).not.toContain("B")
+	vi.useRealTimers()
+})

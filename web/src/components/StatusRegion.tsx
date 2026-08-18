@@ -17,7 +17,10 @@ export function AnnouncerProvider({ children }: { children: ReactNode }) {
 		const withinWindow =
 			lastAnnouncedAt.current !== null && now - lastAnnouncedAt.current < COMPOSE_WINDOW_MS
 		const composed = withinWindow && lastMessage.current ? `${lastMessage.current}. ${next}` : next
-		lastAnnouncedAt.current = now
+		// Anchor to the first message of the window — only a fresh window (one not already open)
+		// moves the anchor forward. Otherwise a steady stream of messages would each restart the
+		// clock and the window would never close.
+		if (!withinWindow) lastAnnouncedAt.current = now
 		lastMessage.current = composed
 		setMessage(composed)
 	}
