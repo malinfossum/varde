@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { act, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
@@ -35,6 +35,22 @@ test("language toggle switches strings, html lang, keeps focus, announces", asyn
 	expect(screen.getByText(/Language is now English/)).toBeInTheDocument() // the live region
 	expect(screen.getByRole("button", { name: "Norsk" })).toBeInTheDocument()
 	expect(window.location.search).toContain("lang=en")
+})
+
+test("browser back/forward across a language change updates the UI language", () => {
+	stubResources()
+	window.history.pushState(null, "", "/?lang=en")
+	render(<App />)
+	expect(screen.getByRole("button", { name: "Norsk" })).toBeInTheDocument() // started in English
+
+	// Simulate the browser's own back navigation: it moves the URL and fires popstate itself —
+	// pushState alone does not, so trigger both like a real back button would.
+	act(() => {
+		window.history.pushState(null, "", "/")
+		window.dispatchEvent(new PopStateEvent("popstate"))
+	})
+
+	expect(screen.getByRole("button", { name: "English" })).toBeInTheDocument() // back to nb
 })
 
 test("language toggle resets page to 1 instead of carrying it into the new language", async () => {

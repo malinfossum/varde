@@ -27,6 +27,16 @@ export function LanguageProvider({
 }) {
 	const [lang, setLangState] = useState<Lang>(() => resolveLang(initialLang))
 
+	// initialLang is only a useState *initializer* above — it's read once, at mount. Browser
+	// back/forward changes the ?lang= param (App's useUrlState reacts to popstate and passes
+	// the new value down as this prop), but without this effect the provider would never
+	// re-resolve it, so the UI language wouldn't follow. Re-derive with the same resolution
+	// order as the initial mount; this is a no-op on the initial render and on an explicit
+	// toggle (which already set the matching lang directly via setLang).
+	useEffect(() => {
+		setLangState(resolveLang(initialLang))
+	}, [initialLang])
+
 	useEffect(() => {
 		document.documentElement.lang = lang
 	}, [lang])
