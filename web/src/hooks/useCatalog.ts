@@ -5,14 +5,30 @@ import type { CategoryDto, MunicipalityDto } from "../types/api.ts"
 
 export type Catalog = { municipalities: MunicipalityDto[]; categories: CategoryDto[] }
 
-export function useCatalog(lang: Lang): Catalog | null {
-	const [catalog, setCatalog] = useState<Catalog | null>(null)
+export type CatalogState =
+	| { kind: "loading" }
+	| { kind: "error" }
+	| { kind: "ready"; catalog: Catalog }
+
+export function useCatalog(lang: Lang) {
+	const [state, setState] = useState<CatalogState>({ kind: "loading" })
+	const [attempt, setAttempt] = useState(0)
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt only forces a re-fetch, unused in the body
 	useEffect(() => {
 		const controller = new AbortController()
+		setState({ kind: "loading" })
 		Promise.all([fetchMunicipalities(controller.signal), fetchCategories(lang, controller.signal)])
-			.then(([municipalities, categories]) => setCatalog({ municipalities, categories }))
-			.catch(() => {}) // the resources request surfaces connectivity errors; the catalog stays null
+			.then(([municipalities, categories]) =>
+				setState({ kind: "ready", catalog: { municipalities, categories } })
+			)
+			.catch((error: unknown) => {
+				// Cleanup aborted us — a newer request (new lang, or a retry) owns the state now.
+				if (error instanceof DOMException && error.name === "AbortError") return
+				setState({ kind: "error" })
+			})
 		return () => controller.abort()
-	}, [lang])
-	return catalog
+	}, [lang, attempt])
+
+	return { state, retry: () => setAttempt((n) => n + 1) }
 }

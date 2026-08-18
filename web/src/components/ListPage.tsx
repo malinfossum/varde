@@ -22,7 +22,8 @@ export function ListPage({ filters }: { filters: Filters }) {
 	const t = useTranslation()
 	const navigate = useNavigate()
 	const announce = useAnnounce()
-	const catalog = useCatalog(lang)
+	const { state: catalogState, retry: retryCatalog } = useCatalog(lang)
+	const catalog = catalogState.kind === "ready" ? catalogState.catalog : null
 	const { state, retry } = useResources(filters, lang)
 
 	const apply = (patch: Partial<Filters>) =>
@@ -79,6 +80,7 @@ export function ListPage({ filters }: { filters: Filters }) {
 					}
 				/>
 			)}
+			{catalogState.kind === "error" && <ErrorState onRetry={retryCatalog} />}
 			{state.kind === "loading" && <LoadingState />}
 			{state.kind === "error" && <ErrorState onRetry={retry} />}
 			{state.kind === "ready" && state.data.totalCount === 0 && (
