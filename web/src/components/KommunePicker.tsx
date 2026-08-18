@@ -6,6 +6,11 @@ import { useAnnounce } from "./StatusRegion.tsx"
 
 type Selection = { municipality: number } | { national: true } | { all: true }
 
+// Norwegian names only sort å/ø/æ correctly under nb collation (plain string/localeCompare
+// comparison would sort them as if they came right after a-z's "z"-adjacent range, ahead of
+// where Norwegian readers expect them).
+const nbCollator = new Intl.Collator("nb")
+
 export function KommunePicker({
 	municipalities,
 	selectedId,
@@ -33,7 +38,9 @@ export function KommunePicker({
 		return () => window.clearTimeout(timer)
 	}, [filter, visible.length, announce, t])
 
-	const counties = [...new Set(visible.map((m) => m.county))]
+	const counties = [...new Set(visible.map((m) => m.county))].sort((a, b) =>
+		nbCollator.compare(a, b)
+	)
 	const nationalMatches = !filter.trim() || matchesEitherWay(filter, t("picker.national"))
 
 	return (
@@ -68,6 +75,7 @@ export function KommunePicker({
 					<ul>
 						{visible
 							.filter((m) => m.county === county)
+							.sort((a, b) => nbCollator.compare(a.name, b.name))
 							.map((m) => (
 								<li key={m.id}>
 									<button

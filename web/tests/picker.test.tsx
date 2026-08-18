@@ -57,3 +57,51 @@ test("selecting reports the pick", async () => {
 	await user.click(screen.getByRole("button", { name: "Hamar" }))
 	expect(onSelect).toHaveBeenCalledWith({ municipality: 1 })
 })
+
+test("fylke groups sort with Norwegian collation, not backend order", () => {
+	// Backend order here is deliberately not alphabetical; nb collation sorts a-z, then æ, ø, å —
+	// so "Østfold" and "Ærlig" must land after "Agder" despite arriving first.
+	const unsorted = [
+		{ id: 1, name: "Sarpsborg", county: "Østfold" },
+		{ id: 2, name: "Grimstad", county: "Agder" },
+		{ id: 3, name: "Nord-Aurdal", county: "Ærlig" },
+	]
+	render(
+		<LanguageProvider initialLang="nb">
+			<AnnouncerProvider>
+				<KommunePicker
+					municipalities={unsorted}
+					selectedId={null}
+					nationalSelected={false}
+					onSelect={vi.fn()}
+				/>
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	const headings = screen.getAllByRole("heading").map((h) => h.textContent)
+	expect(headings).toEqual(["Agder", "Ærlig", "Østfold"])
+})
+
+test("municipalities within a fylke sort with Norwegian collation too", () => {
+	const unsorted = [
+		{ id: 1, name: "Åsane", county: "Vestland" },
+		{ id: 2, name: "Bergen", county: "Vestland" },
+	]
+	render(
+		<LanguageProvider initialLang="nb">
+			<AnnouncerProvider>
+				<KommunePicker
+					municipalities={unsorted}
+					selectedId={null}
+					nationalSelected={false}
+					onSelect={vi.fn()}
+				/>
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	const buttons = screen
+		.getAllByRole("button")
+		.map((b) => b.textContent)
+		.filter((name) => name === "Åsane" || name === "Bergen")
+	expect(buttons).toEqual(["Bergen", "Åsane"])
+})
