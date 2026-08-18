@@ -113,6 +113,35 @@ test("a page beyond the last page shows EmptyState instead of a blank list", asy
 	expect(await screen.findByRole("heading", { name: "Ingen treff" })).toBeInTheDocument()
 })
 
+test("an unknown ?municipality= value doesn't crash the app and the list renders unfiltered", async () => {
+	let resourcesUrl = ""
+	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
+		const url = String(input)
+		if (url.includes("/api/municipalities")) {
+			return Promise.resolve(new Response(JSON.stringify(municipalities), { status: 200 }))
+		}
+		if (url.includes("/api/categories")) {
+			return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
+		}
+		resourcesUrl = url
+		return Promise.resolve(
+			new Response(JSON.stringify({ items: [resource], page: 1, pageSize: 20, totalCount: 1 }), {
+				status: 200,
+			})
+		)
+	})
+	window.history.pushState(null, "", "/?municipality=abc")
+	render(<App />)
+
+	expect(await screen.findByText("Krisesenteret i Hamar")).toBeInTheDocument()
+	// A non-numeric municipality id never survives URL parsing (parseFilters' positiveInt
+	// rejects it), so it never reaches the resources request — the list is unfiltered rather
+	// than scoped to a municipality that doesn't exist.
+	expect(resourcesUrl).not.toContain("municipality")
+	// No phantom selection in the picker either.
+	expect(screen.getByRole("button", { name: "Alle" })).toHaveAttribute("aria-pressed", "true")
+})
+
 test("Alle clears both municipality and national selection from the URL", async () => {
 	stubCatalogAndResources()
 	window.history.pushState(null, "", "/?municipality=1")
