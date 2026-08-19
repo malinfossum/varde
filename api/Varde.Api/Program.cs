@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Varde.Core.Interfaces;
@@ -52,6 +53,23 @@ builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+// First in the pipeline, in every environment. App Service terminates TLS and proxies plain
+// HTTP to Kestrel, so X-Forwarded-Proto must be applied before UseHttpsRedirection (else
+// production redirect-loops) and X-Forwarded-For before the rate limiter (else every visitor
+// shares one bucket). KnownNetworks/KnownProxies are cleared because App Service's proxy
+// addresses are not enumerable. ForwardLimit stays at 1: App Service APPENDS the real client
+// IP, so the right-most entry is the trustworthy one — reading deeper into the chain would
+// let clients choose their own rate-limit bucket. Enabled in dev too: there is no proxy
+// there, so a spoofed header only mis-partitions a local limiter, and unconditional
+// enablement keeps WebApplicationFactory tests in their default Development environment.
+var forwardedHeaders = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+};
+forwardedHeaders.KnownNetworks.Clear();
+forwardedHeaders.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeaders);
 
 app.UseExceptionHandler();
 
