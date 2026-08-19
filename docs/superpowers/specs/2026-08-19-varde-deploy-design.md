@@ -70,13 +70,25 @@ strings live in Proton Pass only — never in the repo, GitHub, or chat.
 Behind App Service's proxy, `HttpContext.Connection.RemoteIpAddress` is the proxy's address,
 so the per-IP rate limiter collapses into one global bucket — every visitor shares one
 60-requests/minute window. Fix: `UseForwardedHeaders` (X-Forwarded-For + X-Forwarded-Proto),
-registered **before** `UseRateLimiter`, enabled outside Development. Explicit code is chosen
-over Azure's `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` app setting: same effect, but visible
-in the repo and integration-testable.
+registered as the **first middleware in the pipeline** — before HTTPS redirection, CORS, and
+the rate limiter. The position is load-bearing: App Service terminates TLS and speaks plain
+HTTP to Kestrel, so until X-Forwarded-Proto is processed, `UseHttpsRedirection` sees HTTP and
+redirect-loops the whole site. Explicit code is chosen over Azure's
+`ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` app setting: same effect, but visible in the repo
+and integration-testable.
 
-Because App Service's proxy addresses are not enumerable, `KnownNetworks`/`KnownProxies` are
-cleared — the standard App Service configuration. The header is only trustworthy because App
-Service always fronts the app; the spec records this assumption.
+The middleware is enabled **unconditionally, in all environments** — not gated to production.
+In dev there is no proxy, so a locally spoofed `X-Forwarded-For` only mis-partitions a local
+rate limiter (harmless), and unconditional enablement keeps `WebApplicationFactory` tests
+running in their default Development environment. Two settings are pinned with their reasons:
+
+- `KnownNetworks`/`KnownProxies` **cleared** — App Service's proxy addresses are not
+  enumerable; the standard App Service configuration. The header is only trustworthy because
+  App Service always fronts the app in production.
+- `ForwardLimit` stays at its default of **1** — App Service *appends* the real client IP to
+  any client-supplied `X-Forwarded-For`, so taking only the right-most entry is exactly what
+  defeats spoofing. Reading deeper into the chain would hand clients control of their
+  rate-limit identity; do not "improve" this.
 
 **Test:** an integration test sends a request carrying `X-Forwarded-For` with the middleware
 active and asserts the rate-limit partition uses the forwarded address (two forwarded
@@ -131,21 +143,35 @@ that a query over seeded names orders æ/ø/å after z.
 
 ## Pipeline
 
-Two GitHub Actions workflows, path-filtered, triggered on push to `main`. "Push to main only
-happens by merge" is made true, not assumed: the repo currently has **no ruleset** (verified
-2026-08-19), so a **protect-main ruleset** (require PR before merging, block force pushes) is
+Three GitHub Actions workflows. "Push to main only happens by merge" is made true, not
+assumed: the repo currently has **no ruleset** (verified 2026-08-19), so a **protect-main
+ruleset** (require PR before merging, require the CI checks below, block force pushes) is
 part of this plan — it was already on the settings checklist and becomes load-bearing the
-moment main auto-deploys:
+moment main auto-deploys.
+
+### `ci.yml` (every pull request, no path filter)
+
+Runs **both** suites — xUnit against a Postgres 17 service container, and npm ci → Biome →
+Vitest — on every PR, unconditionally. This is the merge gate: the ruleset requires these two
+checks. No path filter, deliberately: path-filtered required checks are a known GitHub trap
+(a docs-only PR would trigger neither check and could never merge, since required checks that
+never report stay "expected" forever). Both suites together cost about two minutes; paying
+that on every PR buys an always-mergeable repo. Tests failing *after* merge (deploy-time
+only) would strand main broken with nothing deployed — this workflow makes that impossible.
+
+The two deploy workflows below are path-filtered, trigger on push to `main`, and each also
+carries `workflow_dispatch` as a manual re-run lever:
 
 ### `deploy-api.yml` (paths: `api/**`)
 
-1. **Test job:** full xUnit suite (81) against a **Postgres 17 service container** — the first
-   time the API tests run in CI. The container's throwaway credentials live in the workflow
-   file; they secure nothing.
+1. **Test job:** full xUnit suite (81) against a **Postgres 17 service container** — re-run
+   at deploy time even though CI ran it at PR time, so a deploy never rides on a stale green.
+   The container's throwaway credentials live in the workflow file; they secure nothing.
 2. **Deploy job**, needs test job green: `dotnet publish` → deploy to App Service.
    Authentication via **OIDC federated credentials** (`azure/login` with a Microsoft Entra app
    registration trusting the repo's `production` environment) — no long-lived Azure secret
-   stored anywhere.
+   stored anywhere. The app registration's role assignment is **scoped to `rg-varde` only**
+   (Website Contributor) — never subscription-wide.
 
 ### `deploy-web.yml` (paths: `web/**`)
 
@@ -169,14 +195,21 @@ Shared rules:
 
 One-time sequence; portal/psql steps are Malin's, repo steps land via PR:
 
-1. Protect-main ruleset added on GitHub (require PR, block force pushes).
+1. Protect-main ruleset added on GitHub (require PR, block force pushes). The two CI checks
+   become *required* checks after `ci.yml`'s first run reports them (GitHub can only require
+   checks it has seen).
 2. Azure account + subscription ready (Malin; card verification hers alone), budget alert set.
-3. Create `varde` database in Neon with the `nb-NO` ICU collation (SQL above).
-4. Create `rg-varde`, App Service plan + Web App; set the two app settings (connection string,
-   CORS origin placeholder until step 5).
-5. Merge the code/workflow PR → API deploys; startup migration creates schema + seeds 91 rows.
-6. Create the Static Web App; put its hostname into `Cors__AllowedOrigins__0`; store its
-   deployment token as an environment secret → web deploys.
+3. Create `varde` database in Neon with the `nb-NO` ICU collation (SQL above). The Proton
+   Pass connection string's **database name changes from the default `neondb` to `varde`** —
+   update the stored entry, or the app would migrate the wrong, mis-collated database.
+4. Create `rg-varde`, App Service plan + Web App; set the `ConnectionStrings__VardeDb` app
+   setting from Proton Pass.
+5. Create the Static Web App; store its deployment token as a `production` environment
+   secret; put its hostname into the `Cors__AllowedOrigins__0` app setting. Everything Azure
+   now exists **before** any workflow fires — the first deploys cannot fail on missing
+   secrets.
+6. Merge the code/workflow PR → both deploys run: API deploys and its startup migration
+   creates schema + seeds 91 rows into empty Neon; web builds with `VITE_API_URL` and deploys.
 7. Verification pass (below); live URLs into the README.
 
 ---
@@ -194,12 +227,26 @@ All checks run against the **live** site:
 - [ ] Collation: psql spot-check that seeded names order æ/ø/å correctly.
 - [ ] Deep link to a sub-path loads the app (SWA fallback working).
 - [ ] Cold-start behavior observed once and noted in the README if user-visible.
+- [ ] Frontend error state confirmed against an unreachable API (F1 quota exhaustion returns
+      a platform 403; cold starts take 3–10 s) — a user in crisis must see the app's error
+      message with the national fallback numbers, never a blank page.
 
 **Honest limitation, recorded:** per-IP rate-limit partitioning cannot be fully proven from
 one machine. The integration test covers the middleware logic; production gets the
 single-client 429 sanity check only.
 
 ---
+
+## Accepted trade-offs (stress test 2026-08-19)
+
+- **SWA's edge sees full URLs (including `?search=`) on hard reload or shared link.**
+  Platform edge logs are outside our control; searches themselves go to the API (HTTP logging
+  off) and typing uses `replaceState`, so no per-keystroke URLs ever exist. Inherent in
+  choosing Azure at all — same posture as the base spec.
+- **The SWA deployment token is a long-lived secret.** The platform's only mechanism;
+  environment-scoped and rotatable from the portal.
+- **Migration concurrency is not guarded.** A single F1 instance with no slots means no two
+  instances ever run `Migrate()` concurrently, and Postgres DDL is transactional.
 
 ## Deferred
 
