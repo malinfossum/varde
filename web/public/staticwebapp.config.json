@@ -1,0 +1,11 @@
+{
+	"navigationFallback": {
+		"rewrite": "/index.html",
+		"exclude": ["/assets/*", "/theme-init.js", "/favicon.ico"]
+	},
+	"globalHeaders": {
+		"Referrer-Policy": "no-referrer",
+		"X-Content-Type-Options": "nosniff",
+		"Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' __API_ORIGIN__; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+	}
+}
