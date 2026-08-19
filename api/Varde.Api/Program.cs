@@ -76,14 +76,16 @@ app.UseExceptionHandler();
 app.UseCors(CorsPolicy);
 app.UseRateLimiter();
 
+// Schema comes from migrations, always — never EnsureCreated. Runs in every environment:
+// production Neon fills itself at deploy (schema + seed rows live in the migrations), and
+// a failed migration blocks startup, which is the safe failure.
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<VardeDbContext>().Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
-    // Schema comes from migrations, always — never EnsureCreated.
-    using (var scope = app.Services.CreateScope())
-    {
-        scope.ServiceProvider.GetRequiredService<VardeDbContext>().Database.Migrate();
-    }
-
     app.MapOpenApi();          // JSON spec at /openapi/v1.json — dev only
 }
 else
