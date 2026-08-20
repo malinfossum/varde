@@ -45,6 +45,10 @@ jobs:
       - name: Install
         working-directory: web
         run: npm ci
+      - name: Require API_URL
+        env:
+          API_URL: ${{ vars.API_URL }}
+        run: test -n "$API_URL" || { echo "vars.API_URL is not set - refusing to build a broken bundle"; exit 1; }
       - name: Build
         working-directory: web
         env:
@@ -53,7 +57,9 @@ jobs:
       - name: Inject API origin into the CSP
         # The repo holds only the __API_ORIGIN__ placeholder; the real hostname lives in
         # the API_URL environment variable and lands in dist/ only, never in git.
-        run: sed -i "s|__API_ORIGIN__|${{ vars.API_URL }}|g" web/dist/staticwebapp.config.json
+        env:
+          API_URL: ${{ vars.API_URL }}
+        run: sed -i "s|__API_ORIGIN__|$API_URL|g" web/dist/staticwebapp.config.json
       - uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
