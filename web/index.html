@@ -10,14 +10,9 @@
 		<meta name="referrer" content="no-referrer" />
 		<title>Varde</title>
 
-		<!-- No-flash theme init: must run BEFORE stylesheets -->
-		<script>
-			(() => {
-				var root = document.documentElement;
-				root.dataset.theme = localStorage.getItem("theme") || "dark";
-				root.dataset.palette = localStorage.getItem("palette") || "default";
-			})();
-		</script>
+		<!-- No-flash theme init: must load BEFORE stylesheets, synchronously (no defer/module).
+		     External file instead of inline so the CSP can stay script-src 'self' with no hashes. -->
+		<script src="/theme-init.js"></script>
 
 		<!-- Design system foundation -->
 		<link rel="stylesheet" href="/design-system/tokens/index.css" />
