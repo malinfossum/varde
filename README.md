@@ -16,7 +16,13 @@ dials it. Varde treats contact data as safety-critical.
 
 Phase 1, the API, is complete: 91 services across 8 municipalities (Innlandet and Oslo)
 plus national services, described in Norwegian and English. Phase 2, the web frontend,
-is complete. Deployment is next.
+is complete. Phase 3, deployment, went live 2026-09-04.
+
+**Live:** https://ambitious-flower-09612f00f.6.azurestaticapps.net (frontend) ·
+https://varde-api.azurewebsites.net/api/resources (API)
+
+The API runs on a free tier that sleeps when idle: the first request after a quiet spell can
+take several seconds while it wakes. The page shows its own loading state meanwhile.
 
 ## Data verification
 
@@ -75,7 +81,7 @@ standard local development setup (`localhost`, `postgres`/`postgres`); override 
 ## Deployment
 
 Varde deploys automatically on merge to `main`: the frontend to **Azure Static Web Apps**
-(Free), the API to **Azure App Service** (F1, Linux, Germany West Central), the database on
+(Free, East US 2), the API to **Azure App Service** (F1, Linux, Sweden Central), the database on
 **Neon** (PostgreSQL 17, Frankfurt, `nb-NO` ICU collation). Schema and seed data arrive via
 EF Core migrations at API startup — nothing is hand-built in the database.
 
