@@ -203,7 +203,10 @@ One-time sequence; portal/psql steps are Malin's, repo steps land via PR:
    Pass connection string's **database name changes from the default `neondb` to `varde`** —
    update the stored entry, or the app would migrate the wrong, mis-collated database.
 4. Create `rg-varde`, App Service plan + Web App; set the `ConnectionStrings__VardeDb` app
-   setting from Proton Pass.
+   setting from Proton Pass. Enable **HTTPS Only** on the Web App: on App Service Linux the
+   container listens on HTTP only, so `UseHttpsRedirection` cannot determine the redirect
+   port and silently serves plain-HTTP requests — the platform-level setting is what
+   actually enforces HTTPS.
 5. Create the Static Web App; store its deployment token as a `production` environment
    secret; put its hostname into the `Cors__AllowedOrigins__0` app setting. Everything Azure
    now exists **before** any workflow fires — the first deploys cannot fail on missing
@@ -226,6 +229,7 @@ All checks run against the **live** site:
 - [ ] Rate limiter live: a curl burst past the window limit returns 429.
 - [ ] Collation: psql spot-check that seeded names order æ/ø/å correctly.
 - [ ] Deep link to a sub-path loads the app (SWA fallback working).
+- [ ] `http://` API URL redirects to `https://` (HTTPS Only enforced at the platform).
 - [ ] Cold-start behavior observed once and noted in the README if user-visible.
 - [ ] Frontend error state confirmed against an unreachable API (F1 quota exhaustion returns
       a platform 403; cold starts take 3–10 s) — a user in crisis must see the app's error

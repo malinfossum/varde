@@ -71,3 +71,29 @@ Tests create disposable `varde_test_<guid>` databases. The connection defaults t
 standard local development setup (`localhost`, `postgres`/`postgres`); override it with the
 `VARDE_TEST_PG` environment variable. The web dev server expects the API at
 `http://localhost:5005` by default (`VITE_API_URL` to override).
+
+## Deployment
+
+Varde deploys automatically on merge to `main`: the frontend to **Azure Static Web Apps**
+(Free), the API to **Azure App Service** (F1, Linux, Germany West Central), the database on
+**Neon** (PostgreSQL 17, Frankfurt, `nb-NO` ICU collation). Schema and seed data arrive via
+EF Core migrations at API startup — nothing is hand-built in the database.
+
+Three GitHub Actions workflows drive it:
+
+| Workflow | Trigger | Does |
+|---|---|---|
+| `ci.yml` | every pull request | both test suites + web build — the required merge checks |
+| `deploy-api.yml` | push to `main` touching `api/**` | re-test, then deploy to App Service via OIDC |
+| `deploy-web.yml` | push to `main` touching `web/**` | re-test, build with the real API origin, deploy to SWA |
+
+Deploy credentials live in the GitHub `production` environment: secrets `AZURE_CLIENT_ID`,
+`AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` (OIDC federated login — no stored password),
+`AZURE_STATIC_WEB_APPS_API_TOKEN`, and variables `API_APP_NAME` and `API_URL`. The repo
+itself contains no hostnames or secrets; `staticwebapp.config.json` carries an
+`__API_ORIGIN__` placeholder replaced at deploy time.
+
+By design there is no Application Insights and HTTP logging is off — see the privacy posture
+in `docs/superpowers/specs/2026-08-12-varde-design.md`. The full deployment design, including
+the first-deploy runbook and verification checklist, is
+`docs/superpowers/specs/2026-08-19-varde-deploy-design.md`.

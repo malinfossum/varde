@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  # Job keys are the required-check contexts in the protect-main ruleset — do not rename.
+  api-tests:
+    runs-on: ubuntu-latest
+    services:
+      # Matches TestDatabase.cs's default connection string, so no VARDE_TEST_PG is needed.
+      # Throwaway credentials for a job-local container; they secure nothing.
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Test
+        run: dotnet test api/Varde.slnx
+
+  web-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Biome
+        run: npx biome ci .
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npm run build

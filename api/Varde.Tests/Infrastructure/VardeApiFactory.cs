@@ -12,7 +12,7 @@ namespace Varde.Tests.Infrastructure;
 /// <summary>
 /// Boots the real app against a throwaway PostgreSQL database on the local/CI server. Each factory
 /// instance creates its OWN empty database and drops it on dispose, so every test that news up a
-/// factory gets full isolation. The app applies migrations on startup in Development.
+/// factory gets full isolation. The app applies migrations on startup in every environment.
 /// Create one per test — `using var factory = new VardeApiFactory();` — rather than sharing a
 /// class fixture, or data from one test leaks into the next.
 /// </summary>
@@ -34,13 +34,20 @@ public sealed class VardeApiFactory : WebApplicationFactory<Program>
     /// </summary>
     public bool KeepSeedData { get; init; }
 
+    /// <summary>
+    /// Host environment for this test's app instance. Production hides OpenAPI and enables
+    /// HTTPS redirection (inert under TestServer — no https port is configured, so the
+    /// middleware skips redirecting); migrations run in every environment.
+    /// </summary>
+    public string Environment { get; init; } = "Development";
+
     /// <summary>Every log message the app wrote during this test.</summary>
     public CapturingLoggerProvider Logs { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Program.cs's Development branch applies migrations and maps OpenAPI; tests need the former.
-        builder.UseEnvironment("Development");
+        // Program.cs applies migrations at startup in every environment; OpenAPI stays dev-only.
+        builder.UseEnvironment(Environment);
 
         // Touching TestDatabase runs its static constructor (stale-database cleanup) exactly once.
         using (var admin = new NpgsqlConnection(TestDatabase.AdminConnectionString))
