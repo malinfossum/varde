@@ -183,3 +183,49 @@ test("list page heading levels never skip: h1 shell, h2 picker and results, h3 c
 		expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1)
 	}
 })
+
+test("paging moves focus to the results heading; typing in search does not", async () => {
+	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
+		const url = String(input)
+		if (url.includes("/api/municipalities")) {
+			return Promise.resolve(new Response(JSON.stringify(municipalities), { status: 200 }))
+		}
+		if (url.includes("/api/categories")) {
+			return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
+		}
+		const page = Number(new URL(url).searchParams.get("page") ?? "1")
+		return Promise.resolve(
+			new Response(
+				JSON.stringify({
+					items: [{ ...resource, id: page, name: `Treff side ${page}` }],
+					page,
+					pageSize: 1,
+					totalCount: 3,
+				}),
+				{ status: 200 }
+			)
+		)
+	})
+	const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView")
+	const user = userEvent.setup()
+	render(<App />)
+	const heading = await screen.findByRole("heading", { level: 2, name: "3 treff" })
+	// Initial load leaves focus and scroll alone — nothing was interacted with yet.
+	expect(heading).not.toHaveFocus()
+	expect(scrollIntoView).not.toHaveBeenCalled()
+
+	// The pager sits below a long list; after paging, the user would otherwise be left staring
+	// at the (now stale-looking) pager with focus stranded on the button they pressed.
+	await user.click(screen.getByRole("button", { name: "Neste" }))
+	await screen.findByText("Treff side 2")
+	await waitFor(() =>
+		expect(screen.getByRole("heading", { level: 2, name: "3 treff" })).toHaveFocus()
+	)
+	expect(scrollIntoView).toHaveBeenCalledWith({ block: "start" })
+
+	// Filtering must never steal focus from the search box mid-typing.
+	const search = screen.getByLabelText("Søk etter tjeneste, kommune eller tema")
+	await user.type(search, "k")
+	await screen.findByText("Treff side 1")
+	expect(search).toHaveFocus()
+})

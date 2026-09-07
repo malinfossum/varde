@@ -38,3 +38,7 @@ if (typeof window !== "undefined" && typeof window.localStorage === "undefined")
 	}
 	window.localStorage = storage
 }
+
+// jsdom does no layout and ships no scrollIntoView. ListPage calls it after paging; a no-op
+// keeps that path runnable, and tests spy on it to assert the scroll happened.
+Element.prototype.scrollIntoView ??= () => {}
