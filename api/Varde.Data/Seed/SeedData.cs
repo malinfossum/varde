@@ -482,7 +482,7 @@ public static class SeedData
                 MunicipalityId = Loten,
                 Address = "Kildevegen 1, 2340 Løten",
                 // Phone deliberately empty — the only numbers on the page sit under two
-                // therapists' first names, not a service line. Malin's 2026-08-17 decision.
+                // therapists' first names, not a service line. My 2026-08-17 decision.
                 Website = "https://www.loten.kommune.no/helse-sosial-og-familie/psykisk-helse-og-rus/rask-psykisk-helsehjelp-rph/",
                 LastVerified = Verified,
                 CreatedAt = SeededAt,
@@ -1121,7 +1121,7 @@ public static class SeedData
                 Id = 241,
                 Name = "Gamle Oslo helsestasjon for ungdom (HFU)",
                 MunicipalityId = Oslo,
-                // Seeded as Gamle Oslo per Malin's 2026-08-17 resolution: page content (title +
+                // Seeded as Gamle Oslo per my 2026-08-17 resolution: page content (title +
                 // Hagegata 32, postcode consistent with Gamle Oslo) wins over the URL slug,
                 // which said "grunerlokka". See docs/seed-data-oslo.md's "Verify these first" §1.
                 Address = "Hagegata 32, 0653 Oslo",
@@ -1173,7 +1173,7 @@ public static class SeedData
                 Name = "Stovner boligkontor",
                 MunicipalityId = Oslo,
                 Address = "Bydel Stovner, Boligenheten, Karl Fossums vei 30, 0985 Oslo",
-                // Phone deliberately empty — Malin's 2026-08-17 decision. The page prints only
+                // Phone deliberately empty — my 2026-08-17 decision. The page prints only
                 // "55553333", the national Nav line run together, not the office's own number.
                 Website = "https://www.oslo.kommune.no",
                 LastVerified = Verified,
