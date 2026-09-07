@@ -208,6 +208,6 @@ public class SeedDataTests
             .ToListAsync();
 
         Assert.Equal(recorded, flagged);          // flag ⇔ recorded verbatim hours, both directions
-        Assert.Equal(9, flagged.Count); // literal count from Step 1
+        Assert.Equal(10, flagged.Count); // 9 from plan 2 + row 3 (Legevakt), source-verified 2026-09-07
     }
 }

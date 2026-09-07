@@ -45,6 +45,11 @@ public static class SeedData
     // after the rest of the ring batch — see docs/seed-data-innlandet-ring.md row 118's Notes.
     private static readonly DateOnly VerifiedRow118 = new(2026, 8, 17);
 
+    // Row 3 (Legevakt) was re-verified 2026-09-07 for opening hours only: helsenorge.no/legevakt
+    // prints "Du kan ringe 116 117 hele døgnet", so the row now carries Døgnåpent + IsAlwaysOpen
+    // — see docs/seed-data.md row 3's Notes. Phone and website unchanged.
+    private static readonly DateOnly VerifiedRow3 = new(2026, 9, 7);
+
     // Municipality ids — county = Innlandet for 1-7, Oslo for 8.
     private const int Hamar = 1;
     private const int Lillehammer = 2;
@@ -103,10 +108,11 @@ public static class SeedData
                 Id = 3,
                 Name = "Legevakt",
                 IsNational = true,
+                IsAlwaysOpen = true,
                 MunicipalityId = null,
                 Phone = "116 117",
                 Website = "https://www.helsenorge.no/legevakt/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRow3,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1246,6 +1252,7 @@ public static class SeedData
                 ResourceId = 3,
                 LanguageCode = "nb",
                 Description = "Nasjonalt nummer som setter deg over til legevaktsentralen der du befinner deg, når fastlegen er stengt og du trenger hjelp raskt. Ved akutt livsfare skal du ringe 113.",
+                OpeningHours = "Døgnåpent",
             },
             new ResourceTranslation
             {
@@ -1253,6 +1260,7 @@ public static class SeedData
                 ResourceId = 3,
                 LanguageCode = "en",
                 Description = "A national number that connects you to the out-of-hours medical service where you are, when your regular doctor is closed and you need help quickly. In a life-threatening emergency, call 113 instead.",
+                OpeningHours = "Open 24 hours",
             },
             new ResourceTranslation
             {
