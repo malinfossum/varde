@@ -38,6 +38,7 @@
 	"error.heading": "Something went wrong",
 	"error.help": "We couldn't fetch the services. Try again.",
 	"error.retry": "Try again",
+	"error.fallbacks": "Need help now? These services are always available:",
 	"notFound.heading": "Service not found",
 	"notFound.help": "The service may have moved or closed. Go back to search to find an alternative.",
 	"banner.fastlege": "Need healthcare during business hours? Contact your GP.",
