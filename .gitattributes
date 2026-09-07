@@ -1,0 +1,5 @@
+# Line endings. The index is LF throughout. web/ is checked out LF to match web/.editorconfig
+# and Biome (which otherwise fails its format check on CRLF working copies); api/ keeps the
+# platform default (CRLF on Windows, per api/.editorconfig).
+* text=auto
+web/** text=auto eol=lf
