@@ -113,6 +113,9 @@ export function ListPage({ filters }: { filters: Filters }) {
 			)}
 			{state.kind === "ready" && state.data.items.length > 0 && (
 				<>
+					<h2 className="text-lg leading-snug">
+						{state.data.totalCount} {t("status.results")}
+					</h2>
 					<ul className="resource-list stack">
 						{state.data.items.map((resource) => (
 							<ResourceCard key={resource.id} resource={resource} />

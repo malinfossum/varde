@@ -156,3 +156,30 @@ test("Alle clears both municipality and national selection from the URL", async 
 	expect(window.location.search).not.toContain("municipality")
 	expect(window.location.search).not.toContain("national")
 })
+
+test("list page heading levels never skip: h1 shell, h2 picker and results, h3 counties and cards", async () => {
+	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
+		const url = String(input)
+		if (url.includes("/api/municipalities")) {
+			return Promise.resolve(new Response(JSON.stringify(municipalities), { status: 200 }))
+		}
+		if (url.includes("/api/categories")) {
+			return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
+		}
+		return Promise.resolve(
+			new Response(JSON.stringify({ items: [resource], page: 1, pageSize: 20, totalCount: 1 }), {
+				status: 200,
+			})
+		)
+	})
+	render(<App />)
+	await screen.findByRole("heading", { level: 3, name: "Krisesenteret i Hamar" })
+	expect(screen.getByRole("heading", { level: 2, name: "Finn din kommune" })).toBeInTheDocument()
+	expect(screen.getByRole("heading", { level: 3, name: "Innlandet" })).toBeInTheDocument()
+	expect(screen.getByRole("heading", { level: 2, name: "1 treff" })).toBeInTheDocument()
+
+	const levels = screen.getAllByRole("heading").map((h) => Number(h.tagName.slice(1)))
+	for (let i = 1; i < levels.length; i++) {
+		expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1)
+	}
+})

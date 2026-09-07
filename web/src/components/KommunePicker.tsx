@@ -25,6 +25,7 @@ export function KommunePicker({
 	const t = useTranslation()
 	const announce = useAnnounce()
 	const id = useId()
+	const headingId = `${id}-heading`
 	const [filter, setFilter] = useState("")
 
 	const visible = filter.trim()
@@ -45,9 +46,14 @@ export function KommunePicker({
 
 	return (
 		<section className="kommune-picker">
-			<label htmlFor={id}>{t("picker.label")}</label>
+			{/* The picker is a section of the page, so its title is a heading — and that heading
+			    doubles as the input's accessible name (aria-labelledby). Counties nest under it as h3. */}
+			<h2 id={headingId} className="text-lg leading-snug">
+				{t("picker.label")}
+			</h2>
 			<input
 				id={id}
+				aria-labelledby={headingId}
 				type="search"
 				value={filter}
 				onChange={(event) => setFilter(event.target.value)}

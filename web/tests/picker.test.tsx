@@ -78,7 +78,7 @@ test("fylke groups sort with Norwegian collation, not backend order", () => {
 			</AnnouncerProvider>
 		</LanguageProvider>
 	)
-	const headings = screen.getAllByRole("heading").map((h) => h.textContent)
+	const headings = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)
 	expect(headings).toEqual(["Agder", "Ærlig", "Østfold"])
 })
 
