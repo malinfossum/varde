@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useCatalog } from "../hooks/useCatalog.ts"
 import { useResources } from "../hooks/useResources.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
@@ -34,6 +34,17 @@ export function ListPage({ filters }: { filters: Filters }) {
 	const apply = (patch: Partial<Filters>) =>
 		navigate("/", buildSearch(applyPatch(filters, patch), null))
 
+	// The pager sits under the whole list. After "Neste" the new cards render above the
+	// viewport and focus stays on the button — the user sees nothing change. Only the pager
+	// asks for this: a search or filter change must never pull focus out of the search box.
+	// The list unmounts while loading, so the move waits until the new page has settled.
+	const resultsHeading = useRef<HTMLHeadingElement>(null)
+	const focusResultsOnReady = useRef(false)
+	const goToPage = (page: number) => {
+		focusResultsOnReady.current = true
+		apply({ page })
+	}
+
 	// Typing in the search box fires on every keystroke; pushing a history entry per keystroke
 	// would flood back/forward with useless states. Replace the current entry instead — every
 	// other filter change (picker, suggestions, pager, clear, toggle) still pushes normally.
@@ -66,6 +77,19 @@ export function ListPage({ filters }: { filters: Filters }) {
 			)
 		}
 	}, [state.kind])
+
+	// Scroll the heading to the top edge, then focus without a second scroll — focus() alone
+	// centres the element in Chromium, leaving the new cards half a screen down. An error
+	// settles the request too: the flag must not linger and fire on a later, unrelated load
+	// (say, the user typing a new search after a retry).
+	useEffect(() => {
+		if (state.kind === "loading") return
+		const wanted = focusResultsOnReady.current
+		focusResultsOnReady.current = false
+		if (!wanted || state.kind !== "ready") return
+		resultsHeading.current?.scrollIntoView({ block: "start" })
+		resultsHeading.current?.focus({ preventScroll: true })
+	}, [state])
 
 	// Unknown municipality id in a hand-edited URL: no phantom selection (spec).
 	const knownMunicipality =
@@ -113,7 +137,7 @@ export function ListPage({ filters }: { filters: Filters }) {
 			)}
 			{state.kind === "ready" && state.data.items.length > 0 && (
 				<>
-					<h2 className="text-lg leading-snug">
+					<h2 ref={resultsHeading} tabIndex={-1} className="text-lg leading-snug">
 						{state.data.totalCount} {t("status.results")}
 					</h2>
 					<ul className="resource-list stack">
@@ -125,7 +149,7 @@ export function ListPage({ filters }: { filters: Filters }) {
 						page={state.data.page}
 						pageSize={state.data.pageSize}
 						totalCount={state.data.totalCount}
-						onPage={(page) => apply({ page })}
+						onPage={goToPage}
 					/>
 				</>
 			)}
