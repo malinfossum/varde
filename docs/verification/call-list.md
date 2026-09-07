@@ -2,16 +2,16 @@
 
 **Date:** 2026-08-13 · **Status of the machine pass:** 79 of 91 rows independently
 re-checked against their cited sources — **zero transcription mismatches found anywhere**.
-Pending: ring rows 101–112 (checker interrupted by a session limit; independent re-check
-resumes after 18:00). Full verdicts: `seed-data-check.md`, `seed-data-oslo-check.md` in this
-folder; ring report to follow.
+Pending at the time: ring rows 101–112 (independent re-check done the same day —
+`seed-data-innlandet-ring-check.md`). Full verdicts: `seed-data-check.md`, `seed-data-oslo-check.md` in this
+folder.
 
 Everything below is what a machine cannot settle. Sections A and B need a phone; section C
-needs only a decision or a text fix I can apply on your word.
+needs only a decision or a text fix.
 
 ---
 
-## POLICY CHANGE 2026-08-17 — no phone calls (Malin's decision)
+## POLICY CHANGE 2026-08-17 — no phone calls (my decision)
 
 Source verification is sufficient; if a number can't be verified by phone, the remaining
 sources (the service's own website above all) decide. Sections A and B are therefore
@@ -52,7 +52,7 @@ The original sections follow for reference; do not re-action them.
 ## B — Dial regardless of machine verdicts: crisis lines
 
 Machine checks say all of these match their sources. Dial anyway — thirty seconds each, and
-these are the numbers someone in crisis will trust because your app said so.
+these are the numbers someone in crisis will trust because this app said so.
 
 | Service (row) | Number |
 |---------------|--------|
@@ -73,7 +73,7 @@ All outcomes applied to the seed files the same day. Summary (details in each ro
 2. Row 121 URL fixed to korspahalsen.no (ASCII). ✅
 3. Row 9: seed 116 123, keypress in description (22 56 67 00 not dialled — unreproducible). ✅
 4. Row 13: display name "Tjeneste psykisk helse og rus". ✅
-5. Row 17 Housing First: keep the number (Malin: kommune leaders publish work mobiles). ✅
+5. Row 17 Housing First: keep the number (my call: kommune leaders publish work mobiles). ✅
 6. Row 112 Løten RPH: seed with empty phone. ✅
 7. Row 113 NAV Elverum: nav.no postcode 2414 + closure line added to description. ✅
 8. Row 22 Jobbhus: seed phone-less. ✅
@@ -101,7 +101,7 @@ The original decision list follows for reference; do not re-action it.
    `korspahalsen.no`. Fix the URL (machine-caught).
 3. **Row 9 Arbeidslivstelefonen** — the 116 123 (tast 3) route is double-confirmed on Mental
    Helse's site; the 22 56 67 00 pairing was seen by one checker but could not be reproduced
-   by the second. If you prefer the direct line (cleaner than a menu), dial 22 56 67 00 first
+   by the second. If I prefer the direct line (cleaner than a menu), dial 22 56 67 00 first
    to confirm it still answers; otherwise seed 116 123 with the keypress in the description.
 4. **Row 13 label** — 916 03 327 appears as both "Tjeneste psykisk helse og rus" and
    "Psykososial krisehjelp" on two Hamar pages. Pick the display name.
@@ -113,8 +113,8 @@ The original decision list follows for reference; do not re-action it.
    kommune page); postcode 2406 (kommune) vs 2414 (nav.no). Suggest nav.no's postcode and a
    temporary-closure line in the description.
 8. **Row 22 Jobbhus Gjøvik** — no phone printed anywhere. Seed phone-less (website only), or drop?
-9. **Row 241 Oslo HFU** — URL says Grünerløkka, page title says Gamle Oslo. One for your
-   Oslo friends: which HFU is this?
+9. **Row 241 Oslo HFU** — URL says Grünerløkka, page title says Gamle Oslo. One to check with someone
+   who knows Oslo: which HFU is this?
 10. **Rows 218/221 Oslo** — Overgrepsmottaket and Psykososial akuttjeneste share
     23 04 05 00 (legevakt switchboard). Keep both rows with the shared number, no keypress
     invented — confirm that's acceptable presentation.
@@ -122,7 +122,7 @@ The original decision list follows for reference; do not re-action it.
     Seed with it, or leave phone empty?
 12. **Ring citation gap** — four coverage claims cite "Ringsaker's vakttelefon list" without
     a URL; the checker found the probable page (`vakttelefoner-og-viktige-telefonnumre.576290`).
-    I'll fix the citations to whatever page you confirm.
+    Citations get fixed once the page is confirmed.
 13. **Row 223 Oslo Uteseksjonen** — SMS claim actually sourced from row 224's page; move the
     note (text fix).
 14. **Row 116 AAE (DPS Elverum-Hamar)** — its `Serves: Hamar` value is an inference from the

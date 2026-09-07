@@ -1,6 +1,6 @@
 # Seed data — Oslo
 
-**Status: VERIFICATION GATE CLOSED 2026-08-17** — bulk-accepted by Malin under the no-calls
+**Status: VERIFICATION GATE CLOSED 2026-08-17** — bulk-accepted by me under the no-calls
 policy (see seed-data.md's status block for the full rule).
 
 Row numbers continue from **201**, so this file does not collide with `docs/seed-data.md` (rows 1–22).
@@ -23,17 +23,17 @@ Conflicts, ambiguities and judgement calls. Deal with these before anything is s
    helsestasjon for ungdom (HFU)**, with address Hagegata 32, 0653 Oslo. The postcode is consistent
    with Gamle Oslo, so the content looks internally coherent, but the URL and the title disagree.
    I have recorded it as Gamle Oslo and cited the URL I actually fetched. ✅ RESOLVED 2026-08-17:
-   seed as Gamle Oslo — Malin's decision; page content (title + Hagegata 32, postcode consistent
+   seed as Gamle Oslo — my decision; page content (title + Hagegata 32, postcode consistent
    with Gamle Oslo) wins over the URL slug. Oslo friends can double-check during their pass.
 2. **Rows 218 and 221 (Overgrepsmottaket / Psykososial akuttjeneste)** — both print **23 04 05 00**.
    Same number, two different services, and Oslo kommune's own døgnåpne-tjenester page lists both
    against that number. A search result stated the menu routes to psykososial akuttjeneste on
    keypress 2; **I did not read that keypress on an official page and have therefore not recorded
    it anywhere.** ✅ RESOLVED 2026-08-17: keep both rows with the shared number, no keypress
-   invented — Malin's decision; two real services behind one real switchboard is honest presentation.
+   invented — my decision; two real services behind one real switchboard is honest presentation.
 3. **Row 245 (Stovner boligkontor)** — the page prints the phone as `55553333`, which is the
    national Nav number 55 55 33 33 run together. ✅ RESOLVED 2026-08-17: leave the phone empty —
-   Malin's decision; the national line isn't the office's own and seeding it implies a direct
+   my decision; the national line isn't the office's own and seeding it implies a direct
    contact that doesn't exist. The row ships website-only. (Item previously mislabelled row 244.)
 4. **Row 223 / 224 (Uteseksjonen and Uteseksjonens psykologtjeneste)** — the same number,
    913 03 913, and the same address serve both entries on two different Oslo kommune pages.
@@ -48,7 +48,7 @@ Conflicts, ambiguities and judgement calls. Deal with these before anything is s
 7. **Phone formatting** — several Oslo kommune pages print numbers unspaced (`23040500`,
    `91303913`, `22307712`, `47781315`, `90415388`, `41565535`, `23427200`, `55553333`). I have
    written them in the spaced Norwegian form to match the rest of the database and flagged each one
-   in Notes. **The digits are unchanged**, but confirm the grouping is what Malin wants displayed.
+   in Notes. **The digits are unchanged**, but confirm the grouping is what I want displayed.
 8. **Row 235 (Gatejuristen)** — `gatejuristen.no` could not be fetched in this session (the domain
    was blocked). Kirkens Bymisjon's own Gatejuristen page carries no phone number or address. The
    row is deliberately contactless. Someone must open gatejuristen.no manually.
@@ -63,8 +63,8 @@ Conflicts, ambiguities and judgement calls. Deal with these before anything is s
     legitimate Oslo services and should be added by hand.
 11. **Row 217 (Unge Relasjoner)** is a chat with no phone. It is run by Oslo Krisesenter but is
     described on its own site as a **national** chat. I have kept `Municipality` as `Oslo` because
-    of the operator; reclassify to `(national)` if Malin prefers.
-    ✅ RESOLVED 2026-08-17: reclassified to (national) — Malin's decision.
+    of the operator; reclassify to `(national)` if I prefer.
+    ✅ RESOLVED 2026-08-17: reclassified to (national) — my decision.
 
 ## Table
 
@@ -86,7 +86,7 @@ Conflicts, ambiguities and judgement calls. Deal with these before anything is s
 | 214 | Nav Vestre Aker | Oslo | | okonomi, arbeid, bolig | 55 55 33 33 | | https://www.nav.no | Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15 | https://www.nav.no/kontor/nav-vestre-aker | 2026-08-13 | ☑ | Sørkedalsveien 150A, 0754 Oslo, inngang til venstre når man kommer inn hovedinngangen. Same street address as RPH Bydel Vestre Aker (row 231). National Nav line only; no chat. |
 | 215 | Nav Østensjø | Oslo | | okonomi, arbeid, bolig | 55 55 33 33 | | https://www.nav.no | Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15 | https://www.nav.no/kontor/nav-ostensjo | 2026-08-13 | ☑ | Olaf Helsets vei 6, 0694 Oslo. National Nav line only; no office-specific number, no chat. |
 | 216 | Oslo Krisesenter | Oslo | | vold-og-overgrep, bolig, nodtjenester | 22 48 03 80 | | https://www.oslokrisesenter.no | Døgnåpent | https://www.oslokrisesenter.no/kontakt-oss | 2026-08-13 | ☑ | Number confirmed on two independent official pages: the centre's own contact page and Oslo kommune's døgnåpne-tjenester page. The centre is at a hemmelig adresse — leave the address field empty; this is a safety measure, not missing data. Postboks 7055 St. Olavs plass, 0130 Oslo. Email answered within 1–2 business days. |
-| 217 | Unge Relasjoner | (national) | | vold-og-overgrep, psykisk-helse | | https://www.ungerelasjoner.no/ | https://www.ungerelasjoner.no | Chat tirsdag 12–20 og fredag 12–15 | https://www.ungerelasjoner.no/ | 2026-08-13 | ☑ | Chat only, no phone — do not present as a crisis line. Run by Oslo Krisesenter, but the site describes it as a national chat; reclassify the municipality if that matters. Hours read verbatim: "Chatten er åpen tirsdag 12 - 20 og fredag 12-15". Age 16–25. RECLASSIFIED 2026-08-17 (Malin's decision): national — the site describes a national chat; the operator (Oslo Krisesenter) is noted here, not in the municipality field. |
+| 217 | Unge Relasjoner | (national) | | vold-og-overgrep, psykisk-helse | | https://www.ungerelasjoner.no/ | https://www.ungerelasjoner.no | Chat tirsdag 12–20 og fredag 12–15 | https://www.ungerelasjoner.no/ | 2026-08-13 | ☑ | Chat only, no phone — do not present as a crisis line. Run by Oslo Krisesenter, but the site describes it as a national chat; reclassify the municipality if that matters. Hours read verbatim: "Chatten er åpen tirsdag 12 - 20 og fredag 12-15". Age 16–25. RECLASSIFIED 2026-08-17 (my decision): national — the site describes a national chat; the operator (Oslo Krisesenter) is noted here, not in the municipality field. |
 | 218 | Overgrepsmottaket, Legevakten i Oslo | Oslo | | vold-og-overgrep, nodtjenester | 23 04 05 00 | | https://www.oslo.kommune.no | Døgnåpent | https://www.oslo.kommune.no/helse-og-omsorg/akutt-helsehjelp-og-legevakt/legevakt-oslo/overgrepsmottaket/ | 2026-08-13 | ☑ | Trondheimsveien 233 (Aker sykehus), 0587 Oslo. For deg fra 14 år. Under 14 år går henvendelsen til barnemottaket, som the page prints as 22 98 91 40 — a different service, seed separately or not at all. A staff/professional line 23 04 04 90 is also printed; that is not a public number. The service page prints the main number unspaced ("23040500"); the kriser-og-vold page prints "Ring 23 04 05 00" — I used the spaced form. |
 | 219 | Alternativ til Vold (ATV) Oslo | Oslo | | vold-og-overgrep, psykisk-helse | 22 40 11 10 | | https://atv-stiftelsen.no | Telefontid mandag–fredag 09.00–15.00 | https://atv-stiftelsen.no/avdeling/oslo/ | 2026-08-13 | ☑ | Brugata 19, 0186 Oslo. Number confirmed twice: ATV's own Oslo page and Oslo kommune's page on behandling for vold og aggresjonsproblemer. For deg over 18 år som utøver vold. Group therapy is listed at 15:15–16:45 on the kommune page; that is a session time, not opening hours, so it is not seeded. |
 | 220 | Vake kirkelig ressurssenter mot seksuelle overgrep | Oslo | | vold-og-overgrep, psykisk-helse | 23 22 79 30 | | https://www.kirkeligressurssenter.no | | https://dinutvei.no/hjelpetilbud/kirkelig-ressurssenter-mot-vold-og-seksuelle-overgrep/ | 2026-08-13 | ☑ | Lovisenberggata 15 C, 0456 Oslo. SMS 47 46 46 16 is also printed. Sourced from dinutvei.no, a national official directory rather than the organisation's own site. RESOLVED 2026-08-17 (no-calls policy): an official national directory is a sufficient source; ships as-is. Opening hours NOT FOUND. |
@@ -114,7 +114,7 @@ Conflicts, ambiguities and judgement calls. Deal with these before anything is s
 | 242 | Helsestasjon for ungdom (HFU) i Oslo | Oslo | | familie-og-barn, psykisk-helse | | | https://www.oslo.kommune.no | | https://www.oslo.kommune.no/helse-og-omsorg/helsehjelp/helsestasjon/helsestasjon-for-ungdom-hfu/ | 2026-08-13 | ☑ | City-level entry. NOT FOUND — the central page prints no phone number and names no individual stations; it only states the age range (12–24), that the service is free, and that you may choose any station. Each bydel has its own HFU with its own number; only row 241 was fetched. RESOLVED 2026-08-17: keep as the phone-less city-level overview row — consistent with the Jobbhus/RPH decisions (website-only rows are acceptable); individual stations can be added later. |
 | 243 | Oslohjelpa | Oslo | | familie-og-barn, psykisk-helse | | | https://www.oslo.kommune.no | | https://www.oslo.kommune.no/helse-og-omsorg/barn-ungdom-og-familie/oslohjelpa/ | 2026-08-13 | ☑ | NOT FOUND — no phone number is printed. The page says "Ring eller send en e-post til Oslohjelpa i din bydel så avtaler vi tid for en samtale" but lists no per-bydel contacts. Gratis lavterskeltilbud for barn, unge og familier, ingen henvisning. Exact age range NOT FOUND. |
 | 244 | Boligkontorene i Oslo | Oslo | | bolig | | | https://www.oslo.kommune.no | | https://www.oslo.kommune.no/bolig-og-sosiale-tjenester/bolig/alle-boligkontorer-i-oslo/ | 2026-08-13 | ☑ | NOT FOUND — the overview page names no offices and prints no numbers: "Det er boligkontorer i alle bydeler i Oslo. Velg din bydel eller søk opp via adressen din for å finne riktig boligkontor, åpningstider og kontaktinformasjon." City-level row only. |
-| 245 | Stovner boligkontor | Oslo | | bolig | | | https://www.oslo.kommune.no | | https://www.oslo.kommune.no/bolig-og-sosiale-tjenester/bolig/alle-boligkontorer-i-oslo/stovner-boligkontor/ | 2026-08-13 | ☑ | Bydel Stovner, Boligenheten, Karl Fossums vei 30, 0985 Oslo. RESOLVED 2026-08-17: phone left empty — Malin's decision. The page prints only "55553333" (the national Nav line run together), which is not the office's own number; the row ships website-only. Opening hours NOT FOUND. Sampled as one example of a bydel boligkontor; the other 14 were not fetched. |
+| 245 | Stovner boligkontor | Oslo | | bolig | | | https://www.oslo.kommune.no | | https://www.oslo.kommune.no/bolig-og-sosiale-tjenester/bolig/alle-boligkontorer-i-oslo/stovner-boligkontor/ | 2026-08-13 | ☑ | Bydel Stovner, Boligenheten, Karl Fossums vei 30, 0985 Oslo. RESOLVED 2026-08-17: phone left empty — my decision. The page prints only "55553333" (the national Nav line run together), which is not the office's own number; the row ships website-only. Opening hours NOT FOUND. Sampled as one example of a bydel boligkontor; the other 14 were not fetched. |
 | 246 | Økonomisk rådgivning og gjeldsrådgivning, Oslo kommune | Oslo | | okonomi | | | https://www.oslo.kommune.no | | https://www.oslo.kommune.no/bolig-og-sosiale-tjenester/sosiale-tjenester/okonomisk-radgivning/ | 2026-08-13 | ☑ | NOT FOUND — no phone number and no hours are printed. The page routes you to your local Nav office: "Ta kontakt med Nav-kontoret for å avtale tid for en samtale." In practice that means rows 201–215. Nav Sagene (row 209) is the only Oslo office I found that advertises a dedicated drop-in for økonomirådgivning. See also Overlaps: Navs økonomi- og gjeldsveiledningstelefon is already row 6 of seed-data.md. |
 | 247 | Bymisjonssenteret, Oslo (Kirkens Bymisjon) | Oslo | | psykisk-helse, rus | 22 66 67 80 | | https://kirkensbymisjon.no | | https://kirkensbymisjon.no/tilbud-bymisjonssenteret/kontaktinformasjon/ | 2026-08-13 | ☑ | Herslebsgate 43, 0578 Oslo. Opening hours NOT FOUND. The only email on the page is a named employee's (the operations manager) — **do not seed a personal address**; leave the email field empty. Confirm 22 66 67 80 is a switchboard and not a personal line. |
 
@@ -389,7 +389,7 @@ here. **None of these are duplicated above.**
   adjust row 7's `Serves` field rather than create a second Jussbuss row.
 - **Legevakt / 116 117** — row 3 of `seed-data.md` is the national 116 117 entry. Row 222 above is
   the **Oslo-specific** Legevakten i Oslo entry, with its own address, 00–24 hours and a possible
-  second number (23 48 72 00). These are related but not the same record. If Malin would rather
+  second number (23 48 72 00). These are related but not the same record. If I would rather
   not carry both, drop row 222 and keep the national one.
 - **Navs økonomi- og gjeldsveiledningstelefon (55 55 33 39)** — row 6 of `seed-data.md`. It is the
   national gjeld line and is the practical answer for Oslo too; row 246 above is the Oslo kommune
