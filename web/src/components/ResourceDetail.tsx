@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { fetchResource } from "../services/api.ts"
+import { copyText, shareCapability, shareResource } from "../services/contactActions.ts"
 import type { ResourceDto } from "../types/api.ts"
 import { ErrorState } from "./ErrorState.tsx"
 import { Link } from "./Link.tsx"
 import { LoadingState } from "./LoadingState.tsx"
 import { NotFoundState } from "./NotFoundState.tsx"
 import { telHref } from "./ResourceCard.tsx"
+import { useAnnounce } from "./StatusRegion.tsx"
 
 type DetailState =
 	| { kind: "loading" }
@@ -17,6 +19,7 @@ type DetailState =
 export function ResourceDetail({ id }: { id: number }) {
 	const { lang } = useLanguage()
 	const t = useTranslation()
+	const announce = useAnnounce()
 	const [state, setState] = useState<DetailState>({ kind: "loading" })
 	const [attempt, setAttempt] = useState(0)
 
@@ -38,6 +41,24 @@ export function ResourceDetail({ id }: { id: number }) {
 	if (state.kind === "missing") return <NotFoundState />
 
 	const { resource } = state
+	// Read once per render so the label always says what the tap will do.
+	const capability = shareCapability(navigator)
+	const canCopy = Boolean(navigator.clipboard)
+
+	const onShare = async () => {
+		const outcome = await shareResource(
+			{ name: resource.name, phone: resource.phone, url: window.location.href },
+			navigator
+		)
+		if (outcome === "copied") announce(t("detail.linkCopied"))
+		if (outcome === "failed") announce(t("detail.copyFailed"))
+	}
+
+	const onCopyPhone = async (phone: string) => {
+		const ok = await copyText(phone, navigator)
+		announce(t(ok ? "detail.phoneCopied" : "detail.copyFailed"))
+	}
+
 	return (
 		<article className="resource-detail stack">
 			<Link to="/">{t("detail.back")}</Link>
@@ -57,6 +78,15 @@ export function ResourceDetail({ id }: { id: number }) {
 						<dt>{t("detail.phone")}</dt>
 						<dd>
 							<a href={telHref(resource.phone)}>{resource.phone}</a>
+							{canCopy && (
+								<button
+									type="button"
+									className="copy-phone"
+									onClick={() => resource.phone && onCopyPhone(resource.phone)}
+								>
+									{t("detail.copyPhone")}
+								</button>
+							)}
 						</dd>
 					</>
 				)}
@@ -95,6 +125,13 @@ export function ResourceDetail({ id }: { id: number }) {
 					</>
 				)}
 			</dl>
+			{capability !== "none" && (
+				<div className="contact-actions">
+					<button type="button" onClick={onShare}>
+						{t(capability === "share" ? "detail.share" : "detail.copyLink")}
+					</button>
+				</div>
+			)}
 			<p className="muted">
 				{t("card.lastVerified")} {resource.lastVerified}
 			</p>
