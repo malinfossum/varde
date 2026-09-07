@@ -31,7 +31,8 @@ independent verification passes, with conflicts resolved by source hierarchy (a 
 own site outranks a re-listing) and unconfirmable details left empty rather than guessed.
 The full audit trail is in [docs/verification/](docs/verification/). Phone numbers
 belonging to named individuals are never published, and shelters that withhold their
-address for safety are listed without one by design.
+address for safety are listed without one by design. Every row is re-verified against its
+source every six months, and the date shown as "Sist bekreftet" is the date of that check.
 
 ## Stack
 
