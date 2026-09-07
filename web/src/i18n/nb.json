@@ -38,6 +38,7 @@
 	"error.heading": "Noe gikk galt",
 	"error.help": "Vi fikk ikke hentet tjenestene. Prøv igjen.",
 	"error.retry": "Prøv igjen",
+	"error.fallbacks": "Trenger du hjelp nå? Disse tjenestene er alltid der:",
 	"notFound.heading": "Fant ikke tjenesten",
 	"notFound.help": "Tjenesten kan ha flyttet eller blitt lagt ned. Gå tilbake til søket for å finne et alternativ.",
 	"banner.fastlege": "Trenger du helsehjelp på dagtid? Kontakt fastlegen din.",

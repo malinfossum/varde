@@ -9,22 +9,14 @@
 		/>
 		<meta name="referrer" content="no-referrer" />
 		<title>Varde</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
 		<!-- No-flash theme init: must load BEFORE stylesheets, synchronously (no defer/module).
 		     External file instead of inline so the CSP can stay script-src 'self' with no hashes. -->
 		<script src="/theme-init.js"></script>
 
-		<!-- Design system foundation -->
-		<link rel="stylesheet" href="/design-system/tokens/index.css" />
-		<link rel="stylesheet" href="/design-system/base/reset.css" />
-		<link rel="stylesheet" href="/design-system/base/base.css" />
-		<link rel="stylesheet" href="/design-system/primitives/index.css" />
-		<link rel="stylesheet" href="/design-system/components/index.css" />
-		<link rel="stylesheet" href="/design-system/compositions/index.css" />
-		<link rel="stylesheet" href="/design-system/utilities/index.css" />
-
-		<!-- Project-specific styles -->
-		<link rel="stylesheet" href="/src/styles/main.css" />
+		<!-- All CSS (design-system + Tailwind + project styles) enters through src/styles/main.css,
+		     imported by src/main.tsx, so the design-system can sit in a cascade layer. -->
 	</head>
 	<body>
 		<!-- React renders everything inside #root (see src/main.tsx). The real, localized

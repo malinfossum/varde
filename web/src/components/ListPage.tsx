@@ -26,6 +26,11 @@ export function ListPage({ filters }: { filters: Filters }) {
 	const catalog = catalogState.kind === "ready" ? catalogState.catalog : null
 	const { state, retry } = useResources(filters, lang)
 
+	const retryFailed = () => {
+		retryCatalog()
+		if (state.kind === "error") retry()
+	}
+
 	const apply = (patch: Partial<Filters>) =>
 		navigate("/", buildSearch(applyPatch(filters, patch), null))
 
@@ -47,10 +52,13 @@ export function ListPage({ filters }: { filters: Filters }) {
 			? apply({ municipality: suggestion.id })
 			: apply({ categories: [suggestion.slug] })
 
-	// One announcement per settled result set — count plus suggestion names.
+	// One announcement per settled result set — count plus suggestion names. A failure is a
+	// settled state too: without its own announcement the live region keeps saying "Laster …"
+	// while the visible page shows the error.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: announce once per settled set
 	useEffect(() => {
 		if (state.kind === "loading") announce(t("status.loading"))
+		if (state.kind === "error") announce(t("error.heading"))
 		if (state.kind === "ready") {
 			const names = suggestions.map((s) => s.name).join(", ")
 			announce(
@@ -84,9 +92,12 @@ export function ListPage({ filters }: { filters: Filters }) {
 					}
 				/>
 			)}
-			{catalogState.kind === "error" && <ErrorState onRetry={retryCatalog} />}
+			{/* Both requests hit the same API, so when the catalog fails the resources almost always
+			    fail with it. One error state, whose retry refetches everything that failed —
+			    two identical panels stacked on top of each other help nobody. */}
+			{catalogState.kind === "error" && <ErrorState onRetry={retryFailed} />}
 			{state.kind === "loading" && <LoadingState />}
-			{state.kind === "error" && <ErrorState onRetry={retry} />}
+			{state.kind === "error" && catalogState.kind !== "error" && <ErrorState onRetry={retry} />}
 			{/* Covers both the genuine zero-results case and a page past the last one (e.g. a
 			    stale ?page= after filters narrowed the result set) — the API returns an empty
 			    items array either way, and both deserve the same recovery UI rather than a
@@ -102,6 +113,9 @@ export function ListPage({ filters }: { filters: Filters }) {
 			)}
 			{state.kind === "ready" && state.data.items.length > 0 && (
 				<>
+					<h2 className="text-lg leading-snug">
+						{state.data.totalCount} {t("status.results")}
+					</h2>
 					<ul className="resource-list stack">
 						{state.data.items.map((resource) => (
 							<ResourceCard key={resource.id} resource={resource} />

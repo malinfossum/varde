@@ -1,0 +1,18 @@
+/* ======================================================================
+   design-system.css — loads the bundled design-system/ into the `base`
+   cascade layer so Tailwind utilities (layer `utilities`, see main.css) can
+   override its element rules. Kept apart from main.css on purpose: Tailwind's
+   import resolver cannot follow the `@import url()` form the design-system
+   uses internally, so this file must go through Vite's own CSS pipeline.
+   Never edit design-system/ itself — it is synced from the workbench.
+   ====================================================================== */
+
+@layer theme, base, components, utilities;
+
+@import "../../design-system/tokens/index.css" layer(base);
+@import "../../design-system/base/reset.css" layer(base);
+@import "../../design-system/base/base.css" layer(base);
+@import "../../design-system/primitives/index.css" layer(base);
+@import "../../design-system/components/index.css" layer(base);
+@import "../../design-system/compositions/index.css" layer(base);
+@import "../../design-system/utilities/index.css" layer(base);

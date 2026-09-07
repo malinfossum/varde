@@ -6,6 +6,7 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { App } from "./App.tsx"
+import "./styles/design-system.css"
 import "./styles/main.css"
 
 const root = document.getElementById("root")
