@@ -136,3 +136,15 @@
 	min-height: 44px;
 	min-width: 44px;
 }
+.contact-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-sm, 0.5rem);
+}
+.contact-actions button,
+.contact .copy-phone {
+	min-height: 44px;
+}
+.contact .copy-phone {
+	margin-left: var(--space-sm, 0.5rem);
+}
