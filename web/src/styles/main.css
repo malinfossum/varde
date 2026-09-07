@@ -5,7 +5,67 @@
    …) instead of hard-coded values.
    Mobile-first: baseline styles target the smallest screen; layer up with
    @media (min-width: 768px) and (min-width: 1024px).
+
+   Cascade layers (order declared in design-system.css): design-system in
+   `base`, Tailwind utilities last. Tailwind's Preflight is deliberately NOT
+   imported — the design-system reset owns that job. Rules further down in
+   this file stay unlayered and therefore win over both; keep them to layout
+   glue that no utility should have to fight.
    ====================================================================== */
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Tailwind theme = the design-system tokens, nothing else.
+   Colours: Tailwind's own palette is cleared so only token names exist as
+   utilities (bg-card, text-fg-muted, border-danger-line …); `inline` makes
+   each utility carry `var(--token)` itself, so the light/dark switch keeps
+   working. Sizes, radii, leading and fonts need no mapping: the design-system
+   already defines --text-*, --radius-*, --leading-* and --font-* under the
+   names Tailwind expects, and the `base` layer overrides the `theme` layer. */
+@theme inline {
+	--color-*: initial;
+
+	--color-surface-1: var(--surface-1);
+	--color-surface-2: var(--surface-2);
+	--color-surface-3: var(--surface-3);
+	--color-surface-4: var(--surface-4);
+	--color-surface-5: var(--surface-5);
+	--color-page: var(--page-bg);
+	--color-panel: var(--panel-bg);
+	--color-card: var(--card-bg);
+	--color-elevated: var(--elevated-bg);
+	--color-interactive: var(--interactive-bg);
+
+	--color-fg: var(--text);
+	--color-fg-muted: var(--text-muted);
+	--color-fg-faint: var(--text-faint);
+
+	--color-border: var(--border);
+	--color-border-strong: var(--border-strong);
+	--color-border-soft: var(--border-soft);
+	--color-line: var(--line);
+
+	--color-accent: var(--accent);
+	--color-accent-strong: var(--accent-strong);
+	--color-accent-soft: var(--accent-soft);
+	--color-accent-ghost: var(--accent-ghost);
+	--color-accent-solid: var(--accent-solid);
+	--color-accent-solid-strong: var(--accent-solid-strong);
+	--color-on-accent: var(--on-accent);
+
+	--color-secondary: var(--secondary);
+	--color-secondary-soft: var(--secondary-soft);
+	--color-success: var(--success);
+	--color-success-soft: var(--success-soft);
+	--color-warning: var(--warning);
+	--color-warning-soft: var(--warning-soft);
+	--color-danger: var(--danger);
+	--color-danger-soft: var(--danger-soft);
+	--color-danger-line: rgb(var(--danger-rgb) / 24%);
+	--color-info: var(--info);
+	--color-info-soft: var(--info-soft);
+}
 
 .visually-hidden {
 	position: absolute;
