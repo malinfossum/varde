@@ -480,6 +480,12 @@ Fallback if Azure cost becomes a problem: frontend to GitHub Pages, API elsewher
 yet. For phase 1 the author verifies by hand at seed time. A real answer is needed before the
 directory is promoted anywhere beyond a portfolio piece.
 
+*Decided 2026-09-08:* I re-verify every row myself, every six months, in one pass. Verification
+means re-checking the row's Source URL under the no-calls policy (the service's own page outranks
+re-listings; numbers are never dialled). `LastVerified` is set to the pass date per row, and each
+pass gets a ledger in `docs/verification/`. A row older than six months counts as stale. First
+scheduled pass: 2026-02-17.
+
 **Phase 2 authentication:** ASP.NET Core Identity or Microsoft Entra ID. Decided in the phase 2
 spec, not here.
 
