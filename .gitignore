@@ -30,3 +30,6 @@ dist/
 
 # Logs
 *.log
+
+# Brainstorming mockups (visual companion) — the sdd ledger next to it stays tracked
+.superpowers/brainstorm/
