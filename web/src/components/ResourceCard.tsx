@@ -2,10 +2,10 @@ import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import { telHref } from "../services/emergency.ts"
 import type { ResourceDto } from "../types/api.ts"
 import { Link } from "./Link.tsx"
+import { ResourceBadges } from "./ResourceBadges.tsx"
 
 export function ResourceCard({ resource }: { resource: ResourceDto }) {
 	const t = useTranslation()
-	const isAkutt = resource.categories.some((c) => c.slug === "nodtjenester")
 	return (
 		<li className="grid content-start gap-3 rounded-xl border border-border bg-surface p-4">
 			{/* One level under the results heading (h1) — never h3, so heading levels never skip. */}
@@ -14,15 +14,7 @@ export function ResourceCard({ resource }: { resource: ResourceDto }) {
 					{resource.name}
 				</Link>
 			</h2>
-			{(isAkutt || resource.isNational || resource.isAlwaysOpen) && (
-				<p className="flex flex-wrap gap-1">
-					{isAkutt && <span className="badge badge-akutt">{t("badge.akutt")}</span>}
-					{resource.isNational && <span className="badge text-muted">{t("badge.national")}</span>}
-					{resource.isAlwaysOpen && (
-						<span className="badge text-accent">{t("badge.alwaysOpen")}</span>
-					)}
-				</p>
-			)}
+			<ResourceBadges resource={resource} />
 			{resource.isFallbackTranslation && <p className="text-sm text-muted">{t("card.fallback")}</p>}
 			{/* Full description, never clamped: closure notices and safety lines live here. */}
 			<p>{resource.description}</p>

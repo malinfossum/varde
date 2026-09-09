@@ -1,6 +1,8 @@
-import { render, screen } from "@testing-library/react"
-import { expect, test, vi } from "vitest"
+import { act, render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import { afterEach, expect, test, vi } from "vitest"
 import { ResourceDetail } from "../src/components/ResourceDetail.tsx"
+import { AnnouncerProvider } from "../src/components/StatusRegion.tsx"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
 import type { ResourceDto } from "../src/types/api.ts"
 
@@ -49,17 +51,55 @@ test("a 404 renders NotFoundState with a way back", async () => {
 		</LanguageProvider>
 	)
 	expect(await screen.findByRole("heading", { name: "Fant ikke tjenesten" })).toBeInTheDocument()
-	expect(screen.getByRole("link", { name: "Tilbake til søket" })).toBeInTheDocument()
+	expect(screen.getByRole("link", { name: "Tilbake til resultater" })).toBeInTheDocument()
+})
+
+// --- ready branch: call-first hero + stateful back link -------------------------------------
+
+test("the call button is the hero and the back link is a plain link without history state", async () => {
+	vi.spyOn(globalThis, "fetch").mockResolvedValue(
+		new Response(JSON.stringify(detail), { status: 200 })
+	)
+	window.history.replaceState(null, "", "/resources/12")
+	render(
+		<LanguageProvider initialLang="nb">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} arrival={0} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	const call = await screen.findByRole("link", { name: /Ring 62 00 00 00/ })
+	expect(call).toHaveAttribute("href", "tel:62000000")
+	// R14: assert role + accessible name, not the class that styles the button — a redesign
+	// must not have to touch this test.
+	expect(screen.getByRole("link", { name: "Tilbake til resultater" })).toHaveAttribute(
+		"href",
+		"/sok"
+	)
+	expect(document.title).toBe("Krisesenteret i Hamar – Varde")
+})
+
+test("with from=sok in history state the back control goes back", async () => {
+	vi.spyOn(globalThis, "fetch").mockResolvedValue(
+		new Response(JSON.stringify(detail), { status: 200 })
+	)
+	window.history.replaceState({ from: "sok" }, "", "/resources/12")
+	const back = vi.spyOn(window.history, "back").mockImplementation(() => {})
+	render(
+		<LanguageProvider initialLang="nb">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} arrival={1} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
+	await userEvent.setup().click(screen.getByRole("button", { name: "Tilbake til resultater" }))
+	expect(back).toHaveBeenCalledTimes(1)
 })
 
 // --- share + copy-phone ---------------------------------------------------------------------
 // jsdom ships neither navigator.share nor navigator.clipboard, so each test installs exactly
 // the capabilities it is about and removes them again.
-
-import { act } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { afterEach } from "vitest"
-import { AnnouncerProvider } from "../src/components/StatusRegion.tsx"
 
 function installNavigator(overrides: { share?: unknown; clipboard?: unknown }) {
 	for (const [key, value] of Object.entries(overrides)) {
