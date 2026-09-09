@@ -15,8 +15,8 @@
 		     External file instead of inline so the CSP can stay script-src 'self' with no hashes. -->
 		<script src="/theme-init.js"></script>
 
-		<!-- All CSS (design-system + Tailwind + project styles) enters through src/styles/main.css,
-		     imported by src/main.tsx, so the design-system can sit in a cascade layer. -->
+		<!-- All CSS (Tailwind + tokens + project styles) enters through src/styles/main.css,
+		     imported by src/main.tsx. -->
 	</head>
 	<body>
 		<!-- React renders everything inside #root (see src/main.tsx). The real, localized

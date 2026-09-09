@@ -1,150 +1,105 @@
-/* ======================================================================
-   main.css — project-specific styles only
-   Tokens, reset, base, primitives, and components come from the bundled
-   design-system/ — use its custom properties (--space-*, --text, --card-bg,
-   …) instead of hard-coded values.
-   Mobile-first: baseline styles target the smallest screen; layer up with
-   @media (min-width: 768px) and (min-width: 1024px).
+/* web/src/styles/main.css
+   All styling enters here. Tailwind v4 owns the reset (Preflight), the utilities and the
+   theme; tokens.css owns the colours. Component classes that a utility string would make
+   unreadable live in @layer components below. Mobile-first: baseline is the smallest screen,
+   layer up with min-width queries only. */
 
-   Cascade layers (order declared in design-system.css): design-system in
-   `base`, Tailwind utilities last. Tailwind's Preflight is deliberately NOT
-   imported — the design-system reset owns that job. Rules further down in
-   this file stay unlayered and therefore win over both; keep them to layout
-   glue that no utility should have to fight.
-   ====================================================================== */
+@import "tailwindcss";
+@import "./tokens.css";
 
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities);
-
-/* Tailwind theme = the design-system tokens, nothing else.
-   Colours: Tailwind's own palette is cleared so only token names exist as
-   utilities (bg-card, text-fg-muted, border-danger-line …); `inline` makes
-   each utility carry `var(--token)` itself, so the light/dark switch keeps
-   working. Sizes, radii, leading and fonts need no mapping: the design-system
-   already defines --text-*, --radius-*, --leading-* and --font-* under the
-   names Tailwind expects, and the `base` layer overrides the `theme` layer. */
 @theme inline {
 	--color-*: initial;
-
-	--color-surface-1: var(--surface-1);
-	--color-surface-2: var(--surface-2);
-	--color-surface-3: var(--surface-3);
-	--color-surface-4: var(--surface-4);
-	--color-surface-5: var(--surface-5);
-	--color-page: var(--page-bg);
-	--color-panel: var(--panel-bg);
-	--color-card: var(--card-bg);
-	--color-elevated: var(--elevated-bg);
-	--color-interactive: var(--interactive-bg);
-
-	--color-fg: var(--text);
-	--color-fg-muted: var(--text-muted);
-	--color-fg-faint: var(--text-faint);
-
+	--color-ground: var(--ground);
+	--color-surface: var(--surface);
 	--color-border: var(--border);
-	--color-border-strong: var(--border-strong);
-	--color-border-soft: var(--border-soft);
-	--color-line: var(--line);
-
+	--color-fg: var(--text);
+	--color-muted: var(--muted);
 	--color-accent: var(--accent);
-	--color-accent-strong: var(--accent-strong);
-	--color-accent-soft: var(--accent-soft);
-	--color-accent-ghost: var(--accent-ghost);
-	--color-accent-solid: var(--accent-solid);
-	--color-accent-solid-strong: var(--accent-solid-strong);
 	--color-on-accent: var(--on-accent);
+	--color-akutt: var(--akutt);
+	--color-akutt-soft: var(--akutt-soft);
+	--color-accent-soft: var(--accent-soft);
 
-	--color-secondary: var(--secondary);
-	--color-secondary-soft: var(--secondary-soft);
-	--color-success: var(--success);
-	--color-success-soft: var(--success-soft);
-	--color-warning: var(--warning);
-	--color-warning-soft: var(--warning-soft);
-	--color-danger: var(--danger);
-	--color-danger-soft: var(--danger-soft);
-	--color-danger-line: rgb(var(--danger-rgb) / 24%);
-	--color-info: var(--info);
-	--color-info-soft: var(--info-soft);
+	--font-display: "Fraunces", Georgia, "Times New Roman", serif;
+	--font-sans: "Figtree", system-ui, "Segoe UI", sans-serif;
 }
 
-.visually-hidden {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip-path: inset(50%);
-	white-space: nowrap;
+@layer base {
+	html {
+		background: var(--ground);
+		color: var(--text);
+		font-family: var(--font-sans);
+		line-height: 1.5;
+	}
+	h1,
+	h2 {
+		font-family: var(--font-display);
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		line-height: 1.1;
+	}
+	a {
+		color: var(--accent);
+		text-underline-offset: 0.15em;
+	}
+	:focus-visible {
+		outline: 3px solid var(--accent);
+		outline-offset: 2px;
+	}
 }
 
-.skip-link {
-	position: absolute;
-	left: -999px;
-}
-.skip-link:focus {
-	position: static;
-}
-
-.app-header-actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-sm, 0.5rem);
-}
-.app-header-actions > * {
-	min-height: 44px;
-	min-width: 44px;
-}
-
-.suggestions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-sm, 0.5rem);
-	list-style: none;
-	padding: 0;
-}
-.suggestions button {
-	min-height: 44px;
-}
-
-.kommune-picker ul {
-	list-style: none;
-	padding: 0;
-}
-.kommune-picker button {
-	min-height: 44px;
-	min-width: 44px;
-}
-
-.badges {
-	display: flex;
-	gap: var(--space-xs, 0.25rem);
-}
-.badge {
-	border: 1px solid currentColor;
-	border-radius: 4px;
-	padding: 0 0.4em;
-}
-.resource-list {
-	list-style: none;
-	padding: 0;
-}
-.pager {
-	display: flex;
-	gap: var(--space-sm, 0.5rem);
-	align-items: center;
-}
-.pager button {
-	min-height: 44px;
-	min-width: 44px;
-}
-.contact-actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-sm, 0.5rem);
-}
-.contact-actions button,
-.contact .copy-phone {
-	min-height: 44px;
-}
-.contact .copy-phone {
-	margin-left: var(--space-sm, 0.5rem);
+@layer components {
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+	.skip-link {
+		position: absolute;
+		left: -999px;
+	}
+	.skip-link:focus {
+		position: static;
+	}
+	.btn-primary {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-height: 44px;
+		padding: 0 1.25rem;
+		border-radius: 0.75rem;
+		background: var(--accent);
+		color: var(--on-accent);
+		font-weight: 600;
+		text-decoration: none;
+	}
+	.btn-secondary {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-height: 44px;
+		padding: 0 1rem;
+		border: 1px solid var(--border);
+		border-radius: 0.75rem;
+		background: var(--surface);
+		color: var(--text);
+		font-weight: 500;
+		text-decoration: none;
+	}
+	.badge {
+		display: inline-block;
+		border: 1px solid currentColor;
+		border-radius: 999px;
+		padding: 0 0.5em;
+		font-size: 0.75rem;
+		line-height: 1.5rem;
+	}
+	.badge-akutt {
+		color: var(--akutt);
+	}
 }

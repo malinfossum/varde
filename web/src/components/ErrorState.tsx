@@ -2,9 +2,10 @@ import { nationalFallbacks } from "../i18n/fallbacks.ts"
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import { telHref } from "./ResourceCard.tsx"
 
-// First component styled with Tailwind utilities (mapped onto the design-system tokens in
-// main.css). The retry button mirrors .btn from the design-system rather than reusing it, so
-// the whole component is one honest sample of the utility approach.
+// First component styled with Tailwind utilities, mapped onto the Paper tokens in tokens.css
+// via main.css's @theme inline. Its class names still reference the old design-system token
+// vocabulary (border-strong, interactive, danger-soft, …), which tokens.css doesn't define —
+// still due a pass onto the Paper palette when this component gets its redesign.
 export function ErrorState({ onRetry }: { onRetry: () => void }) {
 	const t = useTranslation()
 	return (

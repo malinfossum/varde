@@ -38,12 +38,15 @@ calm page. Dark mode is a mirror, not an afterthought.
 |---|---|---|---|
 | ground | `#f6f2ea` | `#0b0d10` | page background |
 | surface | `#ffffff` | `#13161a` | cards, inputs, header |
-| border | `#e3ddd2` | `#2a2f36` | hairlines |
+| border | `#d9d2c6` | `#2a2f36` | hairlines |
 | text | `#1d1b17` | `#f3efe7` | body |
 | muted | `#5f5a52` | `#b3b0a8` | secondary text, eyebrows |
 | accent | `#285f45` | `#7fc39e` | buttons, links, active chips |
 | on-accent | `#f6f2ea` | `#0b0d10` | text on accent fills |
 | akutt | `#b3361f` | `#ff8a7a` | emergency badge and strip |
+
+Light border was `#e3ddd2` in the brainstorm; the contrast test measured 1.21:1 on paper,
+below the 1.3:1 floor, so it is `#d9d2c6` (1.35:1).
 
 Contrast rules, checked in a test that reads the token file: text on ground ≥ 7:1, muted on
 ground ≥ 4.5:1, accent as text on ground ≥ 4.5:1, on-accent on accent ≥ 4.5:1, akutt as text
