@@ -47,3 +47,11 @@ if (typeof window !== "undefined" && typeof window.localStorage === "undefined")
 // jsdom does no layout and ships no scrollIntoView. ListPage calls it after paging; a no-op
 // keeps that path runnable, and tests spy on it to assert the scroll happened.
 Element.prototype.scrollIntoView ??= () => {}
+
+// react-aria-components' popover positioning observes the trigger's size; jsdom has no
+// ResizeObserver at all.
+globalThis.ResizeObserver ??= class {
+	observe() {}
+	unobserve() {}
+	disconnect() {}
+} as unknown as typeof ResizeObserver

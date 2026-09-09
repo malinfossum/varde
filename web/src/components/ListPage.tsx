@@ -9,12 +9,11 @@ import { type Suggestion, suggest } from "../services/match.ts"
 import { applyPatch, buildSearch, type Filters } from "../services/urlState.ts"
 import { EmptyState } from "./EmptyState.tsx"
 import { ErrorState } from "./ErrorState.tsx"
+import { FilterBar } from "./FilterBar.tsx"
 import { HandoverBanner } from "./HandoverBanner.tsx"
-import { KommunePicker } from "./KommunePicker.tsx"
 import { LoadingState } from "./LoadingState.tsx"
 import { Pagination } from "./Pagination.tsx"
 import { ResourceCard } from "./ResourceCard.tsx"
-import { SearchBar } from "./SearchBar.tsx"
 import { useAnnounce } from "./StatusRegion.tsx"
 import { Suggestions } from "./Suggestions.tsx"
 import { WayfindingHint } from "./WayfindingHint.tsx"
@@ -94,23 +93,14 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	return (
 		<div className="list-page stack">
 			<HandoverBanner />
-			<SearchBar value={filters.search} onChange={(value) => applySearch({ search: value })} />
+			<FilterBar
+				catalog={catalog}
+				filters={{ ...filters, municipality: knownMunicipality ? filters.municipality : null }}
+				onPatch={apply}
+				onSearch={(value) => applySearch({ search: value })}
+			/>
 			<Suggestions suggestions={suggestions} onPick={onPick} />
 			<WayfindingHint query={filters.search} />
-			{catalog && (
-				<KommunePicker
-					municipalities={catalog.municipalities}
-					selectedId={knownMunicipality ? filters.municipality : null}
-					nationalSelected={filters.national}
-					onSelect={(selection) =>
-						"municipality" in selection
-							? apply({ municipality: selection.municipality })
-							: "national" in selection
-								? apply({ national: true })
-								: apply({ municipality: null, national: false })
-					}
-				/>
-			)}
 			{/* Both requests hit the same API, so when the catalog fails the resources almost always
 			    fail with it. One error state, whose retry refetches everything that failed —
 			    two identical panels stacked on top of each other help nobody. */}

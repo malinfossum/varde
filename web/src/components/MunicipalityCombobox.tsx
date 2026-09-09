@@ -1,0 +1,143 @@
+import { useState } from "react"
+import {
+	Button,
+	ComboBox,
+	Group,
+	Header,
+	Input,
+	Label,
+	ListBox,
+	ListBoxItem,
+	ListBoxSection,
+	Popover,
+} from "react-aria-components"
+import { useTranslation } from "../i18n/LanguageProvider.tsx"
+import { matchesEitherWay } from "../services/match.ts"
+import type { MunicipalityDto } from "../types/api.ts"
+
+const nbCollator = new Intl.Collator("nb")
+const ALL = "all"
+
+// react-aria-components ComboBox: keyboard, typeahead, group announcements and the popover
+// come from the library; this file only decides what the options are. Filtering is ours so
+// "lot" finds Løten (matchesEitherWay folds diacritics), which the built-in contains-filter
+// would miss.
+export function MunicipalityCombobox({
+	municipalities,
+	selectedId,
+	onSelect,
+	onNoMatchNational,
+}: {
+	municipalities: MunicipalityDto[]
+	selectedId: number | null
+	onSelect: (id: number | null) => void
+	onNoMatchNational: () => void
+}) {
+	const t = useTranslation()
+	const selectedName = municipalities.find((m) => m.id === selectedId)?.name ?? ""
+	const [input, setInput] = useState(selectedName)
+
+	const visible = input.trim()
+		? municipalities.filter((m) => matchesEitherWay(input, m.name))
+		: municipalities
+	const counties = [...new Set(visible.map((m) => m.county))].sort(nbCollator.compare)
+
+	return (
+		<ComboBox
+			className="grid gap-1"
+			menuTrigger="focus"
+			allowsEmptyCollection
+			// ComboBox's own default filter re-checks the static children we already filtered
+			// above, using a locale collator that doesn't fold ø/æ the way matchesEitherWay does —
+			// left enabled, it would silently drop a match our own filter just decided to keep.
+			// `visible` is the single source of truth for what's rendered, so the built-in filter
+			// is a pure pass-through.
+			defaultFilter={() => true}
+			inputValue={input}
+			onInputChange={setInput}
+			selectedKey={selectedId ?? ALL}
+			onSelectionChange={(key) => {
+				if (key === null) return
+				const next = key === ALL ? null : Number(key)
+				setInput(next === null ? "" : (municipalities.find((m) => m.id === next)?.name ?? ""))
+				onSelect(next)
+			}}
+		>
+			<Label className="text-sm font-semibold">{t("filter.municipality")}</Label>
+			{/* react-aria's ComboBox hides everything outside [input, popover] while the listbox
+			    is open (menuTrigger="focus" means that's whenever this field has focus) — a plain
+			    wrapper here would aria-hide Clear and the toggle even though they sit right next
+			    to the input. data-react-aria-top-layer is react-aria's own escape hatch for
+			    exactly this (the same one it uses to keep toasts reachable over a modal); there is
+			    no public prop for it on ComboBox in this version. Verified against
+			    react-aria's ariaHideOutside source (node_modules/react-aria/dist/private/overlays/ariaHideOutside.mjs) — it
+			    scans for this attribute before hiding anything. */}
+			<Group
+				role="presentation"
+				data-react-aria-top-layer=""
+				className="flex items-center rounded-xl border border-border bg-surface"
+			>
+				<Input className="min-h-11 flex-1 bg-transparent px-3 text-fg outline-none" />
+				{input && (
+					<Button
+						slot={null}
+						className="min-h-11 px-3 text-muted"
+						onPress={() => {
+							setInput("")
+							onSelect(null)
+						}}
+					>
+						{t("filter.clear")}
+					</Button>
+				)}
+				<Button
+					className="min-h-11 min-w-11 text-muted"
+					aria-label={`${t("filter.municipality")}: ${t("filter.all")}`}
+				>
+					▾
+				</Button>
+			</Group>
+			<Popover className="max-h-72 w-[var(--trigger-width)] overflow-auto rounded-xl border border-border bg-surface p-1 shadow-lg">
+				<ListBox
+					renderEmptyState={() => (
+						<p className="p-3 text-sm text-muted">
+							{t("filter.noMatch")}{" "}
+							<Button className="underline" onPress={onNoMatchNational}>
+								{t("filter.noMatchLink")}
+							</Button>
+						</p>
+					)}
+				>
+					{!input.trim() && (
+						<ListBoxItem
+							id={ALL}
+							className="cursor-pointer rounded-lg px-3 py-2 data-[focused]:bg-accent-soft data-[selected]:font-semibold"
+						>
+							{t("filter.all")}
+						</ListBoxItem>
+					)}
+					{counties.map((county) => (
+						<ListBoxSection key={county} id={county}>
+							<Header className="px-3 pt-2 text-xs uppercase tracking-wide text-muted">
+								{county}
+							</Header>
+							{visible
+								.filter((m) => m.county === county)
+								.sort((a, b) => nbCollator.compare(a.name, b.name))
+								.map((m) => (
+									<ListBoxItem
+										key={m.id}
+										id={m.id}
+										textValue={m.name}
+										className="cursor-pointer rounded-lg px-3 py-2 data-[focused]:bg-accent-soft data-[selected]:font-semibold"
+									>
+										{m.name}
+									</ListBoxItem>
+								))}
+						</ListBoxSection>
+					))}
+				</ListBox>
+			</Popover>
+		</ComboBox>
+	)
+}

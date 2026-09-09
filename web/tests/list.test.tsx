@@ -138,26 +138,27 @@ test("an unknown ?municipality= value doesn't crash the app and the list renders
 	// rejects it), so it never reaches the resources request — the list is unfiltered rather
 	// than scoped to a municipality that doesn't exist.
 	expect(resourcesUrl).not.toContain("municipality")
-	// No phantom selection in the picker either.
-	expect(screen.getByRole("button", { name: "Alle" })).toHaveAttribute("aria-pressed", "true")
+	// No phantom selection in the combobox either — its input stays empty rather than showing
+	// some municipality's name.
+	expect(screen.getByRole("combobox", { name: "Kommune" })).toHaveValue("")
 })
 
-test("Alle clears both municipality and national selection from the URL", async () => {
+test("Tøm clears both municipality and national selection from the URL", async () => {
 	stubCatalogAndResources()
 	window.history.pushState(null, "", "/?municipality=1")
 	const user = userEvent.setup()
 	render(<App />)
-	await waitFor(() => expect(screen.getByRole("button", { name: "Hamar" })).toBeInTheDocument())
+	await waitFor(() =>
+		expect(screen.getByRole("combobox", { name: "Kommune" })).toHaveValue("Hamar")
+	)
 
-	const alle = screen.getByRole("button", { name: "Alle" })
-	expect(alle).toHaveAttribute("aria-pressed", "false")
-	await user.click(alle)
+	await user.click(screen.getByRole("button", { name: "Tøm" }))
 
 	expect(window.location.search).not.toContain("municipality")
 	expect(window.location.search).not.toContain("national")
 })
 
-test("list page heading levels never skip: h1 shell, h2 picker and results, h3 counties and cards", async () => {
+test("list page heading levels never skip: h2 results heading, h3 cards", async () => {
 	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
 		const url = String(input)
 		if (url.includes("/api/municipalities")) {
@@ -176,10 +177,11 @@ test("list page heading levels never skip: h1 shell, h2 picker and results, h3 c
 	window.history.pushState(null, "", "/sok")
 	render(<App />)
 	await screen.findByRole("heading", { level: 3, name: "Krisesenteret i Hamar" })
-	expect(screen.getByRole("heading", { level: 2, name: "Finn din kommune" })).toBeInTheDocument()
-	expect(screen.getByRole("heading", { level: 3, name: "Innlandet" })).toBeInTheDocument()
 	expect(screen.getByRole("heading", { level: 2, name: "1 treff" })).toBeInTheDocument()
 
+	// /sok has no <h1> yet — a known gap owned by Task 10, not this one — so h2 is the
+	// highest level present here. This only guards against a level being skipped among
+	// whatever headings the page renders.
 	const levels = screen.getAllByRole("heading").map((h) => Number(h.tagName.slice(1)))
 	for (let i = 1; i < levels.length; i++) {
 		expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1)
