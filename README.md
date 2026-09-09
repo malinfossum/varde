@@ -40,7 +40,7 @@ rows; a test keeps them identical to seed rows 3 and 23–25.
 ## Stack
 
 - API: ASP.NET Core (.NET 10), EF Core, PostgreSQL 17
-- Web: React, TypeScript, Vite
+- Web: React 19, TypeScript, Vite, Tailwind v4, react-aria-components
 - Hosting (planned): Azure
 
 ## API
@@ -56,9 +56,13 @@ application logs record result counts, never search terms.
 
 ## Web
 
-Unified search across name, category and municipality, with suggestions and a national
-toggle. Details on the shift from fastlege to legevakt after hours, when a service's own
-opening hours are known. Bilingual throughout, built for keyboard access, and built mobile-first.
+The landing page is search-first: one box, nine category chips, and no data fetched until
+you act on it. Above every page sits an acute strip with the four emergency numbers as
+hardcoded constants, not a fetch, so it works even if the API is down. Unified search across
+name, category and municipality, with suggestions and a national toggle. Details on the
+shift from fastlege to legevakt after hours, when a service's own opening hours are known.
+Bilingual throughout, built for keyboard access, and built mobile-first. Lighthouse ≥ 95 on
+the simulated phone is part of the definition of done; the measured numbers are in each PR.
 
 ## Run locally
 
@@ -81,6 +85,11 @@ Tests create disposable `varde_test_<guid>` databases. The connection defaults t
 standard local development setup (`localhost`, `postgres`/`postgres`); override it with the
 `VARDE_TEST_PG` environment variable. The web dev server expects the API at
 `http://localhost:5005` by default (`VITE_API_URL` to override).
+
+Fraunces and Figtree are vendored into `web/public/fonts/`, so `npm install` is enough for a
+normal checkout. Only run `npm run fonts` if you bump the `@fontsource/*` package versions —
+it re-copies the woff2 files from `node_modules` and a drift test catches a checkout that
+forgets to.
 
 ## Deployment
 

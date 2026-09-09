@@ -14,7 +14,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 	const out = new URL("../public/fonts/", import.meta.url)
 	mkdirSync(out, { recursive: true })
 	for (const [file, pkg] of FONT_FILES) {
-		copyFileSync(new URL(`../node_modules/${pkg}/files/${file}`, import.meta.url), new URL(file, out))
+		copyFileSync(
+			new URL(`../node_modules/${pkg}/files/${file}`, import.meta.url),
+			new URL(file, out)
+		)
 		console.log(`copied ${file}`)
 	}
 }

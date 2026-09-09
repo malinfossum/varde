@@ -1,7 +1,7 @@
 {
 	"navigationFallback": {
 		"rewrite": "/index.html",
-		"exclude": ["/assets/*", "/fonts/*", "/theme-init.js", "/favicon.ico"]
+		"exclude": ["/assets/*", "/fonts/*", "/theme-init.js", "/favicon.ico", "/robots.txt"]
 	},
 	"globalHeaders": {
 		"Referrer-Policy": "no-referrer",
