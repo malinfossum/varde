@@ -7,8 +7,10 @@ import { LandingSearch } from "./LandingSearch.tsx"
 import { Link } from "./Link.tsx"
 
 // Copied from README "Data verification" section (first scheduled pass, docs/superpowers/specs/
-// 2026-08-12-varde-design.md). Update it there and here together.
-const NEXT_VERIFICATION_PASS = "2026-02-17"
+// 2026-08-12-varde-design.md). Update it there and here together. Six months after the seed
+// pass (LastVerified 2026-08-13/08-17), so 2027 — the spec's original 2026 was a typo I
+// corrected on 2026-09-09.
+const NEXT_VERIFICATION_PASS = "2027-02-17"
 
 const chipOrder = ["nodtjenester", ...CATEGORY_SLUGS.filter((s) => s !== "nodtjenester")]
 

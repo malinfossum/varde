@@ -484,7 +484,9 @@ directory is promoted anywhere beyond a portfolio piece.
 means re-checking the row's Source URL under the no-calls policy (the service's own page outranks
 re-listings; numbers are never dialled). `LastVerified` is set to the pass date per row, and each
 pass gets a ledger in `docs/verification/`. A row older than six months counts as stale. First
-scheduled pass: 2026-02-17.
+scheduled pass: 2027-02-17. *(Corrected 2026-09-09: this line originally read 2026-02-17, which
+is seven months before the decision was recorded. The seeded rows carry `LastVerified`
+2026-08-13/08-17, so six months out is 2027-02-17. The year was a typo, not a changed decision.)*
 
 **Phase 2 authentication:** ASP.NET Core Identity or Microsoft Entra ID. Decided in the phase 2
 spec, not here.
