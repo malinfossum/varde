@@ -51,5 +51,7 @@
 	"banner.fastlegeLink": "Your GP on Helsenorge",
 	"banner.legevakt": "GP closed? Call the out-of-hours medical service (legevakt)",
 	"banner.fallback": "In an emergency or if your GP is closed? Call the out-of-hours medical service (legevakt) on 116 117",
-	"hint.helsenorge": "Looking for a GP, prescriptions, or exemption certificate? Visit Helsenorge"
+	"hint.helsenorge": "Looking for a GP, prescriptions, or exemption certificate? Visit Helsenorge",
+	"header.themeDark": "Dark theme",
+	"header.themeLight": "Light theme"
 }

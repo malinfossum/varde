@@ -51,5 +51,7 @@
 	"banner.fastlegeLink": "Fastlegen din på Helsenorge",
 	"banner.legevakt": "Fastlegen stengt? Ring legevakt",
 	"banner.fallback": "Akutt, eller fastlegen stengt? Legevakt 116 117",
-	"hint.helsenorge": "Ser du etter fastlege, resept eller frikort? Gå til Helsenorge"
+	"hint.helsenorge": "Ser du etter fastlege, resept eller frikort? Gå til Helsenorge",
+	"header.themeDark": "Mørkt tema",
+	"header.themeLight": "Lyst tema"
 }
