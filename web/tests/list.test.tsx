@@ -172,6 +172,8 @@ test("list page heading levels never skip: h1 shell, h2 picker and results, h3 c
 			})
 		)
 	})
+	// "/" is the landing now — the list lives at /sok.
+	window.history.pushState(null, "", "/sok")
 	render(<App />)
 	await screen.findByRole("heading", { level: 3, name: "Krisesenteret i Hamar" })
 	expect(screen.getByRole("heading", { level: 2, name: "Finn din kommune" })).toBeInTheDocument()
@@ -208,6 +210,8 @@ test("paging moves focus to the results heading; typing in search does not", asy
 	})
 	const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView")
 	const user = userEvent.setup()
+	// "/" is the landing now — the list lives at /sok.
+	window.history.pushState(null, "", "/sok")
 	render(<App />)
 	const heading = await screen.findByRole("heading", { level: 2, name: "3 treff" })
 	// Initial load leaves focus and scroll alone — nothing was interacted with yet.

@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react"
+import { act, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
@@ -66,4 +66,19 @@ test("language toggle resets page to 1 instead of carrying it into the new langu
 	await user.click(toggle)
 	expect(window.location.search).toContain("lang=en")
 	expect(window.location.search).not.toContain("page=")
+})
+
+test("the landing route renders a heading and loads no data", () => {
+	// Earlier tests in this file leave their own fetch mocks and call history behind (this
+	// file never restores between tests) — start from a clean slate so this assertion only
+	// sees calls this test itself would have made.
+	vi.restoreAllMocks()
+	const fetchSpy = vi.spyOn(globalThis, "fetch")
+	window.history.pushState(null, "", "/")
+	render(<App />)
+	// Scoped to <main> — the shell's own h1 ("Varde") also exists in the header, so a
+	// heading query on the whole document would match both of them.
+	const main = screen.getByRole("main")
+	expect(within(main).getByRole("heading", { level: 1, name: "Varde" })).toBeInTheDocument()
+	expect(fetchSpy).not.toHaveBeenCalled()
 })

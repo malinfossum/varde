@@ -1,8 +1,15 @@
 import { expect, test } from "vitest"
-import { applyPatch, buildSearch, parseFilters, parseRoute } from "../src/services/urlState.ts"
+import {
+	applyPatch,
+	buildSearch,
+	isLegacyListUrl,
+	parseFilters,
+	parseRoute,
+} from "../src/services/urlState.ts"
 
-test("routes: list, detail, not-found", () => {
-	expect(parseRoute("/")).toEqual({ kind: "list" })
+// "/" is the landing now that results live at /sok — see the dedicated route test below for
+// the full landing/list/detail/notFound matrix. This one keeps covering detail and not-found.
+test("detail and not-found routes", () => {
 	expect(parseRoute("/resources/42")).toEqual({ kind: "detail", id: 42 })
 	expect(parseRoute("/resources/abc")).toEqual({ kind: "notFound" })
 	expect(parseRoute("/nope")).toEqual({ kind: "notFound" })
@@ -47,4 +54,23 @@ test("municipality and national are mutually exclusive", () => {
 	expect(buildSearch({ ...base, municipality: 4, national: true }, null)).not.toContain(
 		"municipality"
 	)
+})
+
+test("root is the landing, /sok is the list, detail and unknown are unchanged", () => {
+	expect(parseRoute("/")).toEqual({ kind: "landing" })
+	expect(parseRoute("/sok")).toEqual({ kind: "list" })
+	expect(parseRoute("/resources/12")).toEqual({ kind: "detail", id: 12 })
+	expect(parseRoute("/sok/extra")).toEqual({ kind: "notFound" })
+})
+
+test("legacy list URLs are those with a filter parameter; lang alone is the landing", () => {
+	const p = (s: string) => new URLSearchParams(s)
+	expect(isLegacyListUrl("/", p("search=rus"))).toBe(true)
+	expect(isLegacyListUrl("/", p("category=nodtjenester"))).toBe(true)
+	expect(isLegacyListUrl("/", p("municipality=1"))).toBe(true)
+	expect(isLegacyListUrl("/", p("national=true"))).toBe(true)
+	expect(isLegacyListUrl("/", p("page=2"))).toBe(true)
+	expect(isLegacyListUrl("/", p("lang=en"))).toBe(false)
+	expect(isLegacyListUrl("/", p(""))).toBe(false)
+	expect(isLegacyListUrl("/sok", p("search=rus"))).toBe(false)
 })

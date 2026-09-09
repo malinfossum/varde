@@ -1,4 +1,4 @@
-import type { Catalog } from "../hooks/useCatalog.ts"
+import type { Catalog } from "./catalogCache.ts"
 
 // NFD splits letters from combining marks (å → a + ring) so the marks can be stripped.
 // ø and æ are distinct letters, not letter+mark, so they need their own mapping.

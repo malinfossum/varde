@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo } from "react"
+import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
 import { useCatalog } from "../hooks/useCatalog.ts"
+import { useDocumentTitle } from "../hooks/useDocumentTitle.ts"
 import { useResources } from "../hooks/useResources.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { useNavigate } from "../navigation.ts"
@@ -17,11 +19,12 @@ import { useAnnounce } from "./StatusRegion.tsx"
 import { Suggestions } from "./Suggestions.tsx"
 import { WayfindingHint } from "./WayfindingHint.tsx"
 
-export function ListPage({ filters }: { filters: Filters }) {
+export function ListPage({ filters, arrival }: { filters: Filters; arrival: number }) {
 	const { lang } = useLanguage()
 	const t = useTranslation()
 	const navigate = useNavigate()
 	const announce = useAnnounce()
+	useDocumentTitle(t("title.search"))
 	const { state: catalogState, retry: retryCatalog } = useCatalog(lang)
 	const catalog = catalogState.kind === "ready" ? catalogState.catalog : null
 	const { state, retry } = useResources(filters, lang)
@@ -32,16 +35,17 @@ export function ListPage({ filters }: { filters: Filters }) {
 	}
 
 	const apply = (patch: Partial<Filters>) =>
-		navigate("/", buildSearch(applyPatch(filters, patch), null))
+		navigate("/sok", buildSearch(applyPatch(filters, patch), null))
 
 	// The pager sits under the whole list. After "Neste" the new cards render above the
 	// viewport and focus stays on the button — the user sees nothing change. Only the pager
 	// asks for this: a search or filter change must never pull focus out of the search box.
-	// The list unmounts while loading, so the move waits until the new page has settled.
-	const resultsHeading = useRef<HTMLHeadingElement>(null)
-	const focusResultsOnReady = useRef(false)
+	const { ref: resultsHeading, requestFocus } = useArrivalFocus<HTMLHeadingElement>(
+		arrival,
+		state.kind === "ready" && state.data.items.length > 0
+	)
 	const goToPage = (page: number) => {
-		focusResultsOnReady.current = true
+		requestFocus()
 		apply({ page })
 	}
 
@@ -49,7 +53,7 @@ export function ListPage({ filters }: { filters: Filters }) {
 	// would flood back/forward with useless states. Replace the current entry instead — every
 	// other filter change (picker, suggestions, pager, clear, toggle) still pushes normally.
 	const applySearch = (patch: Partial<Filters>) =>
-		navigate("/", buildSearch(applyPatch(filters, patch), null), { replace: true })
+		navigate("/sok", buildSearch(applyPatch(filters, patch), null), { replace: true })
 
 	// suggest() re-scans the whole catalog on every call — memoize so it only re-runs when the
 	// search text or the catalog itself actually changes, not on every ListPage render.
@@ -77,19 +81,6 @@ export function ListPage({ filters }: { filters: Filters }) {
 			)
 		}
 	}, [state.kind])
-
-	// Scroll the heading to the top edge, then focus without a second scroll — focus() alone
-	// centres the element in Chromium, leaving the new cards half a screen down. An error
-	// settles the request too: the flag must not linger and fire on a later, unrelated load
-	// (say, the user typing a new search after a retry).
-	useEffect(() => {
-		if (state.kind === "loading") return
-		const wanted = focusResultsOnReady.current
-		focusResultsOnReady.current = false
-		if (!wanted || state.kind !== "ready") return
-		resultsHeading.current?.scrollIntoView({ block: "start" })
-		resultsHeading.current?.focus({ preventScroll: true })
-	}, [state])
 
 	// Unknown municipality id in a hand-edited URL: no phantom selection (spec).
 	const knownMunicipality =

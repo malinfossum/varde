@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react"
+import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
+import { useDocumentTitle } from "../hooks/useDocumentTitle.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { fetchResource } from "../services/api.ts"
 import { copyText, shareCapability, shareResource } from "../services/contactActions.ts"
@@ -16,12 +18,19 @@ type DetailState =
 	| { kind: "missing" }
 	| { kind: "ready"; resource: ResourceDto }
 
-export function ResourceDetail({ id }: { id: number }) {
+export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: number }) {
 	const { lang } = useLanguage()
 	const t = useTranslation()
 	const announce = useAnnounce()
 	const [state, setState] = useState<DetailState>({ kind: "loading" })
 	const [attempt, setAttempt] = useState(0)
+	const { ref: heading } = useArrivalFocus<HTMLHeadingElement>(arrival, state.kind === "ready")
+
+	useDocumentTitle(
+		state.kind === "ready"
+			? t("title.detail").replace("{name}", state.resource.name)
+			: t("title.app")
+	)
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt is used as a trigger for retry
 	useEffect(() => {
@@ -38,7 +47,7 @@ export function ResourceDetail({ id }: { id: number }) {
 
 	if (state.kind === "loading") return <LoadingState />
 	if (state.kind === "error") return <ErrorState onRetry={() => setAttempt((n) => n + 1)} />
-	if (state.kind === "missing") return <NotFoundState />
+	if (state.kind === "missing") return <NotFoundState arrival={arrival} level={2} />
 
 	const { resource } = state
 	// Read once per render so the label always says what the tap will do.
@@ -61,8 +70,10 @@ export function ResourceDetail({ id }: { id: number }) {
 
 	return (
 		<article className="resource-detail stack">
-			<Link to="/">{t("detail.back")}</Link>
-			<h2>{resource.name}</h2>
+			<Link to="/sok">{t("detail.back")}</Link>
+			<h1 ref={heading} tabIndex={-1}>
+				{resource.name}
+			</h1>
 			{resource.isFallbackTranslation && <p className="muted">{t("card.fallback")}</p>}
 			<p>{resource.description}</p>
 			{/* Hours sit with contact info, above the fold — they are this service's truth. */}

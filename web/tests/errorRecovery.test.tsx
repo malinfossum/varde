@@ -35,6 +35,8 @@ test("error state carries the national fallbacks as tel links and a working retr
 test("catalog and resources both failing shows one error state whose retry refetches both", async () => {
 	const fetchMock = stubApiDown()
 	const user = userEvent.setup()
+	// "/" is the landing now, which loads no data — exercise the list at /sok instead.
+	window.history.pushState(null, "", "/sok")
 	render(<App />)
 	await waitFor(() =>
 		expect(screen.getAllByRole("heading", { name: "Noe gikk galt" })).toHaveLength(1)
@@ -49,6 +51,8 @@ test("catalog and resources both failing shows one error state whose retry refet
 
 test("a failed fetch is announced in the live region instead of leaving 'Laster …' standing", async () => {
 	stubApiDown()
+	// "/" is the landing now, which loads no data — exercise the list at /sok instead.
+	window.history.pushState(null, "", "/sok")
 	render(<App />)
 	const region = document.querySelector("[aria-live]")
 	expect(region).not.toBeNull()
