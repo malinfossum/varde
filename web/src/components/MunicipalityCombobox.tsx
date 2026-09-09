@@ -116,10 +116,7 @@ export function MunicipalityCombobox({
 						{t("filter.clear")}
 					</Button>
 				)}
-				<Button
-					className="min-h-11 min-w-11 text-muted"
-					aria-label={`${t("filter.municipality")}: ${t("filter.all")}`}
-				>
+				<Button className="min-h-11 min-w-11 text-muted" aria-label={t("filter.toggleList")}>
 					▾
 				</Button>
 			</Group>
