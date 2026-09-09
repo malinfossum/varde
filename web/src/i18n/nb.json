@@ -27,7 +27,7 @@
 	"landing.trustSources": "Hvert nummer er kopiert fra tjenestens egen side.",
 	"landing.trustVerified": "Alle oppføringer sjekkes på nytt hvert halvår. Neste gang: {date}.",
 	"landing.emergencyHeading": "Akutt hjelp",
-	"landing.emergencyIntro": "Alle nødnumrene når fram til samme sentral. Ring det som passer best, men ring.",
+	"landing.emergencyIntro": "Ring det nummeret som passer best, men ring.",
 	"search.label": "Søk etter tjeneste, kommune eller tema",
 	"search.suggestions": "Forslag",
 	"search.suggestionMunicipality": "kommune",

@@ -27,7 +27,7 @@
 	"landing.trustSources": "Every number is copied from the service's own page.",
 	"landing.trustVerified": "Every listing is re-checked twice a year. Next time: {date}.",
 	"landing.emergencyHeading": "Emergency help",
-	"landing.emergencyIntro": "All emergency numbers reach the same dispatch centre. Call whichever fits, but call.",
+	"landing.emergencyIntro": "Call whichever number fits best, but call.",
 	"search.label": "Search for services, municipalities, or topics",
 	"search.suggestions": "Suggestions",
 	"search.suggestionMunicipality": "municipality",
