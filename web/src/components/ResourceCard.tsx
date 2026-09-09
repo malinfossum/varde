@@ -1,10 +1,11 @@
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
+import { telHref } from "../services/emergency.ts"
 import type { ResourceDto } from "../types/api.ts"
 import { Link } from "./Link.tsx"
 
-export function telHref(phone: string): string {
-	return `tel:${phone.replaceAll(" ", "")}`
-}
+// Re-exported so ResourceDetail, EmptyState and ErrorState keep importing from the card
+// until Task 10 rewrites this component.
+export { telHref } from "../services/emergency.ts"
 
 export function ResourceCard({ resource }: { resource: ResourceDto }) {
 	const t = useTranslation()
