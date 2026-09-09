@@ -9,7 +9,12 @@ export function Header() {
 	const t = useTranslation()
 	return (
 		<header className="app-header border-b border-border bg-surface">
-			<div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4">
+			{/* flex-wrap, no fixed height: at 320px the action row (language, theme, quick exit)
+			    doesn't fit beside the wordmark, so it drops to its own line instead of forcing
+			    horizontal scroll (WCAG reflow). Nothing shrinks below its 44px tap target and
+			    nothing hides — this is spacing, not content loss. Wide viewports have room for
+			    both on one row, same as before. */}
+			<div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-2">
 				<Link
 					to="/"
 					className="inline-flex min-h-11 items-center gap-2 font-display text-lg text-fg no-underline"

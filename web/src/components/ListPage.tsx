@@ -92,7 +92,16 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 
 	return (
 		<div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-			<aside aria-label={t("filter.heading")}>
+			{/* min-h reserves room for FilterBar's catalog-gated rows (the municipality combobox and
+			    the nine category chips only render once `catalog` resolves — see FilterBar.tsx).
+			    Below lg, aside sits stacked above the results, so that mount-time growth is what
+			    was actually pushing the whole page down once data arrived (confirmed by reading the
+			    raw layout-shift trace: the results container's position, not its own size, was
+			    what moved). 28rem is the measured full-height of the loaded filter column at a
+			    360-412px width, rounded up for a small margin. At lg+, aside is a side column next
+			    to results that are already taller, so the reservation is dropped — nothing to fix
+			    there. */}
+			<aside aria-label={t("filter.heading")} className="min-h-[28rem] lg:min-h-0">
 				<FilterBar
 					catalog={catalog}
 					filters={{ ...filters, municipality: knownMunicipality ? filters.municipality : null }}

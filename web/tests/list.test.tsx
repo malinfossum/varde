@@ -70,7 +70,11 @@ test("a card without a phone shows only Detaljer and the no-phone line", () => {
 test("loading renders skeletons under a busy status region", () => {
 	withLang(<LoadingState />)
 	expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true")
-	expect(screen.getByText("Laster …")).toHaveClass("visually-hidden")
+	// Visible, not visually-hidden: the loading heading reserves the same vertical space the
+	// ready-state heading takes once results arrive (see LoadingState.tsx for why).
+	expect(screen.getByRole("heading", { level: 1, name: "Laster …" })).not.toHaveClass(
+		"visually-hidden"
+	)
 })
 
 test("pagination disables at the edges and reports page changes", async () => {
