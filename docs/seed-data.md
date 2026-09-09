@@ -57,6 +57,9 @@ Rows whose Notes flag a genuine conflict between two official sources, or an amb
 | 20 | Nav Gjøvik | Gjøvik | okonomi, arbeid, bolig | 55 55 33 33 | https://www.nav.no | Hverdager 09:00–15:00 | https://www.gjovik.kommune.no/tjenester/bolig-og-sosiale-tjenester/nav-gjovik/ | 2026-08-13 | ☑ | 55 55 33 33 is the national Nav line, weekdays 09:00–15:00. The page also gives a local akutt/crisis line 90 01 25 89 staffed only Tue and Thu 12:00–14:00 — narrow hours, so do not present it as an emergency number. Parkgata 10 A, 2815 Gjøvik. |
 | 21 | Gjøvik Krisesenter IKS | Gjøvik | vold-og-overgrep, nodtjenester | 61 17 55 60 | https://www.krisesenteret-gjovik.no | Døgnåpent | https://www.krisesenteret-gjovik.no/no/Kontakt-oss.html | 2026-08-13 | ☑ | Printed both spaced ("Telefon: 61 17 55 60") and unspaced ("61175560") on the same page; I used the spaced form. Døgnåpen. Visiting address deliberately withheld by the centre ("Gis ved kontakt") — leave the address field empty, this is a safety measure, not missing data. Postboks 5, 2801 Gjøvik. |
 | 22 | Jobbhus Gjøvik | Gjøvik | arbeid | | https://www.gjovik.kommune.no/jobbhus/jeg-onsker-jobb/ |  | https://www.gjovik.kommune.no/jobbhus/jeg-onsker-jobb/ | 2026-08-13 | ☑ | RESOLVED 2026-08-17: seed phone-less (website only) — my decision. No phone number is printed on the service page; it links only to a generic "Kontakt oss" page and an opening-hours page. A collaboration between Gjøvik kommune and Nav, aimed at ages 16–30, with drop-in open to all. |
+| 23 | Brannvesen (nødnummer) | (national) | nodtjenester | 110 | https://www.dsb.no/brannsikkerhet/nodmelding/110-sentralene/ | Døgnåpent | https://www.dsb.no/brannsikkerhet/nodmelding/110-sentralene/ | 2026-09-09 | ☑ | Added for plan 4's acute strip. Norway has no single national fire-service site — the 110 emergency line is run through twelve regional 110-sentraler under kommunalt ansvar, so I used DSB (Direktoratet for samfunnssikkerhet og beredskap), the directorate responsible for how the 110-sentraler are organised, as the official source for the number itself. Page states: "110 er brann- og redningsvesenets nødtelefon." and "Ved brann, ulykker eller andre akutte situasjoner, ring nødnummer 110. Om du er i tvil om du skal ringe, er du ikke i tvil – ring 110." Døgnåpent (all twelve 110-sentraler are staffed 24/7). |
+| 24 | Politi (nødnummer) | (national) | nodtjenester | 112 | https://www.politiet.no/kontakt-politiet/ring-politiet | Døgnåpent | https://www.politiet.no/kontakt-politiet/ring-politiet | 2026-09-09 | ☑ | Added for plan 4's acute strip. Politiet's own "Ring politiet" page lists "Nødnummeret 112" alongside the non-emergency switchboard "Sentralbordet 02800", and states: "Ring nødnummeret 112 når det er behov for øyeblikkelig hjelp." Døgnåpent. |
+| 25 | Ambulanse (medisinsk nødhjelp) | (national) | nodtjenester | 113 | https://www.helsenorge.no/forstehjelp | Døgnåpent | https://www.helsenorge.no/forstehjelp | 2026-09-09 | ☑ | Added for plan 4's acute strip. Helsenorge's "Førstehjelp og skader" page states: "Ring 113 om situasjonen er kritisk, og det står om liv og helse. Det kan for eksempel være ved ulykker, alvorlig sykdom eller livstruende situasjoner." Same page: "Haster det litt mindre, ring legevakten på 116 117" (row 3, not this row). Døgnåpent. |
 
 ## Descriptions
 
@@ -181,3 +184,21 @@ Rows whose Notes flag a genuine conflict between two official sources, or an amb
 ### 22. Jobbhus Gjøvik
 - **nb:** Hjelp til å komme i arbeid for deg mellom 16 og 30 år i Gjøvik, med veiledning, jobbsøking, CV og arbeidspraksis. Drop-in-tilbudet er åpent for alle arbeidssøkere uansett alder og bosted.
 - **en:** Help getting into work for people aged 16 to 30 in Gjøvik, with guidance, job applications, CV writing and work placements. The drop-in service is open to all jobseekers regardless of age or where they live.
+
+### 23. Brannvesen (nødnummer)
+- **nb:** Ved brann, ulykker eller andre akutte situasjoner, ring nødnummer 110.
+- **en:** Call the emergency number 110 for a fire, an accident or another acute situation.
+- **hours-nb:** Døgnåpent
+- **hours-en:** Open 24 hours
+
+### 24. Politi (nødnummer)
+- **nb:** Ring nødnummeret 112 når det er behov for øyeblikkelig hjelp.
+- **en:** Call the emergency number 112 when you need immediate help from the police.
+- **hours-nb:** Døgnåpent
+- **hours-en:** Open 24 hours
+
+### 25. Ambulanse (medisinsk nødhjelp)
+- **nb:** Ring 113 om situasjonen er kritisk, og det står om liv og helse.
+- **en:** Call 113 when the situation is critical and life or health is at risk.
+- **hours-nb:** Døgnåpent
+- **hours-en:** Open 24 hours

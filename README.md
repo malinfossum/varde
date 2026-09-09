@@ -33,6 +33,9 @@ The full audit trail is in [docs/verification/](docs/verification/). Phone numbe
 belonging to named individuals are never published, and shelters that withhold their
 address for safety are listed without one by design. Every row is re-verified against its
 source every six months, and the date shown as "Sist bekreftet" is the date of that check.
+The four numbers on the acute strip live in `web/src/services/emergency.ts` as constants
+(the landing page fetches nothing) and are re-verified in the same six-month pass as the
+rows; a test keeps them identical to seed rows 3 and 23–25.
 
 ## Stack
 
