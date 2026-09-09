@@ -48,7 +48,9 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 
 	if (state.kind === "loading") return <LoadingState />
 	if (state.kind === "error") return <ErrorState onRetry={() => setAttempt((n) => n + 1)} />
-	if (state.kind === "missing") return <NotFoundState arrival={arrival} level={2} />
+	// NotFoundState is the sole content of the page in this state — the shell renders nothing
+	// else around it here — so it takes the page's one level-1 heading, same as every other route.
+	if (state.kind === "missing") return <NotFoundState arrival={arrival} />
 
 	const { resource } = state
 	// Read once per render so the label always says what the tap will do.
