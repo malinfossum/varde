@@ -1,9 +1,7 @@
 {
 	"app.title": "Varde",
-	"app.tagline": "Find the right help service where you live",
 	"app.skipToContent": "Skip to content",
 	"app.quickExit": "Leave this page",
-	"app.akuttShortcut": "Emergency help",
 	"title.app": "Varde",
 	"title.search": "Search – Varde",
 	"title.detail": "{name} – Varde",
@@ -58,5 +56,14 @@
 	"banner.fallback": "In an emergency or if your GP is closed? Call the out-of-hours medical service (legevakt) on 116 117",
 	"hint.helsenorge": "Looking for a GP, prescriptions, or exemption certificate? Visit Helsenorge",
 	"header.themeDark": "Dark theme",
-	"header.themeLight": "Light theme"
+	"header.themeLight": "Light theme",
+	"header.home": "Varde – home page",
+	"strip.label": "Emergency numbers",
+	"strip.brann": "fire",
+	"strip.politi": "police",
+	"strip.ambulanse": "ambulance",
+	"strip.legevakt": "out-of-hours medical service",
+	"strip.more": "All emergency services",
+	"footer.source": "Source code on GitHub",
+	"footer.noTracking": "No tracking. No cookies."
 }

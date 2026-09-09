@@ -1,9 +1,7 @@
 {
 	"app.title": "Varde",
-	"app.tagline": "Finn riktig hjelpetjeneste der du bor",
 	"app.skipToContent": "Hopp til innhold",
 	"app.quickExit": "Forlat siden",
-	"app.akuttShortcut": "Akutt hjelp",
 	"title.app": "Varde",
 	"title.search": "Søk – Varde",
 	"title.detail": "{name} – Varde",
@@ -58,5 +56,14 @@
 	"banner.fallback": "Akutt, eller fastlegen stengt? Legevakt 116 117",
 	"hint.helsenorge": "Ser du etter fastlege, resept eller frikort? Gå til Helsenorge",
 	"header.themeDark": "Mørkt tema",
-	"header.themeLight": "Lyst tema"
+	"header.themeLight": "Lyst tema",
+	"header.home": "Varde – til forsiden",
+	"strip.label": "Nødnumre",
+	"strip.brann": "brann",
+	"strip.politi": "politi",
+	"strip.ambulanse": "ambulanse",
+	"strip.legevakt": "Legevakt",
+	"strip.more": "Alle nødtjenester",
+	"footer.source": "Kildekode på GitHub",
+	"footer.noTracking": "Ingen sporing. Ingen informasjonskapsler."
 }

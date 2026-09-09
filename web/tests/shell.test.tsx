@@ -11,12 +11,13 @@ function stubResources() {
 	vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}))
 }
 
-test("shell renders skip link, quick exit and akutt shortcut", () => {
+test("shell renders skip link, quick exit, acute strip and theme toggle", () => {
 	stubResources()
 	render(<App />)
 	expect(screen.getByRole("link", { name: "Hopp til innhold" })).toBeInTheDocument()
 	expect(screen.getByRole("button", { name: "Forlat siden" })).toBeInTheDocument()
-	expect(screen.getByRole("link", { name: "Akutt hjelp" })).toBeInTheDocument()
+	expect(screen.getByRole("region", { name: "Nødnumre" })).toBeInTheDocument()
+	expect(screen.getByRole("button", { name: "Mørkt tema" })).toBeInTheDocument()
 })
 
 test("language toggle switches strings, html lang, keeps focus, announces", async () => {
@@ -76,8 +77,8 @@ test("the landing route renders a heading and loads no data", () => {
 	const fetchSpy = vi.spyOn(globalThis, "fetch")
 	window.history.pushState(null, "", "/")
 	render(<App />)
-	// Scoped to <main> — the shell's own h1 ("Varde") also exists in the header, so a
-	// heading query on the whole document would match both of them.
+	// The header carries no heading of its own (Task 7) — the landing page's own h1 is the
+	// only level-1 heading on this route, and it lives inside <main>.
 	const main = screen.getByRole("main")
 	expect(within(main).getByRole("heading", { level: 1, name: "Varde" })).toBeInTheDocument()
 	expect(fetchSpy).not.toHaveBeenCalled()

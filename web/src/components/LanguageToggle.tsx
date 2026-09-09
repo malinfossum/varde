@@ -25,7 +25,7 @@ export function LanguageToggle() {
 	}
 	// The button never unmounts, so focus stays on it through the re-render (spec: Focus).
 	return (
-		<button type="button" onClick={onToggle}>
+		<button type="button" className="btn-secondary min-w-11" onClick={onToggle}>
 			{lang === "nb" ? "English" : "Norsk"}
 		</button>
 	)
