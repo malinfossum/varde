@@ -47,11 +47,18 @@ export function MunicipalityCombobox({
 			className="grid gap-1"
 			menuTrigger="focus"
 			allowsEmptyCollection
-			// ComboBox's own default filter re-checks the static children we already filtered
-			// above, using a locale collator that doesn't fold ø/æ the way matchesEitherWay does —
-			// left enabled, it would silently drop a match our own filter just decided to keep.
-			// `visible` is the single source of truth for what's rendered, so the built-in filter
-			// is a pure pass-through.
+			// `items` is how I tell ComboBox that the list it is given is already filtered — it is
+			// the prop react-aria checks before doing any filtering of its own, so `visible` stays
+			// the single source of truth for what's rendered. It also keeps the collection built
+			// from one set of node objects: without it, react-aria swaps its section nodes for
+			// plain clones the moment you type, and React 19.2's development-only render logger
+			// walks that diff straight into a `childNodes` getter that throws on purpose. The
+			// exception escapes React's commit and every later render is dropped, so the input
+			// text freezes and the popover never closes — in `npm run dev` only, never in a
+			// production build. defaultFilter stays as a pass-through in case a future version
+			// stops honouring `items`: ComboBox's own filter uses a collator that doesn't fold
+			// ø/æ the way matchesEitherWay does, and would drop matches we just decided to keep.
+			items={visible}
 			defaultFilter={() => true}
 			inputValue={input}
 			onInputChange={setInput}
