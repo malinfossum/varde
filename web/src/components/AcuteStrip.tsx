@@ -13,7 +13,7 @@ export function AcuteStrip() {
 					<li key={line.id} className="flex items-center gap-1">
 						<a
 							href={telHref(line.phone)}
-							className="inline-flex min-h-11 items-center font-semibold text-akutt"
+							className="inline-flex min-h-11 min-w-11 items-center justify-center whitespace-nowrap font-semibold text-akutt"
 						>
 							{line.phone}
 						</a>

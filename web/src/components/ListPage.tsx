@@ -100,8 +100,22 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 			    what moved). 28rem is the measured full-height of the loaded filter column at a
 			    360-412px width, rounded up for a small margin. At lg+, aside is a side column next
 			    to results that are already taller, so the reservation is dropped — nothing to fix
-			    there. */}
-			<aside aria-label={t("filter.heading")} className="min-h-[28rem] lg:min-h-0">
+			    there.
+			    It is lifted on a catalog failure, though. Then FilterBar renders the search box
+			    and the national toggle and nothing else, and an unconditional 28rem leaves a
+			    screenful of nothing above "Noe gikk galt": measured at 375x812, the error
+			    heading sat at y=782 and the Legevakt fallback number inside it at y=920 — below
+			    the fold, during exactly the outage that panel exists for. Without the
+			    reservation they land at 442 and 580.
+			    Lifting it as soon as the catalog *resolves* instead costs CLS and buys nothing:
+			    the loaded column measures 430px against the 448px floor, so releasing it is its
+			    own small shift (/sok CLS 0.0103 -> 0.0309, measured), and a resolved catalog
+			    means the column is full anyway — the empty state never had blank space to
+			    reclaim. On for loading and ready, off for error, holds both. */}
+			<aside
+				aria-label={t("filter.heading")}
+				className={catalogState.kind === "error" ? undefined : "min-h-[28rem] lg:min-h-0"}
+			>
 				<FilterBar
 					catalog={catalog}
 					filters={{ ...filters, municipality: knownMunicipality ? filters.municipality : null }}
