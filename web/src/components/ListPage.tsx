@@ -91,53 +91,58 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 		catalog?.municipalities.some((m) => m.id === filters.municipality)
 
 	return (
-		<div className="list-page stack">
-			<HandoverBanner />
-			<FilterBar
-				catalog={catalog}
-				filters={{ ...filters, municipality: knownMunicipality ? filters.municipality : null }}
-				onPatch={apply}
-				onSearch={(value) => applySearch({ search: value })}
-			/>
-			<Suggestions suggestions={suggestions} onPick={onPick} />
-			<WayfindingHint query={filters.search} />
-			{/* Both requests hit the same API, so when the catalog fails the resources almost always
-			    fail with it. One error state, whose retry refetches everything that failed —
-			    two identical panels stacked on top of each other help nobody. */}
-			{catalogState.kind === "error" && <ErrorState onRetry={retryFailed} />}
-			{state.kind === "loading" && <LoadingState />}
-			{state.kind === "error" && catalogState.kind !== "error" && <ErrorState onRetry={retry} />}
-			{/* Covers both the genuine zero-results case and a page past the last one (e.g. a
-			    stale ?page= after filters narrowed the result set) — the API returns an empty
-			    items array either way, and both deserve the same recovery UI rather than a
-			    blank list. */}
-			{state.kind === "ready" && state.data.items.length === 0 && (
-				<EmptyState
-					onClearFilters={() =>
-						apply({ search: "", categories: [], municipality: null, national: false })
-					}
-					suggestions={suggestions}
-					onPick={onPick}
+		<div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+			<aside aria-label={t("filter.heading")}>
+				<FilterBar
+					catalog={catalog}
+					filters={{ ...filters, municipality: knownMunicipality ? filters.municipality : null }}
+					onPatch={apply}
+					onSearch={(value) => applySearch({ search: value })}
 				/>
-			)}
-			{state.kind === "ready" && state.data.items.length > 0 && (
-				<>
-					<h2 ref={resultsHeading} tabIndex={-1} className="text-lg leading-snug">
-						{state.data.totalCount} {t("status.results")}
-					</h2>
-					<ul className="resource-list stack">
-						{state.data.items.map((resource) => (
-							<ResourceCard key={resource.id} resource={resource} />
-						))}
-					</ul>
-					<Pagination
-						page={state.data.page}
-						pageSize={state.data.pageSize}
-						totalCount={state.data.totalCount}
-						onPage={goToPage}
+			</aside>
+			<div className="grid content-start gap-4">
+				<HandoverBanner />
+				<Suggestions suggestions={suggestions} onPick={onPick} />
+				<WayfindingHint query={filters.search} />
+				{/* Both requests hit the same API, so when the catalog fails the resources almost always
+				    fail with it. One error state, whose retry refetches everything that failed —
+				    two identical panels stacked on top of each other help nobody. */}
+				{catalogState.kind === "error" && <ErrorState onRetry={retryFailed} />}
+				{state.kind === "loading" && <LoadingState />}
+				{state.kind === "error" && catalogState.kind !== "error" && <ErrorState onRetry={retry} />}
+				{/* Covers both the genuine zero-results case and a page past the last one (e.g. a
+				    stale ?page= after filters narrowed the result set) — the API returns an empty
+				    items array either way, and both deserve the same recovery UI rather than a
+				    blank list. */}
+				{state.kind === "ready" && state.data.items.length === 0 && (
+					<EmptyState
+						onClearFilters={() =>
+							apply({ search: "", categories: [], municipality: null, national: false })
+						}
+						suggestions={suggestions}
+						onPick={onPick}
 					/>
-				</>
-			)}
+				)}
+				{state.kind === "ready" && state.data.items.length > 0 && (
+					<>
+						{/* /sok's only <h1> — it doubles as the arrival-focus target after paging. */}
+						<h1 ref={resultsHeading} tabIndex={-1} className="text-lg leading-snug">
+							{state.data.totalCount} {t("status.results")}
+						</h1>
+						<ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+							{state.data.items.map((resource) => (
+								<ResourceCard key={resource.id} resource={resource} />
+							))}
+						</ul>
+						<Pagination
+							page={state.data.page}
+							pageSize={state.data.pageSize}
+							totalCount={state.data.totalCount}
+							onPage={goToPage}
+						/>
+					</>
+				)}
+			</div>
 		</div>
 	)
 }

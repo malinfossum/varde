@@ -1,6 +1,6 @@
 import { nationalFallbacks } from "../i18n/fallbacks.ts"
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
-import { telHref } from "./ResourceCard.tsx"
+import { telHref } from "../services/emergency.ts"
 
 // First component styled with Tailwind utilities, mapped onto the Paper tokens in tokens.css
 // via main.css's @theme inline. Its class names still reference the old design-system token
@@ -10,7 +10,9 @@ export function ErrorState({ onRetry }: { onRetry: () => void }) {
 	const t = useTranslation()
 	return (
 		<section className="grid gap-3 rounded-md border border-danger-line bg-danger-soft p-4">
-			<h2 className="text-lg leading-snug text-fg">{t("error.heading")}</h2>
+			{/* This state replaces the results heading rather than sitting under it — it is
+			    /sok's only heading while showing, so it takes the h1 level (Task 10, R29). */}
+			<h1 className="text-lg leading-snug text-fg">{t("error.heading")}</h1>
 			<p>{t("error.help")}</p>
 			{/* The directory being down must never mean "no number to call" — the national lines
 			    are always reachable and live in the bundle, not behind the failed request. */}

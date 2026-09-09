@@ -1,7 +1,7 @@
 import { nationalFallbacks } from "../i18n/fallbacks.ts"
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
+import { telHref } from "../services/emergency.ts"
 import type { Suggestion } from "../services/match.ts"
-import { telHref } from "./ResourceCard.tsx"
 import { Suggestions } from "./Suggestions.tsx"
 
 export function EmptyState({
@@ -16,7 +16,9 @@ export function EmptyState({
 	const t = useTranslation()
 	return (
 		<section className="empty-state">
-			<h2>{t("empty.heading")}</h2>
+			{/* This state replaces the results heading rather than sitting under it — it is
+			    /sok's only heading while showing, so it takes the h1 level (Task 10, R29). */}
+			<h1>{t("empty.heading")}</h1>
 			<p>{t("empty.help")}</p>
 			<ul>
 				{nationalFallbacks.map((service) => (

@@ -35,6 +35,10 @@ test("detail shows hours with contact info and no handover banner", async () => 
 	expect(await screen.findByRole("heading", { name: "Krisesenteret i Hamar" })).toBeInTheDocument()
 	expect(screen.getByText(/Åpningstider/)).toBeInTheDocument()
 	expect(screen.queryByText(/legevakt 116 117/i)).not.toBeInTheDocument() // banner is list-only
+	// The card dropped its website link in Task 10 — the detail page is now the only place
+	// this rel attribute matters.
+	const website = screen.getByRole("link", { name: /example.test|Nettside/ })
+	expect(website).toHaveAttribute("rel", "noopener noreferrer")
 })
 
 test("a 404 renders NotFoundState with a way back", async () => {

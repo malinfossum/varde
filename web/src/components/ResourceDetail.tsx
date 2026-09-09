@@ -4,12 +4,12 @@ import { useDocumentTitle } from "../hooks/useDocumentTitle.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { fetchResource } from "../services/api.ts"
 import { copyText, shareCapability, shareResource } from "../services/contactActions.ts"
+import { telHref } from "../services/emergency.ts"
 import type { ResourceDto } from "../types/api.ts"
 import { ErrorState } from "./ErrorState.tsx"
 import { Link } from "./Link.tsx"
 import { LoadingState } from "./LoadingState.tsx"
 import { NotFoundState } from "./NotFoundState.tsx"
-import { telHref } from "./ResourceCard.tsx"
 import { useAnnounce } from "./StatusRegion.tsx"
 
 type DetailState =

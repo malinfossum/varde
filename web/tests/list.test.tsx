@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
 import { EmptyState } from "../src/components/EmptyState.tsx"
+import { LoadingState } from "../src/components/LoadingState.tsx"
 import { Pagination } from "../src/components/Pagination.tsx"
 import { ResourceCard } from "../src/components/ResourceCard.tsx"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
@@ -36,7 +37,7 @@ afterEach(() => {
 	window.history.replaceState(null, "", "/")
 })
 
-test("card renders badges from data, hours text, tel link and external rel", () => {
+test("card renders badges from data, hours text and tel link", () => {
 	withLang(<ResourceCard resource={resource} />)
 	expect(screen.getByText("Akutt")).toBeInTheDocument()
 	expect(screen.getByText("Døgnåpent", { selector: ".badge" })).toBeInTheDocument()
@@ -44,8 +45,32 @@ test("card renders badges from data, hours text, tel link and external rel", () 
 	expect(screen.getByText(/Åpningstider/)).toBeInTheDocument()
 	const tel = screen.getByRole("link", { name: /62 00 00 00/ })
 	expect(tel).toHaveAttribute("href", "tel:62000000")
-	const external = screen.getByRole("link", { name: /example.test|Nettside/ })
-	expect(external).toHaveAttribute("rel", "noopener noreferrer")
+})
+
+test("card order: name, badges in order, description, hours, Ring as a tel anchor, details, verified", () => {
+	withLang(<ResourceCard resource={{ ...resource, isNational: true }} />)
+	// Scoped to .badge: the fixture's openingHours text is itself "Døgnåpent", which would
+	// otherwise collide with the alwaysOpen badge under an unscoped text match.
+	const badges = screen
+		.getAllByText(/^(Akutt|Nasjonal|Døgnåpent)$/, { selector: ".badge" })
+		.map((el) => el.textContent)
+	expect(badges).toEqual(["Akutt", "Nasjonal", "Døgnåpent"])
+	const call = screen.getByRole("link", { name: /Ring 62 00 00 00/ })
+	expect(call).toHaveAttribute("href", "tel:62000000")
+	expect(screen.getByRole("link", { name: "Detaljer" })).toHaveAttribute("href", "/resources/12")
+	expect(screen.getByText("Hjelp ved vold i nære relasjoner.")).toBeInTheDocument()
+})
+
+test("a card without a phone shows only Detaljer and the no-phone line", () => {
+	withLang(<ResourceCard resource={{ ...resource, phone: null }} />)
+	expect(screen.queryByRole("link", { name: /Ring/ })).not.toBeInTheDocument()
+	expect(screen.getByText("Ingen telefon – se nettsiden")).toBeInTheDocument()
+})
+
+test("loading renders skeletons under a busy status region", () => {
+	withLang(<LoadingState />)
+	expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true")
+	expect(screen.getByText("Laster …")).toHaveClass("visually-hidden")
 })
 
 test("pagination disables at the edges and reports page changes", async () => {
@@ -158,7 +183,7 @@ test("Tøm clears both municipality and national selection from the URL", async 
 	expect(window.location.search).not.toContain("national")
 })
 
-test("list page heading levels never skip: h2 results heading, h3 cards", async () => {
+test("list page heading levels never skip: h1 results heading, h2 cards", async () => {
 	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
 		const url = String(input)
 		if (url.includes("/api/municipalities")) {
@@ -176,12 +201,12 @@ test("list page heading levels never skip: h2 results heading, h3 cards", async 
 	// "/" is the landing now — the list lives at /sok.
 	window.history.pushState(null, "", "/sok")
 	render(<App />)
-	await screen.findByRole("heading", { level: 3, name: "Krisesenteret i Hamar" })
-	expect(screen.getByRole("heading", { level: 2, name: "1 treff" })).toBeInTheDocument()
+	await screen.findByRole("heading", { level: 2, name: "Krisesenteret i Hamar" })
+	expect(screen.getByRole("heading", { level: 1, name: "1 treff" })).toBeInTheDocument()
 
-	// /sok has no <h1> yet — a known gap owned by Task 10, not this one — so h2 is the
-	// highest level present here. This only guards against a level being skipped among
-	// whatever headings the page renders.
+	// The results heading is /sok's own <h1> (it doubles as the arrival-focus target), and
+	// each card name sits one level under it. This guards against any level being skipped
+	// among whatever headings the page renders.
 	const levels = screen.getAllByRole("heading").map((h) => Number(h.tagName.slice(1)))
 	for (let i = 1; i < levels.length; i++) {
 		expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1)
@@ -215,7 +240,7 @@ test("paging moves focus to the results heading; typing in search does not", asy
 	// "/" is the landing now — the list lives at /sok.
 	window.history.pushState(null, "", "/sok")
 	render(<App />)
-	const heading = await screen.findByRole("heading", { level: 2, name: "3 treff" })
+	const heading = await screen.findByRole("heading", { level: 1, name: "3 treff" })
 	// Initial load leaves focus and scroll alone — nothing was interacted with yet.
 	expect(heading).not.toHaveFocus()
 	expect(scrollIntoView).not.toHaveBeenCalled()
@@ -225,7 +250,7 @@ test("paging moves focus to the results heading; typing in search does not", asy
 	await user.click(screen.getByRole("button", { name: "Neste" }))
 	await screen.findByText("Treff side 2")
 	await waitFor(() =>
-		expect(screen.getByRole("heading", { level: 2, name: "3 treff" })).toHaveFocus()
+		expect(screen.getByRole("heading", { level: 1, name: "3 treff" })).toHaveFocus()
 	)
 	expect(scrollIntoView).toHaveBeenCalledWith({ block: "start" })
 
