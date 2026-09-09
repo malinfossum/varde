@@ -106,8 +106,16 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 				<WayfindingHint query={filters.search} />
 				{/* Both requests hit the same API, so when the catalog fails the resources almost always
 				    fail with it. One error state, whose retry refetches everything that failed —
-				    two identical panels stacked on top of each other help nobody. */}
-				{catalogState.kind === "error" && <ErrorState onRetry={retryFailed} />}
+				    two identical panels stacked on top of each other help nobody.
+				    A catalog failure isn't mutually exclusive with the resources state, though —
+				    the requests are independent, so this can render alongside LoadingState,
+				    EmptyState, or the results heading below. It only takes the h1 level when
+				    nothing else is showing (state.kind === "error" too, the case the guard below
+				    excludes from getting its own second ErrorState); otherwise it demotes to h2
+				    so the page still has exactly one h1. */}
+				{catalogState.kind === "error" && (
+					<ErrorState onRetry={retryFailed} level={state.kind === "error" ? 1 : 2} />
+				)}
 				{state.kind === "loading" && <LoadingState />}
 				{state.kind === "error" && catalogState.kind !== "error" && <ErrorState onRetry={retry} />}
 				{/* Covers both the genuine zero-results case and a page past the last one (e.g. a

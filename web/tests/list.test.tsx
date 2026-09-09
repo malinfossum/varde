@@ -213,6 +213,64 @@ test("list page heading levels never skip: h1 results heading, h2 cards", async 
 	}
 })
 
+// A catalog failure and a resources outcome aren't mutually exclusive — the API calls are
+// independent, so the catalog can fail while resources still loads, comes back empty, or comes
+// back with items. Each combination must still show exactly one <h1>: the catalog's own
+// ErrorState demotes to an h2 whenever something else (loading, empty, or results) is also
+// showing, and only takes the h1 when it's the only thing on the page.
+function stubCatalogErrorWith(resourcesResponse: () => Promise<Response>) {
+	return vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
+		const url = String(input)
+		if (url.includes("/api/municipalities") || url.includes("/api/categories")) {
+			return Promise.reject(new TypeError("Failed to fetch"))
+		}
+		return resourcesResponse()
+	})
+}
+
+test("catalog error alongside results: exactly one h1, the results heading", async () => {
+	stubCatalogErrorWith(() =>
+		Promise.resolve(
+			new Response(JSON.stringify({ items: [resource], page: 1, pageSize: 20, totalCount: 1 }), {
+				status: 200,
+			})
+		)
+	)
+	window.history.pushState(null, "", "/sok")
+	render(<App />)
+	await screen.findByRole("heading", { level: 1, name: "1 treff" })
+	expect(screen.getByRole("heading", { name: "Noe gikk galt" }).tagName).toBe("H2")
+	expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1)
+})
+
+test("catalog error alongside zero results: exactly one h1, the empty-state heading", async () => {
+	stubCatalogErrorWith(() =>
+		Promise.resolve(
+			new Response(JSON.stringify({ items: [], page: 1, pageSize: 20, totalCount: 0 }), {
+				status: 200,
+			})
+		)
+	)
+	window.history.pushState(null, "", "/sok")
+	render(<App />)
+	await screen.findByRole("heading", { level: 1, name: "Ingen treff" })
+	expect(screen.getByRole("heading", { name: "Noe gikk galt" }).tagName).toBe("H2")
+	expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1)
+})
+
+test("catalog error while resources are still loading: exactly one h1, the loading heading", async () => {
+	stubCatalogErrorWith(() => new Promise<Response>(() => {})) // never resolves — stays "loading"
+	window.history.pushState(null, "", "/sok")
+	render(<App />)
+	await screen.findByRole("heading", { name: "Noe gikk galt" })
+	// The live-region announcer also says "Laster …" — scope to the heading role so this only
+	// matches LoadingState's own <h1>, not the aria-live div.
+	const loadingHeading = screen.getByRole("heading", { name: "Laster …" })
+	expect(loadingHeading.tagName).toBe("H1")
+	expect(screen.getByRole("heading", { name: "Noe gikk galt" }).tagName).toBe("H2")
+	expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1)
+})
+
 test("paging moves focus to the results heading; typing in search does not", async () => {
 	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
 		const url = String(input)

@@ -6,13 +6,19 @@ import { telHref } from "../services/emergency.ts"
 // via main.css's @theme inline. Its class names still reference the old design-system token
 // vocabulary (border-strong, interactive, danger-soft, …), which tokens.css doesn't define —
 // still due a pass onto the Paper palette when this component gets its redesign.
-export function ErrorState({ onRetry }: { onRetry: () => void }) {
+// level 1 is for when this is the only content on the page (a lone fetch failure, or the
+// catalog and resources failing together — ListPage never stacks two ErrorStates). level 2 is
+// for when the catalog fails but something else (loading, empty, or results) is still the
+// page's primary content: the catalog panel becomes a secondary region instead of the heading.
+export function ErrorState({ onRetry, level = 1 }: { onRetry: () => void; level?: 1 | 2 }) {
 	const t = useTranslation()
 	return (
 		<section className="grid gap-3 rounded-md border border-danger-line bg-danger-soft p-4">
-			{/* This state replaces the results heading rather than sitting under it — it is
-			    /sok's only heading while showing, so it takes the h1 level (Task 10, R29). */}
-			<h1 className="text-lg leading-snug text-fg">{t("error.heading")}</h1>
+			{level === 1 ? (
+				<h1 className="text-lg leading-snug text-fg">{t("error.heading")}</h1>
+			) : (
+				<h2 className="text-lg leading-snug text-fg">{t("error.heading")}</h2>
+			)}
 			<p>{t("error.help")}</p>
 			{/* The directory being down must never mean "no number to call" — the national lines
 			    are always reachable and live in the bundle, not behind the failed request. */}
