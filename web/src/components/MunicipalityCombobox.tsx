@@ -37,10 +37,29 @@ export function MunicipalityCombobox({
 	const selectedName = municipalities.find((m) => m.id === selectedId)?.name ?? ""
 	const [input, setInput] = useState(selectedName)
 
+	// Passing inputValue makes the field ours to keep in sync: react-stately skips its own
+	// reset paths whenever inputValue is defined, so nothing follows selectedId when it changes
+	// from outside this component — and plenty of things change it while this component stays
+	// mounted ("Nullstill", the national toggle, a municipality suggestion, EmptyState's clear
+	// button, browser back/forward). Adjusting state during render is React's own pattern for
+	// that, and I prefer it to keying the component: a remount would throw keyboard focus out
+	// of the field right after a selection.
+	const [syncedId, setSyncedId] = useState(selectedId)
+	if (syncedId !== selectedId) {
+		setSyncedId(selectedId)
+		setInput(selectedName)
+	}
+
 	const visible = input.trim()
 		? municipalities.filter((m) => matchesEitherWay(input, m.name))
 		: municipalities
 	const counties = [...new Set(visible.map((m) => m.county))].sort(nbCollator.compare)
+	// "Alle kommuner" clears the filter, so it has to be there whenever someone wants to undo a
+	// choice — and after a selection the input holds that municipality's name, which is exactly
+	// when the old empty-input-only guard hid the row. Show it while the user is still browsing:
+	// the field is empty, or it only says what is already selected. Once they type a real query
+	// it drops out of the way.
+	const browsing = input.trim() === "" || input === selectedName
 
 	return (
 		<ComboBox
@@ -115,7 +134,7 @@ export function MunicipalityCombobox({
 						</p>
 					)}
 				>
-					{!input.trim() && (
+					{browsing && (
 						<ListBoxItem
 							id={ALL}
 							className="cursor-pointer rounded-lg px-3 py-2 data-[focused]:bg-accent-soft data-[selected]:font-semibold"
