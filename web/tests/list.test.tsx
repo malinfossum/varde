@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
 import { EmptyState } from "../src/components/EmptyState.tsx"
+import { LoadingState } from "../src/components/LoadingState.tsx"
 import { Pagination } from "../src/components/Pagination.tsx"
 import { ResourceCard } from "../src/components/ResourceCard.tsx"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
@@ -36,7 +37,7 @@ afterEach(() => {
 	window.history.replaceState(null, "", "/")
 })
 
-test("card renders badges from data, hours text, tel link and external rel", () => {
+test("card renders badges from data, hours text and tel link", () => {
 	withLang(<ResourceCard resource={resource} />)
 	expect(screen.getByText("Akutt")).toBeInTheDocument()
 	expect(screen.getByText("Døgnåpent", { selector: ".badge" })).toBeInTheDocument()
@@ -44,8 +45,36 @@ test("card renders badges from data, hours text, tel link and external rel", () 
 	expect(screen.getByText(/Åpningstider/)).toBeInTheDocument()
 	const tel = screen.getByRole("link", { name: /62 00 00 00/ })
 	expect(tel).toHaveAttribute("href", "tel:62000000")
-	const external = screen.getByRole("link", { name: /example.test|Nettside/ })
-	expect(external).toHaveAttribute("rel", "noopener noreferrer")
+})
+
+test("card order: name, badges in order, description, hours, Ring as a tel anchor, details, verified", () => {
+	withLang(<ResourceCard resource={{ ...resource, isNational: true }} />)
+	// Scoped to .badge: the fixture's openingHours text is itself "Døgnåpent", which would
+	// otherwise collide with the alwaysOpen badge under an unscoped text match.
+	const badges = screen
+		.getAllByText(/^(Akutt|Nasjonal|Døgnåpent)$/, { selector: ".badge" })
+		.map((el) => el.textContent)
+	expect(badges).toEqual(["Akutt", "Nasjonal", "Døgnåpent"])
+	const call = screen.getByRole("link", { name: /Ring 62 00 00 00/ })
+	expect(call).toHaveAttribute("href", "tel:62000000")
+	expect(screen.getByRole("link", { name: "Detaljer" })).toHaveAttribute("href", "/resources/12")
+	expect(screen.getByText("Hjelp ved vold i nære relasjoner.")).toBeInTheDocument()
+})
+
+test("a card without a phone shows only Detaljer and the no-phone line", () => {
+	withLang(<ResourceCard resource={{ ...resource, phone: null }} />)
+	expect(screen.queryByRole("link", { name: /Ring/ })).not.toBeInTheDocument()
+	expect(screen.getByText("Ingen telefon – se nettsiden")).toBeInTheDocument()
+})
+
+test("loading renders skeletons under a busy status region", () => {
+	withLang(<LoadingState />)
+	expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true")
+	// Visible, not visually-hidden: the loading heading reserves the same vertical space the
+	// ready-state heading takes once results arrive (see LoadingState.tsx for why).
+	expect(screen.getByRole("heading", { level: 1, name: "Laster …" })).not.toHaveClass(
+		"visually-hidden"
+	)
 })
 
 test("pagination disables at the edges and reports page changes", async () => {
@@ -138,26 +167,27 @@ test("an unknown ?municipality= value doesn't crash the app and the list renders
 	// rejects it), so it never reaches the resources request — the list is unfiltered rather
 	// than scoped to a municipality that doesn't exist.
 	expect(resourcesUrl).not.toContain("municipality")
-	// No phantom selection in the picker either.
-	expect(screen.getByRole("button", { name: "Alle" })).toHaveAttribute("aria-pressed", "true")
+	// No phantom selection in the combobox either — its input stays empty rather than showing
+	// some municipality's name.
+	expect(screen.getByRole("combobox", { name: "Kommune" })).toHaveValue("")
 })
 
-test("Alle clears both municipality and national selection from the URL", async () => {
+test("Tøm clears both municipality and national selection from the URL", async () => {
 	stubCatalogAndResources()
 	window.history.pushState(null, "", "/?municipality=1")
 	const user = userEvent.setup()
 	render(<App />)
-	await waitFor(() => expect(screen.getByRole("button", { name: "Hamar" })).toBeInTheDocument())
+	await waitFor(() =>
+		expect(screen.getByRole("combobox", { name: "Kommune" })).toHaveValue("Hamar")
+	)
 
-	const alle = screen.getByRole("button", { name: "Alle" })
-	expect(alle).toHaveAttribute("aria-pressed", "false")
-	await user.click(alle)
+	await user.click(screen.getByRole("button", { name: "Tøm" }))
 
 	expect(window.location.search).not.toContain("municipality")
 	expect(window.location.search).not.toContain("national")
 })
 
-test("list page heading levels never skip: h1 shell, h2 picker and results, h3 counties and cards", async () => {
+test("list page heading levels never skip: h1 results heading, h2 cards", async () => {
 	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
 		const url = String(input)
 		if (url.includes("/api/municipalities")) {
@@ -172,16 +202,77 @@ test("list page heading levels never skip: h1 shell, h2 picker and results, h3 c
 			})
 		)
 	})
+	// "/" is the landing now — the list lives at /sok.
+	window.history.pushState(null, "", "/sok")
 	render(<App />)
-	await screen.findByRole("heading", { level: 3, name: "Krisesenteret i Hamar" })
-	expect(screen.getByRole("heading", { level: 2, name: "Finn din kommune" })).toBeInTheDocument()
-	expect(screen.getByRole("heading", { level: 3, name: "Innlandet" })).toBeInTheDocument()
-	expect(screen.getByRole("heading", { level: 2, name: "1 treff" })).toBeInTheDocument()
+	await screen.findByRole("heading", { level: 2, name: "Krisesenteret i Hamar" })
+	expect(screen.getByRole("heading", { level: 1, name: "1 treff" })).toBeInTheDocument()
 
+	// The results heading is /sok's own <h1> (it doubles as the arrival-focus target), and
+	// each card name sits one level under it. This guards against any level being skipped
+	// among whatever headings the page renders.
 	const levels = screen.getAllByRole("heading").map((h) => Number(h.tagName.slice(1)))
 	for (let i = 1; i < levels.length; i++) {
 		expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1)
 	}
+})
+
+// A catalog failure and a resources outcome aren't mutually exclusive — the API calls are
+// independent, so the catalog can fail while resources still loads, comes back empty, or comes
+// back with items. Each combination must still show exactly one <h1>: the catalog's own
+// ErrorState demotes to an h2 whenever something else (loading, empty, or results) is also
+// showing, and only takes the h1 when it's the only thing on the page.
+function stubCatalogErrorWith(resourcesResponse: () => Promise<Response>) {
+	return vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
+		const url = String(input)
+		if (url.includes("/api/municipalities") || url.includes("/api/categories")) {
+			return Promise.reject(new TypeError("Failed to fetch"))
+		}
+		return resourcesResponse()
+	})
+}
+
+test("catalog error alongside results: exactly one h1, the results heading", async () => {
+	stubCatalogErrorWith(() =>
+		Promise.resolve(
+			new Response(JSON.stringify({ items: [resource], page: 1, pageSize: 20, totalCount: 1 }), {
+				status: 200,
+			})
+		)
+	)
+	window.history.pushState(null, "", "/sok")
+	render(<App />)
+	await screen.findByRole("heading", { level: 1, name: "1 treff" })
+	expect(screen.getByRole("heading", { name: "Noe gikk galt" }).tagName).toBe("H2")
+	expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1)
+})
+
+test("catalog error alongside zero results: exactly one h1, the empty-state heading", async () => {
+	stubCatalogErrorWith(() =>
+		Promise.resolve(
+			new Response(JSON.stringify({ items: [], page: 1, pageSize: 20, totalCount: 0 }), {
+				status: 200,
+			})
+		)
+	)
+	window.history.pushState(null, "", "/sok")
+	render(<App />)
+	await screen.findByRole("heading", { level: 1, name: "Ingen treff" })
+	expect(screen.getByRole("heading", { name: "Noe gikk galt" }).tagName).toBe("H2")
+	expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1)
+})
+
+test("catalog error while resources are still loading: exactly one h1, the loading heading", async () => {
+	stubCatalogErrorWith(() => new Promise<Response>(() => {})) // never resolves — stays "loading"
+	window.history.pushState(null, "", "/sok")
+	render(<App />)
+	await screen.findByRole("heading", { name: "Noe gikk galt" })
+	// The live-region announcer also says "Laster …" — scope to the heading role so this only
+	// matches LoadingState's own <h1>, not the aria-live div.
+	const loadingHeading = screen.getByRole("heading", { name: "Laster …" })
+	expect(loadingHeading.tagName).toBe("H1")
+	expect(screen.getByRole("heading", { name: "Noe gikk galt" }).tagName).toBe("H2")
+	expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1)
 })
 
 test("paging moves focus to the results heading; typing in search does not", async () => {
@@ -208,8 +299,10 @@ test("paging moves focus to the results heading; typing in search does not", asy
 	})
 	const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView")
 	const user = userEvent.setup()
+	// "/" is the landing now — the list lives at /sok.
+	window.history.pushState(null, "", "/sok")
 	render(<App />)
-	const heading = await screen.findByRole("heading", { level: 2, name: "3 treff" })
+	const heading = await screen.findByRole("heading", { level: 1, name: "3 treff" })
 	// Initial load leaves focus and scroll alone — nothing was interacted with yet.
 	expect(heading).not.toHaveFocus()
 	expect(scrollIntoView).not.toHaveBeenCalled()
@@ -219,7 +312,7 @@ test("paging moves focus to the results heading; typing in search does not", asy
 	await user.click(screen.getByRole("button", { name: "Neste" }))
 	await screen.findByText("Treff side 2")
 	await waitFor(() =>
-		expect(screen.getByRole("heading", { level: 2, name: "3 treff" })).toHaveFocus()
+		expect(screen.getByRole("heading", { level: 1, name: "3 treff" })).toHaveFocus()
 	)
 	expect(scrollIntoView).toHaveBeenCalledWith({ block: "start" })
 

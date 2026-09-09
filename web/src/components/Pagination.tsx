@@ -18,12 +18,22 @@ export function Pagination({
 		.replace("{page}", String(page))
 		.replace("{pages}", String(pages))
 	return (
-		<nav className="pager">
-			<button type="button" disabled={page <= 1} onClick={() => onPage(page - 1)}>
+		<nav className="flex items-center justify-between gap-3">
+			<button
+				type="button"
+				className="btn-secondary"
+				disabled={page <= 1}
+				onClick={() => onPage(page - 1)}
+			>
 				{t("list.pagerPrev")}
 			</button>
-			<span>{status}</span>
-			<button type="button" disabled={page >= pages} onClick={() => onPage(page + 1)}>
+			<span className="text-sm text-muted">{status}</span>
+			<button
+				type="button"
+				className="btn-secondary"
+				disabled={page >= pages}
+				onClick={() => onPage(page + 1)}
+			>
 				{t("list.pagerNext")}
 			</button>
 		</nav>

@@ -1,0 +1,58 @@
+/* web/src/styles/tokens.css
+   Paper — the Varde palette. Light is the brand's home; dark mirrors it token for token.
+   Every colour used as text is contrast-tested against its ground in tests/tokens.test.ts,
+   so change a value here and the suite tells you if it stopped reading. Soft tints are
+   backgrounds only and are not tested. */
+
+/* Self-hosted, static Latin subsets vendored by scripts/sync-fonts.mjs. Fraunces is the LCP
+   element's face: preloaded in index.html and `optional`, so a slow network shows the
+   fallback serif and never shifts the headline. Figtree swaps in as it arrives. */
+@font-face {
+	font-family: "Fraunces";
+	font-style: normal;
+	font-weight: 600;
+	font-display: optional;
+	src: url("/fonts/fraunces-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+	font-family: "Figtree";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("/fonts/figtree-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+	font-family: "Figtree";
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url("/fonts/figtree-latin-600-normal.woff2") format("woff2");
+}
+
+:root {
+	color-scheme: light;
+	--ground: #f6f2ea;
+	--surface: #ffffff;
+	--border: #d9d2c6;
+	--text: #1d1b17;
+	--muted: #5f5a52;
+	--accent: #285f45;
+	--on-accent: #f6f2ea;
+	--akutt: #b3361f;
+	--akutt-soft: #f8e7e2;
+	--accent-soft: #e4efe8;
+}
+
+[data-theme="dark"] {
+	color-scheme: dark;
+	--ground: #0b0d10;
+	--surface: #13161a;
+	--border: #2a2f36;
+	--text: #f3efe7;
+	--muted: #b3b0a8;
+	--accent: #7fc39e;
+	--on-accent: #0b0d10;
+	--akutt: #ff8a7a;
+	--akutt-soft: #2a1210;
+	--accent-soft: #16231c;
+}

@@ -7,7 +7,7 @@ export function QuickExit() {
 	return (
 		<button
 			type="button"
-			className="quick-exit"
+			className="btn-secondary"
 			onClick={() => window.location.replace("https://www.google.com")}
 		>
 			{t("app.quickExit")}

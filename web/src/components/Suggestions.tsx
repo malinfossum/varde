@@ -11,7 +11,10 @@ export function Suggestions({
 	const t = useTranslation()
 	if (suggestions.length === 0) return null
 	return (
-		<ul className="suggestions" aria-label={t("search.suggestions")}>
+		<ul
+			className="m-0 mt-2 list-none rounded-xl border border-border bg-surface p-1"
+			aria-label={t("search.suggestions")}
+		>
 			{suggestions.map((suggestion) => {
 				const kindLabel =
 					suggestion.kind === "municipality"
@@ -20,7 +23,11 @@ export function Suggestions({
 				const key = suggestion.kind === "municipality" ? `m${suggestion.id}` : `c${suggestion.slug}`
 				return (
 					<li key={key}>
-						<button type="button" onClick={() => onPick(suggestion)}>
+						<button
+							type="button"
+							onClick={() => onPick(suggestion)}
+							className="flex min-h-11 w-full items-center rounded-lg px-3 text-left text-fg hover:bg-accent-soft"
+						>
 							{suggestion.name} ({kindLabel})
 						</button>
 					</li>

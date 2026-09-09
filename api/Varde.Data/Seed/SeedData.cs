@@ -20,6 +20,11 @@ namespace Varde.Data.Seed;
 /// Krisesenter) keeps Address = null deliberately — hemmelig adresse, a safety measure, not
 /// missing data.
 ///
+/// Plan 4 Task 4 adds rows 23–25: the national emergency numbers 110 (Brannvesen), 112 (Politi)
+/// and 113 (Ambulanse), for the redesign's acute strip. Fire has no single national site — the
+/// 110 line runs through twelve regional 110-sentraler — so row 23 cites DSB (the directorate
+/// responsible for how they're organised) as the official source instead.
+///
 /// Every value here is a compile-time constant. HasData compares seed values against the model
 /// on every `migrations add`, so a DateTime.UtcNow or a computed id would produce a spurious
 /// migration on each run. DateTimes are explicitly Utc: Npgsql refuses any other Kind for
@@ -49,6 +54,9 @@ public static class SeedData
     // prints "Du kan ringe 116 117 hele døgnet", so the row now carries Døgnåpent + IsAlwaysOpen
     // — see docs/seed-data.md row 3's Notes. Phone and website unchanged.
     private static readonly DateOnly VerifiedRow3 = new(2026, 9, 7);
+
+    // Rows 23-25 (nødnumre) were added and verified 2026-09-09 — see docs/seed-data.md.
+    private static readonly DateOnly VerifiedRows23To25 = new(2026, 9, 9);
 
     // Municipality ids — county = Innlandet for 1-7, Oslo for 8.
     private const int Hamar = 1;
@@ -342,6 +350,49 @@ public static class SeedData
                 MunicipalityId = Gjovik,
                 Website = "https://www.gjovik.kommune.no/jobbhus/jeg-onsker-jobb/",
                 LastVerified = Verified,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            // Rows 23-25 — the national emergency numbers, added 2026-09-09 for the acute strip
+            // (plan 4). Copied from docs/seed-data.md rows 23-25; each row's Notes quotes the
+            // source page. web/src/services/emergency.ts carries the same numbers as constants
+            // and a web test pins them to these rows.
+            new Resource
+            {
+                Id = 23,
+                Name = "Brannvesen (nødnummer)",
+                IsNational = true,
+                IsAlwaysOpen = true,
+                MunicipalityId = null,
+                Phone = "110",
+                Website = "https://www.dsb.no/brannsikkerhet/nodmelding/110-sentralene/",
+                LastVerified = VerifiedRows23To25,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 24,
+                Name = "Politi (nødnummer)",
+                IsNational = true,
+                IsAlwaysOpen = true,
+                MunicipalityId = null,
+                Phone = "112",
+                Website = "https://www.politiet.no/kontakt-politiet/ring-politiet",
+                LastVerified = VerifiedRows23To25,
+                CreatedAt = SeededAt,
+                UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 25,
+                Name = "Ambulanse (medisinsk nødhjelp)",
+                IsNational = true,
+                IsAlwaysOpen = true,
+                MunicipalityId = null,
+                Phone = "113",
+                Website = "https://www.helsenorge.no/forstehjelp",
+                LastVerified = VerifiedRows23To25,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -2632,6 +2683,54 @@ public static class SeedData
                 ResourceId = 247,
                 LanguageCode = "en",
                 Description = "Kirkens Bymisjon's centre at Grønland, with meeting places, activities and follow-up for people in difficult life situations.",
+            },
+            new ResourceTranslation
+            {
+                Id = 183,
+                ResourceId = 23,
+                LanguageCode = "nb",
+                Description = "Ved brann, ulykker eller andre akutte situasjoner, ring nødnummer 110.",
+                OpeningHours = "Døgnåpent",
+            },
+            new ResourceTranslation
+            {
+                Id = 184,
+                ResourceId = 23,
+                LanguageCode = "en",
+                Description = "Call the emergency number 110 for a fire, an accident or another acute situation.",
+                OpeningHours = "Open 24 hours",
+            },
+            new ResourceTranslation
+            {
+                Id = 185,
+                ResourceId = 24,
+                LanguageCode = "nb",
+                Description = "Ring nødnummeret 112 når det er behov for øyeblikkelig hjelp.",
+                OpeningHours = "Døgnåpent",
+            },
+            new ResourceTranslation
+            {
+                Id = 186,
+                ResourceId = 24,
+                LanguageCode = "en",
+                Description = "Call the emergency number 112 when you need immediate help from the police.",
+                OpeningHours = "Open 24 hours",
+            },
+            new ResourceTranslation
+            {
+                Id = 187,
+                ResourceId = 25,
+                LanguageCode = "nb",
+                Description = "Ring 113 om situasjonen er kritisk, og det står om liv og helse.",
+                OpeningHours = "Døgnåpent",
+            },
+            new ResourceTranslation
+            {
+                Id = 188,
+                ResourceId = 25,
+                LanguageCode = "en",
+                Description = "Call 113 when the situation is critical and life or health is at risk.",
+                OpeningHours = "Open 24 hours",
             });
 
         modelBuilder.Entity<ResourceCategory>().HasData(
@@ -2676,6 +2775,9 @@ public static class SeedData
             new ResourceCategory { ResourceId = 21, CategoryId = Categories.VoldOgOvergrep },
             new ResourceCategory { ResourceId = 21, CategoryId = Categories.Nodtjenester },
             new ResourceCategory { ResourceId = 22, CategoryId = Categories.Arbeid },
+            new ResourceCategory { ResourceId = 23, CategoryId = Categories.Nodtjenester },
+            new ResourceCategory { ResourceId = 24, CategoryId = Categories.Nodtjenester },
+            new ResourceCategory { ResourceId = 25, CategoryId = Categories.Nodtjenester },
             new ResourceCategory { ResourceId = 101, CategoryId = Categories.Okonomi },
             new ResourceCategory { ResourceId = 101, CategoryId = Categories.Arbeid },
             new ResourceCategory { ResourceId = 101, CategoryId = Categories.Bolig },

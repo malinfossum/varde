@@ -1,4 +1,8 @@
-export type Route = { kind: "list" } | { kind: "detail"; id: number } | { kind: "notFound" }
+export type Route =
+	| { kind: "landing" }
+	| { kind: "list" }
+	| { kind: "detail"; id: number }
+	| { kind: "notFound" }
 
 export type Filters = {
 	search: string
@@ -8,8 +12,17 @@ export type Filters = {
 	page: number
 }
 
+// The parameters that mean "this is a results URL". `lang` is deliberately absent: /?lang=en
+// is the English landing, and the language toggle must never bounce a visitor into results.
+export const FILTER_PARAMS = ["search", "category", "municipality", "national", "page"] as const
+
+export function isLegacyListUrl(pathname: string, params: URLSearchParams): boolean {
+	return pathname === "/" && FILTER_PARAMS.some((name) => params.has(name))
+}
+
 export function parseRoute(pathname: string): Route {
-	if (pathname === "/") return { kind: "list" }
+	if (pathname === "/") return { kind: "landing" }
+	if (pathname === "/sok") return { kind: "list" }
 	const match = pathname.match(/^\/resources\/(\d+)$/)
 	if (match) return { kind: "detail", id: Number(match[1]) }
 	return { kind: "notFound" }

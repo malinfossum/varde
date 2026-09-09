@@ -9,52 +9,62 @@
    - components/  rendering + event wiring — no business logic
    ====================================================================== */
 
-import { AkuttShortcut } from "./components/AkuttShortcut.tsx"
-import { LanguageToggle } from "./components/LanguageToggle.tsx"
-import { ListPage } from "./components/ListPage.tsx"
+import { lazy, Suspense } from "react"
+import { AcuteStrip } from "./components/AcuteStrip.tsx"
+import { Footer } from "./components/Footer.tsx"
+import { Header } from "./components/Header.tsx"
+import { LandingPage } from "./components/LandingPage.tsx"
+import { LoadingState } from "./components/LoadingState.tsx"
 import { NotFoundState } from "./components/NotFoundState.tsx"
-import { QuickExit } from "./components/QuickExit.tsx"
-import { ResourceDetail } from "./components/ResourceDetail.tsx"
 import { AnnouncerProvider } from "./components/StatusRegion.tsx"
 import { useUrlState } from "./hooks/useUrlState.ts"
 import { LanguageProvider, useTranslation } from "./i18n/LanguageProvider.tsx"
 import { NavigationContext } from "./navigation.ts"
 import type { Filters, Route } from "./services/urlState.ts"
 
+// ListPage and ResourceDetail pull in react-aria-components (the municipality combobox)
+// and the card/detail layout, none of which the landing page needs to paint its first frame.
+// Splitting them into their own chunks keeps "/" small; the Suspense fallback below only
+// shows while that chunk is still downloading, which in practice is a route change, not the
+// first paint.
+const ListPage = lazy(() =>
+	import("./components/ListPage.tsx").then((m) => ({ default: m.ListPage }))
+)
+const ResourceDetail = lazy(() =>
+	import("./components/ResourceDetail.tsx").then((m) => ({ default: m.ResourceDetail }))
+)
+
 export function App() {
-	const { route, filters, langParam, navigate } = useUrlState()
+	const { route, filters, langParam, arrival, navigate } = useUrlState()
 	return (
 		<LanguageProvider initialLang={langParam}>
 			<AnnouncerProvider>
 				<NavigationContext.Provider value={navigate}>
-					<Shell route={route} filters={filters} />
+					<Shell route={route} filters={filters} arrival={arrival} />
 				</NavigationContext.Provider>
 			</AnnouncerProvider>
 		</LanguageProvider>
 	)
 }
 
-function Shell({ route, filters }: { route: Route; filters: Filters }) {
+function Shell({ route, filters, arrival }: { route: Route; filters: Filters; arrival: number }) {
 	const t = useTranslation()
 	return (
-		<div id="app" className="container stack stack-lg">
+		<div id="app" className="flex min-h-dvh flex-col">
 			<a href="#main" className="skip-link">
 				{t("app.skipToContent")}
 			</a>
-			<header className="app-header">
-				<h1>{t("app.title")}</h1>
-				<p>{t("app.tagline")}</p>
-				<div className="app-header-actions">
-					<LanguageToggle />
-					<AkuttShortcut />
-					<QuickExit />
-				</div>
-			</header>
-			<main id="main">
-				{route.kind === "list" && <ListPage filters={filters} />}
-				{route.kind === "detail" && <ResourceDetail id={route.id} />}
-				{route.kind === "notFound" && <NotFoundState />}
+			<AcuteStrip />
+			<Header />
+			<main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
+				<Suspense fallback={<LoadingState />}>
+					{route.kind === "landing" && <LandingPage arrival={arrival} />}
+					{route.kind === "list" && <ListPage filters={filters} arrival={arrival} />}
+					{route.kind === "detail" && <ResourceDetail id={route.id} arrival={arrival} />}
+					{route.kind === "notFound" && <NotFoundState arrival={arrival} />}
+				</Suspense>
 			</main>
+			<Footer />
 		</div>
 	)
 }

@@ -670,6 +670,42 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
+                            Id = 23,
+                            CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsAlwaysOpen = true,
+                            IsNational = true,
+                            LastVerified = new DateOnly(2026, 9, 9),
+                            Name = "Brannvesen (nødnummer)",
+                            Phone = "110",
+                            UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Website = "https://www.dsb.no/brannsikkerhet/nodmelding/110-sentralene/"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsAlwaysOpen = true,
+                            IsNational = true,
+                            LastVerified = new DateOnly(2026, 9, 9),
+                            Name = "Politi (nødnummer)",
+                            Phone = "112",
+                            UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Website = "https://www.politiet.no/kontakt-politiet/ring-politiet"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsAlwaysOpen = true,
+                            IsNational = true,
+                            LastVerified = new DateOnly(2026, 9, 9),
+                            Name = "Ambulanse (medisinsk nødhjelp)",
+                            Phone = "113",
+                            UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Website = "https://www.helsenorge.no/forstehjelp"
+                        },
+                        new
+                        {
                             Id = 101,
                             Address = "Nordåsvegen 4, 2382 Brumunddal",
                             CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -1831,6 +1867,21 @@ namespace Varde.Data.Migrations
                         {
                             ResourceId = 22,
                             CategoryId = 7
+                        },
+                        new
+                        {
+                            ResourceId = 23,
+                            CategoryId = 9
+                        },
+                        new
+                        {
+                            ResourceId = 24,
+                            CategoryId = 9
+                        },
+                        new
+                        {
+                            ResourceId = 25,
+                            CategoryId = 9
                         },
                         new
                         {
@@ -4057,6 +4108,54 @@ namespace Varde.Data.Migrations
                             Description = "Kirkens Bymisjon's centre at Grønland, with meeting places, activities and follow-up for people in difficult life situations.",
                             LanguageCode = "en",
                             ResourceId = 247
+                        },
+                        new
+                        {
+                            Id = 183,
+                            Description = "Ved brann, ulykker eller andre akutte situasjoner, ring nødnummer 110.",
+                            LanguageCode = "nb",
+                            OpeningHours = "Døgnåpent",
+                            ResourceId = 23
+                        },
+                        new
+                        {
+                            Id = 184,
+                            Description = "Call the emergency number 110 for a fire, an accident or another acute situation.",
+                            LanguageCode = "en",
+                            OpeningHours = "Open 24 hours",
+                            ResourceId = 23
+                        },
+                        new
+                        {
+                            Id = 185,
+                            Description = "Ring nødnummeret 112 når det er behov for øyeblikkelig hjelp.",
+                            LanguageCode = "nb",
+                            OpeningHours = "Døgnåpent",
+                            ResourceId = 24
+                        },
+                        new
+                        {
+                            Id = 186,
+                            Description = "Call the emergency number 112 when you need immediate help from the police.",
+                            LanguageCode = "en",
+                            OpeningHours = "Open 24 hours",
+                            ResourceId = 24
+                        },
+                        new
+                        {
+                            Id = 187,
+                            Description = "Ring 113 om situasjonen er kritisk, og det står om liv og helse.",
+                            LanguageCode = "nb",
+                            OpeningHours = "Døgnåpent",
+                            ResourceId = 25
+                        },
+                        new
+                        {
+                            Id = 188,
+                            Description = "Call 113 when the situation is critical and life or health is at risk.",
+                            LanguageCode = "en",
+                            OpeningHours = "Open 24 hours",
+                            ResourceId = 25
                         });
                 });
 

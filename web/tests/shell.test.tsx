@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react"
+import { act, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
@@ -11,12 +11,13 @@ function stubResources() {
 	vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}))
 }
 
-test("shell renders skip link, quick exit and akutt shortcut", () => {
+test("shell renders skip link, quick exit, acute strip and theme toggle", () => {
 	stubResources()
 	render(<App />)
 	expect(screen.getByRole("link", { name: "Hopp til innhold" })).toBeInTheDocument()
 	expect(screen.getByRole("button", { name: "Forlat siden" })).toBeInTheDocument()
-	expect(screen.getByRole("link", { name: "Akutt hjelp" })).toBeInTheDocument()
+	expect(screen.getByRole("region", { name: "Nødnumre" })).toBeInTheDocument()
+	expect(screen.getByRole("button", { name: "Mørkt tema" })).toBeInTheDocument()
 })
 
 test("language toggle switches strings, html lang, keeps focus, announces", async () => {
@@ -66,4 +67,22 @@ test("language toggle resets page to 1 instead of carrying it into the new langu
 	await user.click(toggle)
 	expect(window.location.search).toContain("lang=en")
 	expect(window.location.search).not.toContain("page=")
+})
+
+test("the landing route renders a heading and loads no data", () => {
+	// Earlier tests in this file leave their own fetch mocks and call history behind (this
+	// file never restores between tests) — start from a clean slate so this assertion only
+	// sees calls this test itself would have made.
+	vi.restoreAllMocks()
+	const fetchSpy = vi.spyOn(globalThis, "fetch")
+	window.history.pushState(null, "", "/")
+	render(<App />)
+	// The header carries no heading of its own (Task 7) — the landing page's own h1 is the
+	// only level-1 heading on this route, and it lives inside <main>. Task 8 gave it the real
+	// headline copy, so this checks for that text rather than the old placeholder's "Varde".
+	const main = screen.getByRole("main")
+	expect(
+		within(main).getByRole("heading", { level: 1, name: /Finn riktig hjelp/ })
+	).toBeInTheDocument()
+	expect(fetchSpy).not.toHaveBeenCalled()
 })

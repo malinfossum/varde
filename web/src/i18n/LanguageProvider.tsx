@@ -1,4 +1,5 @@
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react"
+import { I18nProvider } from "react-aria-components"
 import en from "./en.json"
 import nb from "./nb.json"
 
@@ -47,7 +48,17 @@ export function LanguageProvider({
 		setLangState(next)
 	}
 
-	return <LanguageContext.Provider value={{ lang, setLang }}>{children}</LanguageContext.Provider>
+	// react-aria speaks for itself: the combobox's listbox label, "N alternativer finnes" and
+	// the group-change announcements all come from its own locale bundle, and without a locale
+	// it reads navigator.language — so an English-locale browser would narrate a Norwegian UI in
+	// English. The combobox deliberately has no hand-rolled live region because those native
+	// announcements are the accessible name; feeding them the same lang the toggle sets is what
+	// makes that hold. It sits here rather than in App so the two can never drift apart.
+	return (
+		<LanguageContext.Provider value={{ lang, setLang }}>
+			<I18nProvider locale={lang}>{children}</I18nProvider>
+		</LanguageContext.Provider>
+	)
 }
 
 export function useLanguage() {

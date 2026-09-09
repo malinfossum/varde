@@ -1,6 +1,8 @@
-import { render, screen } from "@testing-library/react"
-import { expect, test, vi } from "vitest"
+import { act, render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import { afterEach, expect, test, vi } from "vitest"
 import { ResourceDetail } from "../src/components/ResourceDetail.tsx"
+import { AnnouncerProvider } from "../src/components/StatusRegion.tsx"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
 import type { ResourceDto } from "../src/types/api.ts"
 
@@ -23,6 +25,14 @@ const detail: ResourceDto = {
 	categories: [],
 }
 
+// The two ready-branch tests below set window.history state directly (replaceState, and a
+// back() spy) to drive the stateful back link. Reset both after every test in this file so
+// that state can't leak into a later test that never asked for it — R3 caught the share and
+// copy-phone tests below silently inheriting `{ from: "sok" }` this way.
+afterEach(() => {
+	window.history.replaceState(null, "", "/")
+})
+
 test("detail shows hours with contact info and no handover banner", async () => {
 	vi.spyOn(globalThis, "fetch").mockResolvedValue(
 		new Response(JSON.stringify(detail), { status: 200 })
@@ -35,6 +45,10 @@ test("detail shows hours with contact info and no handover banner", async () => 
 	expect(await screen.findByRole("heading", { name: "Krisesenteret i Hamar" })).toBeInTheDocument()
 	expect(screen.getByText(/Åpningstider/)).toBeInTheDocument()
 	expect(screen.queryByText(/legevakt 116 117/i)).not.toBeInTheDocument() // banner is list-only
+	// The card dropped its website link in Task 10 — the detail page is now the only place
+	// this rel attribute matters.
+	const website = screen.getByRole("link", { name: /example.test|Nettside/ })
+	expect(website).toHaveAttribute("rel", "noopener noreferrer")
 })
 
 test("a 404 renders NotFoundState with a way back", async () => {
@@ -44,18 +58,93 @@ test("a 404 renders NotFoundState with a way back", async () => {
 			<ResourceDetail id={999} />
 		</LanguageProvider>
 	)
-	expect(await screen.findByRole("heading", { name: "Fant ikke tjenesten" })).toBeInTheDocument()
-	expect(screen.getByRole("link", { name: "Tilbake til søket" })).toBeInTheDocument()
+	// R1: NotFoundState is the whole page in this state (Header's brand is a link, not a
+	// heading), so it must own the page's one level-1 heading, not level 2.
+	expect(
+		await screen.findByRole("heading", { level: 1, name: "Fant ikke tjenesten" })
+	).toBeInTheDocument()
+	expect(screen.getByRole("link", { name: "Tilbake til resultater" })).toBeInTheDocument()
+})
+
+// --- ready branch: call-first hero + stateful back link -------------------------------------
+
+test("the call button is the hero and the back link is a plain link without history state", async () => {
+	vi.spyOn(globalThis, "fetch").mockResolvedValue(
+		new Response(JSON.stringify(detail), { status: 200 })
+	)
+	window.history.replaceState(null, "", "/resources/12")
+	render(
+		<LanguageProvider initialLang="nb">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} arrival={0} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	const call = await screen.findByRole("link", { name: /Ring 62 00 00 00/ })
+	expect(call).toHaveAttribute("href", "tel:62000000")
+	// R14: assert role + accessible name, not the class that styles the button — a redesign
+	// must not have to touch this test.
+	expect(screen.getByRole("link", { name: "Tilbake til resultater" })).toHaveAttribute(
+		"href",
+		"/sok"
+	)
+	expect(document.title).toBe("Krisesenteret i Hamar – Varde")
+})
+
+test("with from=sok in history state the back control goes back", async () => {
+	vi.spyOn(globalThis, "fetch").mockResolvedValue(
+		new Response(JSON.stringify(detail), { status: 200 })
+	)
+	window.history.replaceState({ from: "sok" }, "", "/resources/12")
+	const back = vi.spyOn(window.history, "back").mockImplementation(() => {})
+	render(
+		<LanguageProvider initialLang="nb">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} arrival={1} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
+	await userEvent.setup().click(screen.getByRole("button", { name: "Tilbake til resultater" }))
+	expect(back).toHaveBeenCalledTimes(1)
+	// R3: this is a spy on the real window.history, not a per-test fake — left in place it's a
+	// permanent no-op for every test below that runs after this one in the file.
+	back.mockRestore()
+})
+
+test("badges render on the detail page in the fixed order Akutt, Nasjonal, Døgnåpent", async () => {
+	vi.spyOn(globalThis, "fetch").mockResolvedValue(
+		new Response(
+			JSON.stringify({
+				...detail,
+				isNational: true,
+				categories: [
+					{ id: 9, slug: "nodtjenester", name: "Nødtjenester", isFallbackTranslation: false },
+				],
+			}),
+			{ status: 200 }
+		)
+	)
+	render(
+		<LanguageProvider initialLang="nb">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
+	// R2: this task extracted ResourceBadges out of ResourceCard and made ResourceDetail its
+	// second consumer — a broken import, wrong prop, or reordering here would otherwise go
+	// undetected, since only list.test.tsx exercised the component before this.
+	const badges = screen
+		.getAllByText(/^(Akutt|Nasjonal|Døgnåpent)$/, { selector: ".badge" })
+		.map((el) => el.textContent)
+	expect(badges).toEqual(["Akutt", "Nasjonal", "Døgnåpent"])
 })
 
 // --- share + copy-phone ---------------------------------------------------------------------
 // jsdom ships neither navigator.share nor navigator.clipboard, so each test installs exactly
 // the capabilities it is about and removes them again.
-
-import { act } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { afterEach } from "vitest"
-import { AnnouncerProvider } from "../src/components/StatusRegion.tsx"
 
 function installNavigator(overrides: { share?: unknown; clipboard?: unknown }) {
 	for (const [key, value] of Object.entries(overrides)) {

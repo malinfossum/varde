@@ -15,7 +15,8 @@ namespace Varde.Tests.Integration;
 ///
 /// Task 9 ships in three batches (see task-9-adaptation.md §9); the resource count grows
 /// 22 → 44 → 91 as each batch's migration lands. This file always asserts against the current
-/// cumulative total — batch 9c adds Oslo (rows 201-247), bringing the total to 91.
+/// cumulative total — batch 9c adds Oslo (rows 201-247), bringing the total to 91. Plan 4
+/// Task 4 adds rows 23-25 (the national emergency numbers 110, 112, 113), bringing it to 94.
 /// </summary>
 public class SeedDataTests
 {
@@ -26,7 +27,7 @@ public class SeedDataTests
         using var scope = factory.NewScope();
         var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
 
-        Assert.Equal(91, await db.Resources.CountAsync());
+        Assert.Equal(94, await db.Resources.CountAsync());
         Assert.Equal(8, await db.Municipalities.CountAsync());
     }
 
@@ -158,7 +159,7 @@ public class SeedDataTests
     }
 
     [Fact]
-    public async Task Paging_through_every_page_reaches_all_91_seeded_resources()
+    public async Task Paging_through_every_page_reaches_all_94_seeded_resources()
     {
         using var factory = new VardeApiFactory { KeepSeedData = true };
         var client = factory.CreateClient();
@@ -168,7 +169,7 @@ public class SeedDataTests
             $"/api/resources?page=1&pageSize={pageSize}");
 
         Assert.NotNull(first);
-        Assert.Equal(91, first.TotalCount);
+        Assert.Equal(94, first.TotalCount);
 
         var totalPages = (int)Math.Ceiling(first.TotalCount / (double)pageSize);
         var seenIds = new HashSet<int>(first.Items.Select(r => r.Id));
@@ -185,7 +186,7 @@ public class SeedDataTests
             }
         }
 
-        Assert.Equal(91, seenIds.Count);
+        Assert.Equal(94, seenIds.Count);
     }
 
     [Fact]
@@ -208,6 +209,6 @@ public class SeedDataTests
             .ToListAsync();
 
         Assert.Equal(recorded, flagged);          // flag ⇔ recorded verbatim hours, both directions
-        Assert.Equal(10, flagged.Count); // 9 from plan 2 + row 3 (Legevakt), source-verified 2026-09-07
+        Assert.Equal(13, flagged.Count); // 10 + rows 23-25 (nødnumre), source-verified 2026-09-09
     }
 }

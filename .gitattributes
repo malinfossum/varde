@@ -3,3 +3,8 @@
 # platform default (CRLF on Windows, per api/.editorconfig).
 * text=auto
 web/** text=auto eol=lf
+
+# The vendored fonts under web/public/fonts/ are the first binary files under web/. text=auto
+# is a heuristic that normally leaves woff2 alone, but a heuristic is the wrong guarantee for
+# files whose corruption would only surface at deploy, so I mark them binary explicitly.
+web/public/fonts/*.woff2 binary

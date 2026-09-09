@@ -17,7 +17,7 @@ function stubApiDown() {
 		.mockImplementation(() => Promise.reject(new TypeError("Failed to fetch")))
 }
 
-test("error state carries the national fallbacks as tel links and a working retry", async () => {
+test("error state carries only the Legevakt fallback as a tel link and a working retry", async () => {
 	const onRetry = vi.fn()
 	const user = userEvent.setup()
 	render(
@@ -25,9 +25,11 @@ test("error state carries the national fallbacks as tel links and a working retr
 			<ErrorState onRetry={onRetry} />
 		</LanguageProvider>
 	)
-	expect(screen.getByRole("link", { name: /116 123/ })).toHaveAttribute("href", "tel:116123")
+	// The other national lines (110/112/113) already sit in the strip above every page —
+	// repeating them here would be noise. Legevakt is the one number worth repeating.
+	expect(screen.queryByRole("link", { name: /116 123/ })).not.toBeInTheDocument()
 	expect(screen.getByRole("link", { name: /116 117/ })).toHaveAttribute("href", "tel:116117")
-	expect(screen.getByRole("link", { name: /116 111/ })).toHaveAttribute("href", "tel:116111")
+	expect(screen.queryByRole("link", { name: /116 111/ })).not.toBeInTheDocument()
 	await user.click(screen.getByRole("button", { name: "Prøv igjen" }))
 	expect(onRetry).toHaveBeenCalledTimes(1)
 })
@@ -35,6 +37,8 @@ test("error state carries the national fallbacks as tel links and a working retr
 test("catalog and resources both failing shows one error state whose retry refetches both", async () => {
 	const fetchMock = stubApiDown()
 	const user = userEvent.setup()
+	// "/" is the landing now, which loads no data — exercise the list at /sok instead.
+	window.history.pushState(null, "", "/sok")
 	render(<App />)
 	await waitFor(() =>
 		expect(screen.getAllByRole("heading", { name: "Noe gikk galt" })).toHaveLength(1)
@@ -49,6 +53,8 @@ test("catalog and resources both failing shows one error state whose retry refet
 
 test("a failed fetch is announced in the live region instead of leaving 'Laster …' standing", async () => {
 	stubApiDown()
+	// "/" is the landing now, which loads no data — exercise the list at /sok instead.
+	window.history.pushState(null, "", "/sok")
 	render(<App />)
 	const region = document.querySelector("[aria-live]")
 	expect(region).not.toBeNull()
