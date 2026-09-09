@@ -48,6 +48,30 @@ test("requestFocus moves focus on the next ready render", () => {
 	expect(screen.getByRole("heading")).toHaveFocus()
 })
 
+test("a request that settles without becoming ready clears pending; a later unrelated ready render does not steal focus", () => {
+	let request: () => void = () => {}
+	function Pager({ ready, settled }: { ready: boolean; settled: boolean }) {
+		const { ref, requestFocus } = useArrivalFocus<HTMLHeadingElement>(0, ready, settled)
+		request = requestFocus
+		return ready ? (
+			<h2 ref={ref} tabIndex={-1}>
+				Results
+			</h2>
+		) : (
+			<p>loading</p>
+		)
+	}
+	const { rerender } = render(<Pager ready={true} settled={true} />)
+	act(() => request())
+	// The request the pager triggered settles into an error (or an empty result) — it never
+	// becomes ready, but it does settle. The pending flag must not survive that.
+	rerender(<Pager ready={false} settled={true} />)
+	// A later, unrelated load starts (e.g. the user typing a new search) and becomes ready.
+	rerender(<Pager ready={false} settled={false} />)
+	rerender(<Pager ready={true} settled={true} />)
+	expect(screen.getByRole("heading")).not.toHaveFocus()
+})
+
 test("useDocumentTitle sets and updates the title", () => {
 	function Titled({ title }: { title: string }) {
 		useDocumentTitle(title)

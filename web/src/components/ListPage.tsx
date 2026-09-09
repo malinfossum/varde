@@ -40,9 +40,13 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	// The pager sits under the whole list. After "Neste" the new cards render above the
 	// viewport and focus stays on the button — the user sees nothing change. Only the pager
 	// asks for this: a search or filter change must never pull focus out of the search box.
+	// `settled` covers "error" too — an error settles the request just as much as a result does,
+	// and a pending flag left dangling on an errored or empty page would fire on a later,
+	// unrelated load instead (say, the user typing a new search after a retry).
 	const { ref: resultsHeading, requestFocus } = useArrivalFocus<HTMLHeadingElement>(
 		arrival,
-		state.kind === "ready" && state.data.items.length > 0
+		state.kind === "ready" && state.data.items.length > 0,
+		state.kind !== "loading"
 	)
 	const goToPage = (page: number) => {
 		requestFocus()
