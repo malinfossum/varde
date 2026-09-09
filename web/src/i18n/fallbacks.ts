@@ -1,5 +1,6 @@
 // Copied verbatim from api/Varde.Data/Seed/SeedData.cs (rows 1-4). Never edit by memory —
-// if a number changes there, it changes here in the same commit.
+// if a number changes there, it changes here in the same commit. tests/seedDrift.test.ts
+// reads the seed file and fails if the two ever differ.
 export const nationalFallbacks = [
 	{ id: 1, name: "Hjelpetelefonen (Mental Helse)", phone: "116 123" },
 	{ id: 2, name: "Kirkens SOS", phone: "22 40 00 40" },

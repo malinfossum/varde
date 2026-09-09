@@ -74,6 +74,9 @@ describe.each(["light", "dark"])("%s theme", (theme) => {
 		// treff") as the results heading, so a plain text match is ambiguous. Asserting the
 		// heading itself also proves the real page — not an empty container — is mounted.
 		await screen.findByRole("heading", { name: settled })
+		// axe's page-has-heading-one only checks that at least one h1 exists. Exactly one is the
+		// invariant that has broken three times on this branch, so assert the count directly.
+		expect(container.querySelectorAll("h1")).toHaveLength(1)
 		expect(await axe(container, options)).toHaveNoViolations()
 	})
 })
