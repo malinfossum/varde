@@ -12,12 +12,19 @@ export function NotFoundState({ arrival = 0 }: { arrival?: number }) {
 	useDocumentTitle(t("title.notFound"))
 	const { ref } = useArrivalFocus<HTMLHeadingElement>(arrival, true)
 	return (
-		<section className="not-found-state">
+		<section className="grid gap-3 py-10 text-center">
 			<h1 ref={ref} tabIndex={-1}>
 				{t("notFound.heading")}
 			</h1>
 			<p>{t("notFound.help")}</p>
-			<Link to="/sok">{t("detail.back")}</Link>
+			<div className="flex flex-wrap justify-center gap-3">
+				<Link to="/" className="btn-secondary">
+					{t("landing.toHome")}
+				</Link>
+				<Link to="/sok" className="btn-secondary">
+					{t("detail.back")}
+				</Link>
+			</div>
 		</section>
 	)
 }

@@ -83,6 +83,7 @@
 	"error.fallbacks": "Trenger du hjelp nå? Disse tjenestene er alltid der:",
 	"notFound.heading": "Fant ikke tjenesten",
 	"notFound.help": "Tjenesten kan ha flyttet eller blitt lagt ned. Gå tilbake til søket for å finne et alternativ.",
+	"landing.toHome": "Til forsiden",
 	"banner.fastlege": "Trenger du helsehjelp på dagtid? Kontakt fastlegen din.",
 	"banner.fastlegeLink": "Fastlegen din på Helsenorge",
 	"banner.legevakt": "Fastlegen stengt? Ring legevakt",
