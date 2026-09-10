@@ -14,9 +14,10 @@ dials it. Varde treats contact data as safety-critical.
 
 ## Status
 
-Phase 1, the API, is complete: 91 services across 8 municipalities (Innlandet and Oslo)
+Phase 1, the API, is complete: 94 services across 8 municipalities (Innlandet and Oslo)
 plus national services, described in Norwegian and English. Phase 2, the web frontend,
-is complete. Phase 3, deployment, went live 2026-09-04.
+is complete. Phase 3, deployment, went live 2026-09-04. The current design — light-first,
+self-hosted type, a search-first landing page — shipped 2026-09-09.
 
 **Live:** https://ambitious-flower-09612f00f.6.azurestaticapps.net (frontend) ·
 https://varde-api.azurewebsites.net/api/resources (API)
@@ -41,7 +42,7 @@ rows; a test keeps them identical to seed rows 3 and 23–25.
 
 - API: ASP.NET Core (.NET 10), EF Core, PostgreSQL 17
 - Web: React 19, TypeScript, Vite, Tailwind v4, react-aria-components
-- Hosting (planned): Azure
+- Hosting: Azure Static Web Apps and Azure App Service, database on Neon
 
 ## API
 
@@ -61,8 +62,16 @@ you act on it. Above every page sits an acute strip with the four emergency numb
 hardcoded constants, not a fetch, so it works even if the API is down. Unified search across
 name, category and municipality, with suggestions and a national toggle. Details on the
 shift from fastlege to legevakt after hours, when a service's own opening hours are known.
-Bilingual throughout, built for keyboard access, and built mobile-first. Lighthouse ≥ 95 on
-the simulated phone is part of the definition of done; the measured numbers are in each PR.
+Light theme by default, with a toggle that starts from the system setting and remembers the
+choice, and a quick exit in the header that replaces the history entry, so the visit does not
+survive the back button. Bilingual throughout, built for keyboard access, and built
+mobile-first.
+
+Lighthouse ≥ 95 on the simulated phone is the definition of done, and the measured numbers
+are in each PR. Accessibility is 100 across the site and the landing page scores 99 on
+performance; `/sok` scores 67–74 and misses that budget. It is LCP-bound — the largest
+element is the first result heading, which cannot paint before the API answers — and it is
+reported rather than tuned away.
 
 ## Run locally
 
