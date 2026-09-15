@@ -191,14 +191,20 @@ No search box, no filter bar. Rules:
   content and is not generated.
 - Slug is derived from the name at build time: lower case, `æ`→`ae`, `ø`→`oe`, `å`→`aa`,
   spaces and other non `[a-z0-9]` runs → `-`. Kommuner are processed in id order; on a
-  collision the later one gets `-{id}` appended. The slug map is written to `public/data/kommuner.json` so the client can resolve
-  slugs on client-side navigation.
+  collision the later one gets `-{id}` appended. The export script writes the slug map to
+  `public/data/kommuner.json` (only kommuner that get a page) so the prerender and the client
+  share one list; the browser never computes a slug.
 - The landing page's municipality suggestions and the results' municipality names link to the
   kommune page, so every kommune page is reachable by a crawler.
 
-**Head per page.** Each page component renders its own `<title>`, `<meta name="description">`,
-`<link rel="canonical">` and `hreflang` links for `nb`, `en` and `x-default` (→ nb). React 19
-hoists these into `<head>` on server and client, so `useDocumentTitle` is removed. Titles:
+**Head per page.** Each page component declares its `<title>`, `<meta name="description">`,
+`<link rel="canonical">` and `hreflang` links for `nb`, `en` and `x-default` (→ nb) through one
+`PageHead` component. On the server `PageHead` hands the values to a collector that the
+prerender writes into `<head>`; in the browser it writes them in an effect, the way
+`useDocumentTitle` does today, so the head never takes part in hydration. `useDocumentTitle`
+is removed. Absolute URLs use `VITE_SITE_ORIGIN`, set by the workflow from the `SITE_ORIGIN`
+repository variable (the `pages.dev` URL until a domain exists) and guarded the way `API_URL`
+was; the dev default is `http://localhost:5173`. Titles:
 
 | Page | nb | en |
 |---|---|---|
@@ -266,8 +272,9 @@ stays as a no-op on load and does its job on client-side language toggles.
 
 **Time-dependent rendering.** `HandoverBanner` calls `handoverVariant(new Date())` in its
 state initialiser, which would render one variant at build time and another in the browser: a
-guaranteed hydration mismatch. It changes to a neutral first render (`variant = null`, renders
-nothing) and computes the variant in the effect it already has. This is the only component
+guaranteed hydration mismatch. It changes to a neutral first render (`variant = null`: the
+legevakt line only, which every variant shows, so nothing shifts) and computes the variant in
+the effect it already has. This is the only component
 that reads the clock during render (verified by grep on 2026-09-15).
 
 **Hydration errors are build errors.** `hydrateRoot` gets `onRecoverableError` that
