@@ -50,7 +50,10 @@ push to main / daily cron / manual  →  GitHub Actions
   deploy  wrangler pages deploy web/dist → Cloudflare Pages
 ```
 
-One workflow, `deploy-web.yml`, rewritten. `deploy-api.yml` is deleted. `ci.yml` (API tests)
+One workflow, `deploy-web.yml`, rewritten. It declares `concurrency: deploy-web` with
+cancel-in-progress, so a cron run and a push can never deploy out of order; the newest run
+wins. The deploy step uses `cloudflare/wrangler-action` pinned to a release tag, never
+`npx wrangler@latest`. `deploy-api.yml` is deleted. `ci.yml` (API tests)
 stays: the API is still the data source and still needs its tests.
 
 The chain fails closed. If the API does not start, Neon is unreachable, a migration fails, the
@@ -87,6 +90,11 @@ fetches and writes:
 All files land in `web/public/data/`. The script refuses to continue if either resources file
 has fewer than `MIN_RESOURCES = 90` rows (the live seed has 94), exiting non-zero so the
 workflow fails before the build. The API is stopped afterwards; nothing else ever talks to it.
+
+**The Actions log is public**, because the repo is. The API runs in the runner with
+`ASPNETCORE_ENVIRONMENT=Production` and `Logging__LogLevel__Default=Warning`, sensitive-data
+logging off, so no SQL or parameters are printed. The export script prints row counts and file
+names only. The connection string is a masked secret and is never echoed.
 
 **One API change.** The API's municipality filter matches a resource by its own
 `MunicipalityId` *or* by its `ServedMunicipalities` list, but `ResourceDto` exposes only
@@ -135,16 +143,21 @@ single source of truth for language.
   `buildSearch`.
 - `parseRoute` strips the `/en` prefix and returns `{ lang, route }`. `LanguageProvider` takes
   the language from the route; it no longer reads local storage.
-- The language toggle is a link to the same page under the other prefix. It still writes the
+- The language toggle is a link to the same page under the other prefix, carrying `hreflang`
+  and `lang` for the target language. It still writes the
   preference to local storage on an explicit toggle. Nothing else writes it.
-- The remembered preference acts in exactly one place: an arrival at bare `/`. `theme-init.js`
-  (pre-paint, already loaded synchronously) gains a check: on pathname `/` with a stored
-  English preference, `location.replace("/en/")`. This runs before first paint, so there is no
-  Norwegian flash and no hydration mismatch. Deep links always carry their language.
-- Legacy `?lang=en` URLs, in all three shapes (`/?lang=en`, `/sok?lang=en&…`,
-  `/resources/5?lang=en`), are rewritten in place with `replaceState` to the prefixed path,
-  in the same place that already rewrites pre-landing `/?search=` bookmarks. The plan 4 rule
-  holds: `/?lang=en` lands on the English landing, never on results.
+- The remembered preference acts in exactly one place: an arrival at bare `/` with an empty
+  query string. `theme-init.js` (pre-paint, already loaded synchronously) gains a check: on
+  pathname `/`, empty search and a stored English preference, `location.replace("/en/")`.
+  This runs before first paint, so there is no Norwegian flash and no hydration mismatch.
+  Deep links always carry their language. `/?lang=nb` is never redirected by this rule.
+- Legacy URLs are handled in the same pre-paint script, never in React, because the HTML file
+  served for a legacy URL is the wrong page and hydrating over it would mismatch. Two shapes,
+  both resolved with `location.replace` before first paint: `?lang=en` on any route
+  (`/?lang=en`, `/sok?lang=en&…`, `/resources/5?lang=en`) becomes the prefixed path with the
+  remaining query kept; pre-landing `/?search=…` bookmarks become `/sok?search=…`. The
+  `isLegacyListUrl` rewrite leaves `useUrlState`. The plan 4 rule holds: `/?lang=en` lands on
+  the English landing, never on results.
 - Resource URLs keep the numeric id. Rows have no slug field, ids are stable and already
   live, and the page title carries the name.
 
@@ -165,20 +178,20 @@ and `robots.txt` pointing at the sitemap.
 **Search shell.** `/sok` is prerendered with its chrome and an empty results region in the
 loading state. After hydration it loads the JSON files and renders results. Filter combinations
 live in query parameters and cannot be prerendered; search engines should not index them, and
-`robots.txt` disallows `/sok?` and `/en/sok?`.
+`robots.txt` disallows `/sok?`, `/en/sok?` and `/data/`.
 
 **Kommune page.** A new route kind `{ kind: "kommune"; slug: string }` and one new component,
 `KommunePage`. It renders: an `h1` "Hjelpetjenester i {name}" / "Help services in {name}", a
 one-paragraph description, the existing `ResourceCard` grid for rows where
-`municipalityId === id` or `servedMunicipalityIds` contains `id`, ordered as in search; a
-second heading and grid for national rows; a link into `/sok?municipality={id}` for refining.
+`municipalityId === id` or `servedMunicipalityIds` contains `id`, ordered as in search; an
+`h2` and grid for national rows; a link into `/sok?municipality={id}` for refining.
 No search box, no filter bar. Rules:
 
 - Only kommuner with at least one own or served resource get a page. An empty page is thin
   content and is not generated.
 - Slug is derived from the name at build time: lower case, `æ`→`ae`, `ø`→`oe`, `å`→`aa`,
-  spaces and other non `[a-z0-9]` runs → `-`. On a collision the later one gets `-{id}`
-  appended. The slug map is written to `public/data/kommuner.json` so the client can resolve
+  spaces and other non `[a-z0-9]` runs → `-`. Kommuner are processed in id order; on a
+  collision the later one gets `-{id}` appended. The slug map is written to `public/data/kommuner.json` so the client can resolve
   slugs on client-side navigation.
 - The landing page's municipality suggestions and the results' municipality names link to the
   kommune page, so every kommune page is reachable by a crawler.
@@ -219,13 +232,14 @@ is free text (recorded blocker). Kommune pages get a `CollectionPage` with `name
    calls `render` for each, and writes `dist/<path>/index.html`. Folder form, not
    `12.html`, so Cloudflare Pages serves both `/resources/12` and `/resources/12/`.
    Also writes `sitemap.xml`, `robots.txt`, and `404.html` from the same template with the
-   static not-found line inside `#root` and no data block. `dist-server/` is deleted
+   static not-found line in a `<noscript>` block, an empty `#root` and no data block. `dist-server/` is deleted
    afterwards and never deployed.
 
 **Render API.** React 19's `prerender` from `react-dom/static`, not `renderToString`. It
 waits for lazy chunks and Suspense boundaries, so the existing code splitting of the list and
-detail chunks stays and the landing bundle stays small. The client entry switches from
-`createRoot(...).render` to `hydrateRoot`.
+detail chunks stays and the landing bundle stays small. The client entry hydrates when `#root`
+already has children and falls back to `createRoot` when it is empty. One code path covers
+the prerendered pages, the Vite dev server (which serves an empty root) and `404.html`.
 
 **Page data.** `PageData` is `{ resource }` for a resource page, `{ kommune, resources,
 national }` for a kommune page, `{}` otherwise. The prerender inlines it as
@@ -233,7 +247,14 @@ national }` for a kommune page, `{}` otherwise. The prerender inlines it as
 so the CSP stays `script-src 'self'`. The resource and kommune hooks read that block on first
 render and fetch nothing. The search shell has no data block and loads the JSON files in an
 effect after hydration. Client-side navigation from search to a resource uses the already
-loaded index; a direct load uses the block.
+loaded index; a direct load uses the block. Client-side navigation to a kommune page loads
+`kommuner.json` and the index files first.
+
+**Inline JSON is escaped.** Both inline blocks, the page data and the JSON-LD, are serialised
+with `<` as `<` and U+2028/U+2029 as escapes, so a description containing `</script>`
+cannot close the block. A fixture with exactly that string is in the prerender tests. Today the
+data is my own seed; a RESH or Enhetsregisteret import would make it untrusted, and the
+escaping is in place before that.
 
 **No browser globals during render.** `useUrlState` becomes a pure parse of a URL passed in:
 the browser's location on the client, the target URL from the prerender on the server, carried
@@ -253,6 +274,13 @@ that reads the clock during render (verified by grep on 2026-09-15).
 `console.error`s in production and throws in tests. The hydration test in Testing is the
 guard; no page ships that mismatches in jsdom.
 
+**Works before hydration.** The prerendered HTML is on screen before JavaScript arrives, and on
+a slow connection that gap is when someone in distress is looking at it. Everything
+safety-critical is therefore a real anchor in the HTML: `tel:` call buttons, the acute strip,
+the language toggle and quick exit. Quick exit renders as an `<a>` to its target, and hydration
+adds the `location.replace` behaviour on top. A test asserts the prerendered resource page
+contains a `tel:` href and the quick-exit anchor.
+
 **Fallback for the combobox.** If react-aria's `ComboBox` cannot be server-rendered in this
 version, it mounts client-only behind a plain `<input>` with identical attributes and
 accessible name, swapped in an effect. Not expected: react-aria-components supports server
@@ -261,14 +289,15 @@ rendering on React 18 and later.
 ## 404, errors and the report link
 
 **404.** Cloudflare Pages serves `/404.html` with a real 404 status for any path without a
-file. This one file cannot be prerendered in two languages, so it is the only page that is
-client-rendered (`createRoot`) instead of hydrated. It contains a static
-`Fant ikke siden / Page not found` line inside `#root` for the no-JavaScript case; React
-replaces it with the existing not-found view in the language of the URL prefix. Client-side
+file. This one file cannot be prerendered in two languages, so it ships with an empty `#root`
+and takes the `createRoot` path instead of hydrating. A `<noscript>` block carries a static
+`Fant ikke siden / Page not found` line for the no-JavaScript case; with JavaScript, React
+renders the existing not-found view in the language of the URL prefix. Client-side
 navigation to a bad path keeps today's `notFound` route.
 
 **Runtime errors.** Resource and kommune pages have their data inline and have no error path.
-`/sok` keeps the existing `ErrorState` with retry for a failed JSON load. Nothing new.
+`/sok` renders results only once all three JSON files have loaded, and keeps the existing
+`ErrorState` with retry if any of them fails. Nothing new.
 
 **Report a wrong number.** On the resource page, below the contact actions, a link
 "Meld feil i oppføringen" / "Report an error in this listing" to
@@ -294,6 +323,10 @@ and only the constant changes.
 are navigations, not fetches, and need no CSP entry. The `navigationFallback` rewrite is not
 carried over; every route is a real file and unknown paths must be real 404s. A test asserts
 the CSP line in `_headers` equals the one in this spec.
+
+**No analytics.** Cloudflare Pages can inject a Web Analytics beacon; it stays off. The served
+HTML contains no script the build did not emit, and the CSP would block one anyway. Checked
+as part of the definition of done.
 
 ## Retiring Azure
 
@@ -336,8 +369,13 @@ plus one for the DTO field. New, in Vitest:
   from the rendered HTML.
 - **Query rules.** `services/query.ts` against the same cases the API repository tests use,
   including served municipalities, exclusivity, ordering and paging.
-- **URL model.** Prefix parsing, the three legacy rewrites, `buildSearch` without lang,
-  the `/` redirect logic in `theme-init.js` executed like the theme parity test.
+- **URL model.** Prefix parsing, `buildSearch` without lang, and the pre-paint redirects in
+  `theme-init.js` (stored preference on bare `/` only, both legacy shapes, `/?lang=nb` left
+  alone) executed like the theme parity test.
+- **Composed-page invariants.** Exactly one `h1` on the composed kommune page and the 404
+  view, and the existing axe run extended to the kommune page.
+- **Before hydration.** The prerendered resource page contains a `tel:` href and the
+  quick-exit anchor; the served HTML contains no script the build did not emit.
 - **Export script.** With a mocked `fetch`: every page walked, files written, the row floor
   refuses and exits non-zero.
 - **Headers.** `_headers` CSP equals the spec string.
@@ -371,7 +409,8 @@ Verified in the browser after the first deploy, recorded in the PR:
 - [ ] Lighthouse and budget table in the PR meets every line above
 - [ ] Azure resources deleted, secrets and variables removed, `deploy-api.yml` gone
 - [ ] README updated
-- [ ] Sitemap submitted in Google Search Console (my action, needs ownership verification)
+- [ ] Sitemap submitted in Google Search Console (my action; the HTML verification file is
+      committed to `web/public/`)
 
 ## Deferred decisions
 
@@ -392,3 +431,9 @@ Verified in the browser after the first deploy, recorded in the PR:
 - Cloudflare Pages caps a deploy at 20,000 files. Regional scope in two languages is a few
   hundred. National scope would need on-demand rendering; out of scope.
 - The 404 page is client-rendered, so a no-JavaScript visitor sees only the static line.
+- Cloudflare, as the host, sees visitor IP addresses in its own logs, as Azure did. Nothing I
+  run logs anything about a visitor.
+- A kommune renamed in the data changes its slug and URL. The regional set is stable and no
+  redirect is kept.
+- No HSTS header in `_headers`: `pages.dev` is HSTS-preloaded, and a custom domain gets it at
+  the zone level.
