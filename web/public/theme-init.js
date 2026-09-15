@@ -14,3 +14,37 @@
 	var theme = stored === "dark" || stored === "light" ? stored : prefersDark ? "dark" : "light"
 	document.documentElement.dataset.theme = theme
 })()
+
+// Legacy URLs and the remembered language, resolved before first paint so the HTML file that
+// is served never has to be hydrated as a different page. Mirrors legacyRedirect() in
+// src/services/urlState.ts; tests/theme.test.ts runs both against the same cases.
+;(() => {
+	var pathname = window.location.pathname
+	var search = window.location.search
+	var stored = null
+	try {
+		stored = window.localStorage.getItem("varde.lang")
+	} catch (_) {
+		stored = null
+	}
+	var params = new URLSearchParams(search)
+	var filterNames = ["search", "category", "municipality", "national", "page"]
+	var legacyList = pathname === "/" && filterNames.some((name) => params.has(name))
+	var isEn = (p) => p === "/en" || p.indexOf("/en/") === 0
+	var target = null
+	var lang = params.get("lang")
+	var path
+	var query
+	if (lang !== null) {
+		params.delete("lang")
+		path = legacyList ? "/sok" : pathname
+		if (lang === "en" && !isEn(path)) path = `/en${path}`
+		query = params.toString()
+		target = query ? `${path}?${query}` : path
+	} else if (legacyList) {
+		target = `/sok${search}`
+	} else if (pathname === "/" && search === "" && stored === "en") {
+		target = "/en/"
+	}
+	if (target !== null) window.location.replace(target)
+})()

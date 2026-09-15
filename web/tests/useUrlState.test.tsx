@@ -22,15 +22,6 @@ test("push navigation grows history, replace navigation does not", () => {
 	expect(window.location.search).toBe("?search=ab")
 })
 
-test("a legacy /?search= URL is rewritten to /sok in place and parsed as the list", () => {
-	window.history.pushState(null, "", "/?search=rus&lang=en")
-	const { result } = renderHook(() => useUrlState())
-	expect(window.location.pathname).toBe("/sok")
-	expect(window.location.search).toBe("?search=rus&lang=en")
-	expect(result.current.route).toEqual({ kind: "list" })
-	expect(result.current.filters.search).toBe("rus")
-})
-
 test("/?lang=en stays on the landing", () => {
 	window.history.pushState(null, "", "/?lang=en")
 	const { result } = renderHook(() => useUrlState())

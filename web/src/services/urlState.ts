@@ -19,7 +19,7 @@ export type Filters = {
 // is the English landing, and the language toggle must never bounce a visitor into results.
 export const FILTER_PARAMS = ["search", "category", "municipality", "national", "page"] as const
 
-export function isLegacyListUrl(pathname: string, params: URLSearchParams): boolean {
+function isLegacyListUrl(pathname: string, params: URLSearchParams): boolean {
 	return pathname === "/" && FILTER_PARAMS.some((name) => params.has(name))
 }
 

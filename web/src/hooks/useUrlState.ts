@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import {
-	type Filters,
-	isLegacyListUrl,
-	parseFilters,
-	parseRoute,
-	type Route,
-} from "../services/urlState.ts"
+import { type Filters, parseFilters, parseRoute, type Route } from "../services/urlState.ts"
 
 type UrlState = { route: Route; filters: Filters; langParam: string | null; arrival: number }
 
@@ -16,10 +10,6 @@ function sameRoute(a: Route, b: Route): boolean {
 
 function read(): Omit<UrlState, "arrival"> {
 	const params = new URLSearchParams(window.location.search)
-	// Bookmarked /?search=… from before the landing existed: rewrite in place, no history entry.
-	if (isLegacyListUrl(window.location.pathname, params)) {
-		window.history.replaceState(window.history.state, "", `/sok${window.location.search}`)
-	}
 	return {
 		route: parseRoute(window.location.pathname),
 		filters: parseFilters(params),

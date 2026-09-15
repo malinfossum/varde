@@ -2,7 +2,6 @@ import { describe, expect, test } from "vitest"
 import {
 	applyPatch,
 	buildSearch,
-	isLegacyListUrl,
 	legacyRedirect,
 	parseFilters,
 	parseRoute,
@@ -64,18 +63,6 @@ test("root is the landing, /sok is the list, detail and unknown are unchanged", 
 	expect(parseRoute("/sok")).toEqual({ kind: "list" })
 	expect(parseRoute("/resources/12")).toEqual({ kind: "detail", id: 12 })
 	expect(parseRoute("/sok/extra")).toEqual({ kind: "notFound" })
-})
-
-test("legacy list URLs are those with a filter parameter; lang alone is the landing", () => {
-	const p = (s: string) => new URLSearchParams(s)
-	expect(isLegacyListUrl("/", p("search=rus"))).toBe(true)
-	expect(isLegacyListUrl("/", p("category=nodtjenester"))).toBe(true)
-	expect(isLegacyListUrl("/", p("municipality=1"))).toBe(true)
-	expect(isLegacyListUrl("/", p("national=true"))).toBe(true)
-	expect(isLegacyListUrl("/", p("page=2"))).toBe(true)
-	expect(isLegacyListUrl("/", p("lang=en"))).toBe(false)
-	expect(isLegacyListUrl("/", p(""))).toBe(false)
-	expect(isLegacyListUrl("/sok", p("search=rus"))).toBe(false)
 })
 
 describe("language prefix", () => {

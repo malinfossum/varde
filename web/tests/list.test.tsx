@@ -138,7 +138,8 @@ test("a page beyond the last page shows EmptyState instead of a blank list", asy
 			})
 		)
 	})
-	window.history.pushState(null, "", "/?page=99")
+	// "/" is the landing now — the list lives at /sok.
+	window.history.pushState(null, "", "/sok?page=99")
 	render(<App />)
 	expect(await screen.findByRole("heading", { name: "Ingen treff" })).toBeInTheDocument()
 })
@@ -160,7 +161,8 @@ test("an unknown ?municipality= value doesn't crash the app and the list renders
 			})
 		)
 	})
-	window.history.pushState(null, "", "/?municipality=abc")
+	// "/" is the landing now — the list lives at /sok.
+	window.history.pushState(null, "", "/sok?municipality=abc")
 	render(<App />)
 
 	expect(await screen.findByText("Krisesenteret i Hamar")).toBeInTheDocument()
@@ -175,7 +177,8 @@ test("an unknown ?municipality= value doesn't crash the app and the list renders
 
 test("Tøm clears both municipality and national selection from the URL", async () => {
 	stubCatalogAndResources()
-	window.history.pushState(null, "", "/?municipality=1")
+	// "/" is the landing now — the list lives at /sok.
+	window.history.pushState(null, "", "/sok?municipality=1")
 	const user = userEvent.setup()
 	render(<App />)
 	await waitFor(() =>
