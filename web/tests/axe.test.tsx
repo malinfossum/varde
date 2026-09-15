@@ -22,6 +22,7 @@ const resource: ResourceDto = {
 	chatUrl: null,
 	lastVerified: "2026-08-13",
 	categories: [{ id: 9, slug: "nodtjenester", name: "Nødtjenester", isFallbackTranslation: false }],
+	servedMunicipalityIds: [],
 }
 const municipalities = [{ id: 1, name: "Hamar", county: "Innlandet" }]
 const categories = [

@@ -75,11 +75,12 @@ public class ResourceRepository(VardeDbContext db) : IResourceRepository
             .Include(r => r.ResourceCategories)
             .ThenInclude(rc => rc.Category)
             .ThenInclude(c => c.Translations)
-            // Two sibling collections (Translations, ResourceCategories) plus a nested one
-            // (ResourceCategories -> Category -> Translations) would otherwise cartesian-product
-            // in a single round trip. Split into one query per collection instead; the ordering
-            // in SearchAsync is a total order (IsNational, Name, Id), so paging stays correct
-            // across the separate round trips.
+            .Include(r => r.ServedMunicipalities)
+            // Sibling collections (Translations, ResourceCategories, ServedMunicipalities) plus
+            // a nested one (ResourceCategories -> Category -> Translations) would otherwise
+            // cartesian-product in a single round trip. Split into one query per collection
+            // instead; the ordering in SearchAsync is a total order (IsNational, Name, Id), so
+            // paging stays correct across the separate round trips.
             .AsSplitQuery();
 
     /// <summary>

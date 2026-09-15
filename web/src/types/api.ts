@@ -20,4 +20,5 @@ export type ResourceDto = {
 	chatUrl: string | null
 	lastVerified: string
 	categories: CategoryDto[]
+	servedMunicipalityIds: number[]
 }

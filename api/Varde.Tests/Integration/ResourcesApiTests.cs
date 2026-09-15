@@ -71,6 +71,50 @@ public class ResourcesApiTests
             new ResourceCategory { ResourceId = 1, CategoryId = 1 }));
     }
 
+    /// <summary>
+    /// Seeds two more municipalities and attaches a served-municipality join row on
+    /// <paramref name="resourceId"/> for every id in <paramref name="served"/>, including
+    /// <paramref name="ownMunicipalityId"/> if present — so the test also covers the DTO
+    /// excluding the resource's own municipality from the served list.
+    /// </summary>
+    private static void SeedResourceServing(
+        VardeApiFactory factory, int resourceId, int ownMunicipalityId, int[] served)
+    {
+        factory.Seed(db =>
+        {
+            db.Municipalities.Add(new Municipality { Name = "Løten", County = "Innlandet" });
+            db.Municipalities.Add(new Municipality { Name = "Stange", County = "Innlandet" });
+        });
+
+        factory.Seed(db =>
+        {
+            foreach (var municipalityId in served)
+            {
+                db.ResourceMunicipalities.Add(new ResourceMunicipality
+                {
+                    ResourceId = resourceId,
+                    MunicipalityId = municipalityId,
+                });
+            }
+        });
+    }
+
+    [Fact]
+    public async Task Get_exposes_served_municipality_ids_without_the_own_one()
+    {
+        using var factory = new VardeApiFactory();
+        SeedDirectory(factory);
+        // Resource 1 (NAV Hamar) belongs to municipality 1 and additionally serves 2 and 3.
+        SeedResourceServing(factory, resourceId: 1, ownMunicipalityId: 1, served: [3, 2, 1]);
+
+        var result = await factory.CreateClient()
+            .GetFromJsonAsync<PagedResult<ResourceDto>>("/api/resources?municipality=2");
+
+        Assert.NotNull(result);
+        var row = Assert.Single(result.Items, r => r.Id == 1);
+        Assert.Equal(new[] { 2, 3 }, row.ServedMunicipalityIds);
+    }
+
     [Fact]
     public async Task Get_returns_the_paged_envelope_with_defaults()
     {

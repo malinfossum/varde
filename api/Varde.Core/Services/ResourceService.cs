@@ -55,6 +55,13 @@ public class ResourceService(IResourceRepository repository)
             .OrderBy(c => c.Slug)
             .ToList();
 
+        var served = resource.ServedMunicipalities
+            .Select(rm => rm.MunicipalityId)
+            .Where(id => id != resource.MunicipalityId)
+            .Distinct()
+            .OrderBy(id => id)
+            .ToList();
+
         return new ResourceDto(
             resource.Id,
             resource.Name,
@@ -71,7 +78,8 @@ public class ResourceService(IResourceRepository repository)
             resource.Website,
             resource.ChatUrl,
             resource.LastVerified,
-            categories);
+            categories,
+            served);
     }
 
     /// <summary>

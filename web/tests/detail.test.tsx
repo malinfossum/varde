@@ -23,6 +23,7 @@ const detail: ResourceDto = {
 	chatUrl: null,
 	lastVerified: "2026-08-13",
 	categories: [],
+	servedMunicipalityIds: [],
 }
 
 // The two ready-branch tests below set window.history state directly (replaceState, and a
