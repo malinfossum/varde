@@ -8,6 +8,7 @@ import { Pagination } from "../src/components/Pagination.tsx"
 import { ResourceCard } from "../src/components/ResourceCard.tsx"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
 import type { ResourceDto } from "../src/types/api.ts"
+import { stubDataFiles } from "./stubData.ts"
 
 const resource: ResourceDto = {
 	id: 12,
@@ -105,39 +106,18 @@ const municipalities = [
 ]
 
 function stubCatalogAndResources() {
-	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
-		const url = String(input)
-		if (url.includes("/api/municipalities")) {
-			return Promise.resolve(new Response(JSON.stringify(municipalities), { status: 200 }))
-		}
-		if (url.includes("/api/categories")) {
-			return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
-		}
-		return Promise.resolve(
-			new Response(JSON.stringify({ items: [], page: 1, pageSize: 20, totalCount: 0 }), {
-				status: 200,
-			})
-		)
-	})
+	stubDataFiles({ municipalities, categories: [] })
 }
 
 test("a page beyond the last page shows EmptyState instead of a blank list", async () => {
-	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
-		const url = String(input)
-		if (url.includes("/api/municipalities")) {
-			return Promise.resolve(new Response(JSON.stringify(municipalities), { status: 200 }))
-		}
-		if (url.includes("/api/categories")) {
-			return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
-		}
-		// Real results exist elsewhere (totalCount > 0), but this page is past the last one —
-		// the API returns an empty items array, distinct from the genuine zero-results case.
-		return Promise.resolve(
-			new Response(JSON.stringify({ items: [], page: 99, pageSize: 20, totalCount: 45 }), {
-				status: 200,
-			})
-		)
-	})
+	// Real results exist (totalCount > 0), but page 99 is past the last one — applyQuery slices
+	// an empty page rather than a stale API response, distinct from the genuine zero-results case.
+	const manyResources = Array.from({ length: 45 }, (_, i) => ({
+		...resource,
+		id: i + 1,
+		name: `Treff ${i + 1}`,
+	}))
+	stubDataFiles({ resources: manyResources, municipalities, categories: [] })
 	// "/" is the landing now — the list lives at /sok.
 	window.history.pushState(null, "", "/sok?page=99")
 	render(<App />)
@@ -145,31 +125,15 @@ test("a page beyond the last page shows EmptyState instead of a blank list", asy
 })
 
 test("an unknown ?municipality= value doesn't crash the app and the list renders unfiltered", async () => {
-	let resourcesUrl = ""
-	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
-		const url = String(input)
-		if (url.includes("/api/municipalities")) {
-			return Promise.resolve(new Response(JSON.stringify(municipalities), { status: 200 }))
-		}
-		if (url.includes("/api/categories")) {
-			return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
-		}
-		resourcesUrl = url
-		return Promise.resolve(
-			new Response(JSON.stringify({ items: [resource], page: 1, pageSize: 20, totalCount: 1 }), {
-				status: 200,
-			})
-		)
-	})
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
 	// "/" is the landing now — the list lives at /sok.
 	window.history.pushState(null, "", "/sok?municipality=abc")
 	render(<App />)
 
-	expect(await screen.findByText("Krisesenteret i Hamar")).toBeInTheDocument()
 	// A non-numeric municipality id never survives URL parsing (parseFilters' positiveInt
-	// rejects it), so it never reaches the resources request — the list is unfiltered rather
+	// rejects it), so filters.municipality stays null and the list renders unfiltered rather
 	// than scoped to a municipality that doesn't exist.
-	expect(resourcesUrl).not.toContain("municipality")
+	expect(await screen.findByText("Krisesenteret i Hamar")).toBeInTheDocument()
 	// No phantom selection in the combobox either — its input stays empty rather than showing
 	// some municipality's name.
 	expect(screen.getByRole("combobox", { name: "Kommune" })).toHaveValue("")
@@ -192,20 +156,7 @@ test("Tøm clears both municipality and national selection from the URL", async 
 })
 
 test("list page heading levels never skip: h1 results heading, h2 cards", async () => {
-	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
-		const url = String(input)
-		if (url.includes("/api/municipalities")) {
-			return Promise.resolve(new Response(JSON.stringify(municipalities), { status: 200 }))
-		}
-		if (url.includes("/api/categories")) {
-			return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
-		}
-		return Promise.resolve(
-			new Response(JSON.stringify({ items: [resource], page: 1, pageSize: 20, totalCount: 1 }), {
-				status: 200,
-			})
-		)
-	})
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
 	// "/" is the landing now — the list lives at /sok.
 	window.history.pushState(null, "", "/sok")
 	render(<App />)
@@ -221,92 +172,32 @@ test("list page heading levels never skip: h1 results heading, h2 cards", async 
 	}
 })
 
-// A catalog failure and a resources outcome aren't mutually exclusive — the API calls are
-// independent, so the catalog can fail while resources still loads, comes back empty, or comes
-// back with items. Each combination must still show exactly one <h1>: the catalog's own
-// ErrorState demotes to an h2 whenever something else (loading, empty, or results) is also
-// showing, and only takes the h1 when it's the only thing on the page.
-function stubCatalogErrorWith(resourcesResponse: () => Promise<Response>) {
-	return vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
-		const url = String(input)
-		if (url.includes("/api/municipalities") || url.includes("/api/categories")) {
-			return Promise.reject(new TypeError("Failed to fetch"))
-		}
-		return resourcesResponse()
-	})
-}
-
-test("catalog error alongside results: exactly one h1, the results heading", async () => {
-	stubCatalogErrorWith(() =>
-		Promise.resolve(
-			new Response(JSON.stringify({ items: [resource], page: 1, pageSize: 20, totalCount: 1 }), {
-				status: 200,
-			})
-		)
-	)
-	window.history.pushState(null, "", "/sok")
-	render(<App />)
-	await screen.findByRole("heading", { level: 1, name: "1 treff" })
-	expect(screen.getByRole("heading", { name: "Noe gikk galt" }).tagName).toBe("H2")
-	expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1)
-})
-
-test("catalog error alongside zero results: exactly one h1, the empty-state heading", async () => {
-	stubCatalogErrorWith(() =>
-		Promise.resolve(
-			new Response(JSON.stringify({ items: [], page: 1, pageSize: 20, totalCount: 0 }), {
-				status: 200,
-			})
-		)
-	)
-	window.history.pushState(null, "", "/sok")
-	render(<App />)
-	await screen.findByRole("heading", { level: 1, name: "Ingen treff" })
-	expect(screen.getByRole("heading", { name: "Noe gikk galt" }).tagName).toBe("H2")
-	expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1)
-})
-
-test("catalog error while resources are still loading: exactly one h1, the loading heading", async () => {
-	stubCatalogErrorWith(() => new Promise<Response>(() => {})) // never resolves — stays "loading"
-	window.history.pushState(null, "", "/sok")
-	render(<App />)
-	await screen.findByRole("heading", { name: "Noe gikk galt" })
-	// The live-region announcer also says "Laster …" — scope to the heading role so this only
-	// matches LoadingState's own <h1>, not the aria-live div.
-	const loadingHeading = screen.getByRole("heading", { name: "Laster …" })
-	expect(loadingHeading.tagName).toBe("H1")
-	expect(screen.getByRole("heading", { name: "Noe gikk galt" }).tagName).toBe("H2")
-	expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1)
-})
+// R17/migration note: the three "catalog error alongside X" tests that lived here (a catalog
+// failure independent of the resources outcome) tested a divergence that the JSON index layer
+// makes structurally impossible — useCatalog and useResources both call the same loadIndex(lang)
+// promise (services/data.ts's per-language cache), so they always settle together, never one
+// erroring while the other loads or succeeds. The "exactly one h1" invariant they guarded stays
+// covered: axe.test.tsx asserts it across all six page/mode combinations in both themes, and
+// errorRecovery.test.tsx's "catalog and resources both failing" test covers the one shared-failure
+// case that can still happen.
 
 test("paging moves focus to the results heading; typing in search does not", async () => {
-	vi.spyOn(globalThis, "fetch").mockImplementation((input: RequestInfo | URL) => {
-		const url = String(input)
-		if (url.includes("/api/municipalities")) {
-			return Promise.resolve(new Response(JSON.stringify(municipalities), { status: 200 }))
-		}
-		if (url.includes("/api/categories")) {
-			return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
-		}
-		const page = Number(new URL(url).searchParams.get("page") ?? "1")
-		return Promise.resolve(
-			new Response(
-				JSON.stringify({
-					items: [{ ...resource, id: page, name: `Treff side ${page}` }],
-					page,
-					pageSize: 1,
-					totalCount: 3,
-				}),
-				{ status: 200 }
-			)
-		)
-	})
+	// pageSize is fixed at 20 by query.ts now (the API's pageSize:1 stub had no equivalent) —
+	// 21 rows makes a genuine second page. Zero-padded names keep collator (name) order the same
+	// as numeric order, so page 2 predictably holds the highest-numbered row. None contain "k",
+	// so the search below narrows to zero matches, which still proves typing doesn't steal focus.
+	const many = Array.from({ length: 21 }, (_, i) => ({
+		...resource,
+		id: i + 1,
+		name: `Treff ${String(i + 1).padStart(2, "0")}`,
+	}))
+	stubDataFiles({ resources: many, municipalities, categories: [] })
 	const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView")
 	const user = userEvent.setup()
 	// "/" is the landing now — the list lives at /sok.
 	window.history.pushState(null, "", "/sok")
 	render(<App />)
-	const heading = await screen.findByRole("heading", { level: 1, name: "3 treff" })
+	const heading = await screen.findByRole("heading", { level: 1, name: "21 treff" })
 	// Initial load leaves focus and scroll alone — nothing was interacted with yet.
 	expect(heading).not.toHaveFocus()
 	expect(scrollIntoView).not.toHaveBeenCalled()
@@ -314,15 +205,15 @@ test("paging moves focus to the results heading; typing in search does not", asy
 	// The pager sits below a long list; after paging, the user would otherwise be left staring
 	// at the (now stale-looking) pager with focus stranded on the button they pressed.
 	await user.click(screen.getByRole("button", { name: "Neste" }))
-	await screen.findByText("Treff side 2")
+	await screen.findByText("Treff 21")
 	await waitFor(() =>
-		expect(screen.getByRole("heading", { level: 1, name: "3 treff" })).toHaveFocus()
+		expect(screen.getByRole("heading", { level: 1, name: "21 treff" })).toHaveFocus()
 	)
 	expect(scrollIntoView).toHaveBeenCalledWith({ block: "start" })
 
 	// Filtering must never steal focus from the search box mid-typing.
 	const search = screen.getByLabelText("Søk etter tjeneste, kommune eller tema")
 	await user.type(search, "k")
-	await screen.findByText("Treff side 1")
+	await screen.findByRole("heading", { name: "Ingen treff" })
 	expect(search).toHaveFocus()
 })

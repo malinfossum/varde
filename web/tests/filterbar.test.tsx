@@ -4,7 +4,7 @@ import { expect, test, vi } from "vitest"
 import { FilterBar } from "../src/components/FilterBar.tsx"
 import { AnnouncerProvider } from "../src/components/StatusRegion.tsx"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
-import type { Catalog } from "../src/services/catalogCache.ts"
+import type { Catalog } from "../src/services/data.ts"
 import type { Filters } from "../src/services/urlState.ts"
 
 const catalog: Catalog = {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { Lang } from "../i18n/LanguageProvider.tsx"
-import { type Catalog, clearCatalogCache, loadCatalog } from "../services/catalogCache.ts"
+import { type Catalog, clearIndexCache, loadIndex } from "../services/data.ts"
 
 export type { Catalog }
 
@@ -17,9 +17,13 @@ export function useCatalog(lang: Lang) {
 	useEffect(() => {
 		let cancelled = false
 		setState({ kind: "loading" })
-		loadCatalog(lang)
-			.then((catalog) => {
-				if (!cancelled) setState({ kind: "ready", catalog })
+		loadIndex(lang)
+			.then((index) => {
+				if (!cancelled)
+					setState({
+						kind: "ready",
+						catalog: { municipalities: index.municipalities, categories: index.categories },
+					})
 			})
 			.catch(() => {
 				if (!cancelled) setState({ kind: "error" })
@@ -32,7 +36,7 @@ export function useCatalog(lang: Lang) {
 	return {
 		state,
 		retry: () => {
-			clearCatalogCache()
+			clearIndexCache()
 			setAttempt((n) => n + 1)
 		},
 	}

@@ -5,6 +5,7 @@ import { ResourceDetail } from "../src/components/ResourceDetail.tsx"
 import { AnnouncerProvider } from "../src/components/StatusRegion.tsx"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
 import type { ResourceDto } from "../src/types/api.ts"
+import { stubDataFiles } from "./stubData.ts"
 
 const detail: ResourceDto = {
 	id: 12,
@@ -35,9 +36,7 @@ afterEach(() => {
 })
 
 test("detail shows hours with contact info and no handover banner", async () => {
-	vi.spyOn(globalThis, "fetch").mockResolvedValue(
-		new Response(JSON.stringify(detail), { status: 200 })
-	)
+	stubDataFiles({ resources: [detail] })
 	render(
 		<LanguageProvider initialLang="nb">
 			<ResourceDetail id={12} />
@@ -53,7 +52,7 @@ test("detail shows hours with contact info and no handover banner", async () => 
 })
 
 test("a 404 renders NotFoundState with a way back", async () => {
-	vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 404 }))
+	stubDataFiles({ resources: [] })
 	render(
 		<LanguageProvider initialLang="nb">
 			<ResourceDetail id={999} />
@@ -70,9 +69,7 @@ test("a 404 renders NotFoundState with a way back", async () => {
 // --- ready branch: call-first hero + stateful back link -------------------------------------
 
 test("the call button is the hero and the back link is a plain link without history state", async () => {
-	vi.spyOn(globalThis, "fetch").mockResolvedValue(
-		new Response(JSON.stringify(detail), { status: 200 })
-	)
+	stubDataFiles({ resources: [detail] })
 	window.history.replaceState(null, "", "/resources/12")
 	render(
 		<LanguageProvider initialLang="nb">
@@ -93,9 +90,7 @@ test("the call button is the hero and the back link is a plain link without hist
 })
 
 test("with from=sok in history state the back control goes back", async () => {
-	vi.spyOn(globalThis, "fetch").mockResolvedValue(
-		new Response(JSON.stringify(detail), { status: 200 })
-	)
+	stubDataFiles({ resources: [detail] })
 	window.history.replaceState({ from: "sok" }, "", "/resources/12")
 	const back = vi.spyOn(window.history, "back").mockImplementation(() => {})
 	render(
@@ -114,18 +109,17 @@ test("with from=sok in history state the back control goes back", async () => {
 })
 
 test("badges render on the detail page in the fixed order Akutt, Nasjonal, Døgnåpent", async () => {
-	vi.spyOn(globalThis, "fetch").mockResolvedValue(
-		new Response(
-			JSON.stringify({
+	stubDataFiles({
+		resources: [
+			{
 				...detail,
 				isNational: true,
 				categories: [
 					{ id: 9, slug: "nodtjenester", name: "Nødtjenester", isFallbackTranslation: false },
 				],
-			}),
-			{ status: 200 }
-		)
-	)
+			},
+		],
+	})
 	render(
 		<LanguageProvider initialLang="nb">
 			<AnnouncerProvider>
@@ -162,9 +156,7 @@ let restoreNavigator = () => {}
 afterEach(() => restoreNavigator())
 
 async function renderDetail(resource: ResourceDto = detail) {
-	vi.spyOn(globalThis, "fetch").mockResolvedValue(
-		new Response(JSON.stringify(resource), { status: 200 })
-	)
+	stubDataFiles({ resources: [resource] })
 	render(
 		<LanguageProvider initialLang="nb">
 			<AnnouncerProvider>

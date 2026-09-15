@@ -3,7 +3,7 @@ import { cleanup } from "@testing-library/react"
 import { afterEach, expect } from "vitest"
 import type { AxeMatchers } from "vitest-axe/matchers"
 import * as axeMatchers from "vitest-axe/matchers"
-import { clearCatalogCache } from "../src/services/catalogCache.ts"
+import { clearIndexCache } from "../src/services/data.ts"
 
 expect.extend(axeMatchers)
 
@@ -27,10 +27,10 @@ afterEach(() => {
 	// Favourites/language preference live in localStorage; without this a value written by one
 	// test (e.g. a language toggle) leaks into the next test file's initial render.
 	localStorage.clear()
-	// The catalog cache is a module-level singleton (shared by the landing and results pages
+	// The data index cache is a module-level singleton (shared by the landing and results pages
 	// on purpose); without this a fetch mock installed by one test would still be "cached" for
 	// the next test in the same file.
-	clearCatalogCache()
+	clearIndexCache()
 })
 
 // vitest 4.1.10's jsdom environment does not provide localStorage by default (verified: removing this breaks i18n storage tests).

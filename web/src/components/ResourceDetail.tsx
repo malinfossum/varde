@@ -2,8 +2,9 @@ import { useEffect, useState } from "react"
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
 import { useDocumentTitle } from "../hooks/useDocumentTitle.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
-import { fetchResource } from "../services/api.ts"
+import { usePageData } from "../pageData.ts"
 import { copyText, shareCapability, shareResource } from "../services/contactActions.ts"
+import { clearIndexCache, loadIndex } from "../services/data.ts"
 import { telHref } from "../services/emergency.ts"
 import type { ResourceDto } from "../types/api.ts"
 import { ErrorState } from "./ErrorState.tsx"
@@ -23,7 +24,12 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	const { lang } = useLanguage()
 	const t = useTranslation()
 	const announce = useAnnounce()
-	const [state, setState] = useState<DetailState>({ kind: "loading" })
+	const pageData = usePageData()
+	const [state, setState] = useState<DetailState>(() =>
+		pageData.resource?.id === id
+			? { kind: "ready", resource: pageData.resource }
+			: { kind: "loading" }
+	)
 	const [attempt, setAttempt] = useState(0)
 	const { ref: heading } = useArrivalFocus<HTMLHeadingElement>(arrival, state.kind === "ready")
 
@@ -33,21 +39,38 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 			: t("title.app")
 	)
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt is used as a trigger for retry
+	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt only forces a re-fetch
 	useEffect(() => {
-		const controller = new AbortController()
+		// The prerendered page already carries this resource in its data block — no fetch needed
+		// on a direct load. A later id/lang change (or a retry) still goes to the index.
+		if (pageData.resource?.id === id) return
+		let cancelled = false
 		setState({ kind: "loading" })
-		fetchResource(id, lang, controller.signal)
-			.then((resource) => setState(resource ? { kind: "ready", resource } : { kind: "missing" }))
-			.catch((error: unknown) => {
-				if (error instanceof DOMException && error.name === "AbortError") return
-				setState({ kind: "error" })
-			})
-		return () => controller.abort()
-	}, [id, lang, attempt])
+		loadIndex(lang).then(
+			(index) => {
+				if (cancelled) return
+				const found = index.resources.find((r) => r.id === id)
+				setState(found ? { kind: "ready", resource: found } : { kind: "missing" })
+			},
+			() => {
+				if (!cancelled) setState({ kind: "error" })
+			}
+		)
+		return () => {
+			cancelled = true
+		}
+	}, [id, lang, attempt, pageData])
 
 	if (state.kind === "loading") return <LoadingState />
-	if (state.kind === "error") return <ErrorState onRetry={() => setAttempt((n) => n + 1)} />
+	if (state.kind === "error")
+		return (
+			<ErrorState
+				onRetry={() => {
+					clearIndexCache()
+					setAttempt((n) => n + 1)
+				}}
+			/>
+		)
 	// NotFoundState is the sole content of the page in this state — the shell renders nothing
 	// else around it here — so it takes the page's one level-1 heading, same as every other route.
 	if (state.kind === "missing") return <NotFoundState arrival={arrival} />

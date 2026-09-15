@@ -4,6 +4,7 @@ import { afterEach, expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
 import nbStrings from "../src/i18n/nb.json"
 import { CATEGORY_SLUGS } from "../src/services/categories.ts"
+import { stubDataFiles } from "./stubData.ts"
 
 const nb = nbStrings as Record<string, string>
 
@@ -13,17 +14,15 @@ const categories = [
 ]
 
 function stubCatalog(fail = false) {
-	return vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
-		const url = String(input)
-		if (fail) return Promise.resolve(new Response(null, { status: 500 }))
-		if (url.includes("/api/municipalities"))
-			return Promise.resolve(new Response(JSON.stringify(municipalities)))
-		if (url.includes("/api/categories"))
-			return Promise.resolve(new Response(JSON.stringify(categories)))
-		return Promise.resolve(
-			new Response(JSON.stringify({ items: [], page: 1, pageSize: 20, totalCount: 0 }))
-		)
-	})
+	if (fail) {
+		const fetchMock = vi.fn(async () => new Response(null, { status: 500 }))
+		vi.stubGlobal("fetch", fetchMock)
+		return fetchMock
+	}
+	stubDataFiles({ municipalities, categories })
+	// stubDataFiles installs its own vi.fn(), R3 — hand it back so callers here can still count
+	// calls the way the API-era stub let them (fetchSpy.toHaveBeenCalledTimes(2), etc.).
+	return fetch as ReturnType<typeof vi.fn>
 }
 
 afterEach(() => {
@@ -45,7 +44,9 @@ test("focusing the search box prefetches the catalog; Enter submits the text to 
 	render(<App />)
 	const box = screen.getByRole("searchbox", { name: /Søk/ })
 	await user.click(box)
-	await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2))
+	// loadIndex fetches all four data files together (resources, municipalities, categories,
+	// kommuner) — the prefetch is all-or-nothing, unlike the old two-endpoint catalog call.
+	await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(4))
 	await user.type(box, "rus{Enter}")
 	expect(window.location.pathname).toBe("/sok")
 	expect(window.location.search).toContain("search=rus")

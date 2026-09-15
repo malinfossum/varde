@@ -34,7 +34,9 @@ test("error state carries only the Legevakt fallback as a tel link and a working
 	expect(onRetry).toHaveBeenCalledTimes(1)
 })
 
-test("catalog and resources both failing shows one error state whose retry refetches both", async () => {
+test("catalog and resources both failing shows one error state whose retry refetches", async () => {
+	// Both hooks load the same JSON index now, so a failure fails them together and a retry
+	// refetches the same one set of files, not two independent endpoints.
 	const fetchMock = stubApiDown()
 	const user = userEvent.setup()
 	// "/" is the landing now, which loads no data — exercise the list at /sok instead.
@@ -43,12 +45,12 @@ test("catalog and resources both failing shows one error state whose retry refet
 	await waitFor(() =>
 		expect(screen.getAllByRole("heading", { name: "Noe gikk galt" })).toHaveLength(1)
 	)
-	const before = fetchMock.mock.calls.map((call) => String(call[0]))
+	const before = fetchMock.mock.calls.length
 	await user.click(screen.getByRole("button", { name: "Prøv igjen" }))
-	await waitFor(() => expect(fetchMock.mock.calls.length).toBeGreaterThan(before.length))
-	const after = fetchMock.mock.calls.slice(before.length).map((call) => String(call[0]))
-	expect(after.some((url) => url.includes("/api/municipalities"))).toBe(true)
-	expect(after.some((url) => url.includes("/api/resources"))).toBe(true)
+	await waitFor(() => expect(fetchMock.mock.calls.length).toBeGreaterThan(before))
+	const after = fetchMock.mock.calls.slice(before).map((call) => String(call[0]))
+	expect(after.some((url) => url.includes("/data/municipalities.json"))).toBe(true)
+	expect(after.some((url) => url.includes("/data/resources.nb.json"))).toBe(true)
 })
 
 test("a failed fetch is announced in the live region instead of leaving 'Laster …' standing", async () => {
