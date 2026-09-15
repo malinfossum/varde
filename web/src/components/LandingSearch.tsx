@@ -38,8 +38,7 @@ export function LandingSearch() {
 		[catalog, value]
 	)
 
-	const go = (patch: Partial<Filters>) =>
-		navigate("/sok", buildSearch({ ...empty, ...patch }, lang))
+	const go = (patch: Partial<Filters>) => navigate("/sok", buildSearch({ ...empty, ...patch }))
 	const onPick = (s: Suggestion) =>
 		s.kind === "municipality" ? go({ municipality: s.id }) : go({ categories: [s.slug] })
 

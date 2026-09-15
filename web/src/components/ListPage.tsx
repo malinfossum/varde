@@ -34,7 +34,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	}
 
 	const apply = (patch: Partial<Filters>) =>
-		navigate("/sok", buildSearch(applyPatch(filters, patch), null))
+		navigate("/sok", buildSearch(applyPatch(filters, patch)))
 
 	// The pager sits under the whole list. After "Neste" the new cards render above the
 	// viewport and focus stays on the button — the user sees nothing change. Only the pager
@@ -56,7 +56,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	// would flood back/forward with useless states. Replace the current entry instead — every
 	// other filter change (picker, suggestions, pager, clear, toggle) still pushes normally.
 	const applySearch = (patch: Partial<Filters>) =>
-		navigate("/sok", buildSearch(applyPatch(filters, patch), null), { replace: true })
+		navigate("/sok", buildSearch(applyPatch(filters, patch)), { replace: true })
 
 	// suggest() re-scans the whole catalog on every call — memoize so it only re-runs when the
 	// search text or the catalog itself actually changes, not on every ListPage render.

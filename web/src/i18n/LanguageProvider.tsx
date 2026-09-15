@@ -1,9 +1,11 @@
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react"
 import { I18nProvider } from "react-aria-components"
+import type { Lang } from "../services/urlState.ts"
 import en from "./en.json"
 import nb from "./nb.json"
 
-export type Lang = "nb" | "en"
+export type { Lang } from "../services/urlState.ts"
+
 const STORAGE_KEY = "varde.lang"
 const strings: Record<Lang, Record<string, string>> = { nb, en }
 
