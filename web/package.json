@@ -8,6 +8,7 @@
 		"build": "tsc --noEmit && vite build",
 		"preview": "vite preview",
 		"fonts": "node scripts/sync-fonts.mjs",
+		"data": "node scripts/export-data.mjs",
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit",
 		"format": "biome format --write .",
