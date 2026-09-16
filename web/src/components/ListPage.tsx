@@ -46,11 +46,15 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	// asks for this: a search or filter change must never pull focus out of the search box.
 	// `settled` covers "error" too — an error settles the request just as much as a result does,
 	// and a pending flag left dangling on an errored or empty page would fire on a later,
-	// unrelated load instead (say, the user typing a new search after a retry).
+	// unrelated load instead (say, the user typing a new search after a retry). `state` as the
+	// token: a page change answered from the already-cached index never flips ready/settled at
+	// all (see useResources), so the pager's requestFocus() needs the freshly computed state
+	// object itself to know a new answer has actually arrived.
 	const { ref: resultsHeading, requestFocus } = useArrivalFocus<HTMLHeadingElement>(
 		arrival,
 		state.kind === "ready" && state.data.items.length > 0,
-		state.kind !== "loading"
+		state.kind !== "loading",
+		state
 	)
 	const goToPage = (page: number) => {
 		requestFocus()
@@ -75,20 +79,39 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 			? apply({ municipality: suggestion.id })
 			: apply({ categories: [suggestion.slug] })
 
-	// One announcement per settled result set — count plus suggestion names. A failure is a
-	// settled state too: without its own announcement the live region keeps saying "Laster …"
-	// while the visible page shows the error.
+	// A failure is a settled state too: without its own announcement the live region keeps
+	// saying "Laster …" while the visible page shows the error. Loading only reaches here for a
+	// genuine fetch now (useResources answers a cached filter change synchronously), so this
+	// never fires on a keystroke that loaded nothing.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: announce once per settled set
 	useEffect(() => {
 		if (state.kind === "loading") announce(t("status.loading"))
 		if (state.kind === "error") announce(t("error.heading"))
-		if (state.kind === "ready") {
-			const names = suggestions.map((s) => s.name).join(", ")
-			announce(
-				`${state.data.totalCount} ${t("status.results")}${names ? `. ${t("search.suggestions")}: ${names}` : ""}`
-			)
-		}
 	}, [state.kind])
+
+	// The result count, debounced: typing narrows the result set on every keystroke, and
+	// announcing each intermediate count would read out a stream of numbers the user never
+	// stopped on. Keyed on the actual values that change the message (not state.kind, which
+	// stays "ready" across a synchronous filter change) so the count still gets announced once
+	// typing settles.
+	const totalCount = state.kind === "ready" ? state.data.totalCount : null
+	const categoriesKey = filters.categories.join(",")
+	// biome-ignore lint/correctness/useExhaustiveDependencies: categoriesKey stands in for filters.categories, a fresh array reference on every parse
+	useEffect(() => {
+		if (totalCount === null) return
+		const names = suggestions.map((s) => s.name).join(", ")
+		const message = `${totalCount} ${t("status.results")}${names ? `. ${t("search.suggestions")}: ${names}` : ""}`
+		const timer = setTimeout(() => announce(message), 300)
+		return () => clearTimeout(timer)
+	}, [
+		totalCount,
+		filters.search,
+		categoriesKey,
+		filters.municipality,
+		filters.national,
+		filters.page,
+		suggestions,
+	])
 
 	// Unknown municipality id in a hand-edited URL: no phantom selection (spec).
 	const knownMunicipality =

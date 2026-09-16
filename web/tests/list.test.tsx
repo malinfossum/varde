@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
@@ -6,7 +6,9 @@ import { EmptyState } from "../src/components/EmptyState.tsx"
 import { LoadingState } from "../src/components/LoadingState.tsx"
 import { Pagination } from "../src/components/Pagination.tsx"
 import { ResourceCard } from "../src/components/ResourceCard.tsx"
+import { useResources } from "../src/hooks/useResources.ts"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
+import type { Filters } from "../src/services/urlState.ts"
 import type { ResourceDto } from "../src/types/api.ts"
 import { stubDataFiles } from "./stubData.ts"
 
@@ -227,4 +229,63 @@ test("paging moves focus to the results heading; typing in search does not", asy
 	await user.type(search, "k")
 	await screen.findByRole("heading", { name: "Ingen treff" })
 	expect(search).toHaveFocus()
+})
+
+const baseFilters: Filters = {
+	search: "",
+	categories: [],
+	municipality: null,
+	national: false,
+	page: 1,
+}
+
+test("once the index is cached, filtering (e.g. two keystrokes in the search box) never re-enters loading", async () => {
+	const many = Array.from({ length: 5 }, (_, i) => ({ ...resource, id: i + 1, name: `Treff ${i}` }))
+	stubDataFiles({ resources: many, municipalities, categories: [] })
+	const { result, rerender } = renderHook(
+		({ filters }: { filters: Filters }) => useResources(filters, "nb"),
+		{
+			initialProps: { filters: baseFilters },
+		}
+	)
+	await waitFor(() => expect(result.current.state.kind).toBe("ready"))
+
+	// Two keystrokes worth of filter changes, applied to an index that's already settled — the
+	// hook must answer both synchronously from cache rather than dropping into "loading" for a
+	// fetch that never happens.
+	rerender({ filters: { ...baseFilters, search: "t" } })
+	expect(result.current.state.kind).toBe("ready")
+	rerender({ filters: { ...baseFilters, search: "tr" } })
+	expect(result.current.state.kind).toBe("ready")
+})
+
+test("typing debounces the announced result count instead of announcing every keystroke", async () => {
+	const many = Array.from({ length: 3 }, (_, i) => ({
+		...resource,
+		id: i + 1,
+		name: `Krisesenter ${i}`,
+	}))
+	stubDataFiles({ resources: many, municipalities, categories: [] })
+	window.history.pushState(null, "", "/sok")
+	render(<App />)
+	await screen.findByRole("heading", { level: 1, name: "3 treff" })
+	const region = document.querySelector("[aria-live]") as HTMLElement
+	const search = screen.getByLabelText("Søk etter tjeneste, kommune eller tema")
+
+	vi.useFakeTimers()
+	try {
+		// "k" still matches all three (case-insensitive substring of "Krisesenter"); "kz" matches
+		// none. The second keystroke lands well inside the first one's 300ms debounce window, so
+		// the intermediate "3 treff" must never reach the live region.
+		fireEvent.change(search, { target: { value: "k" } })
+		act(() => vi.advanceTimersByTime(200))
+		fireEvent.change(search, { target: { value: "kz" } })
+		act(() => vi.advanceTimersByTime(200))
+		expect(region.textContent).not.toContain("3 treff")
+		expect(region.textContent).not.toContain("0 treff")
+		act(() => vi.advanceTimersByTime(150))
+		expect(region.textContent).toContain("0 treff")
+	} finally {
+		vi.useRealTimers()
+	}
 })
