@@ -106,3 +106,10 @@ test("the resource page bakes the resource into the HTML", async () => {
 		lang: "nb",
 	})
 })
+
+test("the prerendered resource page works before JavaScript", async () => {
+	const { html } = await render("/resources/12", { resource })
+	expect(html).toContain('href="tel:12345678"')
+	expect(html).toMatch(/<a[^>]+href="https:\/\/www\.google\.com"[^>]*>Forlat siden<\/a>/)
+	expect(html).toContain('href="/en/resources/12"')
+})
