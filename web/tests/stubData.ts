@@ -5,8 +5,8 @@ const empty: Index = { resources: [], municipalities: [], categories: [], kommun
 
 // One fetch stub for every test that needs data: answers the six JSON files the export
 // script writes, 404s everything else. Replaces the per-test API stubs from the API era.
-// R3: a plain vi.fn() (not vi.stubGlobal's own closure) so tests can assert on call counts,
-// e.g. the useCatalog retry test asserting the fetch call count grows.
+// A plain vi.fn() (not vi.stubGlobal's own closure) so tests can assert on call counts, e.g.
+// the useCatalog retry test asserting the fetch call count grows.
 export function stubDataFiles(fixture: Partial<Index> = {}): void {
 	const index = { ...empty, ...fixture }
 	const files: Record<string, unknown> = {

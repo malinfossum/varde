@@ -15,8 +15,8 @@ export function useNavigate() {
 }
 
 // The current URL, read through a context so components never touch window.location in render
-// (window doesn't exist during the server render Task 10 adds). Nothing provides UrlContext yet
-// in the browser app, so useCurrentUrl falls back to the real window.location there.
+// (window doesn't exist during the server render). Nothing provides UrlContext yet in the
+// browser app, so useCurrentUrl falls back to the real window.location there.
 export const UrlContext = createContext<{ pathname: string; search: string } | null>(null)
 
 export function useCurrentUrl(): { pathname: string; search: string } {

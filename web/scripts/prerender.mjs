@@ -35,10 +35,10 @@ export function jsonLd(resource, lang, siteOrigin) {
 	return out
 }
 
-// R31 (applies R8, "no MJS copy of the kommune split"): the kommune local/national split lives
-// only in src/components/KommunePage.tsx (splitForKommune), re-exported by entry-server.tsx.
-// urlList stays pure and hands back the raw kommune entry; prerenderSite calls the caller's
-// `split` (the server bundle's splitForKommune) to build the actual page data.
+// The kommune local/national split lives only in src/components/KommunePage.tsx
+// (splitForKommune), re-exported by entry-server.tsx — no MJS copy of it here. urlList stays
+// pure and hands back the raw kommune entry; prerenderSite calls the caller's `split` (the
+// server bundle's splitForKommune) to build the actual page data.
 export function urlList(kommuner, resourcesByLang) {
 	const out = []
 	for (const lang of LANGS) {
@@ -111,7 +111,7 @@ function sitemap(pages, siteOrigin) {
 	return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${entries.join("\n")}\n</urlset>\n`
 }
 
-// R30: react-dom/static's prerender() can "outline" a Suspense boundary that DOES resolve —
+// react-dom/static's prerender() can "outline" a Suspense boundary that DOES resolve —
 // written out-of-band as a completion <template> plus an inline <script>$RC(...)</script> that
 // moves it into place. index.html's CSP is script-src 'self' with no inline scripts, so an
 // outlined boundary would sit inert until React hydrates client-side: exactly the SEO/first-

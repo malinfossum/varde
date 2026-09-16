@@ -6,8 +6,8 @@ beforeEach(() => localStorage.clear())
 
 test("a stored preference never overrides the language the provider is given", () => {
 	// Redirecting a stored "en" preference away from a bare "/" load is public/theme-init.js's
-	// job (Task 3), which runs before React even mounts — the provider itself only ever renders
-	// the language it's handed as a prop, regardless of what's in storage.
+	// job, which runs before React even mounts — the provider itself only ever renders the
+	// language it's handed as a prop, regardless of what's in storage.
 	localStorage.setItem("varde.lang", "en")
 	function Probe() {
 		const t = useTranslation()

@@ -74,9 +74,9 @@ test("the landing route renders a heading and loads no data", () => {
 	const fetchSpy = vi.spyOn(globalThis, "fetch")
 	window.history.pushState(null, "", "/")
 	render(<App />)
-	// The header carries no heading of its own (Task 7) — the landing page's own h1 is the
-	// only level-1 heading on this route, and it lives inside <main>. Task 8 gave it the real
-	// headline copy, so this checks for that text rather than the old placeholder's "Varde".
+	// The header carries no heading of its own — the landing page's own h1 is the only
+	// level-1 heading on this route, and it lives inside <main>, with the real headline copy,
+	// so this checks for that text rather than the old placeholder's "Varde".
 	const main = screen.getByRole("main")
 	expect(
 		within(main).getByRole("heading", { level: 1, name: /Finn riktig hjelp/ })

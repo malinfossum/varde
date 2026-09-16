@@ -17,7 +17,7 @@ export function EmptyState({
 	return (
 		<section className="grid gap-3 rounded-xl border border-border bg-surface p-5">
 			{/* This state replaces the results heading rather than sitting under it — it is
-			    /sok's only heading while showing, so it takes the h1 level (Task 10, R29). */}
+			    /sok's only heading while showing, so it takes the h1 level. */}
 			<h1 className="text-xl text-fg">{t("empty.heading")}</h1>
 			<p>{t("empty.help")}</p>
 			<ul className="grid gap-1 pl-5">

@@ -89,7 +89,7 @@ describe("query mirrors ResourceRepository.SearchAsync", () => {
 		})
 		expect(rus.totalCount).toBe(12)
 	})
-	// R1: the C# repository's municipality branch is `MunicipalityId == id || IsNational ||
+	// The C# repository's municipality branch is `MunicipalityId == id || IsNational ||
 	// ServedMunicipalities.Any(...)` (ResourceRepository.cs SearchAsync) — a municipality filter
 	// is local-plus-national, not local-only. Mirrors the API's own
 	// Municipality_filter_includes_national_services test.

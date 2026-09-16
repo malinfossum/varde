@@ -185,7 +185,7 @@ test("list page heading levels never skip: h1 results heading, h2 cards", async 
 	}
 })
 
-// R17/migration note: the three "catalog error alongside X" tests that lived here (a catalog
+// Migration note: the three "catalog error alongside X" tests that lived here (a catalog
 // failure independent of the resources outcome) tested a divergence that the JSON index layer
 // makes structurally impossible — useCatalog and useResources both call the same loadIndex(lang)
 // promise (services/data.ts's per-language cache), so they always settle together, never one

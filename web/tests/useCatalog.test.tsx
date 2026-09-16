@@ -27,7 +27,7 @@ test("derives municipalities and categories from loadIndex", async () => {
 test("retry() re-fetches after a failed load and can succeed", async () => {
 	// One fetch mock spanning both attempts so the call count is comparable across them — a
 	// failed attempt calls all four data files, and the retry after a success flip must call
-	// them again (R3: the fetch call count grows).
+	// them again (the fetch call count grows).
 	let fail = true
 	const files: Record<string, unknown> = {
 		"/data/resources.nb.json": [],

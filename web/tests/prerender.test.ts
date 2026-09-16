@@ -40,8 +40,8 @@ const row = {
 }
 const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet" }
 
-// R31: prerenderSite takes a required `split` option (the server bundle's splitForKommune)
-// instead of computing the kommune local/national split itself — this stub mirrors its shape.
+// prerenderSite takes a required `split` option (the server bundle's splitForKommune) instead
+// of computing the kommune local/national split itself — this stub mirrors its shape.
 const stubSplit = (entry: object, resources: object[]) => ({
 	entry,
 	local: resources,
@@ -133,7 +133,7 @@ test("a trailing slash on siteOrigin never doubles up in a canonical URL", async
 	)
 })
 
-// R30: react-dom/static's prerender() can "outline" a Suspense boundary as a completion
+// react-dom/static's prerender() can "outline" a Suspense boundary as a completion
 // <template> plus an inline <script>$RC(...)</script>, which index.html's CSP (script-src
 // 'self') blocks. A page whose rendered HTML carries one of those markers must fail the build
 // loudly instead of shipping a page stuck on its loading fallback.

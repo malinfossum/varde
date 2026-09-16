@@ -50,7 +50,7 @@ function assertNoOutlinedBoundary(html: string) {
 	expect(html).not.toContain("<!--$?-->")
 }
 
-// R10: wait for the page's h1 to appear before reading `errors` so lazy chunks and Suspense
+// Wait for the page's h1 to appear before reading `errors` so lazy chunks and Suspense
 // have settled — a late recoverable error from a chunk that resolves after `act` returns
 // would otherwise land after this function has already returned an empty array.
 async function hydrate(url: string, data: PageData) {

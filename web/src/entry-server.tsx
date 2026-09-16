@@ -5,9 +5,9 @@ import { HeadContext, type HeadEntry } from "./components/PageHead.tsx"
 import { UrlContext } from "./navigation.ts"
 import { type PageData, PageDataContext } from "./pageData.ts"
 
-// Re-exported so scripts/prerender.mjs (Task 11) can compute a kommune's local/national split
-// from dist-server/entry-server.mjs without importing KommunePage.tsx directly — that file
-// pulls in react-aria-components' ComboBox tree, which the prerender script has no use for.
+// Re-exported so scripts/prerender.mjs can compute a kommune's local/national split from
+// dist-server/entry-server.mjs without importing KommunePage.tsx directly — that file pulls in
+// react-aria-components' ComboBox tree, which the prerender script has no use for.
 export { splitForKommune } from "./components/KommunePage.tsx"
 
 // Called once per URL by scripts/prerender.mjs. prerender() waits for lazy chunks and

@@ -1,7 +1,7 @@
-// The acute strip's four numbers. The landing page fetches nothing, so these are constants —
-// copied from api/Varde.Data/Seed/SeedData.cs rows 23, 24, 25 and 3, never typed from memory.
-// tests/emergency.test.ts reads the seed file and fails if the two ever differ. Re-verified in
-// the six-month LastVerified pass (README, "Data verification").
+// The acute strip's four numbers, rendered before any data loads — these are constants, not a
+// fetch result, copied from api/Varde.Data/Seed/SeedData.cs rows 23, 24, 25 and 3, never typed
+// from memory. tests/emergency.test.ts reads the seed file and fails if the two ever differ.
+// Re-verified in the six-month LastVerified pass (README, "Data verification").
 
 export type EmergencyLine = {
 	id: "brann" | "politi" | "ambulanse" | "legevakt"
