@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
 import { useCatalog } from "../hooks/useCatalog.ts"
-import { useDocumentTitle } from "../hooks/useDocumentTitle.ts"
 import { useResources } from "../hooks/useResources.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { useNavigate } from "../navigation.ts"
@@ -12,18 +11,24 @@ import { ErrorState } from "./ErrorState.tsx"
 import { FilterBar } from "./FilterBar.tsx"
 import { HandoverBanner } from "./HandoverBanner.tsx"
 import { LoadingState } from "./LoadingState.tsx"
+import { PageHead } from "./PageHead.tsx"
 import { Pagination } from "./Pagination.tsx"
 import { ResourceCard } from "./ResourceCard.tsx"
 import { useAnnounce } from "./StatusRegion.tsx"
 import { Suggestions } from "./Suggestions.tsx"
 import { WayfindingHint } from "./WayfindingHint.tsx"
 
+const titles = { nb: "Søk – Varde", en: "Search – Varde" }
+const descriptions = {
+	nb: "Varde – finn riktig hjelpetjeneste der du bor. Offentlig katalog over sosiale tjenester i Norge.",
+	en: "Varde – find the right help service where you live. Public directory of social services in Norway.",
+}
+
 export function ListPage({ filters, arrival }: { filters: Filters; arrival: number }) {
 	const { lang } = useLanguage()
 	const t = useTranslation()
 	const navigate = useNavigate()
 	const announce = useAnnounce()
-	useDocumentTitle(t("title.search"))
 	const { state: catalogState, retry: retryCatalog } = useCatalog(lang)
 	const catalog = catalogState.kind === "ready" ? catalogState.catalog : null
 	const { state, retry } = useResources(filters, lang)
@@ -92,6 +97,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 
 	return (
 		<div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+			<PageHead title={titles[lang]} description={descriptions[lang]} path="/sok" />
 			{/* min-h reserves room for FilterBar's catalog-gated rows (the municipality combobox and
 			    the nine category chips only render once `catalog` resolves — see FilterBar.tsx).
 			    Below lg, aside sits stacked above the results, so that mount-time growth is what
@@ -127,20 +133,13 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 				<HandoverBanner />
 				<Suggestions suggestions={suggestions} onPick={onPick} />
 				<WayfindingHint query={filters.search} />
-				{/* Both requests hit the same API, so when the catalog fails the resources almost always
-				    fail with it. One error state, whose retry refetches everything that failed —
-				    two identical panels stacked on top of each other help nobody.
-				    A catalog failure isn't mutually exclusive with the resources state, though —
-				    the requests are independent, so this can render alongside LoadingState,
-				    EmptyState, or the results heading below. It only takes the h1 level when
-				    nothing else is showing (state.kind === "error" too, the case the guard below
-				    excludes from getting its own second ErrorState); otherwise it demotes to h2
-				    so the page still has exactly one h1. */}
-				{catalogState.kind === "error" && (
-					<ErrorState onRetry={retryFailed} level={state.kind === "error" ? 1 : 2} />
-				)}
+				{/* useCatalog and useResources both resolve from the one shared loadIndex(lang)
+				    promise in services/data.ts, so a catalog error and a resources error always
+				    coincide — there's no state where one fails without the other. One ErrorState
+				    at the default level 1 covers both; retryFailed refetches everything that
+				    failed. */}
+				{catalogState.kind === "error" && <ErrorState onRetry={retryFailed} />}
 				{state.kind === "loading" && <LoadingState />}
-				{state.kind === "error" && catalogState.kind !== "error" && <ErrorState onRetry={retry} />}
 				{/* Covers both the genuine zero-results case and a page past the last one (e.g. a
 				    stale ?page= after filters narrowed the result set) — the API returns an empty
 				    items array either way, and both deserve the same recovery UI rather than a

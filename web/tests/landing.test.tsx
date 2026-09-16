@@ -35,7 +35,7 @@ test("the landing renders without a single request", () => {
 	render(<App />)
 	expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/Finn riktig hjelp/)
 	expect(fetchSpy).not.toHaveBeenCalled()
-	expect(document.title).toBe("Varde")
+	expect(document.title).toBe("Varde – finn riktig hjelpetjeneste")
 })
 
 test("focusing the search box prefetches the catalog; Enter submits the text to /sok", async () => {

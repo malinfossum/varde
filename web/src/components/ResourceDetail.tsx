@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react"
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
-import { useDocumentTitle } from "../hooks/useDocumentTitle.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { usePageData } from "../pageData.ts"
 import { copyText, shareCapability, shareResource } from "../services/contactActions.ts"
 import { clearIndexCache, loadIndex } from "../services/data.ts"
 import { telHref } from "../services/emergency.ts"
+import { metaDescription } from "../services/site.ts"
 import type { ResourceDto } from "../types/api.ts"
 import { ErrorState } from "./ErrorState.tsx"
 import { Link } from "./Link.tsx"
 import { LoadingState } from "./LoadingState.tsx"
 import { NotFoundState } from "./NotFoundState.tsx"
+import { PageHead } from "./PageHead.tsx"
 import { ResourceBadges } from "./ResourceBadges.tsx"
 import { useAnnounce } from "./StatusRegion.tsx"
 
@@ -32,12 +33,6 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	)
 	const [attempt, setAttempt] = useState(0)
 	const { ref: heading } = useArrivalFocus<HTMLHeadingElement>(arrival, state.kind === "ready")
-
-	useDocumentTitle(
-		state.kind === "ready"
-			? t("title.detail").replace("{name}", state.resource.name)
-			: t("title.app")
-	)
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt only forces a re-fetch
 	useEffect(() => {
@@ -102,6 +97,11 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 
 	return (
 		<article className="grid gap-6">
+			<PageHead
+				title={`${resource.name} – Varde`}
+				description={metaDescription(resource.description)}
+				path={`/resources/${resource.id}`}
+			/>
 			{cameFromResults ? (
 				<button
 					type="button"

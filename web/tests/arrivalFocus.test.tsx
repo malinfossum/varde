@@ -1,7 +1,12 @@
 import { act, render, screen } from "@testing-library/react"
-import { expect, test } from "vitest"
+import { afterEach, expect, test } from "vitest"
+import { PageHead } from "../src/components/PageHead.tsx"
 import { useArrivalFocus } from "../src/hooks/useArrivalFocus.ts"
-import { useDocumentTitle } from "../src/hooks/useDocumentTitle.ts"
+import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
+
+afterEach(() => {
+	document.title = ""
+})
 
 function Probe({ arrival, ready }: { arrival: number; ready: boolean }) {
 	const { ref } = useArrivalFocus<HTMLHeadingElement>(arrival, ready)
@@ -72,13 +77,17 @@ test("a request that settles without becoming ready clears pending; a later unre
 	expect(screen.getByRole("heading")).not.toHaveFocus()
 })
 
-test("useDocumentTitle sets and updates the title", () => {
-	function Titled({ title }: { title: string }) {
-		useDocumentTitle(title)
-		return null
-	}
-	const { rerender } = render(<Titled title="Søk – Varde" />)
+test("PageHead sets and updates the title", () => {
+	const { rerender } = render(
+		<LanguageProvider lang="nb">
+			<PageHead title="Søk – Varde" description="d" path="/sok" />
+		</LanguageProvider>
+	)
 	expect(document.title).toBe("Søk – Varde")
-	rerender(<Titled title="Varde" />)
+	rerender(
+		<LanguageProvider lang="nb">
+			<PageHead title="Varde" description="d" path="/sok" />
+		</LanguageProvider>
+	)
 	expect(document.title).toBe("Varde")
 })

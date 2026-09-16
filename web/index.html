@@ -3,12 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta
-			name="description"
-			content="Varde – finn riktig hjelpetjeneste der du bor. Offentlig katalog over sosiale tjenester i Norge."
-		/>
 		<meta name="referrer" content="no-referrer" />
-		<title>Varde</title>
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
 		<!-- No-flash theme init: must load BEFORE stylesheets, synchronously (no defer/module).
@@ -19,11 +14,18 @@
 
 		<!-- All CSS (Tailwind + tokens + project styles) enters through src/styles/main.css,
 		     imported by src/main.tsx. -->
+
+		<!-- The prerender writes each page's title/description/canonical/hreflang tags here. -->
+		<!--app-head-->
 	</head>
 	<body>
 		<!-- React renders everything inside #root (see src/main.tsx). The real, localized
 		     skip link is rendered by the app shell (src/App.tsx) — no static duplicate here. -->
-		<div id="root"></div>
+		<div id="root"><!--app-html--></div>
+
+		<!-- The prerender writes the page's #varde-data JSON block here (services/data.ts
+		     readPageData) so a direct load hydrates without a fetch. -->
+		<!--app-data-->
 
 		<!-- Vite entry point -->
 		<script type="module" src="/src/main.tsx"></script>
