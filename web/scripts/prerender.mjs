@@ -79,11 +79,18 @@ function fillTemplate(template, { lang, head, html, data, ld }) {
 	if (data && Object.keys(data).length)
 		blocks.push(`<script type="application/json" id="varde-data">${escapeJson(data)}</script>`)
 	if (ld) blocks.push(`<script type="application/ld+json">${escapeJson(ld)}</script>`)
+	const dataBlock = blocks.join("\n\t\t")
+	// Every value below can carry free-text database fields (names, descriptions) that a real
+	// resource can put anything into, including `$&`, `` $` ``, `$'` or `$$`. String.replace's
+	// SECOND argument treats those as substitution patterns when it's a string — `$&` re-inserts
+	// the whole matched marker, `` $` `` and `$'` splice in everything before/after the match —
+	// so a resource description containing one could silently duplicate or corrupt the page.
+	// Passing a function instead means the replacement is used verbatim, no pattern parsing.
 	return template
-		.replace('<html lang="nb">', `<html lang="${lang}">`)
-		.replace("<!--app-head-->", head)
-		.replace("<!--app-html-->", html)
-		.replace("<!--app-data-->", blocks.join("\n\t\t"))
+		.replace('<html lang="nb">', () => `<html lang="${lang}">`)
+		.replace("<!--app-head-->", () => head)
+		.replace("<!--app-html-->", () => html)
+		.replace("<!--app-data-->", () => dataBlock)
 }
 
 function sitemap(pages, siteOrigin) {
@@ -161,7 +168,7 @@ export async function prerenderSite({
 		ld: null,
 	}).replace(
 		'<div id="root"></div>',
-		'<noscript><p>Fant ikke siden / Page not found</p></noscript>\n\t\t<div id="root"></div>'
+		() => '<noscript><p>Fant ikke siden / Page not found</p></noscript>\n\t\t<div id="root"></div>'
 	)
 	writeFileSync(join(distDir, "404.html"), notFound)
 	writeFileSync(join(distDir, "sitemap.xml"), sitemap(pages, siteOrigin))

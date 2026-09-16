@@ -131,3 +131,40 @@ test("rejects a page whose render() output carries an outlined Suspense boundary
 		})
 	).rejects.toThrow("/sok")
 })
+
+// Important (review round 1): String.replace's second argument treats `$&`, `` $` ``, `$'` and
+// `$$` as substitution patterns when it's a plain string — `$&` re-inserts the whole matched
+// marker, `` $` ``/`$'` splice in the template text before/after the match. A resource's
+// free-text description can contain any of these, so fillTemplate must pass a function to every
+// `.replace` instead of a string, which is used verbatim with no pattern parsing.
+test("a $-replacement-pattern sequence in a resource's description renders unchanged, not duplicated", async () => {
+	const weird = { ...row, id: 9, description: "$& $' $$" }
+	const { dataDir, distDir } = setup([weird], [])
+	const render = vi.fn(async (url: string, data: { resource?: { description: string } }) => ({
+		html: `<main>${data.resource?.description ?? ""}</main>`,
+		head: {
+			title: `T ${url}`,
+			description: "D",
+			path: url.replace(/^\/en/, "") || "/",
+			lang: url.startsWith("/en") ? "en" : "nb",
+		},
+	}))
+	await prerenderSite({
+		dataDir,
+		distDir,
+		render,
+		split: stubSplit,
+		siteOrigin: "https://varde.pages.dev",
+		log: () => {},
+	})
+	const detail = readFileSync(join(distDir, "resources/9/index.html"), "utf8")
+	expect(detail).toContain("<main>$& $' $$</main>")
+	// The exact sequence appears three times, unchanged and undamaged: once in the rendered
+	// <main>, once in the #varde-data JSON block (the resource object), once in the
+	// application/ld+json block (jsonLd also copies the description). A naive string-replace
+	// would instead duplicate the matched marker or splice in surrounding template bytes.
+	const occurrences = detail.split("$& $' $$").length - 1
+	expect(occurrences).toBe(3)
+	expect(detail).not.toContain("<!--app-")
+	expect(detail.match(/<!doctype html>/gi) ?? []).toHaveLength(1)
+})
