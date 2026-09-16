@@ -21,7 +21,7 @@ test("error state carries only the Legevakt fallback as a tel link and a working
 	const onRetry = vi.fn()
 	const user = userEvent.setup()
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<ErrorState onRetry={onRetry} />
 		</LanguageProvider>
 	)

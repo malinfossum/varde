@@ -17,7 +17,7 @@ test("daytime banner still carries the legevakt fallback line", () => {
 	vi.useFakeTimers()
 	vi.setSystemTime(new Date(2026, 7, 19, 10, 0))
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<HandoverBanner />
 		</LanguageProvider>
 	)
@@ -29,7 +29,7 @@ test("evening banner leads with legevakt as a tel link", () => {
 	vi.useFakeTimers()
 	vi.setSystemTime(new Date(2026, 7, 19, 20, 0))
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<HandoverBanner />
 		</LanguageProvider>
 	)

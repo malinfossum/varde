@@ -58,8 +58,8 @@ test("a language switch during load never applies the stale language's data", as
 	render(<App />)
 
 	// Still loading nb — switch to English before its fetch resolves.
-	await screen.findByRole("button", { name: "English" })
-	await user.click(screen.getByRole("button", { name: "English" }))
+	await screen.findByRole("link", { name: "English" })
+	await user.click(screen.getByRole("link", { name: "English" }))
 
 	// The new (current) language's response lands first…
 	deferred.en.resolve()

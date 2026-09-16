@@ -1,63 +1,29 @@
-import { createContext, type ReactNode, useContext, useEffect, useState } from "react"
+import { createContext, type ReactNode, useContext, useEffect } from "react"
 import { I18nProvider } from "react-aria-components"
 import type { Lang } from "../services/urlState.ts"
 import en from "./en.json"
 import nb from "./nb.json"
 
-export type { Lang } from "../services/urlState.ts"
-
-const STORAGE_KEY = "varde.lang"
+export type { Lang }
+export const LANG_STORAGE_KEY = "varde.lang"
 const strings: Record<Lang, Record<string, string>> = { nb, en }
 
-function isLang(value: string | null): value is Lang {
-	return value === "nb" || value === "en"
-}
+const LanguageContext = createContext<{ lang: Lang } | null>(null)
 
-export function resolveLang(urlLang: string | null): Lang {
-	if (isLang(urlLang)) return urlLang
-	const stored = localStorage.getItem(STORAGE_KEY)
-	return isLang(stored) ? stored : "nb"
-}
-
-const LanguageContext = createContext<{ lang: Lang; setLang: (next: Lang) => void } | null>(null)
-
-export function LanguageProvider({
-	initialLang,
-	children,
-}: {
-	initialLang: string | null
-	children: ReactNode
-}) {
-	const [lang, setLangState] = useState<Lang>(() => resolveLang(initialLang))
-
-	// initialLang is only a useState *initializer* above — it's read once, at mount. Browser
-	// back/forward changes the ?lang= param (App's useUrlState reacts to popstate and passes
-	// the new value down as this prop), but without this effect the provider would never
-	// re-resolve it, so the UI language wouldn't follow. Re-derive with the same resolution
-	// order as the initial mount; this is a no-op on the initial render and on an explicit
-	// toggle (which already set the matching lang directly via setLang).
-	useEffect(() => {
-		setLangState(resolveLang(initialLang))
-	}, [initialLang])
-
+// The URL is the only source of the language (spec: URL and language model). Storage is
+// written by the toggle alone and read by public/theme-init.js alone, before first paint.
+export function LanguageProvider({ lang, children }: { lang: Lang; children: ReactNode }) {
 	useEffect(() => {
 		document.documentElement.lang = lang
 	}, [lang])
-
-	// localStorage is written only here — an explicit toggle — never from URL resolution.
-	const setLang = (next: Lang) => {
-		localStorage.setItem(STORAGE_KEY, next)
-		setLangState(next)
-	}
-
 	// react-aria speaks for itself: the combobox's listbox label, "N alternativer finnes" and
 	// the group-change announcements all come from its own locale bundle, and without a locale
 	// it reads navigator.language — so an English-locale browser would narrate a Norwegian UI in
 	// English. The combobox deliberately has no hand-rolled live region because those native
 	// announcements are the accessible name; feeding them the same lang the toggle sets is what
-	// makes that hold. It sits here rather than in App so the two can never drift apart.
+	// makes that hold.
 	return (
-		<LanguageContext.Provider value={{ lang, setLang }}>
+		<LanguageContext.Provider value={{ lang }}>
 			<I18nProvider locale={lang}>{children}</I18nProvider>
 		</LanguageContext.Provider>
 	)

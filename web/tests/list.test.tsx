@@ -31,7 +31,7 @@ const resource: ResourceDto = {
 }
 
 function withLang(ui: React.ReactNode) {
-	return render(<LanguageProvider initialLang="nb">{ui}</LanguageProvider>)
+	return render(<LanguageProvider lang="nb">{ui}</LanguageProvider>)
 }
 
 afterEach(() => {
@@ -86,7 +86,7 @@ test("pagination disables at the edges and reports page changes", async () => {
 	expect(screen.getByRole("button", { name: "Forrige" })).toBeDisabled()
 	expect(screen.getByText("Side 1 av 3")).toBeInTheDocument()
 	rerender(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<Pagination page={3} pageSize={20} totalCount={45} onPage={() => {}} />
 		</LanguageProvider>
 	)

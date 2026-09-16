@@ -1,30 +1,26 @@
-import { render } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import { beforeEach, expect, test } from "vitest"
-import { LanguageProvider, resolveLang, useTranslation } from "../src/i18n/LanguageProvider.tsx"
+import { LanguageProvider, useTranslation } from "../src/i18n/LanguageProvider.tsx"
 
 beforeEach(() => localStorage.clear())
 
-test("resolution order is url, then localStorage, then nb", () => {
-	expect(resolveLang(null)).toBe("nb")
-	localStorage.setItem("varde.lang", "en")
-	expect(resolveLang(null)).toBe("en")
-	expect(resolveLang("nb")).toBe("nb")
-	expect(resolveLang("garbage")).toBe("en") // unrecognised values are ignored, not rejected
-})
-
-test("url language never overwrites the stored preference", () => {
+test("a stored preference never overrides the language the provider is given", () => {
+	// Redirecting a stored "en" preference away from a bare "/" load is public/theme-init.js's
+	// job (Task 3), which runs before React even mounts — the provider itself only ever renders
+	// the language it's handed as a prop, regardless of what's in storage.
 	localStorage.setItem("varde.lang", "en")
 	function Probe() {
 		const t = useTranslation()
-		return <p>{t("app.title")}</p>
+		return <p>{t("app.skipToContent")}</p>
 	}
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<Probe />
 		</LanguageProvider>
 	)
-	expect(localStorage.getItem("varde.lang")).toBe("en") // visit renders nb, storage untouched
+	expect(screen.getByText("Hopp til innhold")).toBeInTheDocument()
 	expect(document.documentElement.lang).toBe("nb")
+	expect(localStorage.getItem("varde.lang")).toBe("en")
 })
 
 test("every nb key has an en twin and vice versa", async () => {

@@ -13,7 +13,7 @@ test("keyword queries find the helsenorge hint, others find nothing", () => {
 
 test("hint renders as one quiet link whose href never contains the query", () => {
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<WayfindingHint query="bytte fastlege" />
 		</LanguageProvider>
 	)
@@ -25,7 +25,7 @@ test("hint renders as one quiet link whose href never contains the query", () =>
 
 test("no hint renders without a keyword match", () => {
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<WayfindingHint query="krisesenter" />
 		</LanguageProvider>
 	)

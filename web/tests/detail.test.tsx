@@ -38,7 +38,7 @@ afterEach(() => {
 test("detail shows hours with contact info and no handover banner", async () => {
 	stubDataFiles({ resources: [detail] })
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<ResourceDetail id={12} />
 		</LanguageProvider>
 	)
@@ -54,7 +54,7 @@ test("detail shows hours with contact info and no handover banner", async () => 
 test("a 404 renders NotFoundState with a way back", async () => {
 	stubDataFiles({ resources: [] })
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<ResourceDetail id={999} />
 		</LanguageProvider>
 	)
@@ -72,7 +72,7 @@ test("the call button is the hero and the back link is a plain link without hist
 	stubDataFiles({ resources: [detail] })
 	window.history.replaceState(null, "", "/resources/12")
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<AnnouncerProvider>
 				<ResourceDetail id={12} arrival={0} />
 			</AnnouncerProvider>
@@ -94,7 +94,7 @@ test("with from=sok in history state the back control goes back", async () => {
 	window.history.replaceState({ from: "sok" }, "", "/resources/12")
 	const back = vi.spyOn(window.history, "back").mockImplementation(() => {})
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<AnnouncerProvider>
 				<ResourceDetail id={12} arrival={1} />
 			</AnnouncerProvider>
@@ -121,7 +121,7 @@ test("badges render on the detail page in the fixed order Akutt, Nasjonal, Døgn
 		],
 	})
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<AnnouncerProvider>
 				<ResourceDetail id={12} />
 			</AnnouncerProvider>
@@ -158,7 +158,7 @@ afterEach(() => restoreNavigator())
 async function renderDetail(resource: ResourceDto = detail) {
 	stubDataFiles({ resources: [resource] })
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<AnnouncerProvider>
 				<ResourceDetail id={12} />
 			</AnnouncerProvider>

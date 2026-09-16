@@ -35,9 +35,9 @@ const ResourceDetail = lazy(() =>
 )
 
 export function App() {
-	const { route, filters, langParam, arrival, navigate } = useUrlState()
+	const { lang, route, filters, arrival, navigate } = useUrlState()
 	return (
-		<LanguageProvider initialLang={langParam}>
+		<LanguageProvider lang={lang}>
 			<AnnouncerProvider>
 				<NavigationContext.Provider value={navigate}>
 					<Shell route={route} filters={filters} arrival={arrival} />

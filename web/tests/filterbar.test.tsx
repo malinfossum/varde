@@ -30,7 +30,7 @@ function renderBar(filters: Partial<Filters> = {}) {
 	const onPatch = vi.fn()
 	const onSearch = vi.fn()
 	const view = render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<AnnouncerProvider>
 				<FilterBar
 					catalog={catalog}
@@ -43,7 +43,7 @@ function renderBar(filters: Partial<Filters> = {}) {
 	)
 	const rerenderWith = (next: Partial<Filters>) =>
 		view.rerender(
-			<LanguageProvider initialLang="nb">
+			<LanguageProvider lang="nb">
 				<AnnouncerProvider>
 					<FilterBar
 						catalog={catalog}

@@ -8,7 +8,7 @@ test("suggestions render as buttons and report picks", async () => {
 	const onPick = vi.fn()
 	const user = userEvent.setup()
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<Suggestions
 				suggestions={[
 					{ kind: "municipality", id: 1, name: "Hamar" },

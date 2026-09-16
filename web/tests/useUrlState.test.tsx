@@ -42,3 +42,25 @@ test("arrival increments on route changes only, and leaving /sok records from=so
 	expect(result.current.arrival).toBe(2)
 	expect(window.history.state).toBeNull()
 })
+
+test("arrival treats same-slug kommune navigation as the same route", () => {
+	window.history.pushState(null, "", "/kommune/hamar")
+	const { result } = renderHook(() => useUrlState())
+	expect(result.current.arrival).toBe(0)
+	act(() => result.current.navigate("/kommune/hamar", "?search=rus"))
+	expect(result.current.arrival).toBe(0) // same kommune, filter change only
+	act(() => result.current.navigate("/kommune/gjovik", ""))
+	expect(result.current.arrival).toBe(1) // different kommune slug
+})
+
+test("lang reflects the path prefix, and navigate prefixes with the current language unless told otherwise", () => {
+	window.history.pushState(null, "", "/en/sok")
+	const { result } = renderHook(() => useUrlState())
+	expect(result.current.lang).toBe("en")
+	act(() => result.current.navigate("/resources/9", ""))
+	expect(window.location.pathname).toBe("/en/resources/9")
+	expect(result.current.lang).toBe("en")
+	act(() => result.current.navigate("/", "", { lang: "nb" }))
+	expect(window.location.pathname).toBe("/")
+	expect(result.current.lang).toBe("nb")
+})
