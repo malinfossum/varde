@@ -9,12 +9,16 @@ import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
 	plugins: [react(), tailwindcss()],
+	// The server build (build:server) is a plain Node module scripts/prerender.mjs imports by
+	// name — entryFileNames keeps its output at dist-server/entry-server.mjs instead of a
+	// hashed name.
+	build: isSsrBuild ? { rollupOptions: { output: { entryFileNames: "[name].mjs" } } } : {},
 	test: {
 		environment: "jsdom",
 		setupFiles: ["./tests/setup.ts"],
 	},
 	// If you deploy to GitHub Pages under a repo name, set:
 	// base: '/your-repo-name/',
-})
+}))
