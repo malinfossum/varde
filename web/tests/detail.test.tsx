@@ -122,6 +122,39 @@ test("with from=sok in history state the back control goes back", async () => {
 	back.mockRestore()
 })
 
+test("cameFromResults recomputes per id, not just on mount", async () => {
+	// App.tsx renders <ResourceDetail id={route.id} /> without a `key`, so a detail-to-detail
+	// transition (e.g. history.go(-2) landing on a different resource while still on a detail
+	// route) reuses this component instance instead of remounting it. The mount-only effect this
+	// task started with would keep showing resource A's back-link style for resource B.
+	const other: ResourceDto = { ...detail, id: 13, name: "Et annet tilbud" }
+	stubDataFiles({ resources: [detail, other] })
+	window.history.replaceState({ from: "sok" }, "", "/resources/12")
+	const { rerender } = render(
+		<LanguageProvider lang="nb">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
+	expect(screen.getByRole("button", { name: "Tilbake til resultater" })).toBeInTheDocument()
+
+	window.history.replaceState(null, "", "/resources/13")
+	rerender(
+		<LanguageProvider lang="nb">
+			<AnnouncerProvider>
+				<ResourceDetail id={13} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	await screen.findByRole("heading", { level: 1, name: "Et annet tilbud" })
+	expect(screen.getByRole("link", { name: "Tilbake til resultater" })).toHaveAttribute(
+		"href",
+		"/sok"
+	)
+})
+
 test("badges render on the detail page in the fixed order Akutt, Nasjonal, Døgnåpent", async () => {
 	stubDataFiles({
 		resources: [
