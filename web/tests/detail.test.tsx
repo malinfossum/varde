@@ -51,6 +51,20 @@ test("detail shows hours with contact info and no handover banner", async () => 
 	expect(website).toHaveAttribute("rel", "noopener noreferrer")
 })
 
+test("the report link is a mailto to the role alias, named after this resource", async () => {
+	stubDataFiles({ resources: [detail] })
+	render(
+		<LanguageProvider lang="nb">
+			<ResourceDetail id={12} />
+		</LanguageProvider>
+	)
+	const report = await screen.findByRole("link", { name: "Meld feil i oppføringen" })
+	expect(report).toHaveAttribute(
+		"href",
+		"mailto:varde.implicate775@passmail.com?subject=Varde%20%2312%3A%20Krisesenteret%20i%20Hamar"
+	)
+})
+
 test("a 404 renders NotFoundState with a way back", async () => {
 	stubDataFiles({ resources: [] })
 	render(

@@ -16,7 +16,10 @@ test("shell renders skip link, quick exit, acute strip and theme toggle", () => 
 	stubResources()
 	render(<App />)
 	expect(screen.getByRole("link", { name: "Hopp til innhold" })).toBeInTheDocument()
-	expect(screen.getByRole("button", { name: "Forlat siden" })).toBeInTheDocument()
+	expect(screen.getByRole("link", { name: "Forlat siden" })).toHaveAttribute(
+		"href",
+		"https://www.google.com"
+	)
 	expect(screen.getByRole("region", { name: "Nødnumre" })).toBeInTheDocument()
 	expect(screen.getByRole("button", { name: "Mørkt tema" })).toBeInTheDocument()
 })

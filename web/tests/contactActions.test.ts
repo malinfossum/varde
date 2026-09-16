@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from "vitest"
 import {
 	copyText,
+	reportHref,
 	shareCapability,
 	shareResource,
 	shareText,
@@ -65,6 +66,14 @@ describe("shareResource", () => {
 	})
 	test("with nothing to share or copy the outcome is failed", async () => {
 		expect(await shareResource(entry, {})).toBe("failed")
+	})
+})
+
+describe("reportHref", () => {
+	test("is a mailto to the role alias with an encoded subject", () => {
+		expect(reportHref(12, "NAV Hamar & co")).toBe(
+			"mailto:varde.implicate775@passmail.com?subject=Varde%20%2312%3A%20NAV%20Hamar%20%26%20co"
+		)
 	})
 })
 

@@ -2,7 +2,13 @@ import { useEffect, useState } from "react"
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { usePageData } from "../pageData.ts"
-import { copyText, shareCapability, shareResource } from "../services/contactActions.ts"
+import {
+	copyText,
+	reportHref,
+	type ShareCapability,
+	shareCapability,
+	shareResource,
+} from "../services/contactActions.ts"
 import { clearIndexCache, loadIndex } from "../services/data.ts"
 import { telHref } from "../services/emergency.ts"
 import { metaDescription } from "../services/site.ts"
@@ -33,6 +39,22 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	)
 	const [attempt, setAttempt] = useState(0)
 	const { ref: heading } = useArrivalFocus<HTMLHeadingElement>(arrival, state.kind === "ready")
+
+	// Browser-only facts that must not be read during the first render (prerendering has no
+	// navigator or history.state to read, and reading them synchronously in the browser would
+	// make hydration mismatch the server's markup). The neutral defaults below are what the
+	// prerender emits; an effect fills in the real values right after mount.
+	const [capability, setCapability] = useState<ShareCapability>("none")
+	const [canCopy, setCanCopy] = useState(false)
+	const [cameFromResults, setCameFromResults] = useState(false)
+	useEffect(() => {
+		setCapability(shareCapability(navigator))
+		setCanCopy(Boolean(navigator.clipboard))
+		// The site sends no referrer and pushState never sets one, so whether this page was
+		// reached from /sok travels in history state (useUrlState's navigate sets it on the way
+		// out). A direct load — bookmark, shared link, refresh — has no such state.
+		setCameFromResults((window.history.state as { from?: string } | null)?.from === "sok")
+	}, [])
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt only forces a re-fetch
 	useEffect(() => {
@@ -71,9 +93,6 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	if (state.kind === "missing") return <NotFoundState arrival={arrival} />
 
 	const { resource } = state
-	// Read once per render so the label always says what the tap will do.
-	const capability = shareCapability(navigator)
-	const canCopy = Boolean(navigator.clipboard)
 
 	const onShare = async () => {
 		const outcome = await shareResource(
@@ -89,10 +108,6 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 		announce(t(ok ? "detail.phoneCopied" : "detail.copyFailed"))
 	}
 
-	// The site sends no referrer and pushState never sets one, so whether this page was reached
-	// from /sok travels in history state (useUrlState's navigate sets it on the way out). A
-	// direct load — bookmark, shared link, refresh — has no such state and gets a plain link.
-	const cameFromResults = (window.history.state as { from?: string } | null)?.from === "sok"
 	const backLabel = t("detail.back")
 
 	return (
@@ -209,6 +224,9 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 			<p className="text-sm text-muted">
 				{t("card.lastVerified")} {resource.lastVerified}
 			</p>
+			<a href={reportHref(resource.id, resource.name)} className="text-sm text-muted underline">
+				{t("report.link")}
+			</a>
 		</article>
 	)
 }

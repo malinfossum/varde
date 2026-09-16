@@ -59,6 +59,7 @@
 	"detail.linkCopied": "Lenken er kopiert",
 	"detail.phoneCopied": "Nummeret er kopiert",
 	"detail.copyFailed": "Kunne ikke kopiere",
+	"report.link": "Meld feil i oppføringen",
 	"list.pagerPrev": "Forrige",
 	"list.pagerNext": "Neste",
 	"list.pagerStatus": "Side {page} av {pages}",

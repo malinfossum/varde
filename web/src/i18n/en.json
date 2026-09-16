@@ -59,6 +59,7 @@
 	"detail.linkCopied": "Link copied",
 	"detail.phoneCopied": "Number copied",
 	"detail.copyFailed": "Could not copy",
+	"report.link": "Report an error in this listing",
 	"list.pagerPrev": "Previous",
 	"list.pagerNext": "Next",
 	"list.pagerStatus": "Page {page} of {pages}",
