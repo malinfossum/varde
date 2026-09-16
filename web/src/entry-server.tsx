@@ -34,13 +34,18 @@ export async function render(
 				</UrlContext.Provider>
 			</HeadContext.Provider>
 		</StrictMode>,
-		// Found while writing the hydration guard: prerender()'s default progressiveChunkSize
-		// (~12.8 KB) is the byte budget for the "shell" — once the header/strip/footer markup
-		// around a route's <Suspense> boundary crosses it, prerender() gives up on that boundary
-		// instead of waiting for its lazy chunk, and hands back the fallback with a "$?" marker
-		// (confirmed on /sok: reproduced with plain, hook-free filler past ~13 KB, and with
-		// react-dom/server's renderToReadableStream too, so it isn't a react-dom/static quirk).
-		// One page's full HTML is far under 1 MB, so this keeps every boundary in the one shell.
+		// Found while writing the hydration guard: a Suspense boundary that DOES resolve still
+		// gets "outlined" — written out-of-band with a completion <template> plus an inline
+		// <script>$RC(...)</script> that moves it into place — whenever the shell plus that
+		// boundary's bytes cross progressiveChunkSize (default ~12.8 KB), or the boundary has
+		// what Fizz calls "suspensey content". index.html's CSP is script-src 'self' with no
+		// inline scripts, so an outlined boundary's real content would sit inert in the page,
+		// never moved into place, until React hydrates and replaces it client-side — exactly
+		// the SEO/first-paint regression prerendering exists to avoid. Raising the byte budget
+		// past any real page's size rules out the size-triggered case (confirmed on /sok, whose
+		// header/strip/footer shell crossed the default ~12.8 KB); the hydration guard's
+		// `not.toContain("<script")` assertion is what catches the suspensey-content case, on
+		// every route, as new ones are added.
 		{ progressiveChunkSize: 1_000_000 }
 	)
 	return { html: await new Response(prelude).text(), head }
