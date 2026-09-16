@@ -62,7 +62,7 @@ application logs record result counts, never search terms.
 
 The landing page is search-first: one box, nine category chips, and no data fetched until
 you act on it. Above every page sits an acute strip with the four emergency numbers as
-hardcoded constants, not a fetch, so it works even if the API is down. Unified search across
+hardcoded constants, so it renders before any JavaScript or data loads. Unified search across
 name, category and municipality, with suggestions and a national toggle. Details on the
 shift from fastlege to legevakt after hours, when a service's own opening hours are known.
 Light theme by default, with a toggle that starts from the system setting and remembers the
@@ -72,9 +72,10 @@ mobile-first.
 
 Lighthouse ≥ 95 on the simulated phone is the definition of done, and the measured numbers
 are in each PR. Accessibility is 100 across the site and the landing page scores 99 on
-performance; `/sok` scores 67–74 and misses that budget. It is LCP-bound — the largest
-element is the first result heading, which cannot paint before the API answers — and it is
-reported rather than tuned away.
+performance; `/sok` scored 67–74 and missed that budget, but that number predates the move
+to static JSON — `/sok` now prerenders as its loading shell and fills from the JSON index in
+the browser, and it hasn't been re-measured since. The live Cloudflare deploy gets a fresh
+measurement.
 
 ## Run locally
 
