@@ -67,7 +67,7 @@ test("urlList covers landing, search, every resource and kommune in both languag
 	])
 })
 
-test("writes every page as folder/index.html with head, data block, lang, sitemap, robots and 404", async () => {
+test("writes every page as a file (except / and /en/) with head, data block, lang, sitemap, robots and 404", async () => {
 	const { dataDir, distDir } = setup([row], [hamar])
 	const render = vi.fn(async (url: string, data: { resource?: { name: string } }) => ({
 		html: `<main>${url} ${data.resource?.name ?? ""}</main>`,
@@ -87,7 +87,7 @@ test("writes every page as folder/index.html with head, data block, lang, sitema
 		log: () => {},
 	})
 	expect(result.pages).toHaveLength(8)
-	const detail = readFileSync(join(distDir, "en/resources/5/index.html"), "utf8")
+	const detail = readFileSync(join(distDir, "en/resources/5.html"), "utf8")
 	expect(detail).toContain('<html lang="en">')
 	expect(detail).toContain("<title>T /en/resources/5</title>")
 	expect(detail).toContain('<link rel="canonical" href="https://varde.pages.dev/en/resources/5" />')
@@ -97,6 +97,7 @@ test("writes every page as folder/index.html with head, data block, lang, sitema
 	expect(detail).toContain('<script type="application/ld+json">')
 	expect(detail).toContain('"@type":"Organization"')
 	expect(readFileSync(join(distDir, "index.html"), "utf8")).toContain("<main>/ </main>")
+	expect(readFileSync(join(distDir, "en/index.html"), "utf8")).toContain("<main>/en/ </main>")
 	const sitemap = readFileSync(join(distDir, "sitemap.xml"), "utf8")
 	expect(sitemap).toContain("<loc>https://varde.pages.dev/kommune/hamar</loc>")
 	expect(sitemap).toContain('hreflang="en" href="https://varde.pages.dev/en/kommune/hamar"')
@@ -107,7 +108,7 @@ test("writes every page as folder/index.html with head, data block, lang, sitema
 	expect(notFound).toContain('<div id="root"></div>')
 	expect(notFound).toContain("<noscript>")
 	expect(notFound).toContain("Fant ikke siden / Page not found")
-	expect(existsSync(join(distDir, "kommune/hamar/index.html"))).toBe(true)
+	expect(existsSync(join(distDir, "kommune/hamar.html"))).toBe(true)
 })
 
 // R30: react-dom/static's prerender() can "outline" a Suspense boundary as a completion
@@ -157,7 +158,7 @@ test("a $-replacement-pattern sequence in a resource's description renders uncha
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
-	const detail = readFileSync(join(distDir, "resources/9/index.html"), "utf8")
+	const detail = readFileSync(join(distDir, "resources/9.html"), "utf8")
 	expect(detail).toContain("<main>$& $' $$</main>")
 	// The exact sequence appears three times, unchanged and undamaged: once in the rendered
 	// <main>, once in the #varde-data JSON block (the resource object), once in the

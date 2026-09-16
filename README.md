@@ -101,7 +101,10 @@ standard local development setup (`localhost`, `postgres`/`postgres`); override 
 `web/public/data/` so the dev server has something to search over; re-run it whenever the
 underlying data changes. Run `npm run build` instead of `npm run dev` for the full prerender
 — it builds the client and server bundles and writes a static `web/dist/` with one page per
-URL, matching what the deploy workflow produces.
+URL, matching what the deploy workflow produces. `vite preview` over that `dist/` can't
+validate routing, though: it serves the file-form pages directly by path, but only Cloudflare
+Pages' asset server applies the clean-URL and trailing-slash redirect rules the prerendered
+pages depend on — check routing against the real deploy, not a local preview.
 
 Fraunces and Figtree are vendored into `web/public/fonts/`, so `npm install` is enough for a
 normal checkout. Only run `npm run fonts` if you bump the `@fontsource/*` package versions —

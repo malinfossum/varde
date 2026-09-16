@@ -156,9 +156,17 @@ export async function prerenderSite({
 			data,
 			ld,
 		})
-		const dir = join(distDir, page.url === "/" ? "" : page.url)
-		mkdirSync(dir, { recursive: true })
-		writeFileSync(join(dir, "index.html"), file)
+		// File form, not folder form: Cloudflare Pages' asset server 308s a folder-form request
+		// (`/resources/12` -> `/resources/12/`) when only `resources/12/index.html` exists, and
+		// the strict router parses the slashed URL as notFound — every deep link 404s. File form
+		// (`resources/12.html`) serves `/resources/12` directly and 308s the slashed form back to
+		// it, which the router accepts. `/` and `/en/` keep index.html since they ARE folder
+		// roots already.
+		const target = page.url.endsWith("/")
+			? join(distDir, page.url, "index.html")
+			: `${join(distDir, page.url)}.html`
+		mkdirSync(dirname(target), { recursive: true })
+		writeFileSync(target, file)
 	}
 	const notFound = fillTemplate(template, {
 		lang: "nb",

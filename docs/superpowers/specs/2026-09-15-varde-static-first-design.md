@@ -238,8 +238,12 @@ is free text (recorded blocker). Kommune pages get a `CollectionPage` with `name
    where `HeadEntry = { title, description, path, lang }`; the prerender writes the head tags
    itself rather than receiving pre-rendered markup.
 3. `node scripts/prerender.mjs` — reads the JSON in `public/data/`, derives the URL list,
-   calls `render` for each, and writes `dist/<path>/index.html`. Folder form, not
-   `12.html`, so Cloudflare Pages serves both `/resources/12` and `/resources/12/`.
+   calls `render` for each, and writes `dist/<path>.html`. File form, not `<path>/index.html`:
+   Cloudflare Pages' asset server 308s a folder-form request (`/resources/12` ->
+   `/resources/12/`) when only `resources/12/index.html` exists, and the strict router parses
+   the slashed URL as notFound — every deep link would 404. File form serves `/resources/12`
+   directly and 308s the slashed form back to it, which the router accepts. `/` and `/en/`
+   keep `index.html` since they are folder roots already.
    Also writes `sitemap.xml`, `robots.txt`, and `404.html` from the same template with the
    static not-found line in a `<noscript>` block, an empty `#root` and no data block. `dist-server/` is deleted
    afterwards and never deployed.
