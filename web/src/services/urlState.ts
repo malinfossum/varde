@@ -109,7 +109,16 @@ export function legacyRedirect(
 		let path = legacyList ? "/sok" : pathname
 		if (lang === "en" && !(path === "/en" || path.startsWith("/en/"))) path = pathFor("en", path)
 		const query = params.toString()
-		return query ? `${path}?${query}` : path
+		const target = query ? `${path}?${query}` : path
+		// An explicit ?lang= choice always wins, even over a stored preference for the other
+		// language. Stripping ?lang=nb from the bare landing page lands back on "/" with no
+		// query — exactly the shape the stored-preference rule below is watching for. Redirecting
+		// there would reload it as a fresh navigation, on which that rule would then fire and
+		// bounce the explicit "nb" choice straight to /en/. Nothing else this function returns
+		// can land back on "/" (an /en path only ever grows a prefix, /sok only from legacyList),
+		// so this is the one case that needs skipping — leave the query string in place instead.
+		if (target === "/") return null
+		return target
 	}
 	if (legacyList) return `/sok${search}`
 	if (pathname === "/" && search === "" && storedLang === "en") return "/en/"

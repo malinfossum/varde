@@ -35,12 +35,17 @@
 	var lang = params.get("lang")
 	var path
 	var query
+	var candidate
 	if (lang !== null) {
 		params.delete("lang")
 		path = legacyList ? "/sok" : pathname
 		if (lang === "en" && !isEn(path)) path = `/en${path}`
 		query = params.toString()
-		target = query ? `${path}?${query}` : path
+		candidate = query ? `${path}?${query}` : path
+		// Mirrors legacyRedirect(): an explicit ?lang= choice wins, so a redirect that would only
+		// strip ?lang=nb and land back on bare "/" is skipped — reloading it would let the
+		// stored-preference branch below fire on that fresh navigation instead.
+		if (candidate !== "/") target = candidate
 	} else if (legacyList) {
 		target = `/sok${search}`
 	} else if (pathname === "/" && search === "" && stored === "en") {

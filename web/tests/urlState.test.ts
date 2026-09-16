@@ -107,7 +107,13 @@ describe("legacyRedirect", () => {
 		expect(legacyRedirect("/en/sok", "?lang=en", null)).toBe("/en/sok")
 	})
 	test("?lang=nb is stripped and never redirected by the stored preference", () => {
-		expect(legacyRedirect("/", "?lang=nb", "en")).toBe("/")
+		// "/" used to return "/" (the stripped path), which then had to reload as a fresh
+		// navigation just to drop the query string — a navigation on which the stored-preference
+		// rule below would fire and bounce the explicit "nb" choice to /en/. Returning null here
+		// means the explicit choice is honoured with no second hop at all. /resources/5 was never
+		// at risk (the stored-preference rule only ever fires on a bare "/"), so it still gets
+		// the ordinary one-hop redirect that drops the query string.
+		expect(legacyRedirect("/", "?lang=nb", "en")).toBeNull()
 		expect(legacyRedirect("/resources/5", "?lang=nb", "en")).toBe("/resources/5")
 	})
 	test("pre-landing bookmarks go to /sok", () => {

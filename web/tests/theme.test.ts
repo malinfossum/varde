@@ -82,6 +82,10 @@ test("the public init script redirects exactly like legacyRedirect", () => {
 		["/", "?lang=en", null],
 		["/sok", "?lang=en&search=nav", null],
 		["/resources/5", "?lang=nb", "en"],
+		// The double-hop case: an explicit ?lang=nb on the bare landing page must not still
+		// bounce to /en/ once the stripped-query navigation reloads with the stored "en"
+		// preference in play — both mirrors must return null here, not "/".
+		["/", "?lang=nb", "en"],
 		["/", "?category=rus", null],
 		["/", "", "en"],
 		["/", "", null],
