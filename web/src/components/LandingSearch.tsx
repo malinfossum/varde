@@ -26,7 +26,11 @@ export function LandingSearch() {
 		loadIndex(lang)
 			.then((index) => {
 				if (!cancelled)
-					setCatalog({ municipalities: index.municipalities, categories: index.categories })
+					setCatalog({
+						municipalities: index.municipalities,
+						categories: index.categories,
+						kommuner: index.kommuner,
+					})
 			})
 			.catch(() => {})
 		return () => {
@@ -40,8 +44,14 @@ export function LandingSearch() {
 	)
 
 	const go = (patch: Partial<Filters>) => navigate("/sok", buildSearch({ ...empty, ...patch }))
-	const onPick = (s: Suggestion) =>
-		s.kind === "municipality" ? go({ municipality: s.id }) : go({ categories: [s.slug] })
+	// A municipality with its own kommune page is a better landing than the filtered list —
+	// falls back to /sok?municipality= for the ones plan 5's regional data hasn't reached yet.
+	const onPick = (s: Suggestion) => {
+		if (s.kind !== "municipality") return go({ categories: [s.slug] })
+		const kommune = catalog?.kommuner.find((k) => k.id === s.id)
+		if (kommune) navigate(`/kommune/${kommune.slug}`, "")
+		else go({ municipality: s.id })
+	}
 
 	return (
 		<search className="mx-auto w-full max-w-xl">

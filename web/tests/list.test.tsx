@@ -69,6 +69,17 @@ test("a card without a phone shows only Detaljer and the no-phone line", () => {
 	expect(screen.getByText("Ingen telefon – se nettsiden")).toBeInTheDocument()
 })
 
+test("municipality name links to the kommune page when a slug is given", () => {
+	withLang(<ResourceCard resource={resource} kommuneSlug="hamar" />)
+	expect(screen.getByRole("link", { name: "Hamar" })).toHaveAttribute("href", "/kommune/hamar")
+})
+
+test("municipality name renders as plain text without a slug", () => {
+	withLang(<ResourceCard resource={resource} />)
+	expect(screen.getByText("Hamar")).toBeInTheDocument()
+	expect(screen.queryByRole("link", { name: "Hamar" })).not.toBeInTheDocument()
+})
+
 test("loading renders skeletons under a busy status region", () => {
 	withLang(<LoadingState />)
 	expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true")

@@ -22,7 +22,11 @@ export function useCatalog(lang: Lang) {
 				if (!cancelled)
 					setState({
 						kind: "ready",
-						catalog: { municipalities: index.municipalities, categories: index.categories },
+						catalog: {
+							municipalities: index.municipalities,
+							categories: index.categories,
+							kommuner: index.kommuner,
+						},
 					})
 			})
 			.catch(() => {

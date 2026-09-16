@@ -16,6 +16,7 @@ const catalog: Catalog = {
 		{ id: 1, slug: "bolig", name: "Bolig", isFallbackTranslation: false },
 		{ id: 2, slug: "rus", name: "Rus og avhengighet", isFallbackTranslation: false },
 	],
+	kommuner: [],
 }
 
 const noFilters: Filters = {

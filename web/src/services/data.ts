@@ -10,9 +10,13 @@ export type Index = {
 	kommuner: KommuneEntry[]
 }
 
-// The municipality/category pair the catalog-era hooks and components consumed. Kept here (not
-// in a dedicated file) now that both come from the same index.
-export type Catalog = { municipalities: MunicipalityDto[]; categories: CategoryDto[] }
+// The municipality/category/kommune trio the catalog-era hooks and components consume. Kept
+// here (not in a dedicated file) now that all three come from the same index.
+export type Catalog = {
+	municipalities: MunicipalityDto[]
+	categories: CategoryDto[]
+	kommuner: KommuneEntry[]
+}
 
 const cache = new Map<Lang, Promise<Index>>()
 

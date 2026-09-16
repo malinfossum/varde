@@ -161,7 +161,13 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 						</h1>
 						<ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 							{state.data.items.map((resource) => (
-								<ResourceCard key={resource.id} resource={resource} />
+								<ResourceCard
+									key={resource.id}
+									resource={resource}
+									kommuneSlug={
+										catalog?.kommuner.find((k) => k.id === resource.municipalityId)?.slug
+									}
+								/>
 							))}
 						</ul>
 						<Pagination

@@ -10,6 +10,7 @@ const catalog = {
 		{ id: 4, slug: "rus", name: "Rus", isFallbackTranslation: false },
 		{ id: 2, slug: "bolig", name: "Bolig", isFallbackTranslation: false },
 	],
+	kommuner: [],
 }
 
 test("fold normalises norwegian letters and case", () => {
