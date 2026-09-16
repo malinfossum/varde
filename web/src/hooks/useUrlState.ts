@@ -48,12 +48,11 @@ export function useUrlState() {
 
 	const navigate = useCallback(
 		(path: string, search: string, options?: NavigateOptions) => {
-			const { lang: current } = parseUrl(window.location.pathname)
+			const { lang: current, route: currentRoute } = parseUrl(window.location.pathname)
 			const target = `${pathFor(options?.lang ?? current, path)}${search}`
 			// The detail page's "back to results" needs to know it came from /sok: the site sends
 			// no referrer and pushState never sets one, so the fact travels in history state.
-			const leavingResults =
-				parseUrl(window.location.pathname).route.kind === "list" && path !== "/sok"
+			const leavingResults = currentRoute.kind === "list" && path !== "/sok"
 			const historyState = leavingResults ? { from: "sok" } : null
 			if (options?.replace) window.history.replaceState(historyState, "", target)
 			else window.history.pushState(historyState, "", target)

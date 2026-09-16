@@ -40,7 +40,16 @@ test("the toggle links to the same page in the other language, dropping page, an
 	await userEvent.click(toggle)
 	expect(window.location.pathname).toBe("/en/sok")
 	expect(localStorage.getItem("varde.lang")).toBe("en")
-	expect(screen.getByRole("link", { name: "Norsk" })).toBeInTheDocument()
+	// The link never unmounts across the re-render (same component, same position in the tree),
+	// so the browser's own focus-on-click behaviour survives it — same guarantee the old
+	// button-based toggle had (spec: Focus). Re-query it by its new name; it's still the same
+	// DOM node, just relabelled.
+	const toggledBack = screen.getByRole("link", { name: "Norsk" })
+	expect(toggledBack).toHaveFocus()
+	// ListPage's own "Laster …"/results announcements can land in the same 1500ms compose
+	// window as this one (see the composition note on the shared live region in
+	// announcer.test.tsx), so match on a substring rather than the exact composed string.
+	expect(screen.getByText(/Language is now English/)).toBeInTheDocument()
 })
 
 test("browser back across a language change updates the UI language", () => {
