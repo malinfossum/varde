@@ -134,6 +134,9 @@ export async function prerenderSite({
 	siteOrigin,
 	log = console.log,
 }) {
+	// A trailing slash would double up with every path concatenated onto it below (canonical,
+	// hreflang, sitemap, robots' Sitemap: line) — `${siteOrigin}/sok` becoming `https://host//sok`.
+	siteOrigin = siteOrigin.replace(/\/$/, "")
 	const read = (name) => JSON.parse(readFileSync(join(dataDir, name), "utf8"))
 	const kommuner = read("kommuner.json")
 	const resourcesByLang = { nb: read("resources.nb.json"), en: read("resources.en.json") }
@@ -191,7 +194,7 @@ export async function prerenderSite({
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
 	const here = dirname(fileURLToPath(import.meta.url))
 	const webDir = join(here, "..")
-	const siteOrigin = process.env.VITE_SITE_ORIGIN ?? "http://localhost:5173"
+	const siteOrigin = (process.env.VITE_SITE_ORIGIN ?? "http://localhost:5173").replace(/\/$/, "")
 	const server = await import(pathToFileURL(join(webDir, "dist-server", "entry-server.mjs")).href)
 	await prerenderSite({
 		dataDir: join(webDir, "public", "data"),

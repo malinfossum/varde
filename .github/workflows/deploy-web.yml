@@ -51,7 +51,11 @@ jobs:
       - name: Require SITE_ORIGIN
         env:
           SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}
-        run: test -n "$SITE_ORIGIN" || { echo "vars.SITE_ORIGIN is not set - refusing to build broken canonical URLs"; exit 1; }
+        run: |
+          test -n "$SITE_ORIGIN" || { echo "vars.SITE_ORIGIN is not set - refusing to build broken canonical URLs"; exit 1; }
+          case "$SITE_ORIGIN" in
+            */) echo "vars.SITE_ORIGIN has a trailing slash - drop it, or every canonical URL doubles it up"; exit 1 ;;
+          esac
 
       - name: Build the API
         run: dotnet build api/Varde.Api/Varde.Api.csproj -c Release
@@ -71,7 +75,9 @@ jobs:
             curl -sf http://localhost:5005/api/municipalities > /dev/null && exit 0
             sleep 2
           done
-          echo "API did not answer within 120 s"; cat api.log; exit 1
+          echo "API did not answer within 120 s"
+          grep -v -i -E 'host|user|password|connection' api.log | tail -n 20
+          exit 1
 
       - name: Export data
         working-directory: web

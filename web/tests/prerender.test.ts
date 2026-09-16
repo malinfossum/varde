@@ -111,6 +111,28 @@ test("writes every page as a file (except / and /en/) with head, data block, lan
 	expect(existsSync(join(distDir, "kommune/hamar.html"))).toBe(true)
 })
 
+test("a trailing slash on siteOrigin never doubles up in a canonical URL", async () => {
+	const { dataDir, distDir } = setup([row], [hamar])
+	const render = vi.fn(async (url: string) => ({
+		html: `<main>${url}</main>`,
+		head: { title: "T", description: "D", path: url, lang: "nb" as const },
+	}))
+	await prerenderSite({
+		dataDir,
+		distDir,
+		render,
+		split: stubSplit,
+		siteOrigin: "https://varde.pages.dev/",
+		log: () => {},
+	})
+	const detail = readFileSync(join(distDir, "resources/5.html"), "utf8")
+	expect(detail).toContain('<link rel="canonical" href="https://varde.pages.dev/resources/5" />')
+	expect(detail).not.toContain("pages.dev//")
+	expect(readFileSync(join(distDir, "robots.txt"), "utf8")).toContain(
+		"Sitemap: https://varde.pages.dev/sitemap.xml"
+	)
+})
+
 // R30: react-dom/static's prerender() can "outline" a Suspense boundary as a completion
 // <template> plus an inline <script>$RC(...)</script>, which index.html's CSP (script-src
 // 'self') blocks. A page whose rendered HTML carries one of those markers must fail the build
