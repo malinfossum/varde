@@ -11,6 +11,7 @@ public record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, int
 /// <param name="IsFallbackTranslation">True when the requested language was unavailable and this is Norwegian.</param>
 /// <param name="OpeningHours">Plain text, in the requested language. Null when not recorded for this service.</param>
 /// <param name="IsAlwaysOpen">True only where the verified source records 24/7 service. False is "not recorded", never "closed".</param>
+/// <param name="ServedMunicipalityIds">Other municipalities this service covers, ascending. Never contains MunicipalityId.</param>
 public record ResourceDto(
     int Id,
     string Name,
@@ -27,4 +28,5 @@ public record ResourceDto(
     string? Website,
     string? ChatUrl,
     DateOnly LastVerified,
-    IReadOnlyList<CategoryDto> Categories);
+    IReadOnlyList<CategoryDto> Categories,
+    IReadOnlyList<int> ServedMunicipalityIds);

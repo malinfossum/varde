@@ -1,15 +1,23 @@
 import { useEffect, useState } from "react"
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
-import { useDocumentTitle } from "../hooks/useDocumentTitle.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
-import { fetchResource } from "../services/api.ts"
-import { copyText, shareCapability, shareResource } from "../services/contactActions.ts"
+import { usePageData } from "../pageData.ts"
+import {
+	copyText,
+	reportHref,
+	type ShareCapability,
+	shareCapability,
+	shareResource,
+} from "../services/contactActions.ts"
+import { clearIndexCache, loadIndex } from "../services/data.ts"
 import { telHref } from "../services/emergency.ts"
+import { metaDescription } from "../services/site.ts"
 import type { ResourceDto } from "../types/api.ts"
 import { ErrorState } from "./ErrorState.tsx"
 import { Link } from "./Link.tsx"
 import { LoadingState } from "./LoadingState.tsx"
 import { NotFoundState } from "./NotFoundState.tsx"
+import { PageHead } from "./PageHead.tsx"
 import { ResourceBadges } from "./ResourceBadges.tsx"
 import { useAnnounce } from "./StatusRegion.tsx"
 
@@ -23,39 +31,78 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	const { lang } = useLanguage()
 	const t = useTranslation()
 	const announce = useAnnounce()
-	const [state, setState] = useState<DetailState>({ kind: "loading" })
+	const pageData = usePageData()
+	const [state, setState] = useState<DetailState>(() =>
+		pageData.resource?.id === id
+			? { kind: "ready", resource: pageData.resource }
+			: { kind: "loading" }
+	)
 	const [attempt, setAttempt] = useState(0)
 	const { ref: heading } = useArrivalFocus<HTMLHeadingElement>(arrival, state.kind === "ready")
 
-	useDocumentTitle(
-		state.kind === "ready"
-			? t("title.detail").replace("{name}", state.resource.name)
-			: t("title.app")
-	)
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt is used as a trigger for retry
+	// Browser-only facts that must not be read during the first render (prerendering has no
+	// navigator or history.state to read, and reading them synchronously in the browser would
+	// make hydration mismatch the server's markup). The neutral defaults below are what the
+	// prerender emits; an effect fills in the real values right after mount.
+	const [capability, setCapability] = useState<ShareCapability>("none")
+	const [canCopy, setCanCopy] = useState(false)
+	// Share/copy support is a fact about this browser, not this navigation — it never changes
+	// across an id change, so this stays a mount-only effect.
 	useEffect(() => {
-		const controller = new AbortController()
+		setCapability(shareCapability(navigator))
+		setCanCopy(Boolean(navigator.clipboard))
+	}, [])
+
+	const [cameFromResults, setCameFromResults] = useState(false)
+	// The site sends no referrer and pushState never sets one, so whether this page was reached
+	// from /sok travels in history state (useUrlState's navigate sets it on the way out). A
+	// direct load — bookmark, shared link, refresh — has no such state. Unlike the capability
+	// checks above, this is a fact about *this navigation*: App.tsx renders ResourceDetail
+	// without a `key`, so a detail-to-detail transition (e.g. history.go(-2) landing on a
+	// different resource) reuses this instance instead of remounting it — the effect must
+	// depend on `id` or it would keep showing the previous resource's back-link style.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: id forces the recompute per navigation
+	useEffect(() => {
+		setCameFromResults((window.history.state as { from?: string } | null)?.from === "sok")
+	}, [id])
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt only forces a re-fetch
+	useEffect(() => {
+		// The prerendered page already carries this resource in its data block — no fetch needed
+		// on a direct load. A later id/lang change (or a retry) still goes to the index.
+		if (pageData.resource?.id === id) return
+		let cancelled = false
 		setState({ kind: "loading" })
-		fetchResource(id, lang, controller.signal)
-			.then((resource) => setState(resource ? { kind: "ready", resource } : { kind: "missing" }))
-			.catch((error: unknown) => {
-				if (error instanceof DOMException && error.name === "AbortError") return
-				setState({ kind: "error" })
-			})
-		return () => controller.abort()
-	}, [id, lang, attempt])
+		loadIndex(lang).then(
+			(index) => {
+				if (cancelled) return
+				const found = index.resources.find((r) => r.id === id)
+				setState(found ? { kind: "ready", resource: found } : { kind: "missing" })
+			},
+			() => {
+				if (!cancelled) setState({ kind: "error" })
+			}
+		)
+		return () => {
+			cancelled = true
+		}
+	}, [id, lang, attempt, pageData])
 
 	if (state.kind === "loading") return <LoadingState />
-	if (state.kind === "error") return <ErrorState onRetry={() => setAttempt((n) => n + 1)} />
+	if (state.kind === "error")
+		return (
+			<ErrorState
+				onRetry={() => {
+					clearIndexCache()
+					setAttempt((n) => n + 1)
+				}}
+			/>
+		)
 	// NotFoundState is the sole content of the page in this state — the shell renders nothing
 	// else around it here — so it takes the page's one level-1 heading, same as every other route.
 	if (state.kind === "missing") return <NotFoundState arrival={arrival} />
 
 	const { resource } = state
-	// Read once per render so the label always says what the tap will do.
-	const capability = shareCapability(navigator)
-	const canCopy = Boolean(navigator.clipboard)
 
 	const onShare = async () => {
 		const outcome = await shareResource(
@@ -71,14 +118,15 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 		announce(t(ok ? "detail.phoneCopied" : "detail.copyFailed"))
 	}
 
-	// The site sends no referrer and pushState never sets one, so whether this page was reached
-	// from /sok travels in history state (useUrlState's navigate sets it on the way out). A
-	// direct load — bookmark, shared link, refresh — has no such state and gets a plain link.
-	const cameFromResults = (window.history.state as { from?: string } | null)?.from === "sok"
 	const backLabel = t("detail.back")
 
 	return (
 		<article className="grid gap-6">
+			<PageHead
+				title={`${resource.name} – Varde`}
+				description={metaDescription(resource.description)}
+				path={`/resources/${resource.id}`}
+			/>
 			{cameFromResults ? (
 				<button
 					type="button"
@@ -128,6 +176,9 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 						)}
 					</div>
 				)}
+				<a href={reportHref(resource.id, resource.name)} className="text-sm text-accent underline">
+					{t("report.link")}
+				</a>
 			</header>
 			<p className="max-w-prose">{resource.description}</p>
 			{/* Hours sit with the rest of the contact facts — phone moved to the hero above. */}

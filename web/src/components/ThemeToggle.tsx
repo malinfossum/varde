@@ -1,10 +1,16 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
-import { applyTheme, currentTheme } from "../services/theme.ts"
+import { applyTheme, currentTheme, type Theme } from "../services/theme.ts"
 
 export function ThemeToggle() {
 	const t = useTranslation()
-	const [theme, setTheme] = useState(currentTheme)
+	// "light" on the first render, prerendered or hydrated alike — the real theme lives on
+	// document.documentElement, which doesn't exist yet during prerendering and would risk a
+	// hydration mismatch if read synchronously. An effect syncs it right after mount.
+	const [theme, setTheme] = useState<Theme>("light")
+	useEffect(() => {
+		setTheme(currentTheme())
+	}, [])
 	const next = theme === "dark" ? "light" : "dark"
 	const onToggle = () => {
 		applyTheme(next)

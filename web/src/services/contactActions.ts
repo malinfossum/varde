@@ -31,6 +31,13 @@ export async function copyText(text: string, nav: ShareTarget): Promise<boolean>
 	}
 }
 
+// One forwarding alias I can switch off if it attracts spam (spec: Report a wrong number).
+export const REPORT_ADDRESS = "varde.implicate775@passmail.com"
+
+export function reportHref(id: number, name: string): string {
+	return `mailto:${REPORT_ADDRESS}?subject=${encodeURIComponent(`Varde #${id}: ${name}`)}`
+}
+
 export async function shareResource(entry: ShareEntry, nav: ShareTarget): Promise<ShareOutcome> {
 	if (nav.share) {
 		try {

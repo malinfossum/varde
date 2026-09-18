@@ -113,7 +113,8 @@ needed now.
 The in-memory rules mirror `ResourceRepository.SearchAsync` exactly, so results do not change
 with this plan:
 
-- **Municipality:** `municipalityId === id` or `servedMunicipalityIds` contains `id`.
+- **Municipality:** `municipalityId === id` or `servedMunicipalityIds` contains `id`, plus
+  every `isNational` row — mirroring `ResourceRepository.SearchAsync`.
 - **National:** `isNational` only. National and municipality stay mutually exclusive as today.
 - **Categories:** any of the selected slugs present on the row.
 - **Search:** trimmed, case-insensitive substring match on `name` or `description` in the
@@ -233,10 +234,16 @@ is free text (recorded blocker). Kommune pages get a `CollectionPage` with `name
    placeholder comments, `<!--app-head-->` and `<!--app-html-->`, plus a `<!--app-data-->`
    slot for the page data block.
 2. `vite build --ssr src/entry-server.tsx --outDir dist-server` — exports
-   `render(url: string, data: PageData): Promise<{ head: string; html: string }>`.
+   `render(url: string, data: PageData): Promise<{ html: string; head: HeadEntry | null }>`,
+   where `HeadEntry = { title, description, path, lang }`; the prerender writes the head tags
+   itself rather than receiving pre-rendered markup.
 3. `node scripts/prerender.mjs` — reads the JSON in `public/data/`, derives the URL list,
-   calls `render` for each, and writes `dist/<path>/index.html`. Folder form, not
-   `12.html`, so Cloudflare Pages serves both `/resources/12` and `/resources/12/`.
+   calls `render` for each, and writes `dist/<path>.html`. File form, not `<path>/index.html`:
+   Cloudflare Pages' asset server 308s a folder-form request (`/resources/12` ->
+   `/resources/12/`) when only `resources/12/index.html` exists, and the strict router parses
+   the slashed URL as notFound — every deep link would 404. File form serves `/resources/12`
+   directly and 308s the slashed form back to it, which the router accepts. `/` and `/en/`
+   keep `index.html` since they are folder roots already.
    Also writes `sitemap.xml`, `robots.txt`, and `404.html` from the same template with the
    static not-found line in a `<noscript>` block, an empty `#root` and no data block. `dist-server/` is deleted
    afterwards and never deployed.
@@ -247,8 +254,8 @@ detail chunks stays and the landing bundle stays small. The client entry hydrate
 already has children and falls back to `createRoot` when it is empty. One code path covers
 the prerendered pages, the Vite dev server (which serves an empty root) and `404.html`.
 
-**Page data.** `PageData` is `{ resource }` for a resource page, `{ kommune, resources,
-national }` for a kommune page, `{}` otherwise. The prerender inlines it as
+**Page data.** `PageData` is `{ resource }` for a resource page, `{ kommune: { entry, local,
+national } }` for a kommune page, `{}` otherwise. The prerender inlines it as
 `<script type="application/json" id="varde-data">` before the module script. Non-executable,
 so the CSP stays `script-src 'self'`. The resource and kommune hooks read that block on first
 render and fetch nothing. The search shell has no data block and loads the JSON files in an

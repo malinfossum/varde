@@ -1,5 +1,5 @@
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
-import type { Catalog } from "../services/catalogCache.ts"
+import type { Catalog } from "../services/data.ts"
 import type { Filters } from "../services/urlState.ts"
 import { MunicipalityCombobox } from "./MunicipalityCombobox.tsx"
 import { SearchBar } from "./SearchBar.tsx"

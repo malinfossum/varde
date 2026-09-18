@@ -1,10 +1,10 @@
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
-import { useDocumentTitle } from "../hooks/useDocumentTitle.ts"
-import { useTranslation } from "../i18n/LanguageProvider.tsx"
+import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { CATEGORY_SLUGS } from "../services/categories.ts"
 import { emergencyLines, telHref } from "../services/emergency.ts"
 import { LandingSearch } from "./LandingSearch.tsx"
 import { Link } from "./Link.tsx"
+import { PageHead } from "./PageHead.tsx"
 
 // Copied from README "Data verification" section (first scheduled pass, docs/superpowers/specs/
 // 2026-08-12-varde-design.md). Update it there and here together. Six months after the seed
@@ -14,12 +14,18 @@ const NEXT_VERIFICATION_PASS = "2027-02-17"
 
 const chipOrder = ["nodtjenester", ...CATEGORY_SLUGS.filter((s) => s !== "nodtjenester")]
 
+const titles = {
+	nb: "Varde – finn riktig hjelpetjeneste",
+	en: "Varde – find the right help service",
+}
+
 export function LandingPage({ arrival }: { arrival: number }) {
+	const { lang } = useLanguage()
 	const t = useTranslation()
-	useDocumentTitle(t("title.app"))
 	const { ref } = useArrivalFocus<HTMLHeadingElement>(arrival, true)
 	return (
 		<div className="landing">
+			<PageHead title={titles[lang]} description={t("landing.subtitle")} path="/" />
 			<section className="hero relative py-10 text-center md:py-16">
 				<p className="entrance text-xs uppercase tracking-[0.24em] text-muted">
 					{t("landing.eyebrow")}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { useNavigate } from "../navigation.ts"
-import { type Catalog, loadCatalog, prefetchCatalog } from "../services/catalogCache.ts"
+import { type Catalog, loadIndex, prefetchIndex } from "../services/data.ts"
 import { type Suggestion, suggest } from "../services/match.ts"
 import { buildSearch, type Filters } from "../services/urlState.ts"
 import { Suggestions } from "./Suggestions.tsx"
@@ -16,16 +16,21 @@ export function LandingSearch() {
 	const [catalog, setCatalog] = useState<Catalog | null>(null)
 
 	// The landing fetches nothing on render. The first sign of intent — focus or the pointer
-	// reaching the box — starts the catalog request so suggestions are ready for the first
-	// keystroke. A failed catalog is silent here: plain search still works.
-	const warm = () => prefetchCatalog(lang)
+	// reaching the box — starts the index request so suggestions are ready for the first
+	// keystroke. A failed load is silent here: plain search still works.
+	const warm = () => prefetchIndex(lang)
 
 	useEffect(() => {
 		if (!value) return
 		let cancelled = false
-		loadCatalog(lang)
-			.then((c) => {
-				if (!cancelled) setCatalog(c)
+		loadIndex(lang)
+			.then((index) => {
+				if (!cancelled)
+					setCatalog({
+						municipalities: index.municipalities,
+						categories: index.categories,
+						kommuner: index.kommuner,
+					})
 			})
 			.catch(() => {})
 		return () => {
@@ -38,10 +43,15 @@ export function LandingSearch() {
 		[catalog, value]
 	)
 
-	const go = (patch: Partial<Filters>) =>
-		navigate("/sok", buildSearch({ ...empty, ...patch }, lang))
-	const onPick = (s: Suggestion) =>
-		s.kind === "municipality" ? go({ municipality: s.id }) : go({ categories: [s.slug] })
+	const go = (patch: Partial<Filters>) => navigate("/sok", buildSearch({ ...empty, ...patch }))
+	// A municipality with its own kommune page is a better landing than the filtered list —
+	// falls back to /sok?municipality= for the ones plan 5's regional data hasn't reached yet.
+	const onPick = (s: Suggestion) => {
+		if (s.kind !== "municipality") return go({ categories: [s.slug] })
+		const kommune = catalog?.kommuner.find((k) => k.id === s.id)
+		if (kommune) navigate(`/kommune/${kommune.slug}`, "")
+		else go({ municipality: s.id })
+	}
 
 	return (
 		<search className="mx-auto w-full max-w-xl">

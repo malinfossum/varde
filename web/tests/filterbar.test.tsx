@@ -4,7 +4,7 @@ import { expect, test, vi } from "vitest"
 import { FilterBar } from "../src/components/FilterBar.tsx"
 import { AnnouncerProvider } from "../src/components/StatusRegion.tsx"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
-import type { Catalog } from "../src/services/catalogCache.ts"
+import type { Catalog } from "../src/services/data.ts"
 import type { Filters } from "../src/services/urlState.ts"
 
 const catalog: Catalog = {
@@ -16,6 +16,7 @@ const catalog: Catalog = {
 		{ id: 1, slug: "bolig", name: "Bolig", isFallbackTranslation: false },
 		{ id: 2, slug: "rus", name: "Rus og avhengighet", isFallbackTranslation: false },
 	],
+	kommuner: [],
 }
 
 const noFilters: Filters = {
@@ -30,7 +31,7 @@ function renderBar(filters: Partial<Filters> = {}) {
 	const onPatch = vi.fn()
 	const onSearch = vi.fn()
 	const view = render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<AnnouncerProvider>
 				<FilterBar
 					catalog={catalog}
@@ -43,7 +44,7 @@ function renderBar(filters: Partial<Filters> = {}) {
 	)
 	const rerenderWith = (next: Partial<Filters>) =>
 		view.rerender(
-			<LanguageProvider initialLang="nb">
+			<LanguageProvider lang="nb">
 				<AnnouncerProvider>
 					<FilterBar
 						catalog={catalog}

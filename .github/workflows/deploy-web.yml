@@ -3,13 +3,18 @@ name: Deploy Web
 on:
   push:
     branches: [main]
-    paths:
-      - "web/**"
-      - ".github/workflows/deploy-web.yml"
+  schedule:
+    # Daily at 04:00 UTC: data edited directly in Neon reaches the site within a day.
+    - cron: "0 4 * * *"
   workflow_dispatch:
 
 permissions:
   contents: read
+
+# A cron run and a push must never deploy out of order; the newest run wins.
+concurrency:
+  group: deploy-web
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -24,45 +29,75 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - name: Install
-        run: npm ci
-      - name: Biome
-        run: npx biome ci .
-      - name: Test
-        run: npm test
+      - run: npm ci
+      - run: npx biome ci .
+      - run: npm test
 
-  deploy:
+  build-and-deploy:
     needs: test
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - name: Install
-        working-directory: web
-        run: npm ci
-      - name: Require API_URL
+
+      - name: Require SITE_ORIGIN
         env:
-          API_URL: ${{ vars.API_URL }}
-        run: test -n "$API_URL" || { echo "vars.API_URL is not set - refusing to build a broken bundle"; exit 1; }
-      - name: Build
+          SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}
+        run: |
+          test -n "$SITE_ORIGIN" || { echo "vars.SITE_ORIGIN is not set - refusing to build broken canonical URLs"; exit 1; }
+          case "$SITE_ORIGIN" in
+            */) echo "vars.SITE_ORIGIN has a trailing slash - drop it, or every canonical URL doubles it up"; exit 1 ;;
+          esac
+
+      - name: Build the API
+        run: dotnet build api/Varde.Api/Varde.Api.csproj -c Release
+
+      # The API runs only here, against Neon, long enough to export. This log is public:
+      # Warning level, no sensitive-data logging, and the export prints counts only.
+      - name: Start the API
+        env:
+          ConnectionStrings__VardeDb: ${{ secrets.NEON_CONNECTION_STRING }}
+          ASPNETCORE_ENVIRONMENT: Production
+          ASPNETCORE_URLS: http://localhost:5005
+          Logging__LogLevel__Default: Warning
+        run: |
+          dotnet run --project api/Varde.Api/Varde.Api.csproj -c Release --no-build --no-launch-profile > api.log 2>&1 &
+          echo $! > api.pid
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:5005/api/municipalities > /dev/null && exit 0
+            sleep 2
+          done
+          echo "API did not answer within 120 s"
+          grep -v -i -E 'host|user|password|connection' api.log | tail -n 20
+          exit 1
+
+      - name: Export data
+        working-directory: web
+        run: |
+          npm ci
+          npm run data -- http://localhost:5005
+
+      - name: Stop the API
+        if: always()
+        run: kill "$(cat api.pid)" 2>/dev/null || true
+
+      - name: Build and prerender
         working-directory: web
         env:
-          VITE_API_URL: ${{ vars.API_URL }}
+          VITE_SITE_ORIGIN: ${{ vars.SITE_ORIGIN }}
         run: npm run build
-      - name: Inject API origin into the CSP
-        # The repo holds only the __API_ORIGIN__ placeholder; the real hostname lives in
-        # the API_URL environment variable and lands in dist/ only, never in git.
-        env:
-          API_URL: ${{ vars.API_URL }}
-        run: sed -i "s|__API_ORIGIN__|$API_URL|g" web/dist/staticwebapp.config.json
-      - uses: Azure/static-web-apps-deploy@v1
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3.15.0
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          action: upload
-          app_location: web/dist
-          skip_app_build: true
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy web/dist --project-name=varde --branch=main

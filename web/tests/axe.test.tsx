@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test, vi } from "vitest"
 import { axe } from "vitest-axe"
 import { App } from "../src/App.tsx"
 import type { ResourceDto } from "../src/types/api.ts"
+import { stubDataFiles } from "./stubData.ts"
 
 // Copied from tests/list.test.tsx.
 const resource: ResourceDto = {
@@ -22,28 +23,27 @@ const resource: ResourceDto = {
 	chatUrl: null,
 	lastVerified: "2026-08-13",
 	categories: [{ id: 9, slug: "nodtjenester", name: "Nødtjenester", isFallbackTranslation: false }],
+	servedMunicipalityIds: [],
 }
 const municipalities = [{ id: 1, name: "Hamar", county: "Innlandet" }]
 const categories = [
 	{ id: 9, slug: "nodtjenester", name: "Nødtjenester", isFallbackTranslation: false },
 ]
+const kommuner = [{ id: 1, slug: "hamar", name: "Hamar", county: "Innlandet" }]
 
 type Mode = "ok" | "empty" | "error"
 function stub(mode: Mode) {
-	vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
-		const url = String(input)
-		if (mode === "error") return Promise.resolve(new Response(null, { status: 500 }))
-		if (url.includes("/api/municipalities"))
-			return Promise.resolve(new Response(JSON.stringify(municipalities)))
-		if (url.includes("/api/categories"))
-			return Promise.resolve(new Response(JSON.stringify(categories)))
-		if (/\/api\/resources\/\d+/.test(url))
-			return Promise.resolve(new Response(JSON.stringify(resource)))
-		const items = mode === "empty" ? [] : [resource]
-		return Promise.resolve(
-			new Response(JSON.stringify({ items, page: 1, pageSize: 20, totalCount: items.length }))
+	if (mode === "error") {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => new Response(null, { status: 500 }))
 		)
-	})
+		return
+	}
+	// "empty" doesn't need its own fixture: /sok?search=zzz matches nothing in the one seeded
+	// resource, so applyQuery (query.ts) naturally returns zero results, same as before this
+	// task when the API was told to return an empty page directly.
+	stubDataFiles({ resources: [resource], municipalities, categories, kommuner })
 }
 
 // jsdom does no layout, so axe cannot judge colour; tests/tokens.test.ts covers contrast.
@@ -56,6 +56,7 @@ const pages: [string, string, Mode, RegExp][] = [
 	["error", "/sok", "error", /Noe gikk galt/],
 	["detail", "/resources/12", "ok", /Krisesenteret i Hamar/],
 	["not found", "/nope", "ok", /Fant ikke/],
+	["kommune", "/kommune/hamar", "ok", /Hjelpetjenester i Hamar/],
 ]
 
 afterEach(() => {

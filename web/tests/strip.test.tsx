@@ -6,7 +6,7 @@ import { emergencyLines } from "../src/services/emergency.ts"
 
 test("the strip lists every emergency line as a tel link with the digits visible", () => {
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<AcuteStrip />
 		</LanguageProvider>
 	)

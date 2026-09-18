@@ -11,6 +11,8 @@ node_modules/
 
 # Build
 dist/
+dist-server/
+public/data/
 
 # Vite cache
 .vite/

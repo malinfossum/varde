@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { expect, test } from "vitest"
+import { expect, test, vi } from "vitest"
 import { applyTheme, readStoredTheme, resolveTheme } from "../src/services/theme.ts"
+import { legacyRedirect } from "../src/services/urlState.ts"
 
 test("stored value wins over the system preference", () => {
 	expect(resolveTheme("dark", false)).toBe("dark")
@@ -60,4 +61,40 @@ test("the public init script agrees with resolveTheme", () => {
 	expect(run(null, true)).toBe("dark")
 	expect(run("dark", false)).toBe("dark")
 	expect(run("light", true)).toBe("light")
+})
+
+test("the public init script redirects exactly like legacyRedirect", () => {
+	const scriptPath = join(dirname(fileURLToPath(import.meta.url)), "../public/theme-init.js")
+	const script = readFileSync(scriptPath, "utf8")
+	const run = (pathname: string, search: string, storedLang: string | null) => {
+		const store = new Map<string, string>([["theme", "light"]])
+		if (storedLang) store.set("varde.lang", storedLang)
+		const replace = vi.fn()
+		const fakeWindow = {
+			localStorage: { getItem: (k: string) => store.get(k) ?? null },
+			matchMedia: () => ({ matches: false }),
+			location: { pathname, search, replace },
+		}
+		new Function("window", "document", script)(fakeWindow, document)
+		return replace.mock.calls.length ? replace.mock.calls[0][0] : null
+	}
+	const cases: [string, string, string | null][] = [
+		["/", "?lang=en", null],
+		["/sok", "?lang=en&search=nav", null],
+		["/resources/5", "?lang=nb", "en"],
+		// The double-hop case: an explicit ?lang=nb on the bare landing page must not still
+		// bounce to /en/ once the stripped-query navigation reloads with the stored "en"
+		// preference in play — both mirrors must return null here, not "/".
+		["/", "?lang=nb", "en"],
+		["/", "?category=rus", null],
+		["/", "", "en"],
+		["/", "", null],
+		["/en/", "", "en"],
+		["/sok", "?search=nav", null],
+	]
+	for (const [pathname, search, stored] of cases) {
+		expect(run(pathname, search, stored), `${pathname}${search} stored=${stored}`).toBe(
+			legacyRedirect(pathname, search, stored)
+		)
+	}
 })

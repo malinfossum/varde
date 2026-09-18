@@ -33,11 +33,14 @@ const ListPage = lazy(() =>
 const ResourceDetail = lazy(() =>
 	import("./components/ResourceDetail.tsx").then((m) => ({ default: m.ResourceDetail }))
 )
+const KommunePage = lazy(() =>
+	import("./components/KommunePage.tsx").then((m) => ({ default: m.KommunePage }))
+)
 
 export function App() {
-	const { route, filters, langParam, arrival, navigate } = useUrlState()
+	const { lang, route, filters, arrival, navigate } = useUrlState()
 	return (
-		<LanguageProvider initialLang={langParam}>
+		<LanguageProvider lang={lang}>
 			<AnnouncerProvider>
 				<NavigationContext.Provider value={navigate}>
 					<Shell route={route} filters={filters} arrival={arrival} />
@@ -61,6 +64,7 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 					{route.kind === "landing" && <LandingPage arrival={arrival} />}
 					{route.kind === "list" && <ListPage filters={filters} arrival={arrival} />}
 					{route.kind === "detail" && <ResourceDetail id={route.id} arrival={arrival} />}
+					{route.kind === "kommune" && <KommunePage slug={route.slug} arrival={arrival} />}
 					{route.kind === "notFound" && <NotFoundState arrival={arrival} />}
 				</Suspense>
 			</main>

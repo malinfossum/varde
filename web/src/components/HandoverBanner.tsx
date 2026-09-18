@@ -7,16 +7,19 @@ const LEGEVAKT_PHONE = "116 117"
 
 export function HandoverBanner() {
 	const t = useTranslation()
-	const [variant, setVariant] = useState<HandoverVariant>(() => handoverVariant(new Date()))
-
-	// Recompute when the tab regains visibility — an app left open across 15:00 must not
-	// keep pointing at a closed fastlege. Not aria-live; it changes only at these moments.
+	// null on the first render, prerendered or hydrated alike — the real clock only exists in
+	// the browser, so the first paint can't pick fastlege vs legevakt without risking a
+	// hydration mismatch. An effect fills in the real variant right after mount, then again
+	// whenever the tab regains visibility (an app left open across 15:00 must not keep
+	// pointing at a closed fastlege). Not aria-live; it changes only at these moments.
+	const [variant, setVariant] = useState<HandoverVariant | null>(null)
 	useEffect(() => {
-		const onVisibility = () => {
+		const update = () => {
 			if (!document.hidden) setVariant(handoverVariant(new Date()))
 		}
-		document.addEventListener("visibilitychange", onVisibility)
-		return () => document.removeEventListener("visibilitychange", onVisibility)
+		update()
+		document.addEventListener("visibilitychange", update)
+		return () => document.removeEventListener("visibilitychange", update)
 	}, [])
 
 	const legevaktLink = (

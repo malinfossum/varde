@@ -19,11 +19,10 @@ plus national services, described in Norwegian and English. Phase 2, the web fro
 is complete. Phase 3, deployment, went live 2026-09-04. The current design — light-first,
 self-hosted type, a search-first landing page — shipped 2026-09-09.
 
-**Live:** https://ambitious-flower-09612f00f.6.azurestaticapps.net (frontend) ·
-https://varde-api.azurewebsites.net/api/resources (API)
+**Live:** https://varde.pages.dev
 
-The API runs on a free tier that sleeps when idle: the first request after a quiet spell can
-take several seconds while it wakes. The page shows its own loading state meanwhile.
+The site is static. Every page is prerendered from the database once a day and on every
+push, so nothing waits on a server. Search runs in the browser over a small JSON index.
 
 ## Data verification
 
@@ -38,11 +37,15 @@ The four numbers on the acute strip live in `web/src/services/emergency.ts` as c
 (the landing page fetches nothing) and are re-verified in the same six-month pass as the
 rows; a test keeps them identical to seed rows 3 and 23–25.
 
+**Report an error.** Every resource page has a "report wrong information" `mailto:` link
+that goes to a forwarding alias, `varde.implicate775@passmail.com`, so a stale number or
+address reaches me without exposing my own inbox.
+
 ## Stack
 
 - API: ASP.NET Core (.NET 10), EF Core, PostgreSQL 17
 - Web: React 19, TypeScript, Vite, Tailwind v4, react-aria-components
-- Hosting: Azure Static Web Apps and Azure App Service, database on Neon
+- Hosting: Cloudflare Pages, database on Neon
 
 ## API
 
@@ -59,7 +62,7 @@ application logs record result counts, never search terms.
 
 The landing page is search-first: one box, nine category chips, and no data fetched until
 you act on it. Above every page sits an acute strip with the four emergency numbers as
-hardcoded constants, not a fetch, so it works even if the API is down. Unified search across
+hardcoded constants, so it renders before any JavaScript or data loads. Unified search across
 name, category and municipality, with suggestions and a national toggle. Details on the
 shift from fastlege to legevakt after hours, when a service's own opening hours are known.
 Light theme by default, with a toggle that starts from the system setting and remembers the
@@ -69,9 +72,10 @@ mobile-first.
 
 Lighthouse ≥ 95 on the simulated phone is the definition of done, and the measured numbers
 are in each PR. Accessibility is 100 across the site and the landing page scores 99 on
-performance; `/sok` scores 67–74 and misses that budget. It is LCP-bound — the largest
-element is the first result heading, which cannot paint before the API answers — and it is
-reported rather than tuned away.
+performance; `/sok` scored 67–74 and missed that budget, but that number predates the move
+to static JSON — `/sok` now prerenders as its loading shell and fills from the JSON index in
+the browser, and it hasn't been re-measured since. The live Cloudflare deploy gets a fresh
+measurement.
 
 ## Run locally
 
@@ -83,17 +87,24 @@ cd api
 dotnet test
 dotnet run --project Varde.Api
 
-# Web (separate terminal)
+# Web (separate terminal, with the API running on port 5005)
 cd web
 npm install
 npm test
+npm run data
 npm run dev
 ```
 
 Tests create disposable `varde_test_<guid>` databases. The connection defaults to the
 standard local development setup (`localhost`, `postgres`/`postgres`); override it with the
-`VARDE_TEST_PG` environment variable. The web dev server expects the API at
-`http://localhost:5005` by default (`VITE_API_URL` to override).
+`VARDE_TEST_PG` environment variable. `npm run data` exports the API's data into
+`web/public/data/` so the dev server has something to search over; re-run it whenever the
+underlying data changes. Run `npm run build` instead of `npm run dev` for the full prerender
+— it builds the client and server bundles and writes a static `web/dist/` with one page per
+URL, matching what the deploy workflow produces. `vite preview` over that `dist/` can't
+validate routing, though: it serves the file-form pages directly by path, but only Cloudflare
+Pages' asset server applies the clean-URL and trailing-slash redirect rules the prerendered
+pages depend on — check routing against the real deploy, not a local preview.
 
 Fraunces and Figtree are vendored into `web/public/fonts/`, so `npm install` is enough for a
 normal checkout. Only run `npm run fonts` if you bump the `@fontsource/*` package versions —
@@ -102,24 +113,23 @@ forgets to.
 
 ## Deployment
 
-Varde deploys automatically on merge to `main`: the frontend to **Azure Static Web Apps**
-(Free, East US 2), the API to **Azure App Service** (F1, Linux, Sweden Central), the database on
-**Neon** (PostgreSQL 17, Frankfurt, `nb-NO` ICU collation). Schema and seed data arrive via
-EF Core migrations at API startup — nothing is hand-built in the database.
+Varde deploys via a single GitHub Actions workflow, `deploy-web.yml`, on a push to `main`, a
+daily cron at 04:00 UTC, and manual dispatch. The workflow starts the API inside the runner
+against **Neon** (PostgreSQL 17, Frankfurt, `nb-NO` ICU collation) — the same startup that
+applies EF Core migrations and seed data — exports its data as JSON, builds and prerenders
+the site, then deploys the resulting `web/dist` to **Cloudflare Pages**. Nothing user-facing
+ever talks to the API; it exists only as a build-time step.
 
-Three GitHub Actions workflows drive it:
+Two GitHub Actions workflows drive the repo:
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `ci.yml` | every pull request | both test suites + web build — the required merge checks |
-| `deploy-api.yml` | push to `main` touching `api/**` | re-test, then deploy to App Service via OIDC |
-| `deploy-web.yml` | push to `main` touching `web/**` | re-test, build with the real API origin, deploy to SWA |
+| `ci.yml` | every pull request | both test suites + a client build — the required merge checks |
+| `deploy-web.yml` | push to `main`, daily cron, manual dispatch | run the API against Neon, export data, build, prerender, deploy to Cloudflare Pages |
 
-Deploy credentials live in the GitHub `production` environment: secrets `AZURE_CLIENT_ID`,
-`AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` (OIDC federated login — no stored password),
-`AZURE_STATIC_WEB_APPS_API_TOKEN`, and variables `API_APP_NAME` and `API_URL`. The repo
-itself contains no hostnames or secrets; `staticwebapp.config.json` carries an
-`__API_ORIGIN__` placeholder replaced at deploy time.
+Deploy credentials live in the GitHub `production` environment: secrets
+`NEON_CONNECTION_STRING`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and variable
+`SITE_ORIGIN`. The repo itself contains no hostnames or secrets.
 
 By design there is no Application Insights and HTTP logging is off — see the privacy posture
 in `docs/superpowers/specs/2026-08-12-varde-design.md`. The full deployment design, including

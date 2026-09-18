@@ -14,7 +14,7 @@ const municipalities = [
 
 function Wrapper({ children }: { children: ReactNode }) {
 	return (
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<AnnouncerProvider>{children}</AnnouncerProvider>
 		</LanguageProvider>
 	)
@@ -105,7 +105,7 @@ test("county groups sort with Norwegian collation, not backend order", async () 
 	]
 	const user = userEvent.setup()
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<AnnouncerProvider>
 				<MunicipalityCombobox
 					municipalities={unsorted}
@@ -131,7 +131,7 @@ test("municipalities within a county sort with Norwegian collation too", async (
 	]
 	const user = userEvent.setup()
 	render(
-		<LanguageProvider initialLang="nb">
+		<LanguageProvider lang="nb">
 			<AnnouncerProvider>
 				<MunicipalityCombobox
 					municipalities={unsorted}
@@ -222,7 +222,7 @@ test("react-aria announces in the app's language, not the browser's", async () =
 
 	cleanup()
 	render(
-		<LanguageProvider initialLang="en">
+		<LanguageProvider lang="en">
 			<AnnouncerProvider>
 				<MunicipalityCombobox
 					municipalities={municipalities}

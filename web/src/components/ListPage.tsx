@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
 import { useCatalog } from "../hooks/useCatalog.ts"
-import { useDocumentTitle } from "../hooks/useDocumentTitle.ts"
 import { useResources } from "../hooks/useResources.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { useNavigate } from "../navigation.ts"
@@ -12,18 +11,24 @@ import { ErrorState } from "./ErrorState.tsx"
 import { FilterBar } from "./FilterBar.tsx"
 import { HandoverBanner } from "./HandoverBanner.tsx"
 import { LoadingState } from "./LoadingState.tsx"
+import { PageHead } from "./PageHead.tsx"
 import { Pagination } from "./Pagination.tsx"
 import { ResourceCard } from "./ResourceCard.tsx"
 import { useAnnounce } from "./StatusRegion.tsx"
 import { Suggestions } from "./Suggestions.tsx"
 import { WayfindingHint } from "./WayfindingHint.tsx"
 
+const titles = { nb: "Søk – Varde", en: "Search – Varde" }
+const descriptions = {
+	nb: "Varde – finn riktig hjelpetjeneste der du bor. Offentlig katalog over sosiale tjenester i Norge.",
+	en: "Varde – find the right help service where you live. Public directory of social services in Norway.",
+}
+
 export function ListPage({ filters, arrival }: { filters: Filters; arrival: number }) {
 	const { lang } = useLanguage()
 	const t = useTranslation()
 	const navigate = useNavigate()
 	const announce = useAnnounce()
-	useDocumentTitle(t("title.search"))
 	const { state: catalogState, retry: retryCatalog } = useCatalog(lang)
 	const catalog = catalogState.kind === "ready" ? catalogState.catalog : null
 	const { state, retry } = useResources(filters, lang)
@@ -34,18 +39,22 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	}
 
 	const apply = (patch: Partial<Filters>) =>
-		navigate("/sok", buildSearch(applyPatch(filters, patch), null))
+		navigate("/sok", buildSearch(applyPatch(filters, patch)))
 
 	// The pager sits under the whole list. After "Neste" the new cards render above the
 	// viewport and focus stays on the button — the user sees nothing change. Only the pager
 	// asks for this: a search or filter change must never pull focus out of the search box.
 	// `settled` covers "error" too — an error settles the request just as much as a result does,
 	// and a pending flag left dangling on an errored or empty page would fire on a later,
-	// unrelated load instead (say, the user typing a new search after a retry).
+	// unrelated load instead (say, the user typing a new search after a retry). `state` as the
+	// token: a page change answered from the already-cached index never flips ready/settled at
+	// all (see useResources), so the pager's requestFocus() needs the freshly computed state
+	// object itself to know a new answer has actually arrived.
 	const { ref: resultsHeading, requestFocus } = useArrivalFocus<HTMLHeadingElement>(
 		arrival,
 		state.kind === "ready" && state.data.items.length > 0,
-		state.kind !== "loading"
+		state.kind !== "loading",
+		state
 	)
 	const goToPage = (page: number) => {
 		requestFocus()
@@ -56,7 +65,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	// would flood back/forward with useless states. Replace the current entry instead — every
 	// other filter change (picker, suggestions, pager, clear, toggle) still pushes normally.
 	const applySearch = (patch: Partial<Filters>) =>
-		navigate("/sok", buildSearch(applyPatch(filters, patch), null), { replace: true })
+		navigate("/sok", buildSearch(applyPatch(filters, patch)), { replace: true })
 
 	// suggest() re-scans the whole catalog on every call — memoize so it only re-runs when the
 	// search text or the catalog itself actually changes, not on every ListPage render.
@@ -70,20 +79,39 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 			? apply({ municipality: suggestion.id })
 			: apply({ categories: [suggestion.slug] })
 
-	// One announcement per settled result set — count plus suggestion names. A failure is a
-	// settled state too: without its own announcement the live region keeps saying "Laster …"
-	// while the visible page shows the error.
+	// A failure is a settled state too: without its own announcement the live region keeps
+	// saying "Laster …" while the visible page shows the error. Loading only reaches here for a
+	// genuine fetch now (useResources answers a cached filter change synchronously), so this
+	// never fires on a keystroke that loaded nothing.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: announce once per settled set
 	useEffect(() => {
 		if (state.kind === "loading") announce(t("status.loading"))
 		if (state.kind === "error") announce(t("error.heading"))
-		if (state.kind === "ready") {
-			const names = suggestions.map((s) => s.name).join(", ")
-			announce(
-				`${state.data.totalCount} ${t("status.results")}${names ? `. ${t("search.suggestions")}: ${names}` : ""}`
-			)
-		}
 	}, [state.kind])
+
+	// The result count, debounced: typing narrows the result set on every keystroke, and
+	// announcing each intermediate count would read out a stream of numbers the user never
+	// stopped on. Keyed on the actual values that change the message (not state.kind, which
+	// stays "ready" across a synchronous filter change) so the count still gets announced once
+	// typing settles.
+	const totalCount = state.kind === "ready" ? state.data.totalCount : null
+	const categoriesKey = filters.categories.join(",")
+	// biome-ignore lint/correctness/useExhaustiveDependencies: categoriesKey stands in for filters.categories, a fresh array reference on every parse
+	useEffect(() => {
+		if (totalCount === null) return
+		const names = suggestions.map((s) => s.name).join(", ")
+		const message = `${totalCount} ${t("status.results")}${names ? `. ${t("search.suggestions")}: ${names}` : ""}`
+		const timer = setTimeout(() => announce(message), 300)
+		return () => clearTimeout(timer)
+	}, [
+		totalCount,
+		filters.search,
+		categoriesKey,
+		filters.municipality,
+		filters.national,
+		filters.page,
+		suggestions,
+	])
 
 	// Unknown municipality id in a hand-edited URL: no phantom selection (spec).
 	const knownMunicipality =
@@ -92,6 +120,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 
 	return (
 		<div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+			<PageHead title={titles[lang]} description={descriptions[lang]} path="/sok" />
 			{/* min-h reserves room for FilterBar's catalog-gated rows (the municipality combobox and
 			    the nine category chips only render once `catalog` resolves — see FilterBar.tsx).
 			    Below lg, aside sits stacked above the results, so that mount-time growth is what
@@ -127,20 +156,13 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 				<HandoverBanner />
 				<Suggestions suggestions={suggestions} onPick={onPick} />
 				<WayfindingHint query={filters.search} />
-				{/* Both requests hit the same API, so when the catalog fails the resources almost always
-				    fail with it. One error state, whose retry refetches everything that failed —
-				    two identical panels stacked on top of each other help nobody.
-				    A catalog failure isn't mutually exclusive with the resources state, though —
-				    the requests are independent, so this can render alongside LoadingState,
-				    EmptyState, or the results heading below. It only takes the h1 level when
-				    nothing else is showing (state.kind === "error" too, the case the guard below
-				    excludes from getting its own second ErrorState); otherwise it demotes to h2
-				    so the page still has exactly one h1. */}
-				{catalogState.kind === "error" && (
-					<ErrorState onRetry={retryFailed} level={state.kind === "error" ? 1 : 2} />
-				)}
+				{/* useCatalog and useResources both resolve from the one shared loadIndex(lang)
+				    promise in services/data.ts, so a catalog error and a resources error always
+				    coincide — there's no state where one fails without the other. One ErrorState
+				    at the default level 1 covers both; retryFailed refetches everything that
+				    failed. */}
+				{catalogState.kind === "error" && <ErrorState onRetry={retryFailed} />}
 				{state.kind === "loading" && <LoadingState />}
-				{state.kind === "error" && catalogState.kind !== "error" && <ErrorState onRetry={retry} />}
 				{/* Covers both the genuine zero-results case and a page past the last one (e.g. a
 				    stale ?page= after filters narrowed the result set) — the API returns an empty
 				    items array either way, and both deserve the same recovery UI rather than a
@@ -162,7 +184,13 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 						</h1>
 						<ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 							{state.data.items.map((resource) => (
-								<ResourceCard key={resource.id} resource={resource} />
+								<ResourceCard
+									key={resource.id}
+									resource={resource}
+									kommuneSlug={
+										catalog?.kommuner.find((k) => k.id === resource.municipalityId)?.slug
+									}
+								/>
 							))}
 						</ul>
 						<Pagination

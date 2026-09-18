@@ -1,74 +1,72 @@
 import { render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test, vi } from "vitest"
-import { useResources } from "../src/hooks/useResources.ts"
-import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
-import type { Filters } from "../src/services/urlState.ts"
+import { App } from "../src/App.tsx"
+import type { ResourceDto } from "../src/types/api.ts"
 
-const emptyFilters: Filters = {
-	search: "",
-	categories: [],
-	municipality: null,
-	national: false,
-	page: 1,
-}
+const resourceFor = (lang: "nb" | "en"): ResourceDto[] => [
+	{
+		id: 1,
+		name: lang === "en" ? "Crisis Centre" : "Krisesenteret",
+		description: "d",
+		isFallbackTranslation: false,
+		openingHours: null,
+		isNational: false,
+		isAlwaysOpen: false,
+		municipalityId: null,
+		municipalityName: null,
+		address: null,
+		phone: null,
+		email: null,
+		website: null,
+		chatUrl: null,
+		lastVerified: "2026-08-17",
+		categories: [],
+		servedMunicipalityIds: [],
+	},
+]
 
-function page(names: string[]) {
-	return {
-		items: names.map((name, index) => ({ id: index + 1, name })),
-		page: 1,
-		pageSize: 20,
-		totalCount: names.length,
-	}
-}
-
-function Probe({ filters }: { filters: Filters }) {
-	const { state } = useResources(filters, "nb", 0)
-	if (state.kind !== "ready") return <p>{state.kind}</p>
-	return (
-		<ul>
-			{state.data.items.map((r) => (
-				<li key={r.id}>{r.name}</li>
-			))}
-		</ul>
-	)
-}
-
-afterEach(() => vi.restoreAllMocks())
-
-test("a superseded request resolving late never overwrites the current result", async () => {
-	const first = Promise.withResolvers<Response>()
-	const second = Promise.withResolvers<Response>()
-	const fetchMock = vi
-		.spyOn(globalThis, "fetch")
-		.mockImplementationOnce((_url, init) => {
-			// When the effect cleans up it aborts this request; reject like a real fetch would.
-			init?.signal?.addEventListener("abort", () =>
-				first.reject(new DOMException("Aborted", "AbortError"))
-			)
-			return first.promise
+// Deferred per language, so the test controls exactly when each language's index resolves —
+// municipalities.json and kommuner.json are shared across languages and resolve immediately.
+function stubIndexByLang() {
+	const deferred = { nb: Promise.withResolvers<void>(), en: Promise.withResolvers<void>() }
+	vi.stubGlobal(
+		"fetch",
+		vi.fn(async (input: RequestInfo | URL) => {
+			const path = new URL(String(input), "http://localhost").pathname
+			if (path === "/data/municipalities.json" || path === "/data/kommuner.json") {
+				return new Response(JSON.stringify([]), { status: 200 })
+			}
+			const lang = path.includes(".en.json") ? "en" : "nb"
+			await deferred[lang].promise
+			const body = path.startsWith("/data/resources.") ? resourceFor(lang) : []
+			return new Response(JSON.stringify(body), { status: 200 })
 		})
-		.mockImplementationOnce(() => second.promise)
-
-	const { rerender } = render(
-		<LanguageProvider initialLang="nb">
-			<Probe filters={{ ...emptyFilters, search: "kri" }} />
-		</LanguageProvider>
 	)
-	await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+	return deferred
+}
 
-	rerender(
-		<LanguageProvider initialLang="nb">
-			<Probe filters={{ ...emptyFilters, search: "krisesenter" }} />
-		</LanguageProvider>
-	)
-	await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+afterEach(() => {
+	vi.restoreAllMocks()
+	window.history.replaceState(null, "", "/")
+})
 
-	// Second (current) response lands first…
-	second.resolve(new Response(JSON.stringify(page(["Krisesenteret"])), { status: 200 }))
-	await screen.findByText("Krisesenteret")
+test("a language switch during load never applies the stale language's data", async () => {
+	const deferred = stubIndexByLang()
+	const user = userEvent.setup()
+	window.history.pushState(null, "", "/sok")
+	render(<App />)
 
-	// …then the stale one tries to land. It must change nothing.
-	first.resolve(new Response(JSON.stringify(page(["Stale"])), { status: 200 }))
-	await waitFor(() => expect(screen.queryByText("Stale")).not.toBeInTheDocument())
-	expect(screen.getByText("Krisesenteret")).toBeInTheDocument()
+	// Still loading nb — switch to English before its fetch resolves.
+	await screen.findByRole("link", { name: "English" })
+	await user.click(screen.getByRole("link", { name: "English" }))
+
+	// The new (current) language's response lands first…
+	deferred.en.resolve()
+	await screen.findByText("Crisis Centre")
+
+	// …then the superseded nb response tries to land. It must change nothing.
+	deferred.nb.resolve()
+	await waitFor(() => expect(screen.queryByText("Krisesenteret")).not.toBeInTheDocument())
+	expect(screen.getByText("Crisis Centre")).toBeInTheDocument()
 })
