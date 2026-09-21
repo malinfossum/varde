@@ -4,6 +4,7 @@
 // exportData.test.ts adds mkdtempSync/rmSync (fs) and node:os's tmpdir to stage a scratch
 // directory outside the repo for the export script's file-writing test.
 // prerender.test.ts adds mkdirSync/writeFileSync (fs) to build a scratch dist/data tree.
+// headers.test.ts hashes a string to base64 (crypto) for the CSP style-src drift check.
 declare module "node:fs" {
 	export function readFileSync(path: string, encoding: "utf8"): string
 	export function readFileSync(path: string): Uint8Array
@@ -23,7 +24,7 @@ declare module "node:url" {
 }
 declare module "node:crypto" {
 	export function createHash(algorithm: string): {
-		update(data: Uint8Array): { digest(encoding: "hex"): string }
+		update(data: Uint8Array | string): { digest(encoding: "hex" | "base64"): string }
 	}
 }
 declare module "node:os" {

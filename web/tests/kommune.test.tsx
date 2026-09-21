@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import { afterEach, expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
 import { clearIndexCache } from "../src/services/data.ts"
@@ -67,7 +67,9 @@ test("renders own and served resources, then national ones, with one h1", async 
 		"/sok?municipality=1"
 	)
 	expect(container.querySelectorAll("h1")).toHaveLength(1)
-	expect(document.title).toBe("Hjelpetjenester i Hamar – Varde")
+	// PageHead sets the title in a passive effect, which can flush after the heading is
+	// already in the DOM — a synchronous read here flaked once under load.
+	await waitFor(() => expect(document.title).toBe("Hjelpetjenester i Hamar – Varde"))
 })
 
 test("unknown slug is not found", async () => {
