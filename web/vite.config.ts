@@ -14,7 +14,11 @@ export default defineConfig(({ isSsrBuild }) => ({
 	// The server build (build:server) is a plain Node module scripts/prerender.mjs imports by
 	// name — entryFileNames keeps its output at dist-server/entry-server.mjs instead of a
 	// hashed name.
-	build: isSsrBuild ? { rollupOptions: { output: { entryFileNames: "[name].mjs" } } } : {},
+	// The client build writes dist/.vite/manifest.json so the prerender can add modulepreload
+	// hints for each route's lazy chunk (scripts/prerender.mjs deletes the folder afterwards).
+	build: isSsrBuild
+		? { rollupOptions: { output: { entryFileNames: "[name].mjs" } } }
+		: { manifest: true },
 	test: {
 		environment: "jsdom",
 		setupFiles: ["./tests/setup.ts"],

@@ -39,16 +39,44 @@ export function jsonLd(resource, lang, siteOrigin) {
 // (splitForKommune), re-exported by entry-server.tsx — no MJS copy of it here. urlList stays
 // pure and hands back the raw kommune entry; prerenderSite calls the caller's `split` (the
 // server bundle's splitForKommune) to build the actual page data.
+// The lazy() route components of src/App.tsx, keyed the way Vite's build manifest keys them.
+// The landing page lives in the entry and needs no hint.
+const CHUNKS = {
+	list: "src/components/ListPage.tsx",
+	detail: "src/components/ResourceDetail.tsx",
+	kommune: "src/components/KommunePage.tsx",
+}
+
+// A route page names its lazy chunk (and the chunks that one imports) up front, so the browser
+// fetches them alongside the entry instead of one round-trip after it has run. Whatever the
+// entry already pulls in is skipped — it is on its way regardless.
+export function modulepreloadTags(manifest, key) {
+	if (!manifest || !key) return ""
+	const collect = (k, into) => {
+		const chunk = manifest[k]
+		if (!chunk || into.has(chunk.file)) return into
+		into.add(chunk.file)
+		for (const dep of chunk.imports ?? []) collect(dep, into)
+		return into
+	}
+	const viaEntry = new Set()
+	for (const k of Object.keys(manifest)) if (manifest[k].isEntry) collect(k, viaEntry)
+	return [...collect(key, new Set())]
+		.filter((file) => !viaEntry.has(file))
+		.map((file) => `<link rel="modulepreload" crossorigin href="/${file}" />`)
+		.join("\n\t\t")
+}
+
 export function urlList(kommuner, resourcesByLang) {
 	const out = []
 	for (const lang of LANGS) {
 		const p = prefix(lang)
 		out.push({ url: `${p}/`, data: {}, lang })
-		out.push({ url: `${p}/sok`, data: {}, lang })
+		out.push({ url: `${p}/sok`, data: {}, lang, chunk: CHUNKS.list })
 		for (const r of resourcesByLang[lang])
-			out.push({ url: `${p}/resources/${r.id}`, data: { resource: r }, lang })
+			out.push({ url: `${p}/resources/${r.id}`, data: { resource: r }, lang, chunk: CHUNKS.detail })
 		for (const k of kommuner)
-			out.push({ url: `${p}/kommune/${k.slug}`, data: {}, lang, kommune: k })
+			out.push({ url: `${p}/kommune/${k.slug}`, data: {}, lang, kommune: k, chunk: CHUNKS.kommune })
 	}
 	return out
 }
@@ -113,7 +141,7 @@ function sitemap(pages, siteOrigin) {
 
 // react-dom/static's prerender() can "outline" a Suspense boundary that DOES resolve —
 // written out-of-band as a completion <template> plus an inline <script>$RC(...)</script> that
-// moves it into place. index.html's CSP is script-src 'self' with no inline scripts, so an
+// moves it into place. index.html's CSP hashes exactly one inline script (the theme init), so an
 // outlined boundary would sit inert until React hydrates client-side: exactly the SEO/first-
 // paint regression prerendering exists to avoid. Fail the whole build rather than ship it.
 function assertNoOutlinedBoundary(html, url) {
@@ -132,6 +160,7 @@ export async function prerenderSite({
 	render,
 	split,
 	siteOrigin,
+	manifest = null,
 	log = console.log,
 }) {
 	// A trailing slash would double up with every path concatenated onto it below (canonical,
@@ -154,7 +183,9 @@ export async function prerenderSite({
 		const ld = data.resource ? jsonLd(data.resource, page.lang, siteOrigin) : null
 		const file = fillTemplate(template, {
 			lang: page.lang,
-			head: headTags(head, siteOrigin),
+			head: [headTags(head, siteOrigin), modulepreloadTags(manifest, page.chunk)]
+				.filter(Boolean)
+				.join("\n\t\t"),
 			html,
 			data,
 			ld,
@@ -196,12 +227,18 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 	const webDir = join(here, "..")
 	const siteOrigin = (process.env.VITE_SITE_ORIGIN ?? "http://localhost:5173").replace(/\/$/, "")
 	const server = await import(pathToFileURL(join(webDir, "dist-server", "entry-server.mjs")).href)
+	// vite.config.ts turns on build.manifest for the client build; the manifest is a build-time
+	// input only, so its folder is removed before dist/ is uploaded.
+	const manifestDir = join(webDir, "dist", ".vite")
+	const manifest = JSON.parse(readFileSync(join(manifestDir, "manifest.json"), "utf8"))
 	await prerenderSite({
 		dataDir: join(webDir, "public", "data"),
 		distDir: join(webDir, "dist"),
 		render: server.render,
 		split: server.splitForKommune,
 		siteOrigin,
+		manifest,
 	})
+	rmSync(manifestDir, { recursive: true, force: true })
 	rmSync(join(webDir, "dist-server"), { recursive: true, force: true })
 }
