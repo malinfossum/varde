@@ -5,7 +5,7 @@ import { LanguageProvider, useTranslation } from "../src/i18n/LanguageProvider.t
 beforeEach(() => localStorage.clear())
 
 test("a stored preference never overrides the language the provider is given", () => {
-	// Redirecting a stored "en" preference away from a bare "/" load is public/theme-init.js's
+	// Redirecting a stored "en" preference away from a bare "/" load is the inline init script's (index.html)
 	// job, which runs before React even mounts — the provider itself only ever renders the
 	// language it's handed as a prop, regardless of what's in storage.
 	localStorage.setItem("varde.lang", "en")

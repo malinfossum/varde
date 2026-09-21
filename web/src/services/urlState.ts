@@ -94,7 +94,7 @@ export function buildSearch(filters: Filters): string {
 	return query ? `?${query}` : ""
 }
 
-// Mirrored in public/theme-init.js, which cannot import. tests/theme.test.ts runs both
+// Mirrored in the inline init script in index.html, which cannot import. tests/theme.test.ts runs both
 // against the same cases. Returns the URL to location.replace() to, or null.
 export function legacyRedirect(
 	pathname: string,

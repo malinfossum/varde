@@ -42,13 +42,20 @@ test("applyTheme sets data-theme and survives a throwing storage", () => {
 	}
 })
 
-test("the public init script agrees with resolveTheme", () => {
-	// The script cannot import the service, so this evaluates it against the same cases.
-	// jsdom replaces the global URL constructor, and on Windows that replacement mis-resolves a
-	// relative path against a file:// base, so I go through node:path/node:url instead of
-	// `new URL("../public/theme-init.js", import.meta.url)` (same fix as tokens.test.ts).
-	const scriptPath = join(dirname(fileURLToPath(import.meta.url)), "../public/theme-init.js")
-	const script = readFileSync(scriptPath, "utf8")
+// The init script is inline in index.html (first paint must not wait on a second request) and
+// cannot import the services it mirrors, so these tests evaluate the shipped text against the
+// same cases. jsdom replaces the global URL constructor, and on Windows that replacement
+// mis-resolves a relative path against a file:// base, so I go through node:path/node:url
+// instead of `new URL("../index.html", import.meta.url)` (same fix as tokens.test.ts).
+function inlineInitScript() {
+	const htmlPath = join(dirname(fileURLToPath(import.meta.url)), "../index.html")
+	const inline = readFileSync(htmlPath, "utf8").match(/<script>([\s\S]*?)<\/script>/)?.[1]
+	if (!inline) throw new Error("index.html has no inline <script>")
+	return inline
+}
+
+test("the inline init script agrees with resolveTheme", () => {
+	const script = inlineInitScript()
 	const run = (stored: string | null, prefersDark: boolean) => {
 		document.documentElement.removeAttribute("data-theme")
 		localStorage.clear()
@@ -63,9 +70,8 @@ test("the public init script agrees with resolveTheme", () => {
 	expect(run("light", true)).toBe("light")
 })
 
-test("the public init script redirects exactly like legacyRedirect", () => {
-	const scriptPath = join(dirname(fileURLToPath(import.meta.url)), "../public/theme-init.js")
-	const script = readFileSync(scriptPath, "utf8")
+test("the inline init script redirects exactly like legacyRedirect", () => {
+	const script = inlineInitScript()
 	const run = (pathname: string, search: string, storedLang: string | null) => {
 		const store = new Map<string, string>([["theme", "light"]])
 		if (storedLang) store.set("varde.lang", storedLang)

@@ -12,7 +12,12 @@ const read = (rel: string) => readFileSync(join(here, rel), "utf8")
 // 'unsafe-inline'. Nonces are impossible on a static host.
 const PRESSABLE_STYLE_HASH = "'sha256-38RhXrc7EdReTKsOm23ZPOCUgniTUUcjky8QOOrQx6o='"
 
-const CSP = `default-src 'self'; script-src 'self'; style-src 'self' ${PRESSABLE_STYLE_HASH}; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'`
+// The theme/redirect init script is inline in index.html so first paint does not wait on a
+// second request; script-src carries its hash for the same reason style-src carries the one
+// above. Both hashes are rebuilt from source by the drift tests below.
+const THEME_INIT_HASH = "'sha256-YzBzTWuXMzOIkk/qQdaDv8mn8TPOsUq2jVt1Yw6kEWI='"
+
+const CSP = `default-src 'self'; script-src 'self' ${THEME_INIT_HASH}; style-src 'self' ${PRESSABLE_STYLE_HASH}; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'`
 
 test("_headers carries the spec's policy", () => {
 	const text = read("../public/_headers")
@@ -34,4 +39,16 @@ test("the style-src hash matches what the installed react-aria injects", () => {
 	const css = (template as string).replace(/\$\{[^}]+\}/g, attribute as string).trim()
 	const hash = `'sha256-${createHash("sha256").update(css).digest("base64")}'`
 	expect(hash).toBe(PRESSABLE_STYLE_HASH)
+})
+
+// Same guard for the inline init script: hash exactly the bytes the browser sees between the
+// <script> tags of index.html. Any edit to that script turns this red with the new hash.
+test("the script-src hash matches the inline init script in index.html", () => {
+	const html = read("../index.html")
+	const inline = html.match(/<script>([\s\S]*?)<\/script>/)?.[1]
+	expect(inline).toBeDefined()
+	const hash = `'sha256-${createHash("sha256")
+		.update(inline as string)
+		.digest("base64")}'`
+	expect(hash).toBe(THEME_INIT_HASH)
 })
