@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest"
 import {
 	applyPatch,
 	buildSearch,
+	canHydrate,
 	legacyRedirect,
 	parseFilters,
 	parseRoute,
@@ -129,4 +130,22 @@ describe("legacyRedirect", () => {
 	test("nothing to do returns null", () => {
 		expect(legacyRedirect("/sok", "?search=nav", null)).toBeNull()
 	})
+})
+
+// /sok is prerendered once, as the no-query page. A results URL like /sok?search=nav must not
+// hydrate that markup — the client's first render is the filtered list, and React would
+// throw a hydration mismatch (#418) against the unfiltered HTML. Every other route's
+// prerender matches its client render exactly, including /sok with no query.
+test.each([
+	["/", "", true],
+	["/en/", "", true],
+	["/sok", "", true],
+	["/en/sok", "", true],
+	["/sok", "?search=nav", false],
+	["/sok", "?category=nav&page=2", false],
+	["/en/sok", "?search=nav", false],
+	["/resources/12", "", true],
+	["/kommune/hamar", "", true],
+])("canHydrate(%s%s) is %s", (pathname, search, expected) => {
+	expect(canHydrate(pathname, search)).toBe(expected)
 })

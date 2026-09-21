@@ -134,3 +134,11 @@ export function applyPatch(filters: Filters, patch: Partial<Filters>): Filters {
 	if (filterChanged && patch.page === undefined) next.page = 1
 	return next
 }
+
+// /sok is prerendered once, as the no-query page. A results URL (/sok?search=…) must render
+// from scratch: the client's first render is the filtered list, and hydrating it against the
+// unfiltered HTML would throw a mismatch (React #418). Every other route's prerender matches
+// its client render exactly.
+export function canHydrate(pathname: string, search: string): boolean {
+	return !(parseUrl(pathname).route.kind === "list" && search !== "")
+}
