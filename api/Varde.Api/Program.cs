@@ -79,8 +79,12 @@ app.UseRateLimiter();
 // Schema comes from migrations, always — never EnsureCreated. Runs in every environment:
 // production Neon fills itself at deploy (schema + seed rows live in the migrations), and
 // a failed migration blocks startup, which is the safe failure.
-using (var scope = app.Services.CreateScope())
+// MIGRATE_ON_STARTUP=false turns this off for a container that must not migrate on its own:
+// several replicas starting at once would race each other, so there the migration is a
+// deliberate, separate step. Unset or any other value keeps the default behaviour.
+if (app.Configuration["MIGRATE_ON_STARTUP"] is not "false")
 {
+    using var scope = app.Services.CreateScope();
     scope.ServiceProvider.GetRequiredService<VardeDbContext>().Database.Migrate();
 }
 
@@ -94,6 +98,15 @@ else
 }
 
 app.MapControllers();
+
+// Liveness probe for the container stack: the compose healthcheck polls it, and in week 2 the
+// deploy gate reads `version` to tell a new release from the one it replaced.
+app.MapGet("/health", (IConfiguration config) => Results.Ok(new
+{
+    status = "ok",
+    version = config["APP_VERSION"] ?? "dev",
+    time = DateTimeOffset.UtcNow
+}));
 
 app.Run();
 
