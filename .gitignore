@@ -22,6 +22,8 @@ appsettings.Development.json
 appsettings.*.Local.json
 .env
 .env.*
+# ...but the contract for which variables the stack needs is in Git
+!.env.example
 *.pfx
 
 # Node (web/ arrives in plan 2)

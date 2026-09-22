@@ -1,0 +1,22 @@
+# Build artefacts — rebuilt inside the image
+bin/
+obj/
+publish/
+logs/
+
+# Version control and editors
+.git/
+.gitignore
+.vs/
+.idea/
+
+# Docs and recipes
+*.md
+Dockerfile*
+compose*.yml
+
+# Secrets never go into an image
+*.env
+.env
+.env.*
+appsettings.Development.json

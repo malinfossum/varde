@@ -111,6 +111,27 @@ normal checkout. Only run `npm run fonts` if you bump the `@fontsource/*` packag
 it re-copies the woff2 files from `node_modules` and a drift test catches a checkout that
 forgets to.
 
+## Runbook — the API in containers
+
+The API and its database also run as a container stack, so a checkout needs nothing installed
+but Docker or Podman. `compose.yml` starts two services: `api` on port 8080 and `db`, a
+PostgreSQL 16 whose data lives in the named volume `postgres_data`. Only the API publishes a
+port; the database is reachable from inside the compose network, under the hostname `db`.
+
+```bash
+cp .env.example .env          # once, then set a password
+podman compose up -d --build  # start (docker compose works the same)
+curl --fail http://localhost:8080/health
+podman compose logs -f api    # follow the API log
+podman compose down           # stop; the database keeps its data
+podman compose down -v        # full reset: deletes the volume too
+```
+
+The API migrates the database itself at startup, so the first `up` fills an empty PostgreSQL
+with the schema and the seed rows. Set `MIGRATE_ON_STARTUP=false` where that must be a
+separate step. `.env` holds the database name, user and password and is never committed;
+`.env.example` lists the variables the stack needs.
+
 ## Deployment
 
 Varde deploys via a single GitHub Actions workflow, `deploy-web.yml`, on a push to `main`, a
