@@ -45,10 +45,11 @@ test("the style-src hash matches what the installed react-aria injects", () => {
 // <script> tags of index.html. Any edit to that script turns this red with the new hash.
 test("the script-src hash matches the inline init script in index.html", () => {
 	const html = read("../index.html")
-	const inline = html.match(/<script>([\s\S]*?)<\/script>/)?.[1]
-	expect(inline).toBeDefined()
-	const hash = `'sha256-${createHash("sha256")
-		.update(inline as string)
-		.digest("base64")}'`
+	const open = html.indexOf("<script>")
+	const close = html.indexOf("</script>", open)
+	expect(open).toBeGreaterThan(-1)
+	expect(close).toBeGreaterThan(open)
+	const inline = html.slice(open + "<script>".length, close)
+	const hash = `'sha256-${createHash("sha256").update(inline).digest("base64")}'`
 	expect(hash).toBe(THEME_INIT_HASH)
 })

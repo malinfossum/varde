@@ -49,9 +49,11 @@ test("applyTheme sets data-theme and survives a throwing storage", () => {
 // instead of `new URL("../index.html", import.meta.url)` (same fix as tokens.test.ts).
 function inlineInitScript() {
 	const htmlPath = join(dirname(fileURLToPath(import.meta.url)), "../index.html")
-	const inline = readFileSync(htmlPath, "utf8").match(/<script>([\s\S]*?)<\/script>/)?.[1]
-	if (!inline) throw new Error("index.html has no inline <script>")
-	return inline
+	const html = readFileSync(htmlPath, "utf8")
+	const start = html.indexOf("<script>")
+	const end = html.indexOf("</script>", start)
+	if (start === -1 || end === -1) throw new Error("index.html has no inline <script>")
+	return html.slice(start + "<script>".length, end)
 }
 
 test("the inline init script agrees with resolveTheme", () => {
