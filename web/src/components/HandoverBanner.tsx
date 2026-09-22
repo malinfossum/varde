@@ -33,7 +33,9 @@ export function HandoverBanner() {
 			{variant === "fastlege" && (
 				<p>
 					{t("banner.fastlege")}{" "}
-					<a href="https://www.helsenorge.no" rel="noopener noreferrer">
+					{/* The only link on the site that sits inside running text: underlined so it is
+					    told apart from the sentence by more than colour (axe link-in-text-block). */}
+					<a href="https://www.helsenorge.no" rel="noopener noreferrer" className="underline">
 						{t("banner.fastlegeLink")}
 					</a>
 				</p>
