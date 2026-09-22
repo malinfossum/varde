@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react"
+import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test, vi } from "vitest"
 import { ResourceDetail } from "../src/components/ResourceDetail.tsx"
@@ -100,7 +100,9 @@ test("the call button is the hero and the back link is a plain link without hist
 		"href",
 		"/sok"
 	)
-	expect(document.title).toBe("Krisesenteret i Hamar – Varde")
+	// PageHead sets the title in a passive effect that can flush after the link is already in
+	// the DOM — a synchronous read failed once in Deploy Web with the previous test's title.
+	await waitFor(() => expect(document.title).toBe("Krisesenteret i Hamar – Varde"))
 })
 
 test("with from=sok in history state the back control goes back", async () => {
