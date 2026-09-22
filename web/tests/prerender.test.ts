@@ -9,7 +9,7 @@ afterEach(() => {
 	for (const d of dirs) rmSync(d, { recursive: true, force: true })
 })
 
-const template = `<!doctype html><html lang="nb"><head><meta charset="UTF-8" /><script src="/theme-init.js"></script><!--app-head--></head><body><div id="root"><!--app-html--></div><!--app-data--><script type="module" src="/assets/main.js"></script></body></html>`
+const template = `<!doctype html><html lang="nb"><head><meta charset="UTF-8" /><script>/* init */</script><!--app-head--></head><body><div id="root"><!--app-html--></div><!--app-data--><script type="module" src="/assets/main.js"></script></body></html>`
 
 function setup(resources: object[], kommuner: object[]) {
 	const dir = mkdtempSync(join(tmpdir(), "varde-prerender-"))
@@ -190,4 +190,42 @@ test("a $-replacement-pattern sequence in a resource's description renders uncha
 	expect(occurrences).toBe(3)
 	expect(detail).not.toContain("<!--app-")
 	expect(detail.match(/<!doctype html>/gi) ?? []).toHaveLength(1)
+})
+
+// Route components are lazy(), so without a hint the browser learns about a page's chunk only
+// after the entry has run — one extra round-trip before anything on /sok can render. With
+// Vite's build manifest the prerender can announce the chunk (and the chunks it imports) in
+// the head. The entry and what it already pulls in are left out: they are loaded regardless.
+test("a prerendered route page preloads its lazy chunk and that chunk's imports, never the entry", async () => {
+	const { dataDir, distDir } = setup([row], [hamar])
+	const manifest = {
+		"src/main.tsx": { file: "assets/index-e.js", isEntry: true, imports: ["_shared-s.js"] },
+		"_shared-s.js": { file: "assets/shared-s.js" },
+		"src/components/ListPage.tsx": {
+			file: "assets/ListPage-l.js",
+			imports: ["src/main.tsx", "_ResourceCard-c.js"],
+		},
+		"_ResourceCard-c.js": { file: "assets/ResourceCard-c.js", imports: ["_shared-s.js"] },
+		"src/components/ResourceDetail.tsx": { file: "assets/ResourceDetail-d.js" },
+		"src/components/KommunePage.tsx": { file: "assets/KommunePage-k.js" },
+	}
+	await prerenderSite({
+		dataDir,
+		distDir,
+		render: async () => ({ html: "<main></main>", head: null }),
+		split: stubSplit,
+		siteOrigin: "https://varde.pages.dev",
+		manifest,
+		log: () => {},
+	})
+	const sok = readFileSync(join(distDir, "sok.html"), "utf8")
+	expect(sok).toContain('<link rel="modulepreload" crossorigin href="/assets/ListPage-l.js" />')
+	expect(sok).toContain('<link rel="modulepreload" crossorigin href="/assets/ResourceCard-c.js" />')
+	expect(sok).not.toContain("index-e.js")
+	expect(sok).not.toContain("shared-s.js")
+	expect(readFileSync(join(distDir, "en/resources/5.html"), "utf8")).toContain(
+		"ResourceDetail-d.js"
+	)
+	expect(readFileSync(join(distDir, "kommune/hamar.html"), "utf8")).toContain("KommunePage-k.js")
+	expect(readFileSync(join(distDir, "index.html"), "utf8")).not.toContain("modulepreload")
 })

@@ -11,7 +11,7 @@ const strings: Record<Lang, Record<string, string>> = { nb, en }
 const LanguageContext = createContext<{ lang: Lang } | null>(null)
 
 // The URL is the only source of the language (spec: URL and language model). Storage is
-// written by the toggle alone and read by public/theme-init.js alone, before first paint.
+// written by the toggle alone and read by the inline init script in index.html alone, before first paint.
 export function LanguageProvider({ lang, children }: { lang: Lang; children: ReactNode }) {
 	useEffect(() => {
 		document.documentElement.lang = lang
