@@ -9,7 +9,7 @@ public class PagingTests
     [InlineData(0, 1)]
     [InlineData(-5, 1)]
     [InlineData(1, 1)]
-    [InlineData(7, 8)]
+    [InlineData(7, 7)]
     public void NormalizePage_never_returns_less_than_one(int? input, int expected) =>
         Assert.Equal(expected, Paging.NormalizePage(input));
 
