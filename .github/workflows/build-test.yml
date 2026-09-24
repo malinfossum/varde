@@ -1,4 +1,4 @@
-name: Bygg og test (kurs)
+name: Build and test (course)
 
 on:
   push:
@@ -6,20 +6,23 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   build-test:
-    name: Bygg og test
+    name: Build and test
     runs-on: ubuntu-latest
     steps:
-      - name: Sjekk ut koden
+      - name: Check out the code
         uses: actions/checkout@v4
-      - name: Installer .NET
+      - name: Install .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-      - name: Gjenopprett avhengigheter
+      - name: Restore dependencies
         run: dotnet restore api/Varde.slnx
-      - name: Bygg
+      - name: Build
         run: dotnet build api/Varde.slnx --no-restore
       - name: Test
         run: dotnet test api/Varde.slnx --no-build
