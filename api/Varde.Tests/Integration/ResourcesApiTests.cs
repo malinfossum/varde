@@ -99,7 +99,7 @@ public class ResourcesApiTests
         });
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_exposes_served_municipality_ids_without_the_own_one()
     {
         using var factory = new VardeApiFactory();
@@ -115,7 +115,7 @@ public class ResourcesApiTests
         Assert.Equal(new[] { 2, 3 }, row.ServedMunicipalityIds);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_returns_the_paged_envelope_with_defaults()
     {
         using var factory = new VardeApiFactory();
@@ -131,7 +131,7 @@ public class ResourcesApiTests
         Assert.Equal(["NAV Hamar", "Mental Helse"], result.Items.Select(r => r.Name));
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_filters_by_search_and_category_and_municipality()
     {
         using var factory = new VardeApiFactory();
@@ -147,7 +147,7 @@ public class ResourcesApiTests
         Assert.Equal(2, byMunicipality!.TotalCount);   // local plus national
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_accepts_a_repeated_category_parameter()
     {
         using var factory = new VardeApiFactory();
@@ -204,7 +204,7 @@ public class ResourcesApiTests
         Assert.Equal("Husbanken", Assert.Single(boligOnly!.Items).Name);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_with_an_unknown_lang_returns_200_in_norwegian()
     {
         using var factory = new VardeApiFactory();
@@ -217,7 +217,7 @@ public class ResourcesApiTests
         Assert.Equal("Hjelp med økonomi.", result!.Items.Single(r => r.Id == 1).Description);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_by_id_returns_the_resource_with_its_categories()
     {
         using var factory = new VardeApiFactory();
@@ -235,7 +235,7 @@ public class ResourcesApiTests
         Assert.Equal("https://chat.example.test", resource.ChatUrl);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_by_unknown_id_returns_404_problem_details()
     {
         using var factory = new VardeApiFactory();
@@ -253,7 +253,7 @@ public class ResourcesApiTests
         Assert.Equal(404, problem.Status);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_clamps_an_oversized_page_size()
     {
         using var factory = new VardeApiFactory();
@@ -265,7 +265,7 @@ public class ResourcesApiTests
         Assert.Equal(100, result!.PageSize);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_with_national_returns_only_national_resources()
     {
         using var factory = new VardeApiFactory();
@@ -279,7 +279,7 @@ public class ResourcesApiTests
         Assert.All(result.Items, r => Assert.True(r.IsNational));
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_national_composes_with_search_and_category()
     {
         using var factory = new VardeApiFactory();
@@ -297,7 +297,7 @@ public class ResourcesApiTests
         Assert.Equal(0, byCategory!.TotalCount);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_rejects_national_combined_with_municipality()
     {
         using var factory = new VardeApiFactory();
@@ -312,7 +312,7 @@ public class ResourcesApiTests
         Assert.Contains("national", problem.Errors.Keys);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_treats_national_false_as_absent()
     {
         using var factory = new VardeApiFactory();
@@ -324,7 +324,7 @@ public class ResourcesApiTests
         Assert.Equal(2, result!.TotalCount); // local + national, same as no national param
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_exposes_is_always_open_on_the_dto()
     {
         using var factory = new VardeApiFactory();

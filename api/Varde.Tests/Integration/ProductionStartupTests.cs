@@ -5,7 +5,7 @@ namespace Varde.Tests.Integration;
 
 public class ProductionStartupTests
 {
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Production_startup_applies_migrations_and_seed()
     {
         // KeepSeedData: this test asserts the migrated seed is queryable, so don't truncate.
@@ -17,7 +17,7 @@ public class ProductionStartupTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Production_does_not_expose_openapi()
     {
         // Guard, not new behavior: MapOpenApi stays inside the Development branch.

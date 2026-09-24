@@ -5,7 +5,7 @@ namespace Varde.Tests.Integration;
 
 public class CorsTests
 {
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task A_configured_origin_gets_an_allow_origin_header()
     {
         using var factory = new VardeApiFactory();
@@ -21,7 +21,7 @@ public class CorsTests
             response.Headers.GetValues("Access-Control-Allow-Origin").Single());
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task An_unlisted_origin_gets_no_allow_origin_header()
     {
         using var factory = new VardeApiFactory();

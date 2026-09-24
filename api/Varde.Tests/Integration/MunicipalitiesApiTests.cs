@@ -7,7 +7,7 @@ namespace Varde.Tests.Integration;
 
 public class MunicipalitiesApiTests
 {
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_returns_municipalities_sorted_by_name()
     {
         using var factory = new VardeApiFactory();

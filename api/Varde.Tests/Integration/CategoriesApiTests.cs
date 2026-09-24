@@ -29,7 +29,7 @@ public class CategoriesApiTests
         });
     });
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_returns_norwegian_names_by_default()
     {
         using var factory = new VardeApiFactory();
@@ -43,7 +43,7 @@ public class CategoriesApiTests
         Assert.All(categories, c => Assert.False(c.IsFallbackTranslation));
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_with_lang_en_returns_english_and_flags_the_fallback()
     {
         using var factory = new VardeApiFactory();
@@ -63,7 +63,7 @@ public class CategoriesApiTests
         Assert.True(housing.IsFallbackTranslation);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_with_an_unknown_lang_falls_back_to_nb_and_does_not_error()
     {
         using var factory = new VardeApiFactory();

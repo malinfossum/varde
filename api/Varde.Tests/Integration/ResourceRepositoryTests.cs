@@ -35,7 +35,7 @@ public class ResourceRepositoryTests
                 ],
         };
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Search_matches_name_case_insensitively()
     {
         using var factory = new VardeApiFactory();
@@ -53,7 +53,7 @@ public class ResourceRepositoryTests
         Assert.Equal("Hamar Krisesenter", Assert.Single(items).Name);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Search_matches_the_description_in_the_requested_language_only()
     {
         using var factory = new VardeApiFactory();
@@ -72,7 +72,7 @@ public class ResourceRepositoryTests
         Assert.Equal(0, wrongLanguage.TotalCount);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Search_treats_percent_as_a_literal_character_not_a_wildcard()
     {
         using var factory = new VardeApiFactory();
@@ -90,7 +90,7 @@ public class ResourceRepositoryTests
         Assert.Equal("Rabatt 50% ordningen", Assert.Single(items).Name);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Municipality_filter_includes_national_services()
     {
         using var factory = new VardeApiFactory();
@@ -114,7 +114,7 @@ public class ResourceRepositoryTests
         Assert.Equal(["Hamar Krisesenter", "Mental Helse"], items.Select(r => r.Name));
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Category_filter_is_an_or_across_slugs()
     {
         using var factory = new VardeApiFactory();
@@ -142,7 +142,7 @@ public class ResourceRepositoryTests
         Assert.Equal(["A", "B"], items.Select(r => r.Name));
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Local_services_sort_before_national_ones_then_by_name()
     {
         using var factory = new VardeApiFactory();
@@ -161,7 +161,7 @@ public class ResourceRepositoryTests
         Assert.Equal(["Beta Lokal", "Omega Lokal", "Alfa Nasjonal"], items.Select(r => r.Name));
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Paging_is_stable_across_pages_when_names_collide()
     {
         // 25 services sharing one name: only the Id tiebreaker makes the sort total. Without it,
@@ -187,7 +187,7 @@ public class ResourceRepositoryTests
         Assert.Equal(5, page3.Items.Count);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_returns_null_for_an_unknown_id()
     {
         using var factory = new VardeApiFactory();
@@ -196,7 +196,7 @@ public class ResourceRepositoryTests
         Assert.Null(await RepositoryFor(scope).GetAsync(9999));
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Municipality_filter_includes_services_that_cover_the_municipality()
     {
         // A krisesenter sits in one kommune and serves others. Filtering on a served kommune
@@ -224,7 +224,7 @@ public class ResourceRepositoryTests
         Assert.Equal(0, unrelated.TotalCount);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Get_loads_translations_municipality_and_categories()
     {
         using var factory = new VardeApiFactory();

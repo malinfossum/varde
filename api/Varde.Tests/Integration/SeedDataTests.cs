@@ -20,7 +20,7 @@ namespace Varde.Tests.Integration;
 /// </summary>
 public class SeedDataTests
 {
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Migrations_seed_the_core_batch_across_all_municipalities()
     {
         using var factory = new VardeApiFactory { KeepSeedData = true };
@@ -31,7 +31,7 @@ public class SeedDataTests
         Assert.Equal(8, await db.Municipalities.CountAsync());
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Resource_12_serves_the_ring_municipalities_and_no_national_resource_has_coverage()
     {
         // Row 12 (Hamar interkommunale krisesenter) covers four kommuner beyond the one it sits
@@ -60,7 +60,7 @@ public class SeedDataTests
         Assert.Empty(nationalResourceIdsWithCoverage);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Every_seeded_service_has_both_a_norwegian_and_an_english_description()
     {
         using var factory = new VardeApiFactory { KeepSeedData = true };
@@ -78,7 +78,7 @@ public class SeedDataTests
         }
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Every_seeded_service_has_a_last_verified_date_and_a_category()
     {
         using var factory = new VardeApiFactory { KeepSeedData = true };
@@ -96,7 +96,7 @@ public class SeedDataTests
             .ToListAsync());
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Every_seeded_service_can_be_reached_by_phone_website_or_chat()
     {
         // A directory entry nobody can act on is worse than no entry: it costs a search and
@@ -111,7 +111,7 @@ public class SeedDataTests
             .ToListAsync());
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Every_category_has_both_language_names()
     {
         using var factory = new VardeApiFactory { KeepSeedData = true };
@@ -124,7 +124,7 @@ public class SeedDataTests
         Assert.All(categories, c => Assert.Equal(2, c.Translations.Count));
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task National_services_have_no_municipality()
     {
         using var factory = new VardeApiFactory { KeepSeedData = true };
@@ -137,7 +137,7 @@ public class SeedDataTests
             .ToListAsync());
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Municipality_filter_for_Loten_includes_the_coverage_joined_resources()
     {
         // Løten (municipality id 6) has no seeded services of its own — everything it shows
@@ -158,7 +158,7 @@ public class SeedDataTests
         Assert.Contains(118, ids);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Paging_through_every_page_reaches_all_94_seeded_resources()
     {
         using var factory = new VardeApiFactory { KeepSeedData = true };
@@ -189,7 +189,7 @@ public class SeedDataTests
         Assert.Equal(94, seenIds.Count);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Always_open_flags_match_recorded_dognapent_hours_exactly()
     {
         using var factory = new VardeApiFactory { KeepSeedData = true };

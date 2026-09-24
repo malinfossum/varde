@@ -5,7 +5,7 @@ namespace Varde.Tests.Integration;
 
 public class PrivacyTests
 {
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task No_log_message_contains_the_search_term()
     {
         const string sensitiveTerm = "krisesenter";
@@ -30,7 +30,7 @@ public class PrivacyTests
             message => message.Contains(sensitiveTerm, StringComparison.OrdinalIgnoreCase));
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task The_result_count_is_logged()
     {
         using var factory = new VardeApiFactory();

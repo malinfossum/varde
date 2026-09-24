@@ -5,7 +5,7 @@ namespace Varde.Tests.Integration;
 
 public class RateLimitTests
 {
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task Requests_beyond_the_window_limit_return_429()
     {
         using var factory = new VardeApiFactory { RateLimitPermitLimit = 3 };

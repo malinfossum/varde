@@ -8,7 +8,7 @@ namespace Varde.Tests.Integration;
 
 public class SchemaTests
 {
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task A_national_resource_saves_without_a_municipality()
     {
         using var factory = new VardeApiFactory();
@@ -34,7 +34,7 @@ public class SchemaTests
         Assert.Equal("nb", Assert.Single(saved.Translations).LanguageCode);
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task A_resource_cannot_have_two_translations_in_the_same_language()
     {
         using var factory = new VardeApiFactory();
@@ -60,7 +60,7 @@ public class SchemaTests
         await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveChangesAsync());
     }
 
-    [Fact]
+    [RequiresDatabaseFact]
     public async Task A_resource_belongs_to_many_categories()
     {
         using var factory = new VardeApiFactory();
