@@ -24,5 +24,7 @@ jobs:
         run: dotnet restore api/Varde.slnx
       - name: Build
         run: dotnet build api/Varde.slnx --no-restore
+      # Unit tests only: this runner has no database. The integration suite needs PostgreSQL
+      # and runs in ci.yml, which starts a service container for it.
       - name: Test
-        run: dotnet test api/Varde.slnx --no-build
+        run: dotnet test api/Varde.slnx --no-build --filter "FullyQualifiedName~Varde.Tests.Unit"
