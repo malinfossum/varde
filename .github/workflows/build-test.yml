@@ -1,0 +1,30 @@
+name: Build and test (course)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore dependencies
+        run: dotnet restore api/Varde.slnx
+      - name: Build
+        run: dotnet build api/Varde.slnx --no-restore
+      # Unit tests only: this runner has no database. The integration suite needs PostgreSQL
+      # and runs in ci.yml, which starts a service container for it.
+      - name: Test
+        run: dotnet test api/Varde.slnx --no-build --filter "FullyQualifiedName~Varde.Tests.Unit"
