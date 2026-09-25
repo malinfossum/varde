@@ -24,8 +24,8 @@ RUN dotnet publish Varde.Api/Varde.Api.csproj -c Release -o /app/publish --no-re
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-# Npgsql wants the Kerberos library; the compose healthcheck uses wget
-RUN apt-get update && apt-get install -y libkrb5-3 wget && rm -rf /var/lib/apt/lists/*
+# Npgsql loads libgssapi_krb5.so.2 (libgssapi-krb5-2, not libkrb5-3); the compose healthcheck uses wget
+RUN apt-get update && apt-get install -y libgssapi-krb5-2 wget && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/publish .
 
