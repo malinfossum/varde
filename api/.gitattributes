@@ -1,5 +1,6 @@
-# Auto-detect text files and normalize to LF in the repo
-* text=auto
+# Auto-detect text files, normalize to LF in the repo and check them out as LF on every
+# platform, so the format check sees the same bytes on Windows and on the Linux CI runner
+* text=auto eol=lf
 
 # Windows batch scripts must use CRLF
 *.cmd text eol=crlf

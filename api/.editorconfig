@@ -2,7 +2,7 @@ root = true
 
 [*]
 charset = utf-8
-end_of_line = crlf
+end_of_line = lf
 insert_final_newline = true
 indent_style = space
 indent_size = 4
@@ -23,5 +23,10 @@ csharp_new_line_before_else = true
 csharp_new_line_before_catch = true
 csharp_new_line_before_finally = true
 
-dotnet_style_require_accessibility_modifiers = always:warning
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
 dotnet_sort_system_directives_first = true
+
+# EF Core writes these, with a BOM and block-scoped namespaces. Marking them as generated
+# keeps the format check on the code I write.
+[**/Migrations/*.cs]
+generated_code = true
