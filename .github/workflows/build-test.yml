@@ -28,3 +28,19 @@ jobs:
       # and runs in ci.yml, which starts a service container for it.
       - name: Test
         run: dotnet test api/Varde.slnx --no-build --filter "FullyQualifiedName~Varde.Tests.Unit"
+
+  # Quality gate: --verify-no-changes only checks. Without it dotnet format fixes the files
+  # and exits 0, so the gate would never fail. The solution is named because the repo root
+  # has no project or solution file for dotnet format to find.
+  format:
+    name: Format check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Check formatting
+        run: dotnet format api/Varde.slnx --verify-no-changes
