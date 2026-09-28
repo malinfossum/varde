@@ -28,6 +28,6 @@ public class CategoryService(ICategoryRepository repository)
         if (requested is not null) return (requested.Name, false);
 
         var fallback = category.Translations.FirstOrDefault(t => t.LanguageCode == Language.Default);
-        return (fallback?.Name ?? category.Slug, true);
+            return (fallback?.Name ?? category.Slug, true);
     }
 }
