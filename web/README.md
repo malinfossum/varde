@@ -1,6 +1,6 @@
 # Varde web
 
-The Varde web frontend — a bilingual (Norwegian/English) search UI for the API, built with
+The Varde web frontend: a bilingual (Norwegian/English) search UI for the API, built with
 Vite, React and TypeScript.
 
 ## Run locally
