@@ -1,6 +1,6 @@
 # Varde
 
-A bilingual (Norwegian/English) directory of social services in Norway — find the right
+A bilingual (Norwegian/English) directory of social services in Norway. Find the right
 service in the right kommune, with contact details you can trust in a crisis.
 
 Named after the *varde*: the stone cairns that mark Norwegian mountain routes so you can
@@ -8,7 +8,7 @@ find your way when visibility is poor.
 
 ## Why
 
-Built from social-work practice — this is the tool I needed as a sosionom and never had.
+Built from social-work practice. This is the tool I needed as a sosionom and never had.
 Service directories go stale, and a dead phone number fails exactly when someone finally
 dials it. Varde treats contact data as safety-critical.
 
@@ -16,8 +16,8 @@ dials it. Varde treats contact data as safety-critical.
 
 Phase 1, the API, is complete: 94 services across 8 municipalities (Innlandet and Oslo)
 plus national services, described in Norwegian and English. Phase 2, the web frontend,
-is complete. Phase 3, deployment, went live 2026-09-04. The current design — light-first,
-self-hosted type, a search-first landing page — shipped 2026-09-09.
+is complete. Phase 3, deployment, went live 2026-09-04. The current design (light-first,
+self-hosted type, a search-first landing page) shipped 2026-09-09.
 
 **Live:** https://varde.pages.dev
 
@@ -26,7 +26,7 @@ push, so nothing waits on a server. Search runs in the browser over a small JSON
 
 ## Data verification
 
-Every service was verified against official sources before entering the database — two
+Every service was verified against official sources before entering the database: two
 independent verification passes, with conflicts resolved by source hierarchy (a service's
 own site outranks a re-listing) and unconfirmable details left empty rather than guessed.
 The full audit trail is in [docs/verification/](docs/verification/). Phone numbers
@@ -49,13 +49,13 @@ address reaches me without exposing my own inbox.
 
 ## API
 
-- `GET /api/resources` — text search, municipality and category filters, stable paging; `?lang=nb|en`
+- `GET /api/resources`: text search, municipality and category filters, stable paging; `?lang=nb|en`
 - `GET /api/resources/{id}`
 - `GET /api/categories`
 - `GET /api/municipalities`
 
-Municipality filters include services that *serve* a kommune without being located in it —
-interkommunale krisesentre are the motivating case. The API is rate-limited, and
+Municipality filters include services that *serve* a kommune without being located in it.
+Interkommunale krisesentre are the motivating case. The API is rate-limited, and
 application logs record result counts, never search terms.
 
 ## Web
@@ -73,7 +73,7 @@ mobile-first.
 Lighthouse ≥ 95 on the simulated phone is the definition of done, and the measured numbers
 are in each PR. Accessibility is 100 across the site and the landing page scores 99 on
 performance; `/sok` scored 67–74 and missed that budget, but that number predates the move
-to static JSON — `/sok` now prerenders as its loading shell and fills from the JSON index in
+to static JSON. Now `/sok` prerenders as its loading shell and fills from the JSON index in
 the browser, and it hasn't been re-measured since. The live Cloudflare deploy gets a fresh
 measurement.
 
@@ -99,19 +99,19 @@ Tests create disposable `varde_test_<guid>` databases. The connection defaults t
 standard local development setup (`localhost`, `postgres`/`postgres`); override it with the
 `VARDE_TEST_PG` environment variable. `npm run data` exports the API's data into
 `web/public/data/` so the dev server has something to search over; re-run it whenever the
-underlying data changes. Run `npm run build` instead of `npm run dev` for the full prerender
-— it builds the client and server bundles and writes a static `web/dist/` with one page per
+underlying data changes. Run `npm run build` instead of `npm run dev` for the full prerender.
+It builds the client and server bundles and writes a static `web/dist/` with one page per
 URL, matching what the deploy workflow produces. `vite preview` over that `dist/` can't
 validate routing, though: it serves the file-form pages directly by path, but only Cloudflare
 Pages' asset server applies the clean-URL and trailing-slash redirect rules the prerendered
-pages depend on — check routing against the real deploy, not a local preview.
+pages depend on. Check routing against the real deploy, not a local preview.
 
 Fraunces and Figtree are vendored into `web/public/fonts/`, so `npm install` is enough for a
-normal checkout. Only run `npm run fonts` if you bump the `@fontsource/*` package versions —
-it re-copies the woff2 files from `node_modules` and a drift test catches a checkout that
+normal checkout. Only run `npm run fonts` if you bump the `@fontsource/*` package versions.
+It re-copies the woff2 files from `node_modules` and a drift test catches a checkout that
 forgets to.
 
-## Runbook — the API in containers
+## Runbook: the API in containers
 
 The API and its database also run as a container stack, so a checkout needs nothing installed
 but Docker or Podman. `compose.yml` starts two services: `api` on port 8080 and `db`, a
@@ -136,8 +136,8 @@ separate step. `.env` holds the database name, user and password and is never co
 
 Varde deploys via a single GitHub Actions workflow, `deploy-web.yml`, on a push to `main`, a
 daily cron at 04:00 UTC, and manual dispatch. The workflow starts the API inside the runner
-against **Neon** (PostgreSQL 17, Frankfurt, `nb-NO` ICU collation) — the same startup that
-applies EF Core migrations and seed data — exports its data as JSON, builds and prerenders
+against **Neon** (PostgreSQL 17, Frankfurt, `nb-NO` ICU collation). That is the same startup that
+applies EF Core migrations and seed data. It exports its data as JSON, builds and prerenders
 the site, then deploys the resulting `web/dist` to **Cloudflare Pages**. Nothing user-facing
 ever talks to the API; it exists only as a build-time step.
 
@@ -145,14 +145,14 @@ Two GitHub Actions workflows drive the repo:
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `ci.yml` | every pull request | both test suites + a client build — the required merge checks |
+| `ci.yml` | every pull request | both test suites + a client build (the required merge checks) |
 | `deploy-web.yml` | push to `main`, daily cron, manual dispatch | run the API against Neon, export data, build, prerender, deploy to Cloudflare Pages |
 
 Deploy credentials live in the GitHub `production` environment: secrets
 `NEON_CONNECTION_STRING`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and variable
 `SITE_ORIGIN`. The repo itself contains no hostnames or secrets.
 
-By design there is no Application Insights and HTTP logging is off — see the privacy posture
+By design there is no Application Insights and HTTP logging is off. See the privacy posture
 in `docs/superpowers/specs/2026-08-12-varde-design.md`. The full deployment design, including
 the first-deploy runbook and verification checklist, is
 `docs/superpowers/specs/2026-08-19-varde-deploy-design.md`.
