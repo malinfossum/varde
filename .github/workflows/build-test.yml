@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}   # ghcr.io/malinfossum/varde
+
 jobs:
   build-test:
     name: Build and test
@@ -28,6 +32,10 @@ jobs:
       # and runs in ci.yml, which starts a service container for it.
       - name: Test
         run: dotnet test api/Varde.slnx --no-build --filter "FullyQualifiedName~Varde.Tests.Unit"
+      # Lists known vulnerabilities in NuGet packages. It exits 0 even when it finds some,
+      # so this is a report in the log, not a gate that stops the pipeline.
+      - name: List vulnerable packages
+        run: dotnet list api/Varde.slnx package --vulnerable --include-transitive
 
   # Quality gate: --verify-no-changes only checks. Without it dotnet format fixes the files
   # and exits 0, so the gate would never fail. The solution is named because the repo root
@@ -44,3 +52,45 @@ jobs:
           dotnet-version: 10.0.x
       - name: Check formatting
         run: dotnet format api/Varde.slnx --verify-no-changes
+
+  # Builds the image and pushes it to GHCR, tagged sha-<7 chars> (fixed, for rollback) and
+  # latest (moves). Runs only when both gates are green, and only on a push to main: a pull
+  # request is checked, but only main produces an image.
+  docker:
+    name: Build and push image to GHCR
+    runs-on: ubuntu-latest
+    needs: [format, build-test]
+    if: github.event_name == 'push'
+    # Write access to packages for this job only. The gate jobs never need it.
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image tags (sha-<short> + latest)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest
+      # The Dockerfile lives in api/, the solution root, so that is the build context
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./api
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
