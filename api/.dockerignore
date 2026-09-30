@@ -1,8 +1,9 @@
-# Build artefacts — rebuilt inside the image
-bin/
-obj/
-publish/
-logs/
+# Build artefacts, rebuilt inside the image. **/ matters: a bare obj/ matches only at the
+# context root, so a local Varde.Api/obj would overwrite the restore layer (NETSDK1064)
+**/bin/
+**/obj/
+**/publish/
+**/logs/
 
 # Version control and editors
 .git/
