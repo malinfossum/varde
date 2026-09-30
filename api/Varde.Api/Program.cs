@@ -108,6 +108,9 @@ app.MapGet("/health", (IConfiguration config) => Results.Ok(new
     time = DateTimeOffset.UtcNow
 }));
 
+// One line per start naming the build, so `logs api` shows which image came up after a deploy.
+app.Logger.LogInformation("Varde API starting, version {Version}", app.Configuration["APP_VERSION"] ?? "dev");
+
 app.Run();
 
 // Top-level statements make Program internal; this line makes it visible to

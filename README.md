@@ -132,6 +132,42 @@ with the schema and the seed rows. Set `MIGRATE_ON_STARTUP=false` where that mus
 separate step. `.env` holds the database name, user and password and is never committed;
 `.env.example` lists the variables the stack needs.
 
+## Runbook: deploy and rollback (prod-sim)
+
+`compose.prod.yml` runs the image CI built instead of building one. It has its own project name,
+containers (`varde-api-prod`, `varde-db-prod`) and volume (`varde_prod_data`), so it never
+touches the dev stack's data. Both stacks publish port 8080: stop the dev stack first.
+
+**Find the tag.** Actions, the latest green run on `main`, job "Build and push image to GHCR", step "Image tags"
+(or Packages, `varde`, the version list). Use the `sha-…` tag, never `latest`: `latest` moves,
+so it cannot tell you what runs or take you back.
+
+**Deploy.** Two lines in `.env` decide what runs, and they are read together: `API_IMAGE` is
+the name without a tag, `IMAGE_TAG` the tag. The same `IMAGE_TAG` also becomes the API's
+`APP_VERSION`, so the image and `/health` cannot disagree.
+
+```bash
+podman compose down                            # dev stack off, port 8080 free
+# .env: API_IMAGE=ghcr.io/malinfossum/varde and IMAGE_TAG=sha-<new>
+podman compose -f compose.prod.yml config      # check the image: line shows the right tag
+podman compose -f compose.prod.yml pull        # fetch the CI image, nothing is built
+podman compose -f compose.prod.yml up -d
+podman compose -f compose.prod.yml ps          # both services healthy?
+curl --fail http://localhost:8080/health       # "version" must be sha-<new>
+podman inspect varde-api-prod --format '{{.Config.Image}}'   # proof of what runs
+```
+
+Write down the old tag before you change it. It is the way back.
+
+**Rollback.** The same flow with the old tag: set `IMAGE_TAG=sha-<old>` in `.env`, then `pull`,
+`up -d`, and check that `/health` reports `sha-<old>`. The database volume is untouched by both
+deploy and rollback, which is what makes going back possible at all. The one exception is a
+release whose migration changed the schema: then the old image meets a newer schema, so check
+the migrations before you roll back past one.
+
+Stuck? Read `podman compose -f compose.prod.yml logs api` before guessing. `denied` on pull means
+the package is private; `manifest unknown` means the tag does not exist.
+
 ## Deployment
 
 Varde deploys via a single GitHub Actions workflow, `deploy-web.yml`, on a push to `main`, a
