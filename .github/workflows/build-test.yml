@@ -84,8 +84,19 @@ jobs:
           tags: |
             type=sha,prefix=sha-
             type=raw,value=latest
+      # A sha tag is write-once. A rerun of the same commit builds new bytes (new digest), and
+      # pushing them would move a tag someone may already have deployed and written down.
+      - name: Skip if this commit already has an image
+        id: exists
+        run: |
+          ref="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA::7}"
+          if docker buildx imagetools inspect "$ref" > /dev/null 2>&1; then
+            echo "$ref already exists, nothing is pushed"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          fi
       # The Dockerfile lives in api/, the solution root, so that is the build context
       - name: Build and push
+        if: steps.exists.outputs.found != 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./api
