@@ -154,10 +154,11 @@ podman compose -f compose.prod.yml pull        # fetch the CI image, nothing is 
 podman compose -f compose.prod.yml up -d
 podman compose -f compose.prod.yml ps          # both services healthy?
 curl --fail http://localhost:8080/health       # "version" must be sha-<new>
-podman inspect varde-api-prod --format '{{.Config.Image}}'   # proof of what runs
+podman inspect varde-api-prod --format '{{.Config.Image}} {{.Image}}'   # tag + digest: proof of what runs
 ```
 
-Write down the old tag before you change it. It is the way back.
+Write down the old tag and its digest before you change anything. The tag is the way back; CI
+never pushes a sha tag twice, so it keeps pointing at the same digest.
 
 **Rollback.** The same flow with the old tag: set `IMAGE_TAG=sha-<old>` in `.env`, then `pull`,
 `up -d`, and check that `/health` reports `sha-<old>`. The database volume is untouched by both
