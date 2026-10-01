@@ -24,3 +24,7 @@ The MIT licence above covers the code. It does not cover the Varde name or mark:
 docs/brand/ except docs/brand/fonts/, and the icon files in web/public/ (favicon.svg,
 favicon.ico, apple-touch-icon.png, icon-*.png, og.png), are all rights reserved. The fonts in
 docs/brand/fonts/ keep their own SIL Open Font License 1.1.
+
+The code that draws the mark (web/scripts/brand-geometry.mjs, web/src/components/brandPaths.ts
+and web/src/components/BrandMark.tsx) is MIT as code. The design it draws is not licensed: you
+may reuse the code for other drawings, but not to reproduce the Varde mark.

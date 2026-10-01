@@ -270,7 +270,7 @@ Live, after PR 1 deploys (from outside, with `curl`):
   `docs/brand/` and the icon files in `web/public/`) are excluded: all rights reserved. One
   line says so in `LICENSE`, the README and `docs/brand/guidelines.md`. A service people
   trust in a crisis should not be easy to impersonate with a copycat that looks like it.
-  The bundled fonts keep their own OFL licence, which `docs/brand/fonts/` carries.
+  The bundled fonts keep their own OFL licence, which `docs/brand/fonts/` carries. The code that draws the mark stays MIT as code, but the design it draws is not licensed.
 - **Name check.** Before PR 1 merges I search "Varde" in Patentstyret's register (classes 35,
   44 and 45) and record the result and the date in `docs/brand/guidelines.md`. A conflict
   stops the rollout for a decision; it does not get worked around quietly.
