@@ -23,6 +23,7 @@ import {
 	stackC,
 	svgDoc,
 } from "../scripts/brand-geometry.mjs"
+import { pngToIco } from "../scripts/ico.mjs"
 import { contrastRatio, parseThemeTokens } from "../src/services/contrast.ts"
 
 // jsdom replaces the global URL constructor and mis-resolves relative file URLs on Windows, so
@@ -289,5 +290,37 @@ describe("landscape cards", () => {
 		expect(svg).toContain(`<rect x="0" y="288" width="1280" height="32" fill="${light.accent}"/>`)
 		expect(svg).toContain(`<rect x="0" y="296" width="1280" height="5" fill="${light.ground}"/>`)
 		expect(svg).toContain(`<rect x="0" y="308" width="1280" height="4" fill="${light.ground}"/>`)
+	})
+})
+
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+
+function checkIco(bytes: Uint8Array) {
+	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+	const offset = view.getUint32(18, true)
+	return {
+		reserved: view.getUint16(0, true),
+		type: view.getUint16(2, true),
+		count: view.getUint16(4, true),
+		width: bytes[6],
+		height: bytes[7],
+		pngSignature: PNG_SIGNATURE.every((v, i) => bytes[offset + i] === v),
+	}
+}
+
+describe("ico", () => {
+	test("pngToIco wraps one PNG in a single-image icon directory", () => {
+		const png = new Uint8Array([...PNG_SIGNATURE, 1, 2, 3])
+		const ico = pngToIco(png, 32)
+		expect(checkIco(ico)).toEqual({
+			reserved: 0,
+			type: 1,
+			count: 1,
+			width: 32,
+			height: 32,
+			pngSignature: true,
+		})
+		expect(new DataView(ico.buffer).getUint32(14, true)).toBe(png.length)
+		expect(ico.length).toBe(22 + png.length)
 	})
 })
