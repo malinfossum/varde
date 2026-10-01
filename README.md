@@ -1,5 +1,10 @@
 # Varde
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/brand/banner-dark.png">
+  <img src="docs/brand/banner-light.png" alt="Varde: hjelpetjenester i Norge. Finn riktig hjelp, der du bor." width="1280">
+</picture>
+
 A bilingual (Norwegian/English) directory of social services in Norway. Find the right
 service in the right kommune, with contact details you can trust in a crisis.
 
@@ -228,3 +233,7 @@ By design there is no Application Insights and HTTP logging is off. See the priv
 in `docs/superpowers/specs/2026-08-12-varde-design.md`. The full deployment design, including
 the first-deploy runbook and verification checklist, is
 `docs/superpowers/specs/2026-08-19-varde-deploy-design.md`.
+
+## Licence
+
+Code: MIT. The Varde name and mark: all rights reserved, see `LICENSE`.
