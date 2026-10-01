@@ -24,3 +24,19 @@ export declare function ringMark(
 	options?: { idPrefix?: string; points?: RingPoints }
 ): string
 export declare function svgDoc(width: number, height: number, body: string): string
+export type Colors = {
+	accent: string
+	ground: string
+	text: string
+	muted: string
+	tint1: string
+	tint2: string
+}
+export type Placement = { s: number; tx: number; ty: number }
+export declare const SCENE_PLACEMENT: Placement
+export declare function mix(a: string, b: string, t: number): string
+export declare function brandColors(tokens: Record<string, string>): Colors
+export declare function scene(ink: string, placement?: Placement): string
+export declare function maskablePlacement(): Placement
+export declare function medallion(colors: Colors, points?: RingPoints): string
+export declare function plateIcon(colors: Colors, placement?: Placement): string

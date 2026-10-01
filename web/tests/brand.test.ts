@@ -1,13 +1,17 @@
+import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Resvg } from "@resvg/resvg-js"
 import { describe, expect, test } from "vitest"
 import {
+	brandColors,
 	C1,
 	FJORD_LINES,
 	FONT_FILES,
 	FONTS,
+	maskablePlacement,
 	type Point,
+	plateIcon,
 	ringMark,
 	ringMarkPoints,
 	type Stone,
@@ -15,6 +19,7 @@ import {
 	stackC,
 	svgDoc,
 } from "../scripts/brand-geometry.mjs"
+import { contrastRatio, parseThemeTokens } from "../src/services/contrast.ts"
 
 // jsdom replaces the global URL constructor and mis-resolves relative file URLs on Windows, so
 // paths go through node:path/node:url (same fix as tokens.test.ts).
@@ -138,5 +143,70 @@ describe("ring mark geometry", () => {
 	test("the clearance gate fails on the v6 mark", () => {
 		const v6 = ringMarkPoints({ stack: V6_STACK, mountain: V6_MOUNTAIN, f: 1, k: 1 })
 		expect(skyAboveFjord(v6)).toBeGreaterThan(0)
+	})
+})
+
+const themes = parseThemeTokens(readFileSync(join(repo, "web/src/styles/tokens.css"), "utf8"))
+const light = brandColors(themes.light)
+const dark = brandColors(themes.dark)
+
+describe("colours", () => {
+	test("the banner tints are the accent mixed into the paper, matching the spec table", () => {
+		expect([light.tint1, light.tint2]).toEqual(["#c3cdc1", "#8fa998"])
+		expect([dark.tint1, dark.tint2]).toEqual(["#283b34", "#456857"])
+	})
+
+	// WCAG 1.4.11: a graphic that identifies the site needs 3:1 against what it sits on.
+	test.each([
+		[
+			"light accent on paper (medallion, ico, light banner, og, social)",
+			light.accent,
+			light.ground,
+		],
+		["dark accent on dark paper (dark banner)", dark.accent, dark.ground],
+	])("%s is at least 3:1", (_, ink, ground) => {
+		expect(contrastRatio(ink, ground)).toBeGreaterThanOrEqual(3)
+	})
+
+	test.each(["#ffffff", "#f0f0f4"])("the favicon's light accent reads on a %s tab", (tab) => {
+		expect(contrastRatio(light.accent, tab)).toBeGreaterThanOrEqual(3)
+	})
+
+	test.each(["#35363a", "#42414d"])("the favicon's dark accent reads on a %s tab", (tab) => {
+		expect(contrastRatio(dark.accent, tab)).toBeGreaterThanOrEqual(3)
+	})
+
+	test("the contrast gate fails for the light accent on a dark tab", () => {
+		expect(contrastRatio(light.accent, "#35363a")).toBeLessThan(3)
+	})
+})
+
+// Pixels whose centre lies outside the maskable safe circle (radius 0.4 x size) and are not
+// exactly the plate colour. Launchers may crop anything out there.
+function outsideSafeCircle(svg: string, size: number, plate: string) {
+	const image = render(svg, size)
+	const [r, g, b] = [1, 3, 5].map((i) => Number.parseInt(plate.slice(i, i + 2), 16))
+	let bad = 0
+	for (let y = 0; y < size; y++) {
+		for (let x = 0; x < size; x++) {
+			if (Math.hypot(x + 0.5 - size / 2, y + 0.5 - size / 2) <= 0.4 * size) continue
+			const i = (y * size + x) * 4
+			const p = image.pixels
+			if (p[i] !== r || p[i + 1] !== g || p[i + 2] !== b || p[i + 3] !== 255) bad++
+		}
+	}
+	return bad
+}
+
+describe("app icons", () => {
+	test.each([192, 512])(
+		"the maskable icon keeps the scene inside the safe circle at %i",
+		(size) => {
+			expect(outsideSafeCircle(plateIcon(light, maskablePlacement()), size, light.accent)).toBe(0)
+		}
+	)
+
+	test("the safe-zone gate fails on the unfitted scene", () => {
+		expect(outsideSafeCircle(plateIcon(light), 512, light.accent)).toBeGreaterThan(0)
 	})
 })

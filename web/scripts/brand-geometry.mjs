@@ -121,3 +121,86 @@ export function ringMark(ink, { idPrefix = "varde", points = ringMarkPoints() } 
 export function svgDoc(width, height, body) {
 	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">${body}</svg>\n`
 }
+
+const rgb = (hex) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16))
+
+// t is the share of a. Rounds half up, which reproduces the spec's tint table exactly.
+export function mix(a, b, t) {
+	const [ca, cb] = [rgb(a), rgb(b)]
+	const channel = (i) =>
+		Math.round(ca[i] * t + cb[i] * (1 - t))
+			.toString(16)
+			.padStart(2, "0")
+	return `#${[0, 1, 2].map(channel).join("")}`
+}
+
+// One theme's brand colours. The two banner tints are the accent mixed into the paper at 25 %
+// and 50 %, so they follow the tokens instead of being a second palette. Fills only, never text.
+export function brandColors(tokens) {
+	return {
+		accent: tokens.accent,
+		ground: tokens.ground,
+		text: tokens.text,
+		muted: tokens.muted,
+		tint1: mix(tokens.accent, tokens.ground, 0.25),
+		tint2: mix(tokens.accent, tokens.ground, 0.5),
+	}
+}
+
+// The app-icon scene: no ring, no clip, no fjord lines. The mountain runs from x -2 to 34 on
+// base line 31; the C1 sizing applies about that base.
+const SCENE_BASE = 31
+const SCENE_MOUNTAIN = [[-2, SCENE_BASE], ...MOUNTAIN.slice(1, -1), [34, SCENE_BASE]]
+
+function sceneShapes() {
+	const stones = sized(stackC(), C1.f, C1.k, SCENE_BASE).map(([yT, yB, w]) =>
+		stonePoints(16, yT, yB, w)
+	)
+	return [SCENE_MOUNTAIN.map(aboutBase(C1.f, SCENE_BASE)), ...stones]
+}
+
+// translate(tx,ty) scale(s) translate(-16,-16), as numbers.
+const place =
+	({ s, tx, ty }) =>
+	([x, y]) => [tx + s * (x - 16), ty + s * (y - 16)]
+
+export const SCENE_PLACEMENT = { s: 0.72, tx: 16, ty: 16.6 }
+
+export function scene(ink, placement = SCENE_PLACEMENT) {
+	const shapes = sceneShapes().map(
+		(shape) => `<polygon points="${pointList(shape.map(place(placement)))}"/>`
+	)
+	return `<g fill="${ink}">${shapes.join("")}</g>`
+}
+
+// Centre the scene's bounding box and scale it until the box corners sit on 98 % of the 40 %
+// safe radius (12.8 in a 32 box). The 2 % margin keeps antialiasing inside the line. Computed
+// from the box, never hand-tuned.
+export function maskablePlacement() {
+	const points = sceneShapes().flat()
+	const xs = points.map(([x]) => x)
+	const ys = points.map(([, y]) => y)
+	const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)]
+	const s = (0.98 * 0.4 * 32) / Math.hypot((x1 - x0) / 2, (y1 - y0) / 2)
+	return { s, tx: 16 - s * ((x0 + x1) / 2 - 16), ty: 16 - s * ((y0 + y1) / 2 - 16) }
+}
+
+// Paper disc, accent ring mark, transparent outside the disc: favicon.ico and the "any" icons,
+// which land on backgrounds I don't control.
+export function medallion(colors, points = ringMarkPoints()) {
+	return svgDoc(
+		32,
+		32,
+		`<circle cx="16" cy="16" r="16" fill="${colors.ground}"/>${ringMark(colors.accent, { points })}`
+	)
+}
+
+// Full-bleed accent plate with the scene in paper: apple-touch (iOS rounds the corners) and,
+// with maskablePlacement(), the maskable icons.
+export function plateIcon(colors, placement = SCENE_PLACEMENT) {
+	return svgDoc(
+		32,
+		32,
+		`<rect width="32" height="32" fill="${colors.accent}"/>${scene(colors.ground, placement)}`
+	)
+}
