@@ -14,7 +14,8 @@
 			"!node_modules",
 			"!**/*.min.js",
 			"!public/data",
-			"!src/components/brandPaths.ts"
+			"!src/components/brandPaths.ts",
+			"!public/favicon.svg"
 		]
 	},
 	"formatter": {
