@@ -81,16 +81,38 @@ export function urlList(kommuner, resourcesByLang) {
 	return out
 }
 
+// One share card for every page in both languages: the service and its name are Norwegian.
+// Every value goes through escapeHtml, because titles and descriptions come from service names.
+const OG_LOCALE = { nb: "nb_NO", en: "en_US" }
+const OG_IMAGE_ALT = {
+	nb: "Varde-logoen, en varde på en fjelltopp, og teksten Finn riktig hjelp, der du bor.",
+	en: "The Varde logo, a cairn on a mountain top, with the Norwegian tagline Finn riktig hjelp, der du bor.",
+}
+
 function headTags(head, siteOrigin) {
 	if (!head) return ""
 	const abs = (lang, path) => `${siteOrigin}${prefix(lang)}${path}`
+	const canonical = abs(head.lang, head.path)
+	const og = (property, content) =>
+		`<meta property="${property}" content="${escapeHtml(content)}" />`
 	return [
 		`<title>${escapeHtml(head.title)}</title>`,
 		`<meta name="description" content="${escapeHtml(head.description)}" />`,
-		`<link rel="canonical" href="${abs(head.lang, head.path)}" />`,
+		`<link rel="canonical" href="${canonical}" />`,
 		`<link rel="alternate" hreflang="nb" href="${abs("nb", head.path)}" />`,
 		`<link rel="alternate" hreflang="en" href="${abs("en", head.path)}" />`,
 		`<link rel="alternate" hreflang="x-default" href="${abs("nb", head.path)}" />`,
+		og("og:type", "website"),
+		og("og:site_name", "Varde"),
+		og("og:title", head.title),
+		og("og:description", head.description),
+		og("og:url", canonical),
+		og("og:locale", OG_LOCALE[head.lang]),
+		og("og:image", `${siteOrigin}/og.png`),
+		og("og:image:width", "1200"),
+		og("og:image:height", "630"),
+		og("og:image:alt", OG_IMAGE_ALT[head.lang]),
+		`<meta name="twitter:card" content="summary_large_image" />`,
 	].join("\n\t\t")
 }
 
