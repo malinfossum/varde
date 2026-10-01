@@ -17,7 +17,11 @@ const PRESSABLE_STYLE_HASH = "'sha256-38RhXrc7EdReTKsOm23ZPOCUgniTUUcjky8QOOrQx6
 // above. Both hashes are rebuilt from source by the drift tests below.
 const THEME_INIT_HASH = "'sha256-YzBzTWuXMzOIkk/qQdaDv8mn8TPOsUq2jVt1Yw6kEWI='"
 
-const CSP = `default-src 'self'; script-src 'self' ${THEME_INIT_HASH}; style-src 'self' ${PRESSABLE_STYLE_HASH}; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'`
+// favicon.svg switches to the dark accent with a <style> media query, and Cloudflare sends the
+// site CSP on the SVG too, so style-src carries that block's hash like the react-aria one.
+const FAVICON_STYLE_HASH = "'sha256-XodWmapXSEN8Gm7hXhuJElP7r6t5hGJeqWI+gEQHVu0='"
+
+const CSP = `default-src 'self'; script-src 'self' ${THEME_INIT_HASH}; style-src 'self' ${PRESSABLE_STYLE_HASH} ${FAVICON_STYLE_HASH}; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'`
 
 test("_headers carries the spec's policy", () => {
 	const text = read("../public/_headers")
@@ -52,4 +56,17 @@ test("the script-src hash matches the inline init script in index.html", () => {
 	const inline = html.slice(open + "<script>".length, close)
 	const hash = `'sha256-${createHash("sha256").update(inline).digest("base64")}'`
 	expect(hash).toBe(THEME_INIT_HASH)
+})
+
+// Hash exactly the text between the favicon's <style> tags (indexOf, not a regex: CodeQL flags
+// tag-matching regexes). A favicon change without a new hash turns this red.
+test("the style-src hash matches favicon.svg's <style> block", () => {
+	const svg = read("../public/favicon.svg")
+	const open = svg.indexOf("<style>")
+	const close = svg.indexOf("</style>", open)
+	expect(open).toBeGreaterThan(-1)
+	expect(close).toBeGreaterThan(open)
+	const css = svg.slice(open + "<style>".length, close)
+	const hash = `'sha256-${createHash("sha256").update(css).digest("base64")}'`
+	expect(hash).toBe(FAVICON_STYLE_HASH)
 })
