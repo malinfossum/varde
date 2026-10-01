@@ -2,3 +2,25 @@
 // a plain .mjs import has no type on its own. tests/brand.test.ts is the only TS consumer.
 export declare const FONTS: { display: string; body: string }
 export declare const FONT_FILES: string[]
+export type Point = [number, number]
+export type Stone = [yT: number, yB: number, w: number]
+export type RingPoints = { mountain: string; stones: string[] }
+export type Geometry = { stack?: Stone[]; mountain?: Point[]; f?: number; k?: number }
+export declare const SUMMIT: number
+export declare const MOUNTAIN: Point[]
+export declare const C1: { f: number; k: number }
+export declare const RING: { cx: number; cy: number; r: number; strokeWidth: number }
+export declare const CLIP_R: number
+export declare const FJORD_LINES: { y: number; strokeWidth: number }[]
+export declare function fmt(n: number): string
+export declare function pointList(points: Point[]): string
+export declare function stackC(): Stone[]
+export declare function sized(stack: Stone[], f: number, k: number, base: number): Stone[]
+export declare function stonePoints(cx: number, yT: number, yB: number, w: number): Point[]
+export declare function aboutBase(f: number, base: number): (p: Point) => Point
+export declare function ringMarkPoints(geometry?: Geometry): RingPoints
+export declare function ringMark(
+	ink: string,
+	options?: { idPrefix?: string; points?: RingPoints }
+): string
+export declare function svgDoc(width: number, height: number, body: string): string

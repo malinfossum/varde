@@ -2,7 +2,19 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Resvg } from "@resvg/resvg-js"
 import { describe, expect, test } from "vitest"
-import { FONT_FILES, FONTS } from "../scripts/brand-geometry.mjs"
+import {
+	C1,
+	FJORD_LINES,
+	FONT_FILES,
+	FONTS,
+	type Point,
+	ringMark,
+	ringMarkPoints,
+	type Stone,
+	sized,
+	stackC,
+	svgDoc,
+} from "../scripts/brand-geometry.mjs"
 
 // jsdom replaces the global URL constructor and mis-resolves relative file URLs on Windows, so
 // paths go through node:path/node:url (same fix as tokens.test.ts).
@@ -65,5 +77,66 @@ describe("fonts", () => {
 	test("with no fonts loaded the same text renders blank, so the gate can fail", () => {
 		const blank = render(probe(FONTS.display), 400, [])
 		expect(inkCount(blank, [0, 0, 400, 100], "#000000")).toBe(0)
+	})
+})
+
+// The v6 mark the brainstorm rejected: its mountain left sky above the top fjord line (26 px
+// measured in the browser at 640 px). Kept here only to prove the clearance gate can fail.
+const V6_STACK: Stone[] = [
+	[12.4, 17.6, 13],
+	[6.2, 11, 11],
+	[0.6, 5, 7.8],
+]
+const V6_MOUNTAIN: Point[] = [
+	[-4, 33],
+	[4.5, 25.2],
+	[7, 26.6],
+	[12.2, 20.2],
+	[16, 18.8],
+	[19.8, 20.2],
+	[23.2, 23.6],
+	[25.6, 22.2],
+	[36, 33],
+]
+
+// Port of marks9.html's touchCheck(): render the ring mark black on transparent at 640 px and
+// count see-through pixels inside the clip, in the row just above the top fjord line.
+function skyAboveFjord(points = ringMarkPoints()) {
+	const size = 640
+	const unit = size / 32
+	const image = render(svgDoc(32, 32, ringMark("#000000", { points })), size)
+	const top = FJORD_LINES[0]
+	const row = Math.floor((top.y - top.strokeWidth / 2) * unit) - 2
+	let sky = 0
+	for (let x = 0; x < size; x++) {
+		const inside = Math.hypot(x / unit - 16, row / unit - 16) < 13.2
+		if (inside && image.pixels[(row * size + x) * 4 + 3] < 128) sky++
+	}
+	return sky
+}
+
+describe("ring mark geometry", () => {
+	test("variant C stacks three stones up from the summit with 0.7 gaps", () => {
+		const expected = [2.3, 6.7, 7.8, 7.4, 12.2, 11, 12.9, 18.1, 13]
+		expect(stackC().flat()).toEqual(expected.map((n) => expect.closeTo(n, 6)))
+	})
+
+	test("C1 keeps the stack top where C had it, at 2.3", () => {
+		expect(sized(stackC(), C1.f, C1.k, 33)[0][0]).toBeCloseTo(2.3, 2)
+	})
+
+	test("the ring mark draws one mountain and three stones", () => {
+		const svg = ringMark("#000000")
+		expect(svg.match(/<polygon /g)).toHaveLength(4)
+		expect(svg).toContain('r="14.6"')
+	})
+
+	test("C1 leaves no sky between the mountain and the top fjord line", () => {
+		expect(skyAboveFjord()).toBe(0)
+	})
+
+	test("the clearance gate fails on the v6 mark", () => {
+		const v6 = ringMarkPoints({ stack: V6_STACK, mountain: V6_MOUNTAIN, f: 1, k: 1 })
+		expect(skyAboveFjord(v6)).toBeGreaterThan(0)
 	})
 })
