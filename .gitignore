@@ -36,3 +36,6 @@ dist/
 
 # Brainstorming mockups (visual companion) — the sdd ledger next to it stays tracked
 .superpowers/brainstorm/
+
+# Brand contact sheet and review renders (npm run brand -- --sheet), never committed
+.superpowers/brand-review/

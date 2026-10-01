@@ -8,3 +8,11 @@ web/** text=auto eol=lf
 # is a heuristic that normally leaves woff2 alone, but a heuristic is the wrong guarantee for
 # files whose corruption would only surface at deploy, so I mark them binary explicitly.
 web/public/fonts/*.woff2 binary
+
+# Brand pack. web/tests/brand.test.ts compares the masters and hashes.json byte for byte, so
+# they check out LF on every machine (core.autocrlf would otherwise turn them CRLF on Windows).
+# The rendered images and the fonts are binary; I mark them explicitly, as with the woff2 files.
+docs/brand/src/** text eol=lf
+*.png binary
+*.ico binary
+docs/brand/fonts/*.ttf binary
