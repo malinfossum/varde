@@ -282,4 +282,4 @@ Live, after PR 1 deploys (from outside, with `curl`):
 - Any change to colour tokens or type.
 - Animated or seasonal variants of the mark.
 
-> Stress-tested 2026-10-01 (skill 0b01b4c) — 10 applied, 1 adapted, 1 decided by me.
+> Stress-tested 2026-10-01 (skill 0b01b4c): 10 applied, 1 adapted, 1 decided by me.
