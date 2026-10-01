@@ -160,14 +160,49 @@ podman inspect varde-api-prod --format '{{.Config.Image}} {{.Image}}'   # tag + 
 Write down the old tag and its digest before you change anything. The tag is the way back; CI
 never pushes a sha tag twice, so it keeps pointing at the same digest.
 
-**Rollback.** The same flow with the old tag: set `IMAGE_TAG=sha-<old>` in `.env`, then `pull`,
-`up -d`, and check that `/health` reports `sha-<old>`. The database volume is untouched by both
-deploy and rollback, which is what makes going back possible at all. The one exception is a
-release whose migration changed the schema: then the old image meets a newer schema, so check
-the migrations before you roll back past one.
+### Rollback
 
-Stuck? Read `podman compose -f compose.prod.yml logs api` before guessing. `denied` on pull means
-the package is private; `manifest unknown` means the tag does not exist.
+What runs now: `curl -s http://localhost:8080/health` (the claim) and
+`podman inspect varde-api-prod --format '{{.Config.Image}}'` (the proof).
+
+1. `.env`: `IMAGE_TAG=sha-<previous good>`, taken from the tag register below or `git log --oneline`
+2. `podman compose -f compose.prod.yml pull && podman compose -f compose.prod.yml up -d`
+3. Prove it with both commands above: `version` and the image tag both say `sha-<previous good>`
+
+Rollback is the deploy flow with an older value. Nothing is rebuilt. If going back needs a
+rebuild, it is a fix, not a rollback. The database volume is untouched by both deploy and
+rollback, which is what makes going back possible at all. The one exception is a release whose
+migration changed the schema: then the old image meets a newer schema, so check the migrations
+before you roll back past one.
+
+**Tag register**
+
+| Tag | Where | Role |
+|---|---|---|
+| `sha-83f4d70` | GHCR | Current good: `/health` is back after the drill |
+| `sha-4e97289` | GHCR | Broken on purpose: `/health` renamed to `/status`. Green pipeline, red health gate |
+| `sha-5156e25` | GHCR | Good. The rollback target in the drill |
+| `sha-89f36a0` | GHCR | Good. Web dependency bump only |
+| `sha-b8e13da` | GHCR | Good. Logs its version at startup |
+| `sha-a581a64` | GHCR | Good. The first image CI built |
+| `latest` | GHCR | Moves with every push to `main`. Never deploy it, it cannot take you back |
+
+**Rollback drill, 2026-10-01:** round 1: 6.2 s · round 2: 5.6 s (from the `.env` edit until `/health` reports the old sha)
+
+**Failure journal**
+
+| Error (short) | What I learned |
+|---|---|
+| `failed to resolve reference "…:sha-does-not-exist": not found` | `pull` fails before any container is swapped, so the old version keeps running. Read the tag off a green run, never from memory |
+| `curl: (7) Couldn't connect to server` | Nobody listens on that port. Check `ps` and the port mapping |
+| `curl: (22) The requested URL returned error: 404` | The app is alive and answered. Check the URL and the path |
+| `dependency failed to start: container varde-db-prod has no healthcheck configured` | `condition: service_healthy` needs a healthcheck behind it. A condition with no check fails loudly or waits in silence |
+| `Assert.Equal() Failure: Values differ` (build-test red) | A red test stops the delivery: the merge is blocked and no image is built |
+| `/health` 404 while every check is green | Tests check logic, not the HTTP surface. The health gate catches what nobody tested for |
+
+Stuck? Read `podman compose -f compose.prod.yml logs api` before guessing. A tag that does not
+exist shows up as `not found` or `manifest unknown` on pull. `denied` usually means a private
+package, but GHCR can say it about a missing tag too, so check the tag first.
 
 ## Deployment
 
