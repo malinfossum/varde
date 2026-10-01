@@ -5,7 +5,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="referrer" content="no-referrer" />
 		<meta name="google-site-verification" content="fHlTUUnZesbjsg05HrjoB8KMyI1bA4ul0FhdMaTCR38" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<!-- sizes="32x32" keeps browsers that read both from picking the .ico over the SVG. -->
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="/favicon.ico" sizes="32x32" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
 		<!-- No-flash theme init and legacy-URL redirect: must run BEFORE the stylesheet,
 		     synchronously (no defer/module). Inline, not a second request, so first paint is not

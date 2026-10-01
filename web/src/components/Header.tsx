@@ -20,7 +20,7 @@ export function Header() {
 					className="inline-flex min-h-11 items-center gap-2 font-display text-lg text-fg no-underline"
 					aria-label={t("header.home")}
 				>
-					<BrandMark className="h-6 w-6 text-accent" />
+					<BrandMark className="h-8 w-8 text-accent" />
 					<span>Varde</span>
 				</Link>
 				<div className="flex items-center gap-2">

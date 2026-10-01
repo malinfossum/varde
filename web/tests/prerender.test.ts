@@ -229,3 +229,53 @@ test("a prerendered route page preloads its lazy chunk and that chunk's imports,
 	expect(readFileSync(join(distDir, "kommune/hamar.html"), "utf8")).toContain("KommunePage-k.js")
 	expect(readFileSync(join(distDir, "index.html"), "utf8")).not.toContain("modulepreload")
 })
+
+test("every page carries the share-card tags, absolute and escaped", async () => {
+	const { dataDir, distDir } = setup([row], [hamar])
+	const render = vi.fn(async (url: string) => ({
+		html: `<main>${url}</main>`,
+		head: {
+			title: 'Tittel "A" <b> & C',
+			description: "D & E",
+			path: url.replace(/^\/en/, "") || "/",
+			lang: url.startsWith("/en") ? "en" : "nb",
+		},
+	}))
+	const { pages } = await prerenderSite({
+		dataDir,
+		distDir,
+		render,
+		split: stubSplit,
+		siteOrigin: "https://varde.pages.dev",
+		log: () => {},
+	})
+	expect(pages).toHaveLength(8)
+	for (const url of pages) {
+		const file = url.endsWith("/") ? join(distDir, url, "index.html") : `${join(distDir, url)}.html`
+		const html = readFileSync(file, "utf8")
+		const en = url.startsWith("/en")
+		const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1]
+		expect(canonical, url).toBeDefined()
+		const tag = (property: string, content: string) =>
+			`<meta property="${property}" content="${content}" />`
+		expect(html).toContain(tag("og:url", canonical as string))
+		expect(html).toContain(tag("og:type", "website"))
+		expect(html).toContain(tag("og:site_name", "Varde"))
+		expect(html).toContain(tag("og:title", "Tittel &quot;A&quot; &lt;b&gt; &amp; C"))
+		expect(html).toContain(tag("og:description", "D &amp; E"))
+		expect(html).toContain(tag("og:locale", en ? "en_US" : "nb_NO"))
+		expect(html).toContain(tag("og:image", "https://varde.pages.dev/og.png"))
+		expect(html).toContain(tag("og:image:width", "1200"))
+		expect(html).toContain(tag("og:image:height", "630"))
+		expect(html).toContain(
+			tag(
+				"og:image:alt",
+				en
+					? "The Varde logo, a cairn on a mountain top, with the Norwegian tagline Finn riktig hjelp, der du bor."
+					: "Varde-logoen, en varde på en fjelltopp, og teksten Finn riktig hjelp, der du bor."
+			)
+		)
+		expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
+		expect(html).not.toContain('content="Tittel "A"')
+	}
+})

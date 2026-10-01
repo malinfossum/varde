@@ -7,7 +7,16 @@
 	},
 	"files": {
 		"ignoreUnknown": true,
-		"includes": ["**", "!dist", "!dist-server", "!node_modules", "!**/*.min.js", "!public/data"]
+		"includes": [
+			"**",
+			"!dist",
+			"!dist-server",
+			"!node_modules",
+			"!**/*.min.js",
+			"!public/data",
+			"!src/components/brandPaths.ts",
+			"!public/favicon.svg"
+		]
 	},
 	"formatter": {
 		"enabled": true,
