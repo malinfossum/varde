@@ -19,3 +19,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+The MIT licence above covers the code. It does not cover the Varde name or mark: every file in
+docs/brand/ and the icon files in web/public/ (favicon.svg, favicon.ico, apple-touch-icon.png,
+icon-*.png, og.png) are all rights reserved. The fonts in docs/brand/fonts/ keep their own SIL
+Open Font License 1.1.
