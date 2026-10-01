@@ -253,13 +253,14 @@ Live, after PR 1 deploys (from outside, with `curl`):
 1. **PR 1 `feat(brand)`: the pack and the site wiring.** Geometry module, fonts and licence,
    `npm run brand`, the ico writer, every generated file, the tests, `BrandMark.tsx`,
    `Header.tsx`, `index.html` and the `headTags` change, plus `@resvg/resvg-js` as a
-   devDependency. The PR description carries the contact sheet and the silhouette verdicts.
+   devDependency, and the `LICENSE` carve-out below (the mark is public from the first push,
+   so the carve-out ships with it). The PR description carries the contact sheet and the
+   silhouette verdicts.
 2. **Live checks** as above.
 3. **PR 2 `docs(brand)`: the words.** `docs/brand/guidelines.md` (clear space, minimum size,
    the two forms and when to use each, colours, don'ts, and the hand-cut story), the README
    banner as a light/dark `<picture>` with the alt text "Varde: hjelpetjenester i Norge. Finn
    riktig hjelp, der du bor.", and `varde-brief.md` rewritten to match what shipped.
-   It also carries the licence carve-out below.
 4. **I upload** `docs/brand/social-preview.png` in the repo's GitHub settings (General,
    Social preview). GitHub has no API for it.
 
