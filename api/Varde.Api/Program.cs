@@ -101,7 +101,7 @@ app.MapControllers();
 
 // Liveness probe for the container stack: the compose healthcheck polls it, and in week 2 the
 // deploy gate reads `version` to tell a new release from the one it replaced.
-app.MapGet("/helse", (IConfiguration config) => Results.Ok(new
+app.MapGet("/status", (IConfiguration config) => Results.Ok(new
 {
     status = "ok",
     version = config["APP_VERSION"] ?? "dev",
