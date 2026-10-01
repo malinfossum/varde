@@ -40,3 +40,11 @@ export declare function scene(ink: string, placement?: Placement): string
 export declare function maskablePlacement(): Placement
 export declare function medallion(colors: Colors, points?: RingPoints): string
 export declare function plateIcon(colors: Colors, placement?: Placement): string
+export type Layout = {
+	width: number
+	height: number
+	land: number
+	text: { x: number; y: number; scale: number }
+}
+export declare const LAYOUTS: { banner: Layout; og: Layout; social: Layout }
+export declare function landscapeCard(colors: Colors, layout: Layout): string

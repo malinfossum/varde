@@ -6,9 +6,13 @@ import { describe, expect, test } from "vitest"
 import {
 	brandColors,
 	C1,
+	type Colors,
 	FJORD_LINES,
 	FONT_FILES,
 	FONTS,
+	LAYOUTS,
+	type Layout,
+	landscapeCard,
 	maskablePlacement,
 	type Point,
 	plateIcon,
@@ -39,9 +43,11 @@ function render(svg: string, width: number, fontFiles = FONTS_ABS, background?: 
 	return { width: image.width, height: image.height, pixels: image.pixels as unknown as Uint8Array }
 }
 
+const hexRgb = (hex: string) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16))
+
 // Opaque pixels inside box [x0, y0, x1, y1) within `tolerance` (RGB distance) of `hex`.
 function inkCount(image: Image, box: number[], hex: string, tolerance = 60) {
-	const [r, g, b] = [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16))
+	const [r, g, b] = hexRgb(hex)
 	const [x0, y0, x1, y1] = box
 	let count = 0
 	for (let y = y0; y < y1; y++) {
@@ -185,7 +191,7 @@ describe("colours", () => {
 // exactly the plate colour. Launchers may crop anything out there.
 function outsideSafeCircle(svg: string, size: number, plate: string) {
 	const image = render(svg, size)
-	const [r, g, b] = [1, 3, 5].map((i) => Number.parseInt(plate.slice(i, i + 2), 16))
+	const [r, g, b] = hexRgb(plate)
 	let bad = 0
 	for (let y = 0; y < size; y++) {
 		for (let x = 0; x < size; x++) {
@@ -208,5 +214,80 @@ describe("app icons", () => {
 
 	test("the safe-zone gate fails on the unfitted scene", () => {
 		expect(outsideSafeCircle(plateIcon(light), 512, light.accent)).toBeGreaterThan(0)
+	})
+})
+
+// Where "Varde" sits in a card: block origin + (100..250, 14..56) block units, scaled.
+const nameBox = ({ text }: Layout) => [
+	Math.round(text.x + 100 * text.scale),
+	Math.round(text.y + 14 * text.scale),
+	Math.round(text.x + 250 * text.scale),
+	Math.round(text.y + 56 * text.scale),
+]
+
+// Bounding box of every pixel close to the text colour, measured, not estimated.
+function textBounds(image: Image, hex: string) {
+	const [r, g, b] = hexRgb(hex)
+	let [x0, y0, x1, y1] = [image.width, image.height, -1, -1]
+	for (let y = 0; y < image.height; y++) {
+		for (let x = 0; x < image.width; x++) {
+			const i = (y * image.width + x) * 4
+			const p = image.pixels
+			if (Math.hypot(p[i] - r, p[i + 1] - g, p[i + 2] - b) < 60) {
+				;[x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)]
+			}
+		}
+	}
+	return { x0, y0, x1, y1 }
+}
+
+const cards: [string, Colors, Layout][] = [
+	["light banner", light, LAYOUTS.banner],
+	["dark banner", dark, LAYOUTS.banner],
+	["og card", light, LAYOUTS.og],
+	["social preview", light, LAYOUTS.social],
+]
+
+describe("landscape cards", () => {
+	test.each(cards)("the %s renders the name in the bundled display face", (_, colors, layout) => {
+		const image = render(landscapeCard(colors, layout), layout.width)
+		expect(inkCount(image, nameBox(layout), colors.text)).toBeGreaterThan(300)
+	})
+
+	// Ink alone cannot tell the right family from resvg's silent fallback to the first loaded
+	// font, so the whole card must also render identically whatever the font file order.
+	test.each(cards)(
+		"the %s matches its font names, not the first-loaded fallback",
+		(_, colors, layout) => {
+			const svg = landscapeCard(colors, layout)
+			const forward = render(svg, layout.width).pixels
+			const reversed = render(svg, layout.width, [...FONTS_ABS].reverse()).pixels
+			expect(forward.every((v, i) => v === reversed[i])).toBe(true)
+		}
+	)
+
+	test("the font gate fails when no fonts are loaded", () => {
+		const image = render(landscapeCard(light, LAYOUTS.banner), 1280, [])
+		expect(inkCount(image, nameBox(LAYOUTS.banner), light.text)).toBe(0)
+	})
+
+	test.each([
+		["og", LAYOUTS.og],
+		["social", LAYOUTS.social],
+	] as const)("the %s card keeps its text inside the centre 90 %%", (_, layout) => {
+		const image = render(landscapeCard(light, layout), layout.width)
+		const box = textBounds(image, light.text)
+		expect(box.x1).toBeGreaterThan(0)
+		expect(box.x0).toBeGreaterThanOrEqual(Math.max(64, 0.05 * layout.width))
+		expect(box.y0).toBeGreaterThanOrEqual(0.05 * layout.height)
+		expect(box.x1).toBeLessThanOrEqual(0.95 * layout.width)
+		expect(box.y1).toBeLessThanOrEqual(0.95 * layout.height)
+	})
+
+	test("the banner keeps the spec's water band and knockouts", () => {
+		const svg = landscapeCard(light, LAYOUTS.banner)
+		expect(svg).toContain(`<rect x="0" y="288" width="1280" height="32" fill="${light.accent}"/>`)
+		expect(svg).toContain(`<rect x="0" y="296" width="1280" height="5" fill="${light.ground}"/>`)
+		expect(svg).toContain(`<rect x="0" y="308" width="1280" height="4" fill="${light.ground}"/>`)
 	})
 })

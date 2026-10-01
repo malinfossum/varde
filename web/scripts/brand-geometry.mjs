@@ -204,3 +204,69 @@ export function plateIcon(colors, placement = SCENE_PLACEMENT) {
 		`<rect width="32" height="32" fill="${colors.accent}"/>${scene(colors.ground, placement)}`
 	)
 }
+
+// The banner's three ranges in banner units (1280x320), back to front.
+const RANGES = {
+	back: "M520,320 L660,210 L720,236 L850,96 L915,150 L975,122 L1110,215 L1190,170 L1280,212 L1280,320Z",
+	middle:
+		"M600,320 L740,246 L790,262 L880,190 L940,222 L1070,178 L1180,250 L1230,236 L1280,262 L1280,320Z",
+	front:
+		"M680,320 L810,276 L860,288 L965,214 L1010,206 L1055,214 L1130,266 L1165,256 L1280,296 L1280,320Z",
+}
+const FRONT_SUMMIT = [1010, 206]
+const STACK_SCALE = 3.6
+
+// The C1 stack at x3.6 on the front summit. Only k applies: the mountain here is the front
+// range, not the icon mountain, so f stays 1.
+function bannerStack() {
+	const [cx, summit] = FRONT_SUMMIT
+	const dy = summit - SUMMIT * STACK_SCALE
+	return sized(stackC(), 1, C1.k, 33)
+		.map(([yT, yB, w]) => {
+			const points = stonePoints(cx, yT * STACK_SCALE + dy, yB * STACK_SCALE + dy, w * STACK_SCALE)
+			return `<polygon points="${pointList(points)}"/>`
+		})
+		.join("")
+}
+
+// Ring mark x2.4, name, eyebrow and tagline, in banner units from the block's origin. The font
+// families are quoted because "Fraunces 9pt" has a digit-led word.
+function textBlock(colors, { x, y, scale }) {
+	return [
+		`<g transform="translate(${fmt(x)},${fmt(y)}) scale(${fmt(scale)})">`,
+		`<g transform="scale(2.4)">${ringMark(colors.accent, { idPrefix: "card" })}</g>`,
+		`<text x="96" y="58" font-family="'${FONTS.display}'" font-weight="600" font-size="64" fill="${colors.text}">Varde</text>`,
+		`<text x="2" y="132" font-family="'${FONTS.body}'" font-weight="600" font-size="15" letter-spacing="1.5" fill="${colors.muted}">HJELPETJENESTER I NORGE</text>`,
+		`<text x="0" y="168" font-family="'${FONTS.display}'" font-weight="600" font-size="30" fill="${colors.text}">Finn riktig hjelp, der du bor.</text>`,
+		"</g>",
+	].join("")
+}
+
+// land scales the landscape (pinned to the bottom-right corner); text places the text block.
+// banner is the spec's 1280x320 exactly. og and social are the starting layouts Malin approves
+// on the contact sheet.
+export const LAYOUTS = {
+	banner: { width: 1280, height: 320, land: 1, text: { x: 72, y: 84, scale: 1 } },
+	og: { width: 1200, height: 630, land: 1.25, text: { x: 72, y: 96, scale: 1.35 } },
+	social: { width: 1280, height: 640, land: 1.3, text: { x: 80, y: 100, scale: 1.4 } },
+}
+
+export function landscapeCard(colors, { width, height, land, text }) {
+	const ranges = [
+		`<g transform="translate(${fmt(width - 1280 * land)},${fmt(height - 320 * land)}) scale(${fmt(land)})">`,
+		`<path fill="${colors.tint1}" d="${RANGES.back}"/>`,
+		`<path fill="${colors.tint2}" d="${RANGES.middle}"/>`,
+		`<g fill="${colors.accent}"><path d="${RANGES.front}"/>${bannerStack()}</g>`,
+		"</g>",
+	].join("")
+	// The water band always spans the full width; its two knockouts are paper.
+	const band = 32 * land
+	const top = height - band
+	const water = [
+		`<rect x="0" y="${fmt(top)}" width="${width}" height="${fmt(band)}" fill="${colors.accent}"/>`,
+		`<rect x="0" y="${fmt(top + 8 * land)}" width="${width}" height="${fmt(5 * land)}" fill="${colors.ground}"/>`,
+		`<rect x="0" y="${fmt(top + 20 * land)}" width="${width}" height="${fmt(4 * land)}" fill="${colors.ground}"/>`,
+	].join("")
+	const ground = `<rect width="${width}" height="${height}" fill="${colors.ground}"/>`
+	return svgDoc(width, height, `${ground}${ranges}${water}${textBlock(colors, text)}`)
+}
