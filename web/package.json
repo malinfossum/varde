@@ -11,6 +11,7 @@
 		"build": "npm run build:client && npm run build:server && npm run prerender",
 		"preview": "vite preview",
 		"fonts": "node scripts/sync-fonts.mjs",
+		"brand": "node scripts/brand.mjs",
 		"data": "node scripts/export-data.mjs",
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit",

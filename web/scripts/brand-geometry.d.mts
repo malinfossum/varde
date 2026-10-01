@@ -48,3 +48,11 @@ export type Layout = {
 }
 export declare const LAYOUTS: { banner: Layout; og: Layout; social: Layout }
 export declare function landscapeCard(colors: Colors, layout: Layout): string
+export type Themes = { light: Record<string, string>; dark: Record<string, string> }
+export declare const SRC: string
+export declare const PNG_TARGETS: [master: string, out: string, width: number][]
+export declare const ICO: { master: string; out: string; size: number }
+export declare function faviconStyle(light: string, dark: string): string
+export declare function faviconSvg(light: string, dark: string, points?: RingPoints): string
+export declare function brandPathsTs(points: RingPoints): string
+export declare function masters(themes: Themes, geometry?: Geometry): Record<string, string>

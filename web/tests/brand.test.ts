@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs"
+import { createHash } from "node:crypto"
+import { existsSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Resvg } from "@resvg/resvg-js"
@@ -14,10 +15,12 @@ import {
 	type Layout,
 	landscapeCard,
 	maskablePlacement,
+	masters,
 	type Point,
 	plateIcon,
 	ringMark,
 	ringMarkPoints,
+	SRC,
 	type Stone,
 	sized,
 	stackC,
@@ -322,5 +325,76 @@ describe("ico", () => {
 		})
 		expect(new DataView(ico.buffer).getUint32(14, true)).toBe(png.length)
 		expect(ico.length).toBe(22 + png.length)
+	})
+})
+
+// Repo-relative paths whose committed content differs from what the geometry builds now.
+function drifted(files: Record<string, string>) {
+	return Object.entries(files)
+		.filter(([rel, content]) => {
+			const path = join(repo, rel)
+			return !existsSync(path) || readFileSync(path, "utf8") !== content
+		})
+		.map(([rel]) => rel)
+}
+
+const sha256 = (data: Uint8Array | string) => createHash("sha256").update(data).digest("hex")
+
+// Sizes from the spec's pack table, written out here so the test does not trust the build's
+// own list.
+const PNG_SIZES: [string, number, number][] = [
+	["web/public/apple-touch-icon.png", 180, 180],
+	["web/public/icon-192.png", 192, 192],
+	["web/public/icon-512.png", 512, 512],
+	["web/public/icon-maskable-192.png", 192, 192],
+	["web/public/icon-maskable-512.png", 512, 512],
+	["web/public/og.png", 1200, 630],
+	["docs/brand/banner-light.png", 1280, 320],
+	["docs/brand/banner-dark.png", 1280, 320],
+	["docs/brand/social-preview.png", 1280, 640],
+]
+
+describe("generated pack", () => {
+	test("every committed brand file matches the geometry byte for byte (run: npm run brand)", () => {
+		expect(drifted(masters(themes))).toEqual([])
+	})
+
+	test("the drift gate catches one changed number", () => {
+		expect(drifted(masters(themes, { f: 1.16 }))).not.toEqual([])
+	})
+
+	test("hashes.json matches every master, so no PNG is older than its SVG", () => {
+		const hashes = JSON.parse(readFileSync(join(repo, SRC, "hashes.json"), "utf8"))
+		const svgs = Object.keys(masters(themes))
+			.filter((rel) => rel.startsWith(`${SRC}/`))
+			.map((rel) => rel.slice(SRC.length + 1))
+		expect(Object.keys(hashes).sort()).toEqual(svgs.sort())
+		for (const name of svgs) {
+			expect(hashes[name], name).toBe(sha256(readFileSync(join(repo, SRC, name))))
+		}
+	})
+
+	test.each(PNG_SIZES)("%s is %ix%i", (rel, width, height) => {
+		const bytes = readFileSync(join(repo, rel))
+		const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+		expect(PNG_SIGNATURE.every((v, i) => bytes[i] === v)).toBe(true)
+		expect([view.getUint32(16), view.getUint32(20)]).toEqual([width, height])
+	})
+
+	// WhatsApp and some chat apps drop a link-preview image above roughly 300 KB, and Norwegian
+	// users share links there more than anywhere else.
+	test("og.png stays under 300 KB so chat apps show the preview", () => {
+		expect(readFileSync(join(repo, "web/public/og.png")).length).toBeLessThan(300 * 1024)
+	})
+
+	test("favicon.ico is one 32x32 PNG-in-ICO", () => {
+		expect(checkIco(readFileSync(join(repo, "web/public/favicon.ico")))).toEqual({
+			reserved: 0,
+			type: 1,
+			count: 1,
+			width: 32,
+			height: 32,
+			pngSignature: true,
+		})
 	})
 })
