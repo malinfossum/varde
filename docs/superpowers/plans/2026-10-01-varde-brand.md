@@ -1891,4 +1891,4 @@ curl -s https://github.com/malinfossum/varde | grep -oE '<meta property="og:imag
 
 Expected: a `repository-images.githubusercontent.com` URL instead of the default `opengraph.githubassets.com` one.
 
-> Stress-tested 2026-10-01 (skill 0b01b4c), 4 applied, 1 adapted, 0 decided by me.
+> Stress-tested 2026-10-01 (skill 0b01b4c), 3 applied, 1 adapted, 0 decided by me.
