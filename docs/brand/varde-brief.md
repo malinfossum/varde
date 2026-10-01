@@ -62,24 +62,16 @@ pack adds should assume no other typefaces are loaded and no third-party font re
 
 ## The mark
 
-A stacked-stones cairn: three or four rounded forms stacked with a slight organic offset, not
-a perfect pyramid — it should look built by hand, the way a real varde is. One colour, applied
-through `currentColor` so it inherits `text` or `accent` from whatever surface it sits on —
-never a fixed fill. It has to hold up at three sizes: a 16 px favicon, a 32 px header mark, and
-128 px for a social card or app icon, which means the stones need to stay legible as distinct
-shapes even when the smallest one is a handful of pixels. The current placeholder
-(`web/src/components/BrandMark.tsx`) is three rounded bars — good enough to ship, not the real
-mark. I'd rather see something with real weight and a bit of asymmetry than something that
-reads as a generic "stack of pancakes" icon.
+A varde on top of a mountain, inside a ring, with two fjord lines at the base. Three even
+stones cut by hand (flat bases, chopped ends), never rounded. The ring mark is the favicon and
+header mark; the scene without the ring is the app icon. Geometry and rationale:
+`docs/superpowers/specs/2026-10-01-varde-brand-design.md`. Usage: `docs/brand/guidelines.md`.
 
 ## Deliverables
 
-- The mark as a single SVG, `currentColor` fill, clean at 16, 32 and 128 px.
-- A favicon set built from it.
-- A 1280×640 social card (for link previews).
-- A 1280×320 README banner.
-- A short guidelines page: clear space, minimum size, the one thing not to do to the mark
-  (don't recolor it per-service, don't add a gradient, don't put it on a busy photo).
+Shipped 2026-10 (PR 1 of sub-project D): `favicon.svg` and `favicon.ico`, `apple-touch-icon`,
+`icon-192/512` and `icon-maskable-192/512`, `og.png` with Open Graph tags, light and dark README
+banners, and the GitHub social preview. All built by `npm run brand` from one geometry module.
 
 ## Constraints
 
