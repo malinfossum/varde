@@ -28,7 +28,8 @@ Every task's requirements include these. Values are copied from the spec.
 - **Text I ship:** first person, no em dashes (rewrite the sentence instead; no en dash or spaced hyphen as a stand-in). The existing page-title pattern `<title> – Varde` stays as it is, because every page already uses it.
 - **Commits:** conventional prefix (`feat:`, `test:`, `docs:`, `ci:`, `style:`), no `Co-Authored-By` and no AI attribution.
 - **Every new check is shown red once.** Before a Playwright or unit check is trusted, break the code on purpose, run the check, see it fail, and restore. Each PR description lists every break and its red result.
-- **Commands** run from `web/` unless a step says otherwise: `npm test`, `npx biome ci .`, `npm run build`, `npx playwright test`.
+- **Commands** run from `web/` unless a step says otherwise: `npm test`, `npx biome ci .`, `npm run build`, `npx playwright test`. Run `npx biome check --write .` before every `npx biome ci .`: the snippets are Biome-formatted where checked, but new imports land wherever the step says and organize-imports decides their order.
+- **i18n snippets** show every line with a trailing comma. Insert them after the last existing entry, add a comma to the line that was last, and drop the comma after the new last line, so the file stays valid JSON.
 
 ## Review Focus
 
@@ -46,6 +47,7 @@ Inputs the spec implies but no spec test names. Each line has a test in the task
 - **Cloudflare Web Analytics off.** Check in the Cloudflare dashboard (Workers & Pages, the `varde` project, Metrics: Web Analytics must be disabled) before PR 2 merges, since the About page now names Cloudflare.
 - **Arbeidslivstelefonen (id 9) needs "tast 3".** Mental Helse lists it as "116 123 (tast 3)" (mentalhelse.no/fa-hjelp/arbeidslivstelefonen/, read 2026-10-02). Varde's data shows plain `116 123`, so a caller reaches Hjelpetelefonen first. Decide before PR 4 merges: fix the row in Neon and the seed (a data change, outside this plan), or swap id 9 out of `HELPLINE_IDS`.
 - **Install labels on a real device.** Apple's nb pages for iOS 26 and 27 leave "Share" untranslated, and Edge's nb page reads as machine-translated. Check those two labels on a real device before PR 6 merges (Task 19 lists them).
+- **Three header rows on a phone.** Measured on the live site 2026-10-02: at 375 px, brand plus the tools row is 345 px (nb) and 373 px (en) against 343 px of room, so the tools wrap and the sticky header is three rows, 157 px tall. The spec says "the nav links move to a second row". The plan now expects three rows so it builds; decide before PR 3 merges whether that stays (and amend the spec's Phone bullet) or the header stops being sticky under 768 px with only the quick exit pinned, as on short screens.
 - **Required check.** After PR 1's `web-e2e` job runs green, add it as a required check: GitHub, repo Settings, Rules, Rulesets, `protect-main`, "Require status checks to pass", add `web-e2e`.
 
 ## Shipping a PR
@@ -379,7 +381,7 @@ In `web/tests/prerender.test.ts`, change the `urlList` expectation to include Ab
 	])
 ```
 
-and in the "writes every page as a file" test change `expect(result.pages).toHaveLength(8)` to `toHaveLength(10)`, and add after the `kommune/hamar.html` assertion:
+and in the "writes every page as a file" test change `expect(result.pages).toHaveLength(8)` to `toHaveLength(10)`. In the "every page carries the share-card tags" test, change `expect(pages).toHaveLength(8)` (line 252) to `toHaveLength(10)` too. Then add after the `kommune/hamar.html` assertion:
 
 ```ts
 	expect(existsSync(join(distDir, "om.html"))).toBe(true)
@@ -418,7 +420,7 @@ In `web/tests/hydration.test.tsx`, add two rows to the `test.each` table after `
 - [ ] **Step 3: Run them to see them fail**
 
 Run: `npx vitest run tests/urlState.test.ts tests/prerender.test.ts tests/hydration.test.tsx`
-Expected: FAIL. `parseRoute("/om")` returns `notFound`, the URL list lacks `/om`, the style test resolves instead of rejecting, and `/om` hydration finds no h1 matching an About page (it renders NotFound).
+Expected: FAIL. `parseRoute("/om")` returns `notFound`, the URL list lacks `/om`, and the style test resolves instead of rejecting. The two new hydration rows already pass (NotFoundState also has an h1); they guard hydration of the real About page after Step 5, not the route itself.
 
 - [ ] **Step 4: Add the route**
 
@@ -470,7 +472,7 @@ export function AboutPage({ arrival }: { arrival: number }) {
 }
 ```
 
-Add to `web/src/i18n/nb.json` (before the closing brace; keep the file's key order loose, the parity test sorts):
+Add to `web/src/i18n/nb.json` (after the last entry, commas as in Global Constraints; key order is loose, the parity test sorts):
 
 ```json
 	"about.pageTitle": "Om Varde og ansvar – Varde",
@@ -554,7 +556,7 @@ Expected: the build log says `prerendered 210 pages` (208 before, plus `/om` and
 ### Task 4: About page content and the new report address
 
 **Files:**
-- Modify: `web/src/components/AboutPage.tsx`, `web/src/services/contactActions.ts`, `web/src/i18n/nb.json`, `web/src/i18n/en.json`
+- Modify: `web/src/components/AboutPage.tsx`, `web/src/services/contactActions.ts`, `web/src/i18n/nb.json`, `web/src/i18n/en.json`, `README.md`
 - Test: `web/tests/about.test.tsx` (create), `web/tests/contactActions.test.ts`, `web/tests/detail.test.tsx`, `web/tests/axe.test.tsx`
 
 **Interfaces:**
@@ -610,10 +612,10 @@ test.each([
 	window.history.replaceState(null, "", path)
 	render(<App />)
 	const main = screen.getByRole("main")
-	await within(main).findByRole("heading", { level: 1 })
-	const headings = within(main)
-		.getAllByRole("heading", { level: 2 })
-		.map((h) => h.textContent)
+	// The Suspense fallback (LoadingState) has an h1 of its own, so wait for the About h2s instead.
+	const headings = (await within(main).findAllByRole("heading", { level: 2 })).map(
+		(h) => h.textContent
+	)
 	expect(headings).toEqual(sections[lang])
 })
 
@@ -672,6 +674,8 @@ export function generalReportHref(subject: string): string {
 	return `mailto:${REPORT_ADDRESS}?subject=${encodeURIComponent(subject)}`
 }
 ```
+
+The README publishes the old alias too. In `README.md` (the "Report an error" paragraph, line 47), replace `varde.implicate775@passmail.com` with `<ALIAS>`.
 
 - [ ] **Step 5: The page text**
 
@@ -824,7 +828,7 @@ Temporarily delete the `liability` row from `plainSections`. Run `npx vitest run
 
 ```bash
 npm test && npx biome ci .
-git add src/components/AboutPage.tsx src/services/contactActions.ts src/i18n tests/about.test.tsx tests/contactActions.test.ts tests/detail.test.tsx tests/axe.test.tsx
+git add src/components/AboutPage.tsx src/services/contactActions.ts src/i18n tests/about.test.tsx tests/contactActions.test.ts tests/detail.test.tsx tests/axe.test.tsx ../README.md
 git commit -m "feat: write the Om Varde page with liability, privacy and error reports"
 ```
 
@@ -852,26 +856,29 @@ afterEach(() => {
 	window.history.replaceState(null, "", "/")
 })
 
-test.each(["/", "/sok", "/om", "/nope"])("%s carries the liability line and the footer links", (path) => {
-	stubDataFiles()
-	window.history.replaceState(null, "", path)
-	render(<App />)
-	const footer = screen.getByRole("contentinfo")
-	expect(footer).toHaveTextContent(
-		"Varde er en oversikt, ikke en nødtjeneste. Ved fare for liv, ring 113."
-	)
-	expect(within(footer).getByRole("link", { name: "113" })).toHaveAttribute("href", "tel:113")
-	expect(within(footer).getByRole("link", { name: "Om Varde og ansvar" })).toHaveAttribute(
-		"href",
-		"/om"
-	)
-	expect(within(footer).getByRole("link", { name: "Meld feil" })).toHaveAttribute(
-		"href",
-		"/om#meld-feil"
-	)
-	expect(within(footer).getByRole("link", { name: "Kildekode på GitHub" })).toBeInTheDocument()
-	expect(footer).toHaveTextContent("Ingen sporing. Ingen informasjonskapsler.")
-})
+test.each(["/", "/sok", "/om", "/nope"])(
+	"%s carries the liability line and the footer links",
+	(path) => {
+		stubDataFiles()
+		window.history.replaceState(null, "", path)
+		render(<App />)
+		const footer = screen.getByRole("contentinfo")
+		expect(footer).toHaveTextContent(
+			"Varde er en oversikt, ikke en nødtjeneste. Ved fare for liv, ring 113."
+		)
+		expect(within(footer).getByRole("link", { name: "113" })).toHaveAttribute("href", "tel:113")
+		expect(within(footer).getByRole("link", { name: "Om Varde og ansvar" })).toHaveAttribute(
+			"href",
+			"/om"
+		)
+		expect(within(footer).getByRole("link", { name: "Meld feil" })).toHaveAttribute(
+			"href",
+			"/om#meld-feil"
+		)
+		expect(within(footer).getByRole("link", { name: "Kildekode på GitHub" })).toBeInTheDocument()
+		expect(footer).toHaveTextContent("Ingen sporing. Ingen informasjonskapsler.")
+	}
+)
 
 test("the English footer links stay in English", () => {
 	stubDataFiles()
@@ -896,18 +903,21 @@ Create `web/e2e/reflow.spec.ts` (it also guards Review Focus item 5 for every la
 
 ```ts
 import { expect, test } from "@playwright/test"
-import { noHorizontalScroll } from "./helpers.ts"
+import { noHorizontalScroll, setTheme, THEMES } from "./helpers.ts"
 
 const paths = ["/", "/en/", "/sok", "/en/sok", "/resources/1", "/en/resources/1", "/om", "/en/om"]
 
 test.use({ viewport: { width: 320, height: 700 } })
 
-for (const path of paths) {
-	test(`${path} reflows at 320 px without horizontal scroll`, async ({ page }) => {
-		await page.goto(path)
-		await page.evaluate(() => document.fonts.ready)
-		expect(await noHorizontalScroll(page)).toBe(true)
-	})
+for (const theme of THEMES) {
+	for (const path of paths) {
+		test(`${path} reflows at 320 px without horizontal scroll (${theme})`, async ({ page }) => {
+			await setTheme(page, theme)
+			await page.goto(path)
+			await page.evaluate(() => document.fonts.ready)
+			expect(await noHorizontalScroll(page)).toBe(true)
+		})
+	}
 }
 ```
 
@@ -972,7 +982,10 @@ export function Footer() {
 					{/* A plain anchor, not <Link>: Link navigates by pathname and search only, so the
 					    #meld-feil hash would be lost. A full load of the prerendered /om page lets the
 					    browser scroll to the id itself. */}
-					<a href={`${pathFor(lang, "/om")}#meld-feil`} className="inline-flex min-h-11 items-center">
+					<a
+						href={`${pathFor(lang, "/om")}#meld-feil`}
+						className="inline-flex min-h-11 items-center"
+					>
 						{t("footer.report")}
 					</a>
 					<a
@@ -997,12 +1010,12 @@ npx vitest run tests/footer.test.tsx
 npm run build && npx playwright test
 ```
 
-Expected: vitest PASS; Playwright `10 passed` (2 smoke + 8 reflow).
+Expected: vitest PASS; Playwright `18 passed` (2 smoke + 16 reflow, 8 paths in both themes).
 
 - [ ] **Step 6: Show both red once**
 
-Unit: change `"/om#meld-feil"` in `Footer.tsx` to `"/om"`; `npx vitest run tests/footer.test.tsx` FAILS; restore.
-Browser: add `className="min-w-[400px]"` to the footer's inner `<div>`, rebuild, `npx playwright test reflow` FAILS on every path; restore and rebuild.
+Unit: in `Footer.tsx` change ``href={`${pathFor(lang, "/om")}#meld-feil`}`` to `href={pathFor(lang, "/om")}`; `npx vitest run tests/footer.test.tsx` FAILS; restore.
+Browser: append `min-w-[400px]` to the existing `className` of the footer's inner `<div>`, rebuild, `npx playwright test reflow` FAILS on every path; restore and rebuild.
 
 - [ ] **Step 7: Commit**
 
@@ -1098,7 +1111,7 @@ export const HELSENORGE_URL = "https://www.helsenorge.no"
 export const NAV_URL = "https://www.nav.no"
 ```
 
-In `web/src/services/hints.ts`, add `import { HELSENORGE_URL } from "./externalLinks.ts"` and change the entry's `href: "https://www.helsenorge.no",` to `href: HELSENORGE_URL,` (same value).
+In `web/src/services/hints.ts`, add `import { HELSENORGE_URL } from "./externalLinks.ts"` as the first line, above the `./match.ts` import (Biome's import order), and change the entry's `href: "https://www.helsenorge.no",` to `href: HELSENORGE_URL,` (same value).
 
 - [ ] **Step 5: The strings**
 
@@ -1149,8 +1162,9 @@ export function Header() {
 	return (
 		<header className="app-header border-b border-border bg-surface">
 			{/* DOM order is the desktop order from the spec: brand, nav, pickers, exit. Under
-			    1024 px the nav drops to a row of its own below (CSS order), so a phone's keyboard
-			    order runs brand, nav, then the row above; I keep one DOM order rather than two.
+			    1024 px the nav drops to a row of its own below (CSS order), and under 768 px the
+			    tools wrap below the brand too (three rows, measured), so a phone's keyboard order
+			    runs brand, nav, then the rows above; I keep one DOM order rather than two.
 			    flex-wrap keeps 320 px free of horizontal scroll, and every control keeps 44 px. */}
 			<div className="header-row mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2">
 				<Link
@@ -1586,6 +1600,7 @@ export function Picker({
 				</span>
 				<span className="visually-hidden">{value ? `${name}: ${value}` : name}</span>
 			</summary>
+			{/* biome-ignore lint/a11y/useSemanticElements: Workbench picker markup; a fieldset would bring its own UA box styles into the ported CSS */}
 			<div className="picker-list" role="group" aria-label={name}>
 				{children(closeAndFocus)}
 			</div>
@@ -1828,13 +1843,13 @@ and pass it to the anchor:
 Create `web/src/components/LanguagePicker.tsx`:
 
 ```tsx
-import { LANGUAGES } from "../i18n/languages.ts"
 import {
 	LANG_STORAGE_KEY,
 	translate,
 	useLanguage,
 	useTranslation,
 } from "../i18n/LanguageProvider.tsx"
+import { LANGUAGES } from "../i18n/languages.ts"
 import { useCurrentUrl } from "../navigation.ts"
 import { parseUrl, routePath } from "../services/urlState.ts"
 import { CheckIcon, GlobeIcon } from "./icons.tsx"
@@ -2267,13 +2282,17 @@ test("three Shift presses on their own leave", () => {
 })
 
 test("Shift used for capitals never counts, however fast", () => {
-	const { fired, counter } = setup()
+	const { fired, counter, press } = setup()
 	for (const letter of ["A", "B", "C", "D"]) {
 		counter.keydown(key("Shift"))
 		counter.keydown(key(letter))
 		counter.keyup(key(letter))
 		counter.keyup(key("Shift"))
 	}
+	expect(fired).not.toHaveBeenCalled()
+	// A capital must leave the count at 0, not 1: two clean presses after it are still only two.
+	press("Shift")
+	press("Shift")
 	expect(fired).not.toHaveBeenCalled()
 })
 
@@ -2486,16 +2505,24 @@ Append inside `@layer components` in `main.css`:
 
 ```css
 	/* Always in view (spec: Quick exit). Under 480 px of height the header scrolls away
-	   (.app-header), so the button pins itself to the top right corner instead. */
+	   (.app-header), so the button pins itself to the top right corner instead. Its slot in
+	   .header-tools is then empty, so the tools keep that room free and the pinned button never
+	   covers a picker (Task 11 measures it). */
 	.quick-exit {
 		position: fixed;
 		top: 0.5rem;
 		right: 0.5rem;
 		z-index: 20;
 	}
+	.header-tools {
+		margin-inline-end: 10rem;
+	}
 	@media (min-height: 480px) {
 		.quick-exit {
 			position: static;
+		}
+		.header-tools {
+			margin-inline-end: 0;
 		}
 	}
 ```
@@ -2534,7 +2561,9 @@ type Box = { label: string; top: number; bottom: number; height: number }
 async function headerControls(page: Page): Promise<Box[]> {
 	return page.evaluate(() =>
 		[...document.querySelectorAll<HTMLElement>("header a, header button, header summary")]
-			.filter((el) => el.getClientRects().length > 0)
+			// Rows inside a closed picker still have boxes in Chromium (content-visibility: hidden,
+			// not display: none), so skip the lists outright.
+			.filter((el) => !el.closest(".picker-list") && el.checkVisibility())
 			.map((el) => {
 				const r = el.getBoundingClientRect()
 				const label = `${el.tagName} ${(el.textContent ?? "").trim().slice(0, 24)}`
@@ -2563,28 +2592,40 @@ async function tabTo(page: Page, selector: string) {
 	throw new Error(`Tab never reached ${selector}`)
 }
 
-for (const width of [375, 1280, 1920]) {
-	for (const theme of THEMES) {
-		test(`header at ${width} px (${theme}): every control 44 px tall, one bottom edge per row`, async ({
-			page,
-		}) => {
-			await page.setViewportSize({ width, height: 900 })
-			await setTheme(page, theme)
-			await page.goto("/")
-			await page.evaluate(() => document.fonts.ready)
-			const rows = rowsOf(await headerControls(page))
-			expect(rows.length).toBe(width >= 1024 ? 1 : 2)
-			for (const row of rows) {
-				for (const box of row) expect(box.height, box.label).toBeCloseTo(44, 0)
-				const bottoms = row.map((b) => b.bottom)
-				expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThan(1)
-			}
-		})
+// 1024 is the narrowest one-row width, English has the longest labels, and a first visit
+// (nothing stored) shows the widest theme value, "System (lyst)", so all three are measured:
+// scroll-padding-top (Step 3) assumes one row from 1024 px.
+for (const width of [375, 1024, 1280, 1920]) {
+	for (const theme of [...THEMES, "system"] as const) {
+		for (const path of ["/", "/en/"]) {
+			test(`header ${path} at ${width} px (${theme}): every control 44 px tall, one bottom edge per row`, async ({
+				page,
+			}) => {
+				await page.setViewportSize({ width, height: 900 })
+				if (theme !== "system") await setTheme(page, theme)
+				await page.goto(path)
+				await page.evaluate(() => document.fonts.ready)
+				// The theme value fills in after mount; measure the real, hydrated width.
+				await page
+					.locator("header .visually-hidden", { hasText: /^(Tema|Theme): / })
+					.waitFor({ state: "attached" })
+				const rows = rowsOf(await headerControls(page))
+				// Measured 2026-10-02: brand 91 + tools 245 (nb) / 274 (en) px overflow the 343 px
+				// row at 375, so a phone has brand, tools and nav on three rows (Open items).
+				expect(rows.length).toBe(width >= 1024 ? 1 : width >= 768 ? 2 : 3)
+				for (const row of rows) {
+					for (const box of row) expect(box.height, box.label).toBeCloseTo(44, 0)
+					const bottoms = row.map((b) => b.bottom)
+					expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThan(1)
+				}
+			})
+		}
 	}
 }
 
 for (const viewport of [
 	{ width: 1280, height: 600 },
+	{ width: 1024, height: 600 },
 	{ width: 375, height: 700 },
 ]) {
 	test(`tabbing through /sok at ${viewport.width} px never puts focus under the sticky header`, async ({
@@ -2593,17 +2634,22 @@ for (const viewport of [
 		await page.setViewportSize(viewport)
 		await page.goto("/sok")
 		await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
-		for (let i = 0; i < 40; i++) {
-			await page.keyboard.press("Tab")
-			const covered = await page.evaluate(() => {
-				const el = document.activeElement as HTMLElement | null
-				const header = document.querySelector("header")
-				if (!el || !header || el === document.body || header.contains(el)) return null
-				const r = el.getBoundingClientRect()
-				const h = header.getBoundingClientRect()
-				return r.top < h.bottom - 1 && r.bottom > h.top + 1 ? el.outerHTML.slice(0, 80) : null
-			})
-			expect(covered).toBeNull()
+		// Both directions: Chromium centres a target it has to scroll to, so going forward rarely
+		// lands under the header. Going back, an element partly under the header counts as in
+		// view and takes focus without a scroll, which only scroll-padding-top prevents.
+		for (const key of ["Tab", "Shift+Tab"]) {
+			for (let i = 0; i < 40; i++) {
+				await page.keyboard.press(key)
+				const covered = await page.evaluate(() => {
+					const el = document.activeElement as HTMLElement | null
+					const header = document.querySelector("header")
+					if (!el || !header || el === document.body || header.contains(el)) return null
+					const r = el.getBoundingClientRect()
+					const h = header.getBoundingClientRect()
+					return r.top < h.bottom - 1 && r.bottom > h.top + 1 ? el.outerHTML.slice(0, 80) : null
+				})
+				expect(covered, key).toBeNull()
+			}
 		}
 	})
 }
@@ -2623,6 +2669,27 @@ test("the quick exit stays in view after scrolling, on a normal and a short scre
 		if (!box) throw new Error("no quick exit box")
 		expect(box.y).toBeGreaterThanOrEqual(0)
 		expect(box.y + box.height).toBeLessThanOrEqual(viewport.height)
+	}
+})
+
+test("on a short screen the pinned quick exit covers no other header control", async ({ page }) => {
+	await page.setViewportSize({ width: 640, height: 400 })
+	for (const path of ["/sok", "/en/sok"]) {
+		await page.goto(path)
+		await page.evaluate(() => document.fonts.ready)
+		const covered = await page.evaluate(() => {
+			const exit = document.querySelector(".quick-exit")
+			if (!exit) return ["no quick exit"]
+			const e = exit.getBoundingClientRect()
+			return [...document.querySelectorAll<HTMLElement>("header a, header button, header summary")]
+				.filter((el) => el !== exit && !el.closest(".picker-list") && el.checkVisibility())
+				.filter((el) => {
+					const r = el.getBoundingClientRect()
+					return r.left < e.right && r.right > e.left && r.top < e.bottom && r.bottom > e.top
+				})
+				.map((el) => el.outerHTML.slice(0, 80))
+		})
+		expect(covered, path).toEqual([])
 	}
 })
 
@@ -2653,7 +2720,7 @@ test("forced colours keep the focus ring and the current picker row visible", as
 npm run build && npx playwright test header
 ```
 
-Expected: the header-row, quick-exit and forced-colours tests PASS; "never puts focus under the sticky header" FAILS at 1280 x 600 (a focused card scrolls in under the header). If a header-row test fails, read the label it prints and fix that control's height in CSS before going on.
+Expected: the header-row, quick-exit and forced-colours tests PASS; "never puts focus under the sticky header" FAILS on the Shift+Tab pass (an element above, partly under the header, takes focus without a scroll). If a header-row test fails, read the label it prints and fix that control's height in CSS before going on.
 
 - [ ] **Step 3: Keep focus clear of the sticky header**
 
@@ -2661,9 +2728,19 @@ Append inside `@layer base` in `main.css`, after the `:focus-visible` rule:
 
 ```css
 	/* The sticky header must never cover a focused element or an anchor target (WCAG 2.4.11,
-	   house bar 2.4.12). The value is the header's height plus room: two rows under 1024 px,
-	   one row from there. The header is sticky only from 480 px of height (.app-header). */
+	   house bar 2.4.12). The value is the header's height plus room: three rows (157 px) under
+	   768 px, two (109 px) under 1024 px, one (61 px) from there. The header is sticky only
+	   from 480 px of height (.app-header); below that only the pinned quick exit sits at the
+	   top, so the padding clears its band. */
+	html {
+		scroll-padding-top: 3.5rem;
+	}
 	@media (min-height: 480px) {
+		html {
+			scroll-padding-top: 10.5rem;
+		}
+	}
+	@media (min-height: 480px) and (min-width: 768px) {
 		html {
 			scroll-padding-top: 8rem;
 		}
@@ -2690,6 +2767,7 @@ Restore and rebuild after each, and record each for the PR description:
 2. Remove the `scroll-padding-top` block: the focus test FAILS (as in Step 2).
 3. In `.quick-exit`, change `position: fixed` to `position: static`: the quick exit test FAILS on the 640 x 400 screen.
 4. Remove the `@media (forced-colors: active)` picker block: the forced-colours test FAILS on the row colour.
+5. Remove the baseline `.header-tools { margin-inline-end: 10rem; }`: the short-screen cover test FAILS, naming the theme picker's `<summary>`. If it is red before this break (a long label wider than 10rem), raise the value until it passes; never shrink the button.
 
 - [ ] **Step 6: Commit and ship PR 3**
 
@@ -2699,7 +2777,7 @@ git add src/styles/main.css e2e/header.spec.ts
 git commit -m "test: check the header row rule, hidden focus, quick exit and forced colours"
 ```
 
-Follow "Shipping a PR" with title `feat: header links, language and theme pickers, quick exit with Shift x3`. Red proofs: Task 6 Step 7, Task 7 Step 7, Task 8 Step 6, Task 9 Step 7, Task 10 Step 5, Task 11 Step 5. Manual before merge: an NVDA pass over the header and both pickers (the triggers read "Språk: Norsk" and "Tema: ...", rows read with their state).
+Follow "Shipping a PR" with title `feat: header links, language and theme pickers, quick exit with Shift x3`. Red proofs: Task 6 Step 7, Task 7 Step 7, Task 8 Step 6, Task 9 Step 7, Task 10 Step 5, Task 11 Step 5. Manual before merge: an NVDA pass over the header and both pickers (the triggers read "Språk: Norsk" and "Tema: ...", rows read with their state). In the same pass, press Shift to pause NVDA's speech and again to resume it, as screen reader users do, and note whether a third press soon after leaves Varde; record the result in the PR so Malin can judge the Shift x3 trade-off.
 
 ---
 
@@ -2747,13 +2825,13 @@ test("the headline keeps its last three words together, in both languages", () =
 	stubCatalog()
 	const { unmount } = render(<App />)
 	expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-		"Finn riktig hjelp, der du bor."
+		"Finn riktig hjelp, der\u00a0du\u00a0bor."
 	)
 	unmount()
 	window.history.replaceState(null, "", "/en/")
 	render(<App />)
 	expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-		"Find the right help, where you live."
+		"Find the right help, where\u00a0you\u00a0live."
 	)
 })
 
@@ -2775,9 +2853,9 @@ Expected: FAIL on all three new tests.
 
 - [ ] **Step 4: The strings**
 
-In `nb.json`: `"landing.headline": "Finn riktig hjelp, der du bor."` and `"landing.emergencyIntro": "Ved akutt fare, ring:"`.
-In `en.json`: `"landing.headline": "Find the right help, where you live."` and `"landing.emergencyIntro": "In an emergency, call:"`.
-Keep the ` ` escapes exactly as written (in JSON and in the test strings), not pasted characters, so the non-breaking spaces stay visible in review.
+In `nb.json`: `"landing.headline": "Finn riktig hjelp, der\u00a0du\u00a0bor."` and `"landing.emergencyIntro": "Ved akutt fare, ring:"`.
+In `en.json`: `"landing.headline": "Find the right help, where\u00a0you\u00a0live."` and `"landing.emergencyIntro": "In an emergency, call:"`.
+Keep the `\u00a0` escapes exactly as written (in JSON and in the test strings), not pasted characters, so the non-breaking spaces stay visible in review. Some editing tools decode the escape into the character itself (this plan lost them once that way), so check afterwards: `grep -c "u00a0" src/i18n/nb.json src/i18n/en.json tests/landing.test.tsx` prints 1, 1 and 2.
 
 - [ ] **Step 5: The layout**
 
@@ -2789,7 +2867,7 @@ In `LandingPage.tsx`, keep the imports, `NEXT_VERIFICATION_PASS`, `titles` and t
 const GRID_SLUGS = CATEGORY_SLUGS.filter((s) => s !== "nodtjenester")
 ```
 
-and the part of the returned JSX from `<section className="hero ...">` through the closing `</section>` of the emergency section with:
+Replace the hero `<section className="hero ...">…</section>` with the block below. Then delete the old emergency `<section aria-labelledby="emergency">`, because it moves into `.landing-help`. The trust section sits between them today and stays where it is, so it now follows `.landing-columns` at full width (spec: Two columns).
 
 ```tsx
 			{/* Two columns from 1024 px (decided 2026-10-02 so the page fits one 950 px screen):
@@ -2977,7 +3055,7 @@ git commit -m "feat: two-column landing with balanced hero, chip grid and 2 x 2 
 
 **Files:**
 - Create: `web/src/services/helplines.ts`
-- Modify: `web/src/pageData.ts`, `web/src/entry-server.tsx`, `web/scripts/prerender.mjs`, `web/tests/stubData.ts`
+- Modify: `web/src/pageData.ts`, `web/src/entry-server.tsx`, `web/scripts/prerender.mjs`, `web/scripts/prerender.d.mts`, `web/tests/stubData.ts`
 - Test: `web/tests/helplines.test.ts` (create), `web/tests/prerender.test.ts`, `web/tests/hydration.test.tsx`
 
 **Interfaces:**
@@ -2986,7 +3064,7 @@ git commit -m "feat: two-column landing with balanced hero, chip grid and 2 x 2 
 
 - [ ] **Step 1: The fixture rows (copied, not typed)**
 
-Append to `web/tests/stubData.ts` (add `import type { ResourceDto } from "../src/types/api.ts"` at the top). The `id`, `name`, `phone`, `chatUrl` and `lastVerified` values are copied from `public/data/resources.nb.json` (export of 2026-09-16); re-check them against the file before committing:
+Append to `web/tests/stubData.ts` (add `import type { ResourceDto } from "../src/types/api.ts"` after the `../src/services/data.ts` import, where organize-imports wants it). The `id`, `name`, `phone`, `chatUrl` and `lastVerified` values are copied from `public/data/resources.nb.json` (export of 2026-09-16); re-check them against the file before committing:
 
 ```ts
 function helpline(
@@ -3016,7 +3094,7 @@ function helpline(
 	}
 }
 
-// The five "Noen å snakke med" rows, in the data's own order (not the landing order).
+// The five "Noen å snakke med" rows, not in the landing order (the test reverses them anyway).
 export const helplineRows: ResourceDto[] = [
 	helpline(1, "Hjelpetelefonen (Mental Helse)", "116 123", null),
 	helpline(2, "Kirkens SOS", "22 40 00 40", "https://www.soschat.no"),
@@ -3082,9 +3160,7 @@ test("the landing pages bake their helplines, in their own language", async () =
 	expect(readFileSync(join(distDir, "index.html"), "utf8")).toContain(
 		'"helplines":{"lang":"nb","entries":[{"id":1'
 	)
-	expect(readFileSync(join(distDir, "en/index.html"), "utf8")).toContain(
-		'"helplines":{"lang":"en"'
-	)
+	expect(readFileSync(join(distDir, "en/index.html"), "utf8")).toContain('"helplines":{"lang":"en"')
 	expect(readFileSync(join(distDir, "sok.html"), "utf8")).not.toContain("helplines")
 })
 
@@ -3185,6 +3261,8 @@ In `web/scripts/prerender.mjs`:
 
 - In the CLI block's `prerenderSite({...})` call, add `pickHelplines: server.pickHelplines,` after `split: server.splitForKommune,`.
 
+In `web/scripts/prerender.d.mts` (the type sibling `tsc --noEmit` reads for the tests), add `landing?: boolean` to `PrerenderPage`, add `export type PickHelplinesFn = (resources: object[]) => unknown` after `SplitFn`, and add `pickHelplines: PickHelplinesFn` to `PrerenderOptions` after `split: SplitFn`. Without it every `prerenderSite({ … pickHelplines … })` in the tests fails the build with TS2353.
+
 - [ ] **Step 6: Run, show red once, commit**
 
 Run: `npm test && npm run build`. Expected: PASS, and the build log still says `prerendered 210 pages`.
@@ -3192,7 +3270,7 @@ Red proof: in `HELPLINE_IDS` change `121` to `999`; `npm run build` FAILS with `
 
 ```bash
 npx biome ci .
-git add src/services/helplines.ts src/pageData.ts src/entry-server.tsx scripts/prerender.mjs tests/stubData.ts tests/helplines.test.ts tests/prerender.test.ts tests/hydration.test.tsx
+git add src/services/helplines.ts src/pageData.ts src/entry-server.tsx scripts/prerender.mjs scripts/prerender.d.mts tests/stubData.ts tests/helplines.test.ts tests/prerender.test.ts tests/hydration.test.tsx
 git commit -m "feat: pick the landing helplines from the export at prerender, failing on a missing id"
 ```
 
@@ -3200,7 +3278,7 @@ git commit -m "feat: pick the landing helplines from the export at prerender, fa
 
 **Files:**
 - Create: `web/src/components/Helplines.tsx`
-- Modify: `web/src/components/LandingPage.tsx`, `web/src/styles/main.css`, `web/src/i18n/nb.json`, `web/src/i18n/en.json`
+- Modify: `web/src/components/LandingPage.tsx`, `web/src/components/LandingSearch.tsx` (one comment), `web/src/styles/main.css`, `web/src/i18n/nb.json`, `web/src/i18n/en.json`
 - Test: `web/tests/helplinesSection.test.tsx` (create), `web/tests/landing.test.tsx`, `web/tests/shell.test.tsx`, `web/tests/axe.test.tsx`
 
 **Interfaces:**
@@ -3283,7 +3361,9 @@ test("a chat URL that is not https shows the name alone, never a link", () => {
 	renderLanding({ helplines: { lang: "nb", entries } })
 	const section = screen.getByRole("region", { name: "Noen å snakke med" })
 	expect(within(section).queryByRole("link", { name: /Chat/ })).toBeNull()
-	expect(within(section).getByRole("link", { name: "Sidetmedord (Mental Helse)" })).toBeInTheDocument()
+	expect(
+		within(section).getByRole("link", { name: "Sidetmedord (Mental Helse)" })
+	).toBeInTheDocument()
 })
 
 test("coming back to the landing page without baked data loads the helplines", async () => {
@@ -3316,6 +3396,8 @@ In `web/tests/landing.test.tsx`, the test "the landing renders without a single 
 ```
 
 In `web/tests/shell.test.tsx`, make the same replacement in "the landing route renders a heading and loads no data" (same three imports).
+
+In `web/tests/landing.test.tsx`, make the same provider replacement in "focusing the search box prefetches the catalog…", and add `expect(fetchSpy).not.toHaveBeenCalled()` before `await user.click(box)` (use the test's own name for its fetch spy), so the four calls provably come from the focus. Without baked data, `<Helplines />` would fetch the index on mount and the prefetch check would pass even if the prefetch broke.
 
 In `web/tests/axe.test.tsx`, import `helplineRows` from `./stubData.ts`, change the `stub` "ok" fixture to `resources: [resource, ...helplineRows]`, and change the landing row of `pages` to `["landing", "/", "ok", /Noen å snakke med/]` so axe runs after the section has loaded.
 
@@ -3420,7 +3502,7 @@ export function Helplines() {
 }
 ```
 
-In `LandingPage.tsx`, import it and render `<Helplines />` inside `.landing-help`, right after the emergency `</section>`.
+In `LandingPage.tsx`, import it and render `<Helplines />` inside `.landing-help`, right after the emergency `</section>`. In `LandingSearch.tsx`, the comment "The landing fetches nothing on render" is no longer true without baked data; change it to "The search box fetches nothing on render".
 
 Append inside `@layer components` in `main.css`:
 
@@ -3448,7 +3530,7 @@ Red proof: replace `safeChatUrl(entry.chatUrl)` with `entry.chatUrl`; "a chat UR
 
 ```bash
 npx biome ci .
-git add src/components/Helplines.tsx src/components/LandingPage.tsx src/styles/main.css src/i18n tests/helplinesSection.test.tsx tests/landing.test.tsx tests/shell.test.tsx tests/axe.test.tsx
+git add src/components/Helplines.tsx src/components/LandingPage.tsx src/components/LandingSearch.tsx src/styles/main.css src/i18n tests/helplinesSection.test.tsx tests/landing.test.tsx tests/shell.test.tsx tests/axe.test.tsx
 git commit -m "feat: add Noen å snakke med with five helplines to the landing page"
 ```
 
@@ -3491,7 +3573,9 @@ for (const width of [1280, 1920]) {
 				await setTheme(page, theme)
 				await page.goto(path)
 				await settle(page)
-				await expect(page.getByRole("region", { name: /Noen å snakke med|Someone to talk to/ })).toBeVisible()
+				await expect(
+					page.getByRole("region", { name: /Noen å snakke med|Someone to talk to/ })
+				).toBeVisible()
 				const height = await page.evaluate(() => document.documentElement.scrollHeight)
 				expect(height).toBeLessThanOrEqual(950)
 			})
@@ -3560,7 +3644,7 @@ git add src/components/LandingPage.tsx src/App.tsx src/components/Footer.tsx src
 git commit -m "feat: fold the trust line into one row and fit the landing page in 950 px"
 ```
 
-Blocked until Malin has decided the Arbeidslivstelefonen "tast 3" item (Open items). Follow "Shipping a PR" with title `feat: landing page fits one screen, with helplines and a balanced hero`. Red proofs: Task 12 Step 9, Task 13 Step 6, Task 14 Step 5, Task 15 Step 4. Manual before merge: screenshots at 375 and 1920 x 950 in both themes; an NVDA pass over the helplines.
+Blocked until Malin has decided the Arbeidslivstelefonen "tast 3" item (Open items). Follow "Shipping a PR" with title `feat: landing page fits one screen, with helplines and a balanced hero`. Red proofs: Task 12 Step 9, Task 13 Step 6, Task 14 Step 5, Task 15 Step 4. Manual before merge: screenshots at 375 and 1920 x 950 in both themes; at 320 and 375 px, no emergency button label runs past its button edge in the 2 x 2 grid (centred overflow shows no horizontal scroll, so the reflow check cannot see it); an NVDA pass over the helplines.
 
 ---
 
@@ -3590,7 +3674,16 @@ Create `web/e2e/cards.spec.ts`:
 import { expect, test } from "@playwright/test"
 import { setTheme, THEMES } from "./helpers.ts"
 
-const SLOTS = ["title", "badges", "kommune", "fallback", "description", "hours", "actions", "verified"]
+const SLOTS = [
+	"title",
+	"badges",
+	"kommune",
+	"fallback",
+	"description",
+	"hours",
+	"actions",
+	"verified",
+]
 
 for (const theme of THEMES) {
 	test(`at 1280 px every slot lines up across each row of cards (${theme})`, async ({ page }) => {
@@ -3604,7 +3697,10 @@ for (const theme of THEMES) {
 				const top = Math.round(card.getBoundingClientRect().top)
 				const slots: Record<string, number> = {}
 				for (const slot of card.querySelectorAll<HTMLElement>(":scope > [data-slot]")) {
-					slots[slot.dataset.slot ?? ""] = slot.getBoundingClientRect().top
+					// Compare the margin edge: a filled slot carries a 0.75rem top margin and an empty
+					// one none, so the margin edge is what sits on the shared subgrid track.
+					const margin = Number.parseFloat(getComputedStyle(slot).marginTop)
+					slots[slot.dataset.slot ?? ""] = slot.getBoundingClientRect().top - margin
 				}
 				byTop.set(top, [...(byTop.get(top) ?? []), slots])
 			}
@@ -3627,14 +3723,14 @@ for (const theme of THEMES) {
 npm run build && npx playwright test cards
 ```
 
-Expected: FAIL. Today's cards have no `data-slot` children, so `tops` holds `undefined` and the check fails.
+Expected: FAIL. Today's cards have no `.card` class, so `toBeVisible` times out.
 
 - [ ] **Step 4: The card**
 
 Replace the returned `<li>` in `web/src/components/ResourceCard.tsx` with:
 
 ```tsx
-		<li className="card rounded-xl border border-border bg-surface p-4">
+		<li className="card rounded-xl border bg-surface p-4">
 			<Heading data-slot="title" className="text-lg font-semibold leading-snug">
 				<Link to={`/resources/${resource.id}`} className="text-fg">
 					{resource.name}
@@ -3656,7 +3752,9 @@ Replace the returned `<li>` in `web/src/components/ResourceCard.tsx` with:
 					))}
 			</div>
 			<div data-slot="fallback">
-				{resource.isFallbackTranslation && <p className="text-sm text-muted">{t("card.fallback")}</p>}
+				{resource.isFallbackTranslation && (
+					<p className="text-sm text-muted">{t("card.fallback")}</p>
+				)}
 			</div>
 			{/* Full description, never clamped: closure notices and safety lines live here. */}
 			<p data-slot="description">{resource.description}</p>
@@ -3697,12 +3795,15 @@ Append inside `@layer components` in `main.css`:
 	.card-grid {
 		row-gap: 0;
 	}
+	/* The border colour lives here, not in a border-border utility: Tailwind's utilities layer
+	   beats @layer components, so a utility colour would cancel Task 17's hover border. */
 	.card {
 		display: grid;
 		grid-row: span 8;
 		grid-template-rows: subgrid;
 		row-gap: 0;
 		margin-block-end: 1rem;
+		border-color: var(--border);
 	}
 	.card > [data-slot]:not(:first-child):not(:empty) {
 		margin-block-start: 0.75rem;
@@ -3719,7 +3820,7 @@ npm test && npm run build && npx playwright test
 ```
 
 Expected: PASS (unit tests query by role and text, so the wrappers do not break them).
-Red proof: remove `grid-template-rows: subgrid;`; rebuild; the cards check FAILS on `actions`; restore and rebuild.
+Red proof: remove `grid-template-rows: subgrid;`; rebuild; the cards check FAILS on the first slot that drifts (usually `badges`); restore and rebuild.
 
 ```bash
 npx biome ci .
@@ -3790,8 +3891,10 @@ Append inside `@layer components` in `main.css`:
 	/* A little depth on hover (spec: item 5), only with a real pointer. Under reduced motion
 	   nothing moves; the border colour alone marks hover. Focus styles are unchanged. */
 	@media (hover: hover) {
+		/* Not the accent chip: its accent border is its identity, and .chip:hover would beat
+		   .chip-acute on specificity and turn it grey. */
 		.card:hover,
-		.chip:hover,
+		.chip:not(.chip-acute):hover,
 		.btn-secondary:hover {
 			border-color: var(--muted);
 		}
@@ -4014,9 +4117,9 @@ import { stubDataFiles } from "./stubData.ts"
 test("the landing page offers the install steps for iPhone, Android and computer", () => {
 	stubDataFiles()
 	render(<App />)
-	const hint = screen.getByText("Legg Varde på hjemskjermen: slik gjør du").closest(
-		"details"
-	) as HTMLElement
+	const hint = screen
+		.getByText("Legg Varde på hjemskjermen: slik gjør du")
+		.closest("details") as HTMLElement
 	expect(hint).toHaveClass("install-hint")
 	const steps = within(hint).getAllByRole("listitem")
 	expect(steps).toHaveLength(3)
@@ -4030,7 +4133,9 @@ test("the hint hides itself once Varde runs installed", () => {
 		join(dirname(fileURLToPath(import.meta.url)), "../src/styles/main.css"),
 		"utf8"
 	)
-	expect(css).toMatch(/@media \(display-mode: standalone\)\s*\{\s*\.install-hint\s*\{\s*display: none;/)
+	expect(css).toMatch(
+		/@media \(display-mode: standalone\)\s*\{\s*\.install-hint\s*\{\s*display: none;/
+	)
 })
 ```
 
@@ -4084,7 +4189,9 @@ export function InstallHint() {
 	const t = useTranslation()
 	return (
 		<details className="install-hint">
-			<summary className="inline-flex min-h-11 cursor-pointer items-center">
+			{/* No flex here: summary keeps display: list-item, so the native disclosure triangle
+			    stays and the hint looks like something that opens. text-sm plus py-3 is 44 px. */}
+			<summary className="min-h-11 cursor-pointer py-3">
 				{t("install.summary")}
 			</summary>
 			<ol className="mt-1 grid gap-2 pb-2">
@@ -4117,7 +4224,7 @@ Append inside `@layer components` in `main.css`:
 npm test && npm run build && npx playwright test
 ```
 
-Expected: PASS, including the 950 px fit (the hint is closed).
+Expected: PASS. If the 950 px fit fails (the trust row grows from a 20 px line to the 44 px summary, more if it wraps at 1280), measure the trust section and trim with Task 15 Step 3's list. Task 15's stop rule applies, and the summary never drops below 44 px.
 Red proof: change `display-mode: standalone` to `display-mode: browser` in the CSS; the unit test FAILS; restore.
 
 ```bash
@@ -4192,7 +4299,9 @@ test("CSS shows the arrow only when Varde runs installed", () => {
 		"utf8"
 	)
 	expect(css).toMatch(/\.back-button\s*\{\s*display: none;/)
-	expect(css).toMatch(/@media \(display-mode: standalone\)\s*\{\s*\.back-button\s*\{\s*display: inline-flex;/)
+	expect(css).toMatch(
+		/@media \(display-mode: standalone\)\s*\{\s*\.back-button\s*\{\s*display: inline-flex;/
+	)
 })
 ```
 
@@ -4304,3 +4413,12 @@ Blocked until the two install labels are checked on a real device (Open items). 
 | Playwright harness, snapshot, CI | 1, 2 |
 | No `style=` in prerendered HTML | 3 |
 | Every check shown red once | the last steps of every task |
+
+## Considered and rejected
+
+- **Keyboard order under 1024 px.** The DOM runs brand, nav, tools while the screen shows the tools above the nav. Two DOM orders would trade this for a mismatch on desktop or a duplicated nav, so I keep one order (Task 6 comment).
+- **Shift-click counts as a clean Shift press.** Opening a link in a new window with Shift-click three times leaves the page. GOV.UK has the same edge, and it costs one reload of Varde.
+- **Choosing the language that is already current** navigates to the same URL. Harmless, and the row is marked current, so I add no guard.
+- **Hardening the detail page's existing website and chat links** stays in sub-project E, as the spec says; only the new helpline link gets the `https://` check.
+
+> Stress-tested 2026-10-02 (spec-stress-test skill): 31 applied, 3 left for Malin.
