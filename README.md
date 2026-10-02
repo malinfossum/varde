@@ -118,7 +118,7 @@ forgets to.
 
 The API and its database also run as a container stack, so a checkout needs nothing installed
 but Docker or Podman. `compose.yml` starts two services: `api` on port 8080 and `db`, a
-PostgreSQL 16 whose data lives in the named volume `postgres_data`. Only the API publishes a
+PostgreSQL 17 whose data lives in the named volume `postgres_data`. Only the API publishes a
 port; the database is reachable from inside the compose network, under the hostname `db`.
 
 ```bash
@@ -134,6 +134,11 @@ The API migrates the database itself at startup, so the first `up` fills an empt
 with the schema and the seed rows. Set `MIGRATE_ON_STARTUP=false` where that must be a
 separate step. `.env` holds the database name, user and password and is never committed;
 `.env.example` lists the variables the stack needs.
+
+PostgreSQL 17 matches Neon, CI and the local service. A volume created by the older
+PostgreSQL 16 image will not start under 17. Reset it once with `podman compose down -v` (or
+`podman compose -f compose.prod.yml down -v` for prod-sim). Nothing is lost: the next `up`
+migrates and seeds again.
 
 ## Runbook: deploy and rollback (prod-sim)
 

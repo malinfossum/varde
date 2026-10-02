@@ -14,7 +14,7 @@ name: varde-prod
 
 services:
   db:
-    image: docker.io/library/postgres:16
+    image: docker.io/library/postgres:17
     container_name: varde-db-prod
     restart: unless-stopped
     environment:
