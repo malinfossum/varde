@@ -2,8 +2,8 @@
 // npm run brand: builds every brand file from scripts/brand-geometry.mjs and the colour tokens,
 // renders the PNGs with resvg and writes docs/brand/src/hashes.json last, so a run that dies
 // halfway leaves stale hashes and tests/brand.test.ts goes red. hashes.json also holds the hash
-// of every PNG and the ICO, so a rendered file swapped or edited by hand goes red too. Run it after any change to the
-// geometry or the tokens and commit the output. CI never runs it.
+// of every PNG and the ICO, so a rendered file swapped or edited by hand goes red too. Run it
+// after any change to the geometry or the tokens and commit the output. CI never runs it.
 // `npm run brand -- --sheet` also writes a review contact sheet to .superpowers/brand-review/.
 // Imports contrast.ts directly: Node 22.18+ strips the types.
 import { createHash } from "node:crypto"
