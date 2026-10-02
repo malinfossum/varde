@@ -168,8 +168,12 @@ by side, then the trust line, then the footer.
   - The subtitle says only what every listed service's own source confirms. The sketch said
     "Gratis og anonymt."; the plan checks the five sources before that string is written, and
     drops "Gratis" if any one of them costs a normal call.
-- **Side by side.** From 1024 px, emergency and helplines share a row as two columns. Below
-  that they stack, emergency first.
+- **Two columns (amended 2026-10-02, while writing the plan).** Measured live at 1280 x 950,
+  the stacked landing page is 1175 px, and the content this spec adds sums to about 1075 px
+  with every padding at zero, so a stacked layout cannot fit 950 px. From 1024 px the landing
+  page therefore has two columns: hero, search and chips on the left; emergency numbers and
+  helplines on the right (emergency first). The hero is left-aligned there. Trust line and
+  footer run full width below. Under 1024 px everything stacks: hero, emergency, helplines.
 - **Trust line (17).** The three trust paragraphs become one muted line:
   "Ingen sporing · Hvert nummer kopiert fra kilden · Sjekkes hvert halvår", followed by the
   quick exit explainer. Next to it sits the install hint (see Install). The visually hidden
