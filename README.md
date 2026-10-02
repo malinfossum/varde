@@ -22,7 +22,8 @@ dials it. Varde treats contact data as safety-critical.
 Phase 1, the API, is complete: 94 services across 8 municipalities (Innlandet and Oslo)
 plus national services, described in Norwegian and English. Phase 2, the web frontend,
 is complete. Phase 3, deployment, went live 2026-09-04. The current design (light-first,
-self-hosted type, a search-first landing page) shipped 2026-09-09.
+self-hosted type, a search-first landing page) shipped 2026-09-09, and the site went static on
+Cloudflare Pages 2026-09-18.
 
 **Live:** https://varde.pages.dev
 
@@ -76,11 +77,8 @@ survive the back button. Bilingual throughout, built for keyboard access, and bu
 mobile-first.
 
 Lighthouse ≥ 95 on the simulated phone is the definition of done, and the measured numbers
-are in each PR. Accessibility is 100 across the site and the landing page scores 99 on
-performance; `/sok` scored 67–74 and missed that budget, but that number predates the move
-to static JSON. Now `/sok` prerenders as its loading shell and fills from the JSON index in
-the browser, and it hasn't been re-measured since. The live Cloudflare deploy gets a fresh
-measurement.
+are in each PR. On the live site (2026-09-23), performance is 98 on the landing page, 99 on
+`/sok` and 95 on resource and kommune pages. Accessibility, best practices and SEO are 100.
 
 ## Run locally
 
@@ -184,7 +182,7 @@ before you roll back past one.
 
 | Tag | Where | Role |
 |---|---|---|
-| `sha-83f4d70` | GHCR | Current good: `/health` is back after the drill |
+| `sha-83f4d70` | GHCR | Good. `/health` is back after the drill. Newer pushes to `main` each have their own tag |
 | `sha-4e97289` | GHCR | Broken on purpose: `/health` renamed to `/status`. Green pipeline, red health gate |
 | `sha-5156e25` | GHCR | Good. The rollback target in the drill |
 | `sha-89f36a0` | GHCR | Good. Web dependency bump only |
@@ -218,21 +216,23 @@ applies EF Core migrations and seed data. It exports its data as JSON, builds an
 the site, then deploys the resulting `web/dist` to **Cloudflare Pages**. Nothing user-facing
 ever talks to the API; it exists only as a build-time step.
 
-Two GitHub Actions workflows drive the repo:
+Four GitHub Actions workflows drive the repo:
 
 | Workflow | Trigger | Does |
 |---|---|---|
 | `ci.yml` | every pull request | both test suites + a client build (the required merge checks) |
+| `build-test.yml` | pull request and push to `main` | format check, API build and tests, vulnerable-package report; on `main` it also pushes the API image to GHCR |
 | `deploy-web.yml` | push to `main`, daily cron, manual dispatch | run the API against Neon, export data, build, prerender, deploy to Cloudflare Pages |
+| `repo-hygiene.yml` | README changes, releases, manual dispatch | check the repo's public face (description, topics, homepage, versions, links) against the README, via `malinfossum/ward` |
 
 Deploy credentials live in the GitHub `production` environment: secrets
 `NEON_CONNECTION_STRING`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and variable
 `SITE_ORIGIN`. The repo itself contains no hostnames or secrets.
 
-By design there is no Application Insights and HTTP logging is off. See the privacy posture
-in `docs/superpowers/specs/2026-08-12-varde-design.md`. The full deployment design, including
-the first-deploy runbook and verification checklist, is
-`docs/superpowers/specs/2026-08-19-varde-deploy-design.md`.
+By design there is no analytics or telemetry, and HTTP logging is off. See the privacy
+posture in `docs/superpowers/specs/2026-08-12-varde-design.md`. The current deployment design
+is `docs/superpowers/specs/2026-09-15-varde-static-first-design.md`. The earlier Azure design
+(`2026-08-19-varde-deploy-design.md`) is kept as a record and no longer describes production.
 
 ## Licence
 

@@ -29,10 +29,10 @@ var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get
 builder.Services.AddCors(options => options.AddPolicy(CorsPolicy, policy =>
     policy.WithOrigins(allowedOrigins).AllowAnyHeader().WithMethods("GET")));
 
-// Search runs a case-insensitive scan on a burstable-tier database, and the API is public and
-// unauthenticated. The partition key is a client IP held in memory for one window — never
-// logged, never written anywhere. The Azure spending cap is a backstop, not the control: a cap
-// that trips takes the site down, which fails the user worse than being slow does.
+// Search runs a case-insensitive scan and the API is unauthenticated. Today nothing outside
+// reaches it: it runs inside the deploy workflow to export data, and in the container stacks.
+// The limiter stays so the API is safe the day it is exposed again. The partition key is a
+// client IP held in memory for one window. It is never logged and never written anywhere.
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -54,15 +54,17 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// First in the pipeline, in every environment. App Service terminates TLS and proxies plain
-// HTTP to Kestrel, so X-Forwarded-Proto must be applied before UseHttpsRedirection (else
-// production redirect-loops) and X-Forwarded-For before the rate limiter (else every visitor
-// shares one bucket). KnownIPNetworks/KnownProxies are cleared because App Service's proxy
-// addresses are not enumerable. ForwardLimit stays at 1: App Service APPENDS the real client
-// IP, so the right-most entry is the trustworthy one — reading deeper into the chain would
-// let clients choose their own rate-limit bucket. Enabled in dev too: there is no proxy
-// there, so a spoofed header only mis-partitions a local limiter, and unconditional
-// enablement keeps WebApplicationFactory tests in their default Development environment.
+// First in the pipeline, in every environment. Behind a reverse proxy that terminates TLS
+// and passes plain HTTP to Kestrel, X-Forwarded-Proto must be applied before
+// UseHttpsRedirection (else production redirect-loops) and X-Forwarded-For before the rate
+// limiter (else every visitor shares one bucket). KnownIPNetworks/KnownProxies are cleared,
+// so the header is trusted from whoever is one hop away. That is only safe behind a proxy:
+// before the API is exposed again, set KnownProxies to that proxy's address. ForwardLimit
+// stays at 1: a proxy that appends the real client IP leaves it right-most, and reading
+// deeper into the chain would let clients choose their own rate-limit bucket. Enabled in dev
+// too: there is no proxy there, so a spoofed header only mis-partitions a local limiter, and
+// unconditional enablement keeps WebApplicationFactory tests in their default Development
+// environment.
 var forwardedHeaders = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
@@ -99,8 +101,8 @@ else
 
 app.MapControllers();
 
-// Liveness probe for the container stack: the compose healthcheck polls it, and in week 2 the
-// deploy gate reads `version` to tell a new release from the one it replaced.
+// Liveness probe for the container stack: the compose healthcheck polls it, and the deploy and
+// rollback runbook reads `version` to tell a new release from the one it replaced.
 app.MapGet("/health", (IConfiguration config) => Results.Ok(new
 {
     status = "ok",

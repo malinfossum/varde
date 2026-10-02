@@ -45,7 +45,7 @@ services:
       APP_VERSION: ${IMAGE_TAG:-latest}
       # MIGRATE_ON_STARTUP stays on in prod-sim, and I say so openly. In a real production
       # setup the app must NOT migrate itself: migrations run as their own pipeline step
-      # (one runner, one lock, no race). Here there is one instance and one course volume,
+      # (one runner, one lock, no race). Here there is one instance and one volume,
       # so auto-migration is safe and keeps the deploy down to two commands.
       # More replicas means migration as a separate job with its own database rights.
       MIGRATE_ON_STARTUP: "true"

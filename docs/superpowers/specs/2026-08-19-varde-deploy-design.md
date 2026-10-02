@@ -1,5 +1,8 @@
 # Varde — plan 3 (deploy) design
 
+> **Superseded 2026-09-18.** Azure was retired when Varde went static on Cloudflare Pages. The
+> current design is [2026-09-15-varde-static-first-design.md](2026-09-15-varde-static-first-design.md). This document is kept as a record.
+
 **Date:** 2026-08-19
 **Base:** [2026-08-12-varde-design.md](2026-08-12-varde-design.md). Its Privacy, Logging and
 retention, and Definition of done sections are **binding by reference** — this document only
