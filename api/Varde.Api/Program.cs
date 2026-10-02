@@ -23,11 +23,8 @@ builder.Services.AddScoped<MunicipalityService>();
 builder.Services.AddScoped<ResourceService>();
 builder.Services.AddSingleton(TimeProvider.System);
 
-const string CorsPolicy = "varde-web";
-
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
-builder.Services.AddCors(options => options.AddPolicy(CorsPolicy, policy =>
-    policy.WithOrigins(allowedOrigins).AllowAnyHeader().WithMethods("GET")));
+// No CORS: no browser calls the API. The site is static, and the data reaches it as JSON
+// exported at build time. CorsTests keeps it that way.
 
 // Search runs a case-insensitive scan and the API is unauthenticated. Today nothing outside
 // reaches it: it runs inside the deploy workflow to export data, and in the container stacks.
@@ -75,7 +72,6 @@ app.UseForwardedHeaders(forwardedHeaders);
 
 app.UseExceptionHandler();
 
-app.UseCors(CorsPolicy);
 app.UseRateLimiter();
 
 // Schema comes from migrations, always — never EnsureCreated. Runs in every environment:
