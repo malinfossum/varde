@@ -6,6 +6,10 @@ on:
 permissions:
   contents: read
 
+# Telemetry off for every tool the runner starts.
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+
 jobs:
   # Job keys are the required-check contexts in the protect-main ruleset — do not rename.
   api-tests:
