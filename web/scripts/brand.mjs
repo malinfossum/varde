@@ -1,7 +1,8 @@
 // web/scripts/brand.mjs
 // npm run brand: builds every brand file from scripts/brand-geometry.mjs and the colour tokens,
 // renders the PNGs with resvg and writes docs/brand/src/hashes.json last, so a run that dies
-// halfway leaves stale hashes and tests/brand.test.ts goes red. Run it after any change to the
+// halfway leaves stale hashes and tests/brand.test.ts goes red. hashes.json also holds the hash
+// of every PNG and the ICO, so a rendered file swapped or edited by hand goes red too. Run it after any change to the
 // geometry or the tokens and commit the output. CI never runs it.
 // `npm run brand -- --sheet` also writes a review contact sheet to .superpowers/brand-review/.
 // Imports contrast.ts directly: Node 22.18+ strips the types.
@@ -46,19 +47,25 @@ for (const [rel, content] of Object.entries(files)) {
 	writeFileSync(at(rel), content)
 }
 
+// Every PNG and the ICO, by repo-relative path, so their hashes can go into hashes.json.
+const rendered = {}
 for (const [master, out, width] of PNG_TARGETS) {
-	writeFileSync(at(out), render(files[`${SRC}/${master}`], width))
+	rendered[out] = render(files[`${SRC}/${master}`], width)
+	writeFileSync(at(out), rendered[out])
 	console.log(`rendered ${out}`)
 }
-writeFileSync(at(ICO.out), pngToIco(render(files[`${SRC}/${ICO.master}`], ICO.size), ICO.size))
+rendered[ICO.out] = pngToIco(render(files[`${SRC}/${ICO.master}`], ICO.size), ICO.size)
+writeFileSync(at(ICO.out), rendered[ICO.out])
 console.log(`rendered ${ICO.out}`)
 
+const sha256 = (data) => createHash("sha256").update(data).digest("hex")
+// Masters keyed by name inside SRC, then the renders keyed by repo path in sorted order.
+// tests/brand.test.ts checks the committed files against both.
 const hashes = {}
 for (const [rel, content] of Object.entries(files)) {
-	if (rel.startsWith(`${SRC}/`)) {
-		hashes[rel.slice(SRC.length + 1)] = createHash("sha256").update(content).digest("hex")
-	}
+	if (rel.startsWith(`${SRC}/`)) hashes[rel.slice(SRC.length + 1)] = sha256(content)
 }
+for (const rel of Object.keys(rendered).sort()) hashes[rel] = sha256(rendered[rel])
 writeFileSync(at(`${SRC}/hashes.json`), `${JSON.stringify(hashes, null, 2)}\n`)
 console.log(`wrote ${SRC}/hashes.json`)
 

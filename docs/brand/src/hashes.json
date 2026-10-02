@@ -7,5 +7,15 @@
   "banner-light.svg": "43b0ae9a413dace0d040e775e4d8a4798ccd1c93092bdd6241aa3e2afe3679a7",
   "banner-dark.svg": "419047212bbd065175421fb1d01e404112d06314d418332a1ef6a49b97bb391f",
   "og.svg": "0b4591759329be3cf96926b8724698cd4697f8b00daa5701957c4ed619029344",
-  "social-preview.svg": "a99b33dce02a9ddd76b1cfd45df529b9f6a2449916f5ce1d1d366f08d6b5444c"
+  "social-preview.svg": "a99b33dce02a9ddd76b1cfd45df529b9f6a2449916f5ce1d1d366f08d6b5444c",
+  "docs/brand/banner-dark.png": "130e4cc15dba767185dda0e128346e8c2eee95815d622a5bf3208eada49a457f",
+  "docs/brand/banner-light.png": "2aa5aaae2f3a5bee86b2d83238f85c6b124bb21318bd351fc025822d4233e248",
+  "docs/brand/social-preview.png": "119bb3c4760648a6c670ee0da2ae48e30af59f6e53fcbde9b812b5a2557a19a1",
+  "web/public/apple-touch-icon.png": "8e65fe858f132a37c84e3cc44e6ff66cb61e2fc87065f13487fd924a7304fd33",
+  "web/public/favicon.ico": "79889895b66ddee6182d3388d765e4d40c10d03b21116edf95e7e6c025819d5d",
+  "web/public/icon-192.png": "88f9d799c5255f82ed05b64c05c0b2d0d2d0134268307298d1cafd45278da65c",
+  "web/public/icon-512.png": "e5ab7ad9f545949e100ce27714e4fbb56a0fed0298e2809e13a6f97efb5ead21",
+  "web/public/icon-maskable-192.png": "7abdeef057843b24286e4be565903bedb37f4b034b0bcedbf2ae4db2b2b9cb53",
+  "web/public/icon-maskable-512.png": "1b9a3c8004087909c9f90fbad83157d502beac610ba575b38e288a4776b5bd57",
+  "web/public/og.png": "19375d8c237d52b254dad40e31932e1e816333fdf736b28dad0f00e596ae61c5"
 }

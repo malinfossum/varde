@@ -354,6 +354,11 @@ const PNG_SIZES: [string, number, number][] = [
 	["docs/brand/social-preview.png", 1280, 640],
 ]
 
+const RENDERS = [...PNG_SIZES.map(([rel]) => rel), "web/public/favicon.ico"]
+const hashes: Record<string, string> = JSON.parse(
+	readFileSync(join(repo, SRC, "hashes.json"), "utf8")
+)
+
 describe("generated pack", () => {
 	test("every committed brand file matches the geometry byte for byte (run: npm run brand)", () => {
 		expect(drifted(masters(themes))).toEqual([])
@@ -364,14 +369,27 @@ describe("generated pack", () => {
 	})
 
 	test("hashes.json matches every master, so no PNG is older than its SVG", () => {
-		const hashes = JSON.parse(readFileSync(join(repo, SRC, "hashes.json"), "utf8"))
 		const svgs = Object.keys(masters(themes))
 			.filter((rel) => rel.startsWith(`${SRC}/`))
 			.map((rel) => rel.slice(SRC.length + 1))
-		expect(Object.keys(hashes).sort()).toEqual(svgs.sort())
+		const listed = Object.keys(hashes).filter((key) => key.endsWith(".svg"))
+		expect(listed.sort()).toEqual(svgs.sort())
 		for (const name of svgs) {
 			expect(hashes[name], name).toBe(sha256(readFileSync(join(repo, SRC, name))))
 		}
+	})
+
+	test("hashes.json lists every PNG and the ICO, and nothing else", () => {
+		const listed = Object.keys(hashes).filter((key) => !key.endsWith(".svg"))
+		expect(listed.sort()).toEqual([...RENDERS].sort())
+		for (const rel of listed) expect(existsSync(join(repo, rel)), rel).toBe(true)
+	})
+
+	// Catches a render that was swapped or edited by hand, or left over from an older run. It
+	// cannot prove the file matches a fresh render (resvg output may differ between platforms),
+	// so CI still renders nothing.
+	test.each(RENDERS)("%s is the file npm run brand wrote", (rel) => {
+		expect(sha256(readFileSync(join(repo, rel)))).toBe(hashes[rel])
 	})
 
 	test.each(PNG_SIZES)("%s is %ix%i", (rel, width, height) => {
