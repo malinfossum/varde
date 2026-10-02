@@ -1,5 +1,8 @@
 # Varde Plan 3 (Deploy) Implementation Plan
 
+> **Superseded 2026-09-18.** Azure was retired when Varde went static on Cloudflare Pages. The
+> current design is [2026-09-15-varde-static-first-design.md](../specs/2026-09-15-varde-static-first-design.md). This document is kept as a record.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make Varde production-deployable — forwarded-headers fix, startup migrations, SPA/CSP config, and three GitHub Actions workflows — so a merge to main deploys to Azure Static Web Apps + App Service F1 + Neon.

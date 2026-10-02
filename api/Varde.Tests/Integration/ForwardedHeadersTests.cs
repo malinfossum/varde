@@ -27,8 +27,8 @@ public class ForwardedHeadersTests
         var exhausted = await client.SendAsync(Get("203.0.113.10"));
         Assert.Equal(HttpStatusCode.TooManyRequests, exhausted.StatusCode);
 
-        // A different forwarded identity gets its own bucket — this is the assert that fails
-        // today, because without the middleware every request shares the "unknown" partition.
+        // A different forwarded identity gets its own bucket. Without the middleware this
+        // assert fails, because every request would share the "unknown" partition.
         var otherIdentity = await client.SendAsync(Get("203.0.113.99"));
         Assert.Equal(HttpStatusCode.OK, otherIdentity.StatusCode);
     }
@@ -36,8 +36,8 @@ public class ForwardedHeadersTests
     [Fact]
     public async Task Only_the_rightmost_forwarded_entry_names_the_bucket()
     {
-        // App Service APPENDS the real client IP to any client-supplied X-Forwarded-For, so
-        // with ForwardLimit = 1 the right-most entry wins and spoofed prefixes are ignored.
+        // A reverse proxy appends the real client IP to any client-supplied X-Forwarded-For,
+        // so with ForwardLimit = 1 the right-most entry wins and spoofed prefixes are ignored.
         using var factory = new VardeApiFactory { RateLimitPermitLimit = 3 };
         var client = factory.CreateClient();
 
