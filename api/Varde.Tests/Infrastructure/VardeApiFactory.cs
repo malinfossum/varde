@@ -49,7 +49,7 @@ public sealed class VardeApiFactory : WebApplicationFactory<Program>
         // Program.cs applies migrations at startup in every environment; OpenAPI stays dev-only.
         builder.UseEnvironment(Environment);
 
-        // Touching TestDatabase runs its static constructor (stale-database cleanup) exactly once.
+        // The [DbFact] and [DbTheory] attributes probed the server (and dropped stale databases).
         using (var admin = new NpgsqlConnection(TestDatabase.AdminConnectionString))
         {
             admin.Open();
