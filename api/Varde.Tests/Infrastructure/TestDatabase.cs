@@ -23,12 +23,23 @@ public static class TestDatabase
         Environment.GetEnvironmentVariable("VARDE_TEST_PG")
         ?? "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
-    // Null when the server is reachable, otherwise why the database tests skip.
+    /// <summary>VARDE_TEST_REQUIRE_DB=1 (the repo's own CI job) turns an unreachable server into a failure, not a skip.</summary>
+    public static bool RequireDatabase { get; } =
+        Environment.GetEnvironmentVariable("VARDE_TEST_REQUIRE_DB") == "1";
+
+    // Null when the server is reachable, otherwise why it is not.
     private static readonly Lazy<string?> Unreachable = new(Probe);
 
     public static bool IsAvailable => Unreachable.Value is null;
 
-    public static string? SkipReason => Unreachable.Value;
+    // Null in strict mode, so the database tests run and fail in EnsureAvailable.
+    public static string? SkipReason => RequireDatabase ? null : Unreachable.Value;
+
+    /// <summary>Throws with the probe's message when the server is unreachable.</summary>
+    public static void EnsureAvailable()
+    {
+        if (Unreachable.Value is { } reason) throw new InvalidOperationException(reason);
+    }
 
     private static string? Probe()
     {

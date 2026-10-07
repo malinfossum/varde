@@ -2,7 +2,7 @@ namespace Varde.Tests.Infrastructure;
 
 /// <summary>
 /// A [Theory] that needs the PostgreSQL server. Like <see cref="DbFactAttribute"/>, it reports as
-/// skipped instead of failing when no server is reachable.
+/// skipped instead of failing when no server is reachable, unless VARDE_TEST_REQUIRE_DB is 1.
 /// </summary>
 public sealed class DbTheoryAttribute : TheoryAttribute
 {

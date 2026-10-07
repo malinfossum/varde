@@ -19,6 +19,7 @@ namespace Varde.Tests.Infrastructure;
 public sealed class VardeApiFactory : WebApplicationFactory<Program>
 {
     private readonly string _dbName = $"varde_test_{Guid.NewGuid():N}";
+    private bool _created;
 
     /// <summary>
     /// The app's real limit is 60 requests a minute per IP. Under TestServer every test shares the
@@ -50,6 +51,8 @@ public sealed class VardeApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment(Environment);
 
         // The [DbFact] and [DbTheory] attributes probed the server (and dropped stale databases).
+        // Without a server they skip, unless VARDE_TEST_REQUIRE_DB=1, which fails here instead.
+        TestDatabase.EnsureAvailable();
         using (var admin = new NpgsqlConnection(TestDatabase.AdminConnectionString))
         {
             admin.Open();
@@ -57,6 +60,7 @@ public sealed class VardeApiFactory : WebApplicationFactory<Program>
             cmd.CommandText = $"CREATE DATABASE \"{_dbName}\"";
             cmd.ExecuteNonQuery();
         }
+        _created = true;
 
         var perTest = new NpgsqlConnectionStringBuilder(TestDatabase.AdminConnectionString)
         {
@@ -110,6 +114,9 @@ public sealed class VardeApiFactory : WebApplicationFactory<Program>
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
+
+        // Nothing to drop if setup never created the database (no server reachable, say).
+        if (!_created) return;
 
         // The native server persists (unlike a container) — drop this test's throwaway database.
         // DROP ... WITH (FORCE) (PG13+) terminates the app's leftover pooled connections to this

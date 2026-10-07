@@ -22,7 +22,7 @@ jobs:
       a11y: "off"              # off | warn | strict
       dotnet: "api/Varde.slnx"               # solution directory or file, e.g. "." or "App.slnx"
       dotnet-os: ubuntu-latest # windows-latest for WPF
-      # EF check off until Ward restores local tools and resolves paths from the repo root (2026-10-07).
+      # EF check off until Ward restores local tools and resolves paths from the repo root, and the API has a design-time connection string (2026-10-07).
       dotnet-ef-project: ""                  # EF Core project path, e.g. "src/App.Data"
 
   automerge:
