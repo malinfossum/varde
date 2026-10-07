@@ -12,7 +12,7 @@ public class ForwardedHeadersTests
         return request;
     }
 
-    [Fact]
+    [DbFact]
     public async Task Rate_limit_buckets_partition_by_forwarded_client_ip()
     {
         using var factory = new VardeApiFactory { RateLimitPermitLimit = 3 };
@@ -33,7 +33,7 @@ public class ForwardedHeadersTests
         Assert.Equal(HttpStatusCode.OK, otherIdentity.StatusCode);
     }
 
-    [Fact]
+    [DbFact]
     public async Task Only_the_rightmost_forwarded_entry_names_the_bucket()
     {
         // A reverse proxy appends the real client IP to any client-supplied X-Forwarded-For,
