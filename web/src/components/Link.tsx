@@ -16,7 +16,8 @@ export function Link({
 	lang?: Lang
 	className?: string
 	children: ReactNode
-	onNavigate?: () => void
+	// Runs before navigating; returning false keeps the link a link but cancels the navigation.
+	onNavigate?: () => undefined | false
 	"aria-label"?: string
 	"aria-current"?: "page"
 }) {
@@ -30,7 +31,7 @@ export function Link({
 		if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
 			return
 		event.preventDefault()
-		onNavigate?.()
+		if (onNavigate?.() === false) return
 		const url = new URL(to, window.location.origin)
 		navigate(url.pathname, url.search, { lang: target })
 	}

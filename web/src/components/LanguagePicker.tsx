@@ -37,12 +37,19 @@ export function LanguagePicker() {
 							className="picker-row"
 							aria-current={isCurrent ? "page" : undefined}
 							onNavigate={() => {
+								// The language you are already in: stay on the page (a navigation would push
+								// a duplicate history entry and drop page). The row stays a real link, so
+								// without JavaScript it still reloads the page.
+								if (isCurrent) {
+									closeAndFocus()
+									return false
+								}
 								try {
 									localStorage.setItem(LANG_STORAGE_KEY, language.code)
 								} catch {}
 								// Announced in the language being switched to: useTranslation() would
 								// still read the old one until the re-render lands.
-								if (!isCurrent) announce(translate(language.code, "status.langChanged"))
+								announce(translate(language.code, "status.langChanged"))
 								closeAndFocus()
 							}}
 						>
