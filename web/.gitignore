@@ -16,3 +16,8 @@ public/data/
 
 # Vite cache
 .vite/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/

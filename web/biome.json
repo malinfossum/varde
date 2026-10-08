@@ -14,6 +14,9 @@
 			"!node_modules",
 			"!**/*.min.js",
 			"!public/data",
+			"!e2e/fixtures",
+			"!test-results",
+			"!playwright-report",
 			"!src/components/brandPaths.ts",
 			"!public/favicon.svg"
 		]
