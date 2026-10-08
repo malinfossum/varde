@@ -15,16 +15,16 @@ test("the prerendered landing page loads in both languages without console error
 	expect(errors).toEqual([])
 })
 
-// The prerender writes file-form pages (resources/1.html). The raw served HTML must already
-// contain the resource name: the SPA index.html fallback has none, and the client would render
-// it afterwards, which hides a missing prerender. Without this, every later check could be
-// measuring a client-rendered page instead of the prerendered one.
+// The prerender writes file-form pages (resources/1.html). The raw served HTML must carry that
+// page's own canonical link. The fallback (dist/index.html, the prerendered landing page) has a
+// canonical for "/", so a resource name or headline would not tell the two apart. Without this,
+// every later check could be measuring the landing page or a client-rendered detail page.
 test("vite preview serves the file-form detail page, not the landing fallback", async ({
 	page,
 }) => {
 	const response = await page.request.get("/resources/1")
 	expect(response.ok()).toBe(true)
-	expect(await response.text()).toContain("Hjelpetelefonen")
+	expect(await response.text()).toMatch(/<link rel="canonical" href="[^"]*\/resources\/1"/)
 	await page.goto("/resources/1")
 	await expect(page.getByRole("heading", { level: 1 })).toContainText("Hjelpetelefonen")
 })

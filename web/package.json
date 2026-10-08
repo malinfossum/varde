@@ -15,7 +15,7 @@
 		"brand": "node scripts/brand.mjs",
 		"data": "node scripts/export-data.mjs",
 		"test": "vitest run",
-		"e2e": "playwright test",
+		"e2e": "npm run build:site && playwright test",
 		"typecheck": "tsc --noEmit",
 		"format": "biome format --write .",
 		"format:check": "biome format .",
