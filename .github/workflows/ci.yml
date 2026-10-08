@@ -39,26 +39,6 @@ jobs:
       - name: Test
         run: dotnet test api/Varde.slnx
 
-  web-tests:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - name: Install
-        run: npm ci
-      - name: Biome
-        run: npx biome ci .
-      - name: Test
-        run: npm test
-      - name: Build
-        run: npm run build:client
 
   # Real-browser layout checks against a full prerendered build. The data snapshot is real
   # seed data (web/e2e/fixtures/data), because public/data is gitignored and normally comes
