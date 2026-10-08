@@ -3,6 +3,7 @@ export type Lang = "nb" | "en"
 export type Route =
 	| { kind: "landing" }
 	| { kind: "list" }
+	| { kind: "about" }
 	| { kind: "detail"; id: number }
 	| { kind: "kommune"; slug: string }
 	| { kind: "notFound" }
@@ -26,6 +27,7 @@ function isLegacyListUrl(pathname: string, params: URLSearchParams): boolean {
 export function parseRoute(pathname: string): Route {
 	if (pathname === "/") return { kind: "landing" }
 	if (pathname === "/sok") return { kind: "list" }
+	if (pathname === "/om") return { kind: "about" }
 	const detail = pathname.match(/^\/resources\/(\d+)$/)
 	if (detail) return { kind: "detail", id: Number(detail[1]) }
 	const kommune = pathname.match(/^\/kommune\/([a-z0-9-]+)$/)
@@ -54,6 +56,8 @@ export function routePath(route: Route): string {
 			return "/"
 		case "list":
 			return "/sok"
+		case "about":
+			return "/om"
 		case "detail":
 			return `/resources/${route.id}`
 		case "kommune":

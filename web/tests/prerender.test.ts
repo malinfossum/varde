@@ -58,10 +58,12 @@ test("urlList covers landing, search, every resource and kommune in both languag
 	expect(urls).toEqual([
 		"/",
 		"/sok",
+		"/om",
 		"/resources/5",
 		"/kommune/hamar",
 		"/en/",
 		"/en/sok",
+		"/en/om",
 		"/en/resources/5",
 		"/en/kommune/hamar",
 	])
@@ -86,7 +88,7 @@ test("writes every page as a file (except / and /en/) with head, data block, lan
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
-	expect(result.pages).toHaveLength(8)
+	expect(result.pages).toHaveLength(10)
 	const detail = readFileSync(join(distDir, "en/resources/5.html"), "utf8")
 	expect(detail).toContain('<html lang="en">')
 	expect(detail).toContain("<title>T /en/resources/5</title>")
@@ -109,6 +111,11 @@ test("writes every page as a file (except / and /en/) with head, data block, lan
 	expect(notFound).toContain("<noscript>")
 	expect(notFound).toContain("Fant ikke siden / Page not found")
 	expect(existsSync(join(distDir, "kommune/hamar.html"))).toBe(true)
+	expect(existsSync(join(distDir, "om.html"))).toBe(true)
+	expect(existsSync(join(distDir, "en/om.html"))).toBe(true)
+	expect(readFileSync(join(distDir, "sitemap.xml"), "utf8")).toContain(
+		"<loc>https://varde.pages.dev/om</loc>"
+	)
 })
 
 test("a trailing slash on siteOrigin never doubles up in a canonical URL", async () => {
@@ -249,7 +256,7 @@ test("every page carries the share-card tags, absolute and escaped", async () =>
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
-	expect(pages).toHaveLength(8)
+	expect(pages).toHaveLength(10)
 	for (const url of pages) {
 		const file = url.endsWith("/") ? join(distDir, url, "index.html") : `${join(distDir, url)}.html`
 		const html = readFileSync(file, "utf8")
@@ -278,4 +285,19 @@ test("every page carries the share-card tags, absolute and escaped", async () =>
 		expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />')
 		expect(html).not.toContain('content="Tittel "A"')
 	}
+})
+
+test("rejects a page whose markup carries a style attribute, which the CSP would drop", async () => {
+	const { dataDir, distDir } = setup([row], [hamar])
+	const render = vi.fn(async () => ({ html: '<main style="color: red">x</main>', head: null }))
+	await expect(
+		prerenderSite({
+			dataDir,
+			distDir,
+			render,
+			split: stubSplit,
+			siteOrigin: "https://varde.pages.dev",
+			log: () => {},
+		})
+	).rejects.toThrow(/style=/)
 })

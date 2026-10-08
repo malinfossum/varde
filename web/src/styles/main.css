@@ -106,6 +106,11 @@
 		position: static;
 	}
 	@media (min-height: 480px) {
+		/* The header is sticky here, so an in-page anchor (/om#meld-feil) would land under it.
+		   8rem clears the tallest header (117 px at 375 px wide) with a little air. */
+		html {
+			scroll-padding-top: 8rem;
+		}
 		.app-header {
 			position: sticky;
 			top: 0;
