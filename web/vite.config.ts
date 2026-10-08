@@ -22,6 +22,8 @@ export default defineConfig(({ isSsrBuild }) => ({
 	test: {
 		environment: "jsdom",
 		setupFiles: ["./tests/setup.ts"],
+		// Playwright owns e2e/*.spec.ts; vitest's default include would pick them up too.
+		include: ["tests/**/*.test.{ts,tsx}"],
 	},
 	// If you deploy to GitHub Pages under a repo name, set:
 	// base: '/your-repo-name/',
