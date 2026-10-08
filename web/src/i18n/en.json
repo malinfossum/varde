@@ -97,6 +97,9 @@
 	"strip.more": "All emergency services",
 	"footer.source": "Source code on GitHub",
 	"footer.noTracking": "No tracking. No cookies.",
+	"footer.liability": "Varde is a directory, not an emergency service. If a life is in danger, call",
+	"footer.about": "About Varde and liability",
+	"footer.report": "Report an error",
 	"about.pageTitle": "About Varde and liability – Varde",
 	"about.description": "What Varde is and is not, where the information comes from, liability, privacy and how to report an error.",
 	"about.heading": "About Varde"
