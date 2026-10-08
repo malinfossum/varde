@@ -332,7 +332,7 @@ prerender test fails on a `style=` attribute in a page.
   `public/data/` before the build. It only needs refreshing when a layout test depends on data
   the snapshot lacks.
 - **CI.** A new job `web-e2e` in `.github/workflows/ci.yml` on every pull request: `npm ci`,
-  copy the snapshot, `npm run build`, `npx playwright install --with-deps chromium`,
+  copy the snapshot, `npm run build:site`, `npx playwright install --with-deps chromium`,
   `npx playwright test`. It uses only the first-party actions the workflow already uses, under
   the workflow's existing read-only `permissions:`. Once it runs green I add it as a required
   check in branch protection.

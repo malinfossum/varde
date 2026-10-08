@@ -28,7 +28,7 @@ Every task's requirements include these. Values are copied from the spec.
 - **Text I ship:** first person, no em dashes (rewrite the sentence instead; no en dash or spaced hyphen as a stand-in). The existing page-title pattern `<title> – Varde` stays as it is, because every page already uses it.
 - **Commits:** conventional prefix (`feat:`, `test:`, `docs:`, `ci:`, `style:`), no `Co-Authored-By` and no AI attribution.
 - **Every new check is shown red once.** Before a Playwright or unit check is trusted, break the code on purpose, run the check, see it fail, and restore. Each PR description lists every break and its red result.
-- **Commands** run from `web/` unless a step says otherwise: `npm test`, `npx biome ci .`, `npm run build`, `npx playwright test`. Run `npx biome check --write .` before every `npx biome ci .`: the snippets are Biome-formatted where checked, but new imports land wherever the step says and organize-imports decides their order.
+- **Commands** run from `web/` unless a step says otherwise: `npm test`, `npx biome ci .`, `npm run build:site`, `npx playwright test`. Run `npx biome check --write .` before every `npx biome ci .`: the snippets are Biome-formatted where checked, but new imports land wherever the step says and organize-imports decides their order.
 - **i18n snippets** show every line with a trailing comma. Insert them after the last existing entry, add a comma to the line that was last, and drop the comma after the new last line, so the file stays valid JSON.
 
 ## Review Focus
@@ -54,13 +54,14 @@ Inputs the spec implies but no spec test names. Each line has a test in the task
 - **No sticky header on a phone.** At 375 px the tools wrap below the brand (brand plus tools is 345 px nb and 373 px en against 343 px of room, measured on the live site 2026-10-02), so a sticky header would be three rows and 157 px tall. Under 768 px wide the header now scrolls away and only the quick exit stays pinned, the same pattern as short screens. Tasks 10 and 11 carry it; spec Quick exit and Phone bullets amended.
 - **Shift x3 stays.** The NVDA Shift-pause test in PR 3's manual check still runs. If a third Shift press soon after pause and resume leaves Varde, I change the shortcut before PR 3 merges.
 - **The `Link` aria-label bug is fixed in PR 3.** `Link` passed only `href`, `className`, `hrefLang`, `lang` and `onClick` to its `<a>`, and TypeScript accepts any hyphenated prop, so the brand link's `aria-label` was dropped without an error. Task 6 adds the prop and a test. The label itself becomes "Varde, til forsiden" / "Varde, home page": it is speech only, and a comma pauses the same way at every NVDA punctuation level.
+- **Every build step is `npm run build:site` (found in PR 1).** `npm run build` does not prerender: `build:site` is build plus prerender, so every command in this plan now uses it. PR 1 also hardened the harness beyond the Task 1 text: the smoke test checks `/resources/1`'s own canonical link in the raw HTML (the SPA fallback serves the prerendered landing, which gets "Hjelpetelefonen" in PR 4), `reuseExistingServer` is `false`, `noHorizontalScroll` compares against `clientWidth`, `npm run e2e` builds first, and `web-e2e` has a 15 minute timeout. The PR 1 code is the reference, not the snippets in Tasks 1 and 2.
 
 ## Shipping a PR
 
 Each PR's last task ends with these steps. Merging is Malin's call; I never merge.
 
 1. Branch from an up-to-date `main` after the previous PR has merged: `git switch main && git pull && git switch -c <branch>`.
-2. Before pushing, all four pass from `web/`: `npx biome ci .`, `npm test`, `npm run build`, `npx playwright test` (PR 1 onwards).
+2. Before pushing, all four pass from `web/`: `npx biome ci .`, `npm test`, `npm run build:site`, `npx playwright test` (PR 1 onwards).
 3. `git push -u origin <branch>`, then `gh pr create --base main --title "<title>" --body-file <file>`. The body has: what changed (short), a "Red proofs" table (check, break, red result), and a manual checklist when the spec's table has a "Manual, before merge" entry.
 4. After Malin merges, open `https://varde.pages.dev` and look at what changed.
 
@@ -146,7 +147,7 @@ Create `web/playwright.config.ts`:
 ```ts
 import { defineConfig, devices } from "@playwright/test"
 
-// Runs against `vite preview` of a full build (npm run build), so every check sees the real
+// Runs against `vite preview` of a full build (npm run build:site), so every check sees the real
 // prerendered pages, not the dev server. Chromium only (spec: Testing and verification).
 // No retries: a flaky layout check is a finding, not noise to hide.
 export default defineConfig({
@@ -257,7 +258,7 @@ test("vite preview serves the file-form detail page, not the landing fallback", 
 - [ ] **Step 9: Build and run**
 
 ```bash
-npm run build
+npm run build:site
 npx playwright install chromium
 npx playwright test
 ```
@@ -318,7 +319,7 @@ Append to `.github/workflows/ci.yml`, after the `web-tests` job (same indentatio
       - name: Data snapshot
         run: mkdir -p public/data && cp e2e/fixtures/data/*.json public/data/
       - name: Build
-        run: npm run build
+        run: npm run build:site
       - name: Browser
         run: npx playwright install --with-deps chromium
       - name: Playwright
@@ -551,7 +552,7 @@ In `prerender.mjs`, comment out the `assertNoStyleAttribute(html, page.url)` cal
 - [ ] **Step 9: Full check and commit**
 
 ```bash
-npm test && npx biome ci . && npm run build
+npm test && npx biome ci . && npm run build:site
 git add src/services/urlState.ts src/App.tsx src/components/AboutPage.tsx src/i18n scripts/prerender.mjs tests/urlState.test.ts tests/prerender.test.ts tests/hydration.test.tsx
 git commit -m "feat: add the /om route, prerendered in both languages"
 ```
@@ -1012,7 +1013,7 @@ export function Footer() {
 
 ```bash
 npx vitest run tests/footer.test.tsx
-npm run build && npx playwright test
+npm run build:site && npx playwright test
 ```
 
 Expected: vitest PASS; Playwright `18 passed` (2 smoke + 16 reflow, 8 paths in both themes).
@@ -2786,7 +2787,7 @@ test("forced colours keep the focus ring and the current picker row visible", as
 - [ ] **Step 2: Run to see the focus check fail**
 
 ```bash
-npm run build && npx playwright test header
+npm run build:site && npx playwright test header
 ```
 
 Expected: the header-row, quick-exit and forced-colours tests PASS; "never puts focus under the header or the pinned exit" FAILS on the Shift+Tab pass (an element above, partly under the header, takes focus without a scroll). If a header-row test fails, read the label it prints and fix that control's height in CSS before going on.
@@ -2819,7 +2820,7 @@ Append inside `@layer base` in `main.css`, after the `:focus-visible` rule:
 - [ ] **Step 4: Run all browser checks**
 
 ```bash
-npm run build && npx playwright test
+npm run build:site && npx playwright test
 ```
 
 Expected: all pass.
@@ -3100,7 +3101,7 @@ for (const width of [1280, 1920]) {
 - [ ] **Step 8: Run them**
 
 ```bash
-npm run build && npx playwright test landing
+npm run build:site && npx playwright test landing
 ```
 
 Expected: PASS. If a hero test reports `lines: 3` at 1280, the 3fr column is too narrow for 60 px type: change the h1's `md:text-6xl` to `md:text-6xl lg:text-5xl 2xl:text-6xl`, rebuild and re-run. Do not change the strings.
@@ -3329,8 +3330,8 @@ In `web/scripts/prerender.d.mts` (the type sibling `tsc --noEmit` reads for the 
 
 - [ ] **Step 6: Run, show red once, commit**
 
-Run: `npm test && npm run build`. Expected: PASS, and the build log still says `prerendered 210 pages`.
-Red proof: in `HELPLINE_IDS` change `121` to `999`; `npm run build` FAILS with `helpline id 999 is missing from the data`; restore.
+Run: `npm test && npm run build:site`. Expected: PASS, and the build log still says `prerendered 210 pages`.
+Red proof: in `HELPLINE_IDS` change `121` to `999`; `npm run build:site` FAILS with `helpline id 999 is missing from the data`; restore.
 
 ```bash
 npx biome ci .
@@ -3684,7 +3685,7 @@ In `LandingPage.tsx`, delete `NEXT_VERIFICATION_PASS` and its comment, and repla
 Run: `npm test`. Expected: PASS.
 
 ```bash
-npm run build && npx playwright test landing
+npm run build:site && npx playwright test landing
 ```
 
 If a fit test fails, measure where the height goes, in the browser at 1280 x 950 (`npx playwright test landing --debug`, or a one-off `page.evaluate` that prints `getBoundingClientRect().height` for the strip, header, `.hero`, `.landing-help`, the trust section and the footer). Then trim spacing in this order, rebuilding and re-running after each:
@@ -3784,7 +3785,7 @@ for (const theme of THEMES) {
 - [ ] **Step 3: Run it to see it fail**
 
 ```bash
-npm run build && npx playwright test cards
+npm run build:site && npx playwright test cards
 ```
 
 Expected: FAIL. Today's cards have no `.card` class, so `toBeVisible` times out.
@@ -3880,7 +3881,7 @@ Append inside `@layer components` in `main.css`:
 - [ ] **Step 5: Run everything, show red once, commit**
 
 ```bash
-npm test && npm run build && npx playwright test
+npm test && npm run build:site && npx playwright test
 ```
 
 Expected: PASS (unit tests query by role and text, so the wrappers do not break them).
@@ -3942,7 +3943,7 @@ test("with reduced motion a hovered card does not move, but its border changes",
 - [ ] **Step 2: Run to see them fail**
 
 ```bash
-npm run build && npx playwright test cards
+npm run build:site && npx playwright test cards
 ```
 
 Expected: both hover tests FAIL (no lift, no border change).
@@ -3986,7 +3987,7 @@ Append inside `@layer components` in `main.css`:
 - [ ] **Step 4: Run, show red once, commit, ship**
 
 ```bash
-npm run build && npx playwright test
+npm run build:site && npx playwright test
 ```
 
 Expected: PASS.
@@ -4285,7 +4286,7 @@ Append inside `@layer components` in `main.css`:
 - [ ] **Step 5: Run, show red once, commit**
 
 ```bash
-npm test && npm run build && npx playwright test
+npm test && npm run build:site && npx playwright test
 ```
 
 Expected: PASS. If the 950 px fit fails (the trust row grows from a 20 px line to the 44 px summary, more if it wraps at 1280), measure the trust section and trim with Task 15 Step 3's list. Task 15's stop rule applies, and the summary never drops below 44 px.
@@ -4433,7 +4434,7 @@ Append inside `@layer components` in `main.css` (after `.btn-secondary`, so this
 - [ ] **Step 4: Run, show red once, commit**
 
 ```bash
-npm test && npm run build && npx playwright test
+npm test && npm run build:site && npx playwright test
 ```
 
 Expected: PASS. The header-row browser check is unchanged, because the arrow is `display: none` outside standalone mode.
