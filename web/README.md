@@ -1,18 +1,21 @@
 # Varde web
 
-The Varde web frontend: a bilingual (Norwegian/English) search UI for the API, built with
-Vite, React and TypeScript.
+The Varde web frontend: a bilingual (Norwegian/English) static site built with Vite, React and
+TypeScript. The browser never calls the API. At build time `npm run data` exports the API's
+data to `public/data/*.json`, the pages are prerendered to HTML, and the browser filters that
+JSON locally.
 
 ## Run locally
 
 ```bash
 npm install
+npm run data   # export JSON from a running API (default http://localhost:5005)
 npm run dev
 npm test
 ```
 
-`VITE_API_URL` defaults to `http://localhost:5005`; override it to point at a different API
-instance.
+`npm run data -- <url>` exports from a different API instance. `npm run build:site` builds and
+prerenders the full static site, the same step the deploy workflow runs.
 
 ## Specs
 

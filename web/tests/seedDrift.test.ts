@@ -7,8 +7,8 @@ import { CATEGORY_SLUGS } from "../src/services/categories.ts"
 
 // Two more tables copied out of the API's seed by hand, guarded the same way emergency.test.ts
 // guards the acute strip: read the real C# file and fail if the copy has drifted. The fallbacks
-// are the numbers shown precisely when the API is down, so nothing else can catch a mistake
-// there at runtime.
+// are the numbers shown precisely when the site's data fails to load, so nothing else can catch
+// a mistake there at runtime.
 // jsdom replaces the global URL constructor, and on Windows that replacement mis-resolves a
 // relative path against a file:// base, so I go through node:path/node:url instead of
 // `new URL("../../api/...", import.meta.url)` (same fix as tokens.test.ts/fonts.test.ts).
