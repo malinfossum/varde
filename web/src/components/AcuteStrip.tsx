@@ -8,7 +8,7 @@ export function AcuteStrip() {
 	const t = useTranslation()
 	return (
 		<section aria-label={t("strip.label")} className="bg-akutt-soft text-akutt">
-			<ul className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 text-sm">
+			<ul className="acute-strip mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1 py-2 text-sm">
 				{emergencyLines.map((line) => (
 					<li key={line.id} className="flex items-center gap-1">
 						<a

@@ -102,15 +102,14 @@
 	.badge-akutt {
 		color: var(--akutt);
 	}
+	/* Sticky only where it costs one or two rows. On a phone the 10rem slot kept free for the
+	   pinned exit pushes the pickers below the brand, so a sticky header would be three rows;
+	   there it scrolls away and only the quick exit stays pinned, as on short screens
+	   (spec: Quick exit). */
 	.app-header {
 		position: static;
 	}
-	@media (min-height: 480px) {
-		/* The header is sticky here, so an in-page anchor (/om#meld-feil) would land under it.
-		   8rem clears the tallest header (117 px at 375 px wide) with a little air. */
-		html {
-			scroll-padding-top: 8rem;
-		}
+	@media (min-height: 480px) and (min-width: 768px) {
 		.app-header {
 			position: sticky;
 			top: 0;
@@ -280,6 +279,35 @@
 			forced-color-adjust: none;
 			background: Highlight;
 			color: HighlightText;
+		}
+	}
+	/* Always in view (spec: Quick exit). Wherever the header scrolls away (under 768 px wide or
+	   480 px tall, .app-header), the button pins itself to the top right corner instead. Its slot
+	   in .header-tools is then empty, so the tools keep that room free and the pinned button
+	   never covers a picker (Task 11 measures it). The acute strip sits above the header and
+	   keeps the same slot free, so the pinned button never covers the 113 link either. */
+	.quick-exit {
+		position: fixed;
+		top: 0.5rem;
+		right: 0.5rem;
+		z-index: 20;
+	}
+	.header-tools {
+		margin-inline-end: 10rem;
+	}
+	.acute-strip {
+		padding-inline: 1rem;
+		padding-inline-end: 10rem;
+	}
+	@media (min-height: 480px) and (min-width: 768px) {
+		.quick-exit {
+			position: static;
+		}
+		.header-tools {
+			margin-inline-end: 0;
+		}
+		.acute-strip {
+			padding-inline-end: 1rem;
 		}
 	}
 }
