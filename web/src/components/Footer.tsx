@@ -12,12 +12,15 @@ export function Footer() {
 	return (
 		<footer className="mt-6 border-t border-border">
 			<div className="mx-auto grid max-w-6xl gap-1 px-4 py-3 text-sm text-muted">
-				<p>
+				{/* The 113 link keeps the text tight (a normal word space each side) and gets its 44 x 44 px
+				    target from an ::after box centred on the number. py-3 on this paragraph leaves room
+				    for that box, so it does not overlap the links in the row underneath. */}
+				<p className="py-3">
 					{t("footer.liability")}{" "}
 					{ambulance && (
 						<a
 							href={telHref(ambulance.phone)}
-							className="inline-flex min-h-11 min-w-11 items-center justify-center font-semibold"
+							className="relative inline-block font-semibold after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2"
 						>
 							{ambulance.phone}
 						</a>

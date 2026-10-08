@@ -11,6 +11,7 @@ for (const theme of THEMES) {
 			await setTheme(page, theme)
 			await page.goto(path)
 			await page.evaluate(() => document.fonts.ready)
+			await expect(page.getByRole("contentinfo")).toBeVisible()
 			expect(await noHorizontalScroll(page)).toBe(true)
 		})
 	}
