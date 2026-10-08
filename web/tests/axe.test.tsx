@@ -57,6 +57,7 @@ const pages: [string, string, Mode, RegExp][] = [
 	["detail", "/resources/12", "ok", /Krisesenteret i Hamar/],
 	["not found", "/nope", "ok", /Fant ikke/],
 	["kommune", "/kommune/hamar", "ok", /Hjelpetjenester i Hamar/],
+	["about", "/om", "ok", /Om Varde/],
 ]
 
 afterEach(() => {

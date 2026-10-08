@@ -31,11 +31,16 @@ export async function copyText(text: string, nav: ShareTarget): Promise<boolean>
 	}
 }
 
-// One forwarding alias I can switch off if it attracts spam (spec: Report a wrong number).
-export const REPORT_ADDRESS = "varde.implicate775@passmail.com"
+// A dedicated forwarding alias for error reports, separate from the one tied to deploy
+// accounts, so I can switch it off if it attracts spam (spec: Om Varde, Meld feil).
+export const REPORT_ADDRESS = "varde.purely709@passmail.com"
 
 export function reportHref(id: number, name: string): string {
 	return `mailto:${REPORT_ADDRESS}?subject=${encodeURIComponent(`Varde #${id}: ${name}`)}`
+}
+
+export function generalReportHref(subject: string): string {
+	return `mailto:${REPORT_ADDRESS}?subject=${encodeURIComponent(subject)}`
 }
 
 export async function shareResource(entry: ShareEntry, nav: ShareTarget): Promise<ShareOutcome> {

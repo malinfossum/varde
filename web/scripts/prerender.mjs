@@ -45,6 +45,7 @@ const CHUNKS = {
 	list: "src/components/ListPage.tsx",
 	detail: "src/components/ResourceDetail.tsx",
 	kommune: "src/components/KommunePage.tsx",
+	about: "src/components/AboutPage.tsx",
 }
 
 // A route page names its lazy chunk (and the chunks that one imports) up front, so the browser
@@ -73,6 +74,7 @@ export function urlList(kommuner, resourcesByLang) {
 		const p = prefix(lang)
 		out.push({ url: `${p}/`, data: {}, lang })
 		out.push({ url: `${p}/sok`, data: {}, lang, chunk: CHUNKS.list })
+		out.push({ url: `${p}/om`, data: {}, lang, chunk: CHUNKS.about })
 		for (const r of resourcesByLang[lang])
 			out.push({ url: `${p}/resources/${r.id}`, data: { resource: r }, lang, chunk: CHUNKS.detail })
 		for (const k of kommuner)
@@ -176,6 +178,14 @@ function assertNoOutlinedBoundary(html, url) {
 	}
 }
 
+// index.html's CSP allows only hashed inline styles, so a style="..." attribute in prerendered
+// markup is silently dropped by the browser. Inline styles belong in effects, after mount.
+function assertNoStyleAttribute(html, url) {
+	if (/<[^>]+\sstyle=/.test(html)) {
+		throw new Error(`prerendered page ${url} contains a style= attribute, which the CSP would drop`)
+	}
+}
+
 export async function prerenderSite({
 	dataDir,
 	distDir,
@@ -202,6 +212,7 @@ export async function prerenderSite({
 			: page.data
 		const { html, head } = await render(page.url, data)
 		assertNoOutlinedBoundary(html, page.url)
+		assertNoStyleAttribute(html, page.url)
 		const ld = data.resource ? jsonLd(data.resource, page.lang, siteOrigin) : null
 		const file = fillTemplate(template, {
 			lang: page.lang,

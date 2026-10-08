@@ -36,6 +36,9 @@ const ResourceDetail = lazy(() =>
 const KommunePage = lazy(() =>
 	import("./components/KommunePage.tsx").then((m) => ({ default: m.KommunePage }))
 )
+const AboutPage = lazy(() =>
+	import("./components/AboutPage.tsx").then((m) => ({ default: m.AboutPage }))
+)
 
 export function App() {
 	const { lang, route, filters, arrival, navigate } = useUrlState()
@@ -63,6 +66,7 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 				<Suspense fallback={<LoadingState />}>
 					{route.kind === "landing" && <LandingPage arrival={arrival} />}
 					{route.kind === "list" && <ListPage filters={filters} arrival={arrival} />}
+					{route.kind === "about" && <AboutPage arrival={arrival} />}
 					{route.kind === "detail" && <ResourceDetail id={route.id} arrival={arrival} />}
 					{route.kind === "kommune" && <KommunePage slug={route.slug} arrival={arrival} />}
 					{route.kind === "notFound" && <NotFoundState arrival={arrival} />}
