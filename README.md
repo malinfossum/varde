@@ -221,13 +221,14 @@ applies EF Core migrations and seed data. It exports its data as JSON, builds an
 the site, then deploys the resulting `web/dist` to **Cloudflare Pages**. Nothing user-facing
 ever talks to the API; it exists only as a build-time step.
 
-Four GitHub Actions workflows drive the repo:
+Five GitHub Actions workflows drive the repo:
 
 | Workflow | Trigger | Does |
 |---|---|---|
 | `ci.yml` | every pull request | both test suites + a client build (the required merge checks) |
 | `build-test.yml` | pull request and push to `main` | format check, API build and tests, vulnerable-package report; on `main` it also pushes the API image to GHCR |
 | `deploy-web.yml` | push to `main`, daily cron, manual dispatch | run the API against Neon, export data, build, prerender, deploy to Cloudflare Pages |
+| `ward.yml` | pull request, push to `main`, weekly cron, manual dispatch | shared CI and security checks via `malinfossum/ward`; auto-merges Dependabot PRs |
 | `repo-hygiene.yml` | README changes, releases, manual dispatch | check the repo's public face (description, topics, homepage, versions, links) against the README, via `malinfossum/ward` |
 
 Deploy credentials live in the GitHub `production` environment: secrets
