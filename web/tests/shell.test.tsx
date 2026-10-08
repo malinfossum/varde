@@ -12,7 +12,7 @@ function stubResources() {
 	vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}))
 }
 
-test("shell renders skip link, quick exit, acute strip and theme toggle", () => {
+test("shell renders skip link, quick exit, acute strip and theme picker", () => {
 	stubResources()
 	render(<App />)
 	expect(screen.getByRole("link", { name: "Hopp til innhold" })).toBeInTheDocument()

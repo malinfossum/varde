@@ -16,6 +16,17 @@ export function readStoredTheme(storage: Pick<Storage, "getItem"> | undefined): 
 	}
 }
 
+// The window.localStorage getter itself throws SecurityError when the browser blocks site data
+// (Chrome "sites can't save data", Firefox with cookies blocked), before any try around
+// getItem can run. Every caller reads storage through here instead.
+export function storage(): Storage | undefined {
+	try {
+		return window.localStorage
+	} catch {
+		return undefined
+	}
+}
+
 export type ThemeChoice = Theme | "system"
 
 export function readChoice(storage: Pick<Storage, "getItem"> | undefined): ThemeChoice {

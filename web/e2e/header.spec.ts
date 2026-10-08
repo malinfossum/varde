@@ -45,8 +45,8 @@ async function tabTo(page: Page, selector: string) {
 
 // 1024 is the narrowest one-row width, English has the longest labels, and a first visit
 // (nothing stored) shows the widest theme value, "System (lyst)", so all three are measured:
-// scroll-padding-top (Step 3) assumes one row from 1024 px.
-for (const width of [375, 1024, 1280, 1920]) {
+// scroll-padding-top (Step 3) assumes one row from 1024 px and two rows from 768 px (800).
+for (const width of [375, 800, 1024, 1280, 1920]) {
 	for (const theme of [...THEMES, "system"] as const) {
 		for (const path of ["/", "/en/"]) {
 			test(`header ${path} at ${width} px (${theme}): every control 44 px tall, one bottom edge per row`, async ({
@@ -79,6 +79,7 @@ for (const path of ["/", "/sok"]) {
 	for (const viewport of [
 		{ width: 1280, height: 600 },
 		{ width: 1024, height: 600 },
+		{ width: 800, height: 600 },
 		{ width: 375, height: 700 },
 	]) {
 		test(`tabbing through ${path} at ${viewport.width} px never puts focus under the header or the pinned exit`, async ({
@@ -172,6 +173,40 @@ for (const viewport of [
 						.map((el) => el.outerHTML.slice(0, 80))
 				})
 				expect(covered, `${path}, ${at}`).toEqual([])
+			}
+		}
+	})
+}
+
+// usePicker shifts an open list back on screen when it would start left of the 8 px edge gap.
+// The list hangs from its trigger's right edge, so on a narrow phone the left edge is the risk.
+for (const viewport of [
+	{ width: 375, height: 812 },
+	{ width: 320, height: 640 },
+]) {
+	test(`at ${viewport.width} x ${viewport.height} an open picker list stays 8 px inside the screen`, async ({
+		page,
+	}) => {
+		await page.setViewportSize(viewport)
+		for (const path of ["/", "/en/"]) {
+			await page.goto(path)
+			await settle(page)
+			const pickers = page.locator("header details.picker")
+			await expect(pickers).toHaveCount(2)
+			for (const i of [0, 1]) {
+				const picker = pickers.nth(i)
+				await picker.locator("summary").click()
+				// onToggle focuses a row after it has placed the list, so focus means placed.
+				await expect(picker.locator(".picker-row:focus")).toHaveCount(1)
+				const edges = await picker.locator(".picker-list").evaluate((el) => {
+					const r = el.getBoundingClientRect()
+					return { left: r.left, right: r.right, width: document.documentElement.clientWidth }
+				})
+				const label = `${path}, picker ${i}`
+				expect(edges.left, label).toBeGreaterThanOrEqual(8)
+				expect(edges.right, label).toBeLessThanOrEqual(edges.width - 8)
+				await page.keyboard.press("Escape")
+				await expect(picker).not.toHaveAttribute("open")
 			}
 		}
 	})

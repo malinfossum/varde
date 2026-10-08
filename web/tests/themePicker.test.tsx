@@ -75,6 +75,48 @@ test("a choice made in another tab is followed here", () => {
 	expect(name("Tema: Mørkt")).toBeInTheDocument()
 })
 
+// Chrome ("sites can't save data") and Firefox with cookies blocked throw from the
+// window.localStorage getter itself. Restored before the shared afterEach clears storage.
+function blockStorage() {
+	const original = Object.getOwnPropertyDescriptor(window, "localStorage")
+	Object.defineProperty(window, "localStorage", {
+		configurable: true,
+		get() {
+			throw new Error("SecurityError")
+		},
+	})
+	return () => {
+		if (original) Object.defineProperty(window, "localStorage", original)
+	}
+}
+
+test("with site data blocked, the page stays up and the trigger still renders", () => {
+	fakeOsTheme(false)
+	stubDataFiles()
+	const restore = blockStorage()
+	try {
+		render(<App />)
+		expect(name("Tema: System (lyst)")).toBeInTheDocument()
+	} finally {
+		restore()
+	}
+})
+
+test("with site data blocked, Mørkt survives an OS change", async () => {
+	const os = fakeOsTheme(true)
+	stubDataFiles()
+	const restore = blockStorage()
+	try {
+		render(<App />)
+		await userEvent.click(screen.getByRole("button", { name: "Mørkt" }))
+		act(() => os.set(false))
+		expect(document.documentElement.dataset.theme).toBe("dark")
+		expect(name("Tema: Mørkt")).toBeInTheDocument()
+	} finally {
+		restore()
+	}
+})
+
 test("the prerendered trigger says only Tema, so hydration cannot mismatch", async () => {
 	const { html } = await prerender("/", {})
 	expect(html).toContain('<span class="visually-hidden">Tema</span>')
