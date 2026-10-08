@@ -102,5 +102,22 @@
 	"footer.report": "Meld feil",
 	"about.pageTitle": "Om Varde og ansvar – Varde",
 	"about.description": "Hva Varde er og ikke er, hvor opplysningene kommer fra, ansvar, personvern og hvordan du melder feil.",
-	"about.heading": "Om Varde"
+	"about.heading": "Om Varde",
+	"about.whatHeading": "Hva Varde er",
+	"about.whatBody": "Varde er en oversikt over hjelpetjenester i Norge: hvem du kan ringe, hvor de holder til og når de har åpent. Varde er gratis, og jeg har laget den på fritiden.",
+	"about.notHeading": "Hva Varde ikke er",
+	"about.notBody": "Varde er ikke en nødtjeneste. Ingen følger med på det du gjør her, og ingen kan sende hjelp ut fra denne siden. Ved fare for liv, ring 113. Brann 110, politi 112, legevakt 116 117. Varde gir ikke medisinske, juridiske eller økonomiske råd, og er ikke tilknyttet NAV, Helsenorge eller tjenestene som står oppført.",
+	"about.sourcesHeading": "Hvor opplysningene kommer fra",
+	"about.sourcesBody": "Hvert telefonnummer, hver adresse og hver åpningstid er kopiert fra tjenestens egen side eller fra et offentlig register. Ingenting er gjettet eller funnet på. Hver oppføring viser kilden og datoen den sist ble bekreftet. Tjenester endrer seg: ring tjenesten for å bekrefte før du drar dit.",
+	"about.liabilityHeading": "Ansvar",
+	"about.liabilityBody": "Jeg gjør mitt beste for at alt stemmer, men jeg kan ikke garantere at opplysningene er riktige, fullstendige eller oppdaterte til enhver tid. Varde gis som den er. Så langt loven tillater det, er jeg ikke ansvarlig for tap eller skade som følger av at noen bruker eller stoler på opplysningene her.",
+	"about.reportHeading": "Meld feil",
+	"about.reportBody": "Ser du noe som er feil? Send en e-post til {address}. Skriv hvilken tjeneste det gjelder og hva som er feil, så retter jeg det.",
+	"about.reportLink": "Skriv e-post",
+	"about.reportSubject": "Varde: feil",
+	"about.privacyHeading": "Personvern",
+	"about.privacyBody": "Varde er laget og drives av Malin Fossum, som er ansvarlig for opplysningene nedenfor. Ingen sporing, ingen informasjonskapsler og ingen kontoer. Valget ditt av språk og tema lagres bare i nettleseren din. Varde ligger hos Cloudflare, som ser IP-adressen din slik alle nettsider gjør, men jeg samler ikke inn statistikk og ser ikke hvem som besøker siden. Sender du meg en e-post om en feil, ser jeg e-postadressen din. Jeg bruker den bare til å rette feilen og svare deg, deler den aldri, og sletter e-posten når saken er ferdig.",
+	"about.sourceHeading": "Kildekode",
+	"about.sourceBody": "Varde er åpen kildekode (MIT-lisens) på GitHub.",
+	"about.updated": "Teksten ble sist endret {date}."
 }

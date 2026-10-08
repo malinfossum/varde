@@ -102,5 +102,22 @@
 	"footer.report": "Report an error",
 	"about.pageTitle": "About Varde and liability – Varde",
 	"about.description": "What Varde is and is not, where the information comes from, liability, privacy and how to report an error.",
-	"about.heading": "About Varde"
+	"about.heading": "About Varde",
+	"about.whatHeading": "What Varde is",
+	"about.whatBody": "Varde is a directory of help services in Norway: who you can call, where they are and when they are open. Varde is free, and I built it in my spare time.",
+	"about.notHeading": "What Varde is not",
+	"about.notBody": "Varde is not an emergency service. Nobody watches what you do here, and nobody can send help from this page. If a life is in danger, call 113. Fire 110, police 112, out-of-hours medical service (legevakt) 116 117. Varde gives no medical, legal or financial advice, and is not affiliated with NAV, Helsenorge or the services it lists.",
+	"about.sourcesHeading": "Where the information comes from",
+	"about.sourcesBody": "Every phone number, address and opening time is copied from the service's own website or from a public register. Nothing is guessed or made up. Every entry shows its source and the date it was last confirmed. Services change: call the service to confirm before you go there.",
+	"about.liabilityHeading": "Liability",
+	"about.liabilityBody": "I do my best to keep everything correct, but I cannot guarantee that the information is correct, complete or up to date at all times. Varde is provided as is. To the extent the law allows, I am not liable for any loss or damage that follows from anyone using or relying on the information here.",
+	"about.reportHeading": "Report an error",
+	"about.reportBody": "See something wrong? Send an email to {address}. Say which service it concerns and what is wrong, and I will fix it.",
+	"about.reportLink": "Write an email",
+	"about.reportSubject": "Varde: error",
+	"about.privacyHeading": "Privacy",
+	"about.privacyBody": "Varde is made and run by Malin Fossum, who is responsible for the information below. No tracking, no cookies and no accounts. Your choice of language and theme is stored only in your browser. Varde is hosted by Cloudflare, which sees your IP address the way every website does, but I collect no statistics and cannot see who visits the site. If you email me about an error, I see your email address. I use it only to fix the error and reply to you, never share it, and delete the email when the matter is closed.",
+	"about.sourceHeading": "Source code",
+	"about.sourceBody": "Varde is open source (MIT licence) on GitHub.",
+	"about.updated": "This text was last changed {date}."
 }

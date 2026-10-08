@@ -44,7 +44,7 @@ The four numbers on the acute strip live in `web/src/services/emergency.ts` as c
 rows; a test keeps them identical to seed rows 3 and 23–25.
 
 **Report an error.** Every resource page has a "report wrong information" `mailto:` link
-that goes to a forwarding alias, `varde.implicate775@passmail.com`, so a stale number or
+that goes to a forwarding alias, `varde.purely709@passmail.com`, so a stale number or
 address reaches me without exposing my own inbox.
 
 ## Stack
