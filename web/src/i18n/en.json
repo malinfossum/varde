@@ -86,6 +86,7 @@
 	"banner.legevakt": "GP closed? Call the out-of-hours medical service (legevakt)",
 	"banner.fallback": "In an emergency or if your GP is closed? Call the out-of-hours medical service (legevakt) on 116 117",
 	"hint.helsenorge": "Looking for a GP, prescriptions, or exemption certificate? Visit Helsenorge",
+	"header.language": "Language",
 	"header.themeDark": "Dark theme",
 	"header.themeLight": "Light theme",
 	"header.home": "Varde, home page",

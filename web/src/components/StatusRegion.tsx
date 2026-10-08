@@ -3,7 +3,7 @@ import { createContext, type ReactNode, useContext, useRef, useState } from "rea
 const AnnouncerContext = createContext<(message: string) => void>(() => {})
 
 // Two announcements can legitimately land close together (e.g. ListPage's "Laster …" and
-// LanguageToggle's language confirmation). Replacing outright would let the second stomp the
+// LanguagePicker's language confirmation). Replacing outright would let the second stomp the
 // first before a screen reader has a chance to read it. Within this window, compose instead.
 const COMPOSE_WINDOW_MS = 1500
 

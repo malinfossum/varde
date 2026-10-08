@@ -32,26 +32,21 @@ test("the language is read from the path prefix", () => {
 	expect(document.documentElement.lang).toBe("en")
 })
 
-test("the toggle links to the same page in the other language, dropping page, and remembers the choice", async () => {
+test("choosing a language goes to the same page in it, drops page, remembers it and refocuses the trigger", async () => {
 	stubDataFiles()
 	window.history.pushState(null, "", "/sok?search=nav&page=2")
 	render(<App />)
-	const toggle = screen.getByRole("link", { name: "English" })
-	expect(toggle).toHaveAttribute("href", "/en/sok?search=nav")
-	expect(toggle).toHaveAttribute("hreflang", "en")
-	expect(toggle).toHaveAttribute("lang", "en")
-	await userEvent.click(toggle)
+	const english = screen.getByRole("link", { name: "English" })
+	expect(english).toHaveAttribute("href", "/en/sok?search=nav")
+	expect(english).toHaveAttribute("hreflang", "en")
+	expect(english).toHaveAttribute("lang", "en")
+	await userEvent.click(english)
 	expect(window.location.pathname).toBe("/en/sok")
 	expect(localStorage.getItem("varde.lang")).toBe("en")
-	// The link never unmounts across the re-render (same component, same position in the tree),
-	// so the browser's own focus-on-click behaviour survives it — same guarantee the old
-	// button-based toggle had (spec: Focus). Re-query it by its new name; it's still the same
-	// DOM node, just relabelled.
-	const toggledBack = screen.getByRole("link", { name: "Norsk" })
-	expect(toggledBack).toHaveFocus()
-	// ListPage's own "Laster …"/results announcements can land in the same 1500ms compose
-	// window as this one (see the composition note on the shared live region in
-	// announcer.test.tsx), so match on a substring rather than the exact composed string.
+	// Focus goes back to the trigger, whose name now carries the new value (spec: Names and
+	// state for both pickers).
+	expect(document.activeElement?.tagName).toBe("SUMMARY")
+	expect(document.activeElement).toHaveTextContent("Language: English")
 	expect(screen.getByText(/Language is now English/)).toBeInTheDocument()
 })
 

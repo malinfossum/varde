@@ -1,7 +1,7 @@
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import { HELSENORGE_URL, NAV_URL } from "../services/externalLinks.ts"
 import { BrandMark } from "./BrandMark.tsx"
-import { LanguageToggle } from "./LanguageToggle.tsx"
+import { LanguagePicker } from "./LanguagePicker.tsx"
 import { Link } from "./Link.tsx"
 import { QuickExit } from "./QuickExit.tsx"
 import { ThemeToggle } from "./ThemeToggle.tsx"
@@ -49,7 +49,7 @@ export function Header() {
 					</a>
 				</nav>
 				<div className="header-tools">
-					<LanguageToggle />
+					<LanguagePicker />
 					<ThemeToggle />
 					<QuickExit />
 				</div>
