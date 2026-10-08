@@ -46,6 +46,24 @@
 		outline: 3px solid var(--accent);
 		outline-offset: 2px;
 	}
+	/* The sticky header must never cover a focused element or an anchor target (WCAG 2.4.11,
+	   house bar 2.4.12). The value is the header's height plus room: two rows (109 px) under
+	   1024 px, one (61 px) from there. The header is sticky only from 768 px wide and 480 px
+	   tall (.app-header); elsewhere only the pinned quick exit sits at the top, so the padding
+	   clears its band. */
+	html {
+		scroll-padding-top: 3.5rem;
+	}
+	@media (min-height: 480px) and (min-width: 768px) {
+		html {
+			scroll-padding-top: 8rem;
+		}
+	}
+	@media (min-height: 480px) and (min-width: 1024px) {
+		html {
+			scroll-padding-top: 5rem;
+		}
+	}
 }
 
 @layer components {
@@ -61,8 +79,11 @@
 		position: absolute;
 		left: -999px;
 	}
+	/* #app is a flex column, so a focused skip link would stretch the full width and the pinned
+	   quick exit would cover the right end of its focus ring. It keeps its own width instead. */
 	.skip-link:focus {
 		position: static;
+		align-self: flex-start;
 	}
 	.btn-primary {
 		display: inline-flex;
