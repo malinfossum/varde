@@ -149,3 +149,9 @@ test.each([
 ])("canHydrate(%s%s) is %s", (pathname, search, expected) => {
 	expect(canHydrate(pathname, search)).toBe(expected)
 })
+
+test("/om is the About page in both languages", () => {
+	expect(parseRoute("/om")).toEqual({ kind: "about" })
+	expect(parseUrl("/en/om")).toEqual({ lang: "en", route: { kind: "about" } })
+	expect(routePath({ kind: "about" })).toBe("/om")
+})

@@ -86,6 +86,8 @@ async function hydrate(url: string, data: PageData) {
 test.each([
 	["/", {}],
 	["/en/", {}],
+	["/om", {}],
+	["/en/om", {}],
 	["/sok", {}],
 	["/resources/12", { resource }],
 	["/en/resources/12", { resource }],

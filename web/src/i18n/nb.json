@@ -96,5 +96,8 @@
 	"strip.legevakt": "Legevakt",
 	"strip.more": "Alle nødtjenester",
 	"footer.source": "Kildekode på GitHub",
-	"footer.noTracking": "Ingen sporing. Ingen informasjonskapsler."
+	"footer.noTracking": "Ingen sporing. Ingen informasjonskapsler.",
+	"about.pageTitle": "Om Varde og ansvar – Varde",
+	"about.description": "Hva Varde er og ikke er, hvor opplysningene kommer fra, ansvar, personvern og hvordan du melder feil.",
+	"about.heading": "Om Varde"
 }
