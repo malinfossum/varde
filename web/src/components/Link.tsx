@@ -9,12 +9,14 @@ export function Link({
 	className,
 	children,
 	onNavigate,
+	"aria-label": ariaLabel,
 }: {
 	to: string
 	lang?: Lang
 	className?: string
 	children: ReactNode
 	onNavigate?: () => void
+	"aria-label"?: string
 }) {
 	const navigate = useNavigate()
 	const { lang: current } = useLanguage()
@@ -31,7 +33,14 @@ export function Link({
 		navigate(url.pathname, url.search, { lang: target })
 	}
 	return (
-		<a href={href} className={className} hrefLang={lang} lang={lang} onClick={onClick}>
+		<a
+			href={href}
+			className={className}
+			aria-label={ariaLabel}
+			hrefLang={lang}
+			lang={lang}
+			onClick={onClick}
+		>
 			{children}
 		</a>
 	)

@@ -1,3 +1,4 @@
+import { HELSENORGE_URL } from "./externalLinks.ts"
 import { fold } from "./match.ts"
 
 export type HintEntry = { id: string; keywords: string[]; href: string }
@@ -8,7 +9,7 @@ export const hintEntries: HintEntry[] = [
 	{
 		id: "helsenorge",
 		keywords: ["fastlege", "frikort", "resept", "helsenorge", "legetime", "kjernejournal"],
-		href: "https://www.helsenorge.no",
+		href: HELSENORGE_URL,
 	},
 ]
 
