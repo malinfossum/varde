@@ -21,7 +21,9 @@ test("shell renders skip link, quick exit, acute strip and theme toggle", () => 
 		"https://www.google.com"
 	)
 	expect(screen.getByRole("region", { name: "Nødnumre" })).toBeInTheDocument()
-	expect(screen.getByRole("button", { name: "Mørkt tema" })).toBeInTheDocument()
+	expect(
+		screen.getByText("Tema: System (lyst)", { selector: ".visually-hidden" })
+	).toBeInTheDocument()
 })
 
 test("the language is read from the path prefix", () => {

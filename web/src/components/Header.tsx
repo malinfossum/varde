@@ -4,7 +4,7 @@ import { BrandMark } from "./BrandMark.tsx"
 import { LanguagePicker } from "./LanguagePicker.tsx"
 import { Link } from "./Link.tsx"
 import { QuickExit } from "./QuickExit.tsx"
-import { ThemeToggle } from "./ThemeToggle.tsx"
+import { ThemePicker } from "./ThemePicker.tsx"
 
 // Same tab on purpose (spec: Header). The arrow is decoration; the hidden text says it.
 function ExternalMark() {
@@ -50,7 +50,7 @@ export function Header() {
 				</nav>
 				<div className="header-tools">
 					<LanguagePicker />
-					<ThemeToggle />
+					<ThemePicker />
 					<QuickExit />
 				</div>
 			</div>
