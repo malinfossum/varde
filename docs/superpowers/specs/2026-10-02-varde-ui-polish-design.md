@@ -115,8 +115,9 @@ One row on desktop, in this order:
   without JavaScript.
 - **Quick exit.** Label stays "Forlat siden" / "Leave this page", and the target stays
   `https://www.google.com` via `location.replace`, so the page does not survive the back button.
-  - **Always in view.** The header is sticky from 480 px viewport height (today's rule). Below
-    that the button itself is `position: fixed` in the top right corner.
+  - **Always in view.** The header is sticky from 768 px wide and 480 px tall. Everywhere else
+    (phones and short screens) the header scrolls away and the button itself is
+    `position: fixed` in the top right corner.
   - **Shift three times.** A document-level listener, mounted once in `App`, counts Shift key
     releases. Any other key pressed in between resets the count (Ctrl and Alt included), so
     typing capitals or a shortcut never triggers it. Key repeat from holding Shift down counts
@@ -126,8 +127,10 @@ One row on desktop, in this order:
   - **Explainer line.** One line on the landing page, in the trust line (see Landing):
     "Trykk Shift tre ganger for å forlate siden raskt." / "Press Shift three times to leave
     quickly."
-- **Phone (375 px).** The nav links move to a second row. The pickers show their icon only
-  (the name stays as visually hidden text). Every control is 44 px tall either way.
+- **Phone (375 px).** The header is three rows: brand, pickers, nav links (brand plus tools
+  needs 345 to 373 px against 343, measured 2026-10-02). It is not sticky, so its height
+  scrolls away; only the quick exit stays pinned. The pickers show their icon only (the name
+  stays as visually hidden text). Every control is 44 px tall either way.
 - **The header row rule.** Every control in a header row is 44 px tall and shares one bottom
   edge. A Playwright check measures it at 375, 1280 and 1920.
 - **The sticky header never hides focus.** `html` gets `scroll-padding-top` equal to the

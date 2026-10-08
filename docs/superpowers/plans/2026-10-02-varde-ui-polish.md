@@ -47,8 +47,13 @@ Inputs the spec implies but no spec test names. Each line has a test in the task
 - **Cloudflare Web Analytics off.** Check in the Cloudflare dashboard (Workers & Pages, the `varde` project, Metrics: Web Analytics must be disabled) before PR 2 merges, since the About page now names Cloudflare.
 - **Arbeidslivstelefonen (id 9) needs "tast 3".** Mental Helse lists it as "116 123 (tast 3)" (mentalhelse.no/fa-hjelp/arbeidslivstelefonen/, read 2026-10-02). Varde's data shows plain `116 123`, so a caller reaches Hjelpetelefonen first. Decide before PR 4 merges: fix the row in Neon and the seed (a data change, outside this plan), or swap id 9 out of `HELPLINE_IDS`.
 - **Install labels on a real device.** Apple's nb pages for iOS 26 and 27 leave "Share" untranslated, and Edge's nb page reads as machine-translated. Check those two labels on a real device before PR 6 merges (Task 19 lists them).
-- **Three header rows on a phone.** Measured on the live site 2026-10-02: at 375 px, brand plus the tools row is 345 px (nb) and 373 px (en) against 343 px of room, so the tools wrap and the sticky header is three rows, 157 px tall. The spec says "the nav links move to a second row". The plan now expects three rows so it builds; decide before PR 3 merges whether that stays (and amend the spec's Phone bullet) or the header stops being sticky under 768 px with only the quick exit pinned, as on short screens.
 - **Required check.** After PR 1's `web-e2e` job runs green, add it as a required check: GitHub, repo Settings, Rules, Rulesets, `protect-main`, "Require status checks to pass", add `web-e2e`.
+
+## Decided (2026-10-08)
+
+- **No sticky header on a phone.** At 375 px the tools wrap below the brand (brand plus tools is 345 px nb and 373 px en against 343 px of room, measured on the live site 2026-10-02), so a sticky header would be three rows and 157 px tall. Under 768 px wide the header now scrolls away and only the quick exit stays pinned, the same pattern as short screens. Tasks 10 and 11 carry it; spec Quick exit and Phone bullets amended.
+- **Shift x3 stays.** The NVDA Shift-pause test in PR 3's manual check still runs. If a third Shift press soon after pause and resume leaves Varde, I change the shortcut before PR 3 merges.
+- **The `Link` aria-label bug is fixed in PR 3.** `Link` passed only `href`, `className`, `hrefLang`, `lang` and `onClick` to its `<a>`, and TypeScript accepts any hyphenated prop, so the brand link's `aria-label` was dropped without an error. Task 6 adds the prop and a test. The label itself becomes "Varde, til forsiden" / "Varde, home page": it is speech only, and a comma pauses the same way at every NVDA punctuation level.
 
 ## Shipping a PR
 
@@ -1037,12 +1042,12 @@ Blocked until both Open items for PR 2 are done (the alias is in the code, Cloud
 
 **Files:**
 - Create: `web/src/services/externalLinks.ts`
-- Modify: `web/src/services/hints.ts`, `web/src/components/Header.tsx`, `web/src/styles/main.css`, `web/src/i18n/nb.json`, `web/src/i18n/en.json`
+- Modify: `web/src/services/hints.ts`, `web/src/components/Link.tsx`, `web/src/components/Header.tsx`, `web/src/styles/main.css`, `web/src/i18n/nb.json`, `web/src/i18n/en.json`
 - Test: `web/tests/header.test.tsx` (create)
 
 **Interfaces:**
 - Consumes: `Link`.
-- Produces: `HELSENORGE_URL`, `NAV_URL` (strings) from `services/externalLinks.ts`. Header DOM: `.header-row` > brand link, `nav.header-nav`, `div.header-tools`. Tasks 8 to 10 swap the contents of `.header-tools`; Task 20 adds the back arrow before the brand.
+- Produces: `Link` gains an optional `aria-label` prop, passed to its `<a>`. `HELSENORGE_URL`, `NAV_URL` (strings) from `services/externalLinks.ts`. Header DOM: `.header-row` > brand link, `nav.header-nav`, `div.header-tools`. Tasks 8 to 10 swap the contents of `.header-tools`; Task 20 adds the back arrow before the brand.
 
 - [ ] **Step 1: Branch**
 
@@ -1093,12 +1098,27 @@ test("the English nav keeps the language prefix and says external in English", (
 	expect(within(nav).getByRole("link", { name: "All services" })).toHaveAttribute("href", "/en/sok")
 	expect(within(nav).getByRole("link", { name: "NAV (external site)" })).toBeInTheDocument()
 })
+
+// Link used to drop aria-label without a type error (TypeScript accepts any hyphenated
+// prop), so the brand link was named "Varde" only. This pins the name in both languages.
+test("the brand link is named for where it goes", () => {
+	stubDataFiles()
+	render(<App />)
+	expect(screen.getByRole("link", { name: "Varde, til forsiden" })).toHaveAttribute("href", "/")
+})
+
+test("the English brand link is named in English", () => {
+	stubDataFiles()
+	window.history.replaceState(null, "", "/en/")
+	render(<App />)
+	expect(screen.getByRole("link", { name: "Varde, home page" })).toHaveAttribute("href", "/en/")
+})
 ```
 
 - [ ] **Step 3: Run to see it fail**
 
 Run: `npx vitest run tests/header.test.tsx`
-Expected: FAIL, `externalLinks.ts` does not exist.
+Expected: FAIL, `externalLinks.ts` does not exist. Once Step 4 adds it, the two brand link tests still FAIL until Step 5 (the name is "Varde").
 
 - [ ] **Step 4: The URLs**
 
@@ -1130,6 +1150,18 @@ In `web/src/services/hints.ts`, add `import { HELSENORGE_URL } from "./externalL
 	"header.allServices": "All services",
 	"header.external": "(external site)",
 ```
+
+In the same two files, change the existing `header.home` value (a dash read aloud varies by NVDA punctuation level; a comma pauses the same at every level):
+
+```json
+	"header.home": "Varde, til forsiden",
+```
+
+```json
+	"header.home": "Varde, home page",
+```
+
+In `web/src/components/Link.tsx`, add `"aria-label": ariaLabel,` to the destructured props after `onNavigate,`, add `"aria-label"?: string` to the props type after `onNavigate?: () => void`, and pass it on: `<a href={href} className={className} aria-label={ariaLabel} hrefLang={lang} lang={lang} onClick={onClick}>`.
 
 - [ ] **Step 6: The header**
 
@@ -1238,12 +1270,12 @@ Append inside `@layer components` in `web/src/styles/main.css`, after the `.app-
 - [ ] **Step 7: Run, show red once, commit**
 
 Run: `npx vitest run tests/header.test.tsx tests/hints.test.tsx`. Expected: PASS.
-Red proof: change `NAV_URL` to `"https://nav.no"`; the pin test FAILS; restore.
+Red proofs: change `NAV_URL` to `"https://nav.no"`; the pin test FAILS; restore. Remove `aria-label={ariaLabel}` from the `<a>` in `Link.tsx`; both brand link tests FAIL (the name is "Varde"); restore.
 
 ```bash
 npm test && npx biome ci .
-git add src/services/externalLinks.ts src/services/hints.ts src/components/Header.tsx src/styles/main.css src/i18n tests/header.test.tsx
-git commit -m "feat: add Alle tjenester, Helsenorge and NAV links to the header"
+git add src/services/externalLinks.ts src/services/hints.ts src/components/Link.tsx src/components/Header.tsx src/styles/main.css src/i18n tests/header.test.tsx
+git commit -m "feat: add Alle tjenester, Helsenorge and NAV links to the header, and pass aria-label through Link"
 ```
 
 ### Task 7: The picker shell (`usePicker`, `Picker`, icons, ported CSS)
@@ -2501,13 +2533,31 @@ export function QuickExit() {
 
 In `web/src/App.tsx`, add `import { useShiftExit } from "./hooks/useShiftExit.ts"` and call `useShiftExit()` as the first line of `Shell`, before `const t = useTranslation()`.
 
+In `main.css`, the existing `.app-header` rule makes the header sticky from 480 px of height. Narrow it to tablet and up, and say why above it:
+
+```css
+	/* Sticky only where it costs one or two rows. On a phone the tools wrap below the brand,
+	   so a sticky header would be three rows (157 px, measured 2026-10-02); there it scrolls
+	   away and only the quick exit stays pinned, as on short screens (spec: Quick exit). */
+	.app-header {
+		position: static;
+	}
+	@media (min-height: 480px) and (min-width: 768px) {
+		.app-header {
+			position: sticky;
+			top: 0;
+			z-index: 10;
+		}
+	}
+```
+
 Append inside `@layer components` in `main.css`:
 
 ```css
-	/* Always in view (spec: Quick exit). Under 480 px of height the header scrolls away
-	   (.app-header), so the button pins itself to the top right corner instead. Its slot in
-	   .header-tools is then empty, so the tools keep that room free and the pinned button never
-	   covers a picker (Task 11 measures it). */
+	/* Always in view (spec: Quick exit). Wherever the header scrolls away (under 768 px wide or
+	   480 px tall, .app-header), the button pins itself to the top right corner instead. Its slot
+	   in .header-tools is then empty, so the tools keep that room free and the pinned button
+	   never covers a picker (Task 11 measures it). */
 	.quick-exit {
 		position: fixed;
 		top: 0.5rem;
@@ -2517,7 +2567,7 @@ Append inside `@layer components` in `main.css`:
 	.header-tools {
 		margin-inline-end: 10rem;
 	}
-	@media (min-height: 480px) {
+	@media (min-height: 480px) and (min-width: 768px) {
 		.quick-exit {
 			position: static;
 		}
@@ -2611,7 +2661,8 @@ for (const width of [375, 1024, 1280, 1920]) {
 					.waitFor({ state: "attached" })
 				const rows = rowsOf(await headerControls(page))
 				// Measured 2026-10-02: brand 91 + tools 245 (nb) / 274 (en) px overflow the 343 px
-				// row at 375, so a phone has brand, tools and nav on three rows (Open items).
+				// row at 375, so a phone has brand (with the pinned exit level with it at the top),
+				// tools and nav on three rows. Not sticky there, so the height scrolls away (Decided).
 				expect(rows.length).toBe(width >= 1024 ? 1 : width >= 768 ? 2 : 3)
 				for (const row of rows) {
 					for (const box of row) expect(box.height, box.label).toBeCloseTo(44, 0)
@@ -2628,7 +2679,7 @@ for (const viewport of [
 	{ width: 1024, height: 600 },
 	{ width: 375, height: 700 },
 ]) {
-	test(`tabbing through /sok at ${viewport.width} px never puts focus under the sticky header`, async ({
+	test(`tabbing through /sok at ${viewport.width} px never puts focus under the header or the pinned exit`, async ({
 		page,
 	}) => {
 		await page.setViewportSize(viewport)
@@ -2636,17 +2687,27 @@ for (const viewport of [
 		await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
 		// Both directions: Chromium centres a target it has to scroll to, so going forward rarely
 		// lands under the header. Going back, an element partly under the header counts as in
-		// view and takes focus without a scroll, which only scroll-padding-top prevents.
+		// view and takes focus without a scroll, which only scroll-padding-top prevents. At 375
+		// the header scrolls away and the pinned quick exit is what could cover focus, so both
+		// boxes are checked.
 		for (const key of ["Tab", "Shift+Tab"]) {
 			for (let i = 0; i < 40; i++) {
 				await page.keyboard.press(key)
 				const covered = await page.evaluate(() => {
 					const el = document.activeElement as HTMLElement | null
 					const header = document.querySelector("header")
-					if (!el || !header || el === document.body || header.contains(el)) return null
+					const exit = document.querySelector(".quick-exit")
+					if (!el || !header || !exit || el === document.body || header.contains(el)) return null
 					const r = el.getBoundingClientRect()
-					const h = header.getBoundingClientRect()
-					return r.top < h.bottom - 1 && r.bottom > h.top + 1 ? el.outerHTML.slice(0, 80) : null
+					return [header.getBoundingClientRect(), exit.getBoundingClientRect()].some(
+						(h) =>
+							r.top < h.bottom - 1 &&
+							r.bottom > h.top + 1 &&
+							r.left < h.right - 1 &&
+							r.right > h.left + 1
+					)
+						? el.outerHTML.slice(0, 80)
+						: null
 				})
 				expect(covered, key).toBeNull()
 			}
@@ -2654,12 +2715,13 @@ for (const viewport of [
 	})
 }
 
-test("the quick exit stays in view after scrolling, on a normal and a short screen", async ({
+test("the quick exit stays in view after scrolling, on a normal screen, a short one and a phone", async ({
 	page,
 }) => {
 	for (const viewport of [
 		{ width: 1280, height: 950 },
 		{ width: 640, height: 400 },
+		{ width: 375, height: 700 },
 	]) {
 		await page.setViewportSize(viewport)
 		await page.goto("/sok")
@@ -2672,26 +2734,33 @@ test("the quick exit stays in view after scrolling, on a normal and a short scre
 	}
 })
 
-test("on a short screen the pinned quick exit covers no other header control", async ({ page }) => {
-	await page.setViewportSize({ width: 640, height: 400 })
-	for (const path of ["/sok", "/en/sok"]) {
-		await page.goto(path)
-		await page.evaluate(() => document.fonts.ready)
-		const covered = await page.evaluate(() => {
-			const exit = document.querySelector(".quick-exit")
-			if (!exit) return ["no quick exit"]
-			const e = exit.getBoundingClientRect()
-			return [...document.querySelectorAll<HTMLElement>("header a, header button, header summary")]
-				.filter((el) => el !== exit && !el.closest(".picker-list") && el.checkVisibility())
-				.filter((el) => {
-					const r = el.getBoundingClientRect()
-					return r.left < e.right && r.right > e.left && r.top < e.bottom && r.bottom > e.top
-				})
-				.map((el) => el.outerHTML.slice(0, 80))
-		})
-		expect(covered, path).toEqual([])
-	}
-})
+for (const viewport of [
+	{ width: 640, height: 400 },
+	{ width: 375, height: 700 },
+]) {
+	test(`at ${viewport.width} x ${viewport.height} the pinned quick exit covers no other header control`, async ({
+		page,
+	}) => {
+		await page.setViewportSize(viewport)
+		for (const path of ["/sok", "/en/sok"]) {
+			await page.goto(path)
+			await page.evaluate(() => document.fonts.ready)
+			const covered = await page.evaluate(() => {
+				const exit = document.querySelector(".quick-exit")
+				if (!exit) return ["no quick exit"]
+				const e = exit.getBoundingClientRect()
+				return [...document.querySelectorAll<HTMLElement>("header a, header button, header summary")]
+					.filter((el) => el !== exit && !el.closest(".picker-list") && el.checkVisibility())
+					.filter((el) => {
+						const r = el.getBoundingClientRect()
+						return r.left < e.right && r.right > e.left && r.top < e.bottom && r.bottom > e.top
+					})
+					.map((el) => el.outerHTML.slice(0, 80))
+			})
+			expect(covered, path).toEqual([])
+		}
+	})
+}
 
 test("forced colours keep the focus ring and the current picker row visible", async ({ page }) => {
 	await page.emulateMedia({ forcedColors: "active" })
@@ -2720,7 +2789,7 @@ test("forced colours keep the focus ring and the current picker row visible", as
 npm run build && npx playwright test header
 ```
 
-Expected: the header-row, quick-exit and forced-colours tests PASS; "never puts focus under the sticky header" FAILS on the Shift+Tab pass (an element above, partly under the header, takes focus without a scroll). If a header-row test fails, read the label it prints and fix that control's height in CSS before going on.
+Expected: the header-row, quick-exit and forced-colours tests PASS; "never puts focus under the header or the pinned exit" FAILS on the Shift+Tab pass (an element above, partly under the header, takes focus without a scroll). If a header-row test fails, read the label it prints and fix that control's height in CSS before going on.
 
 - [ ] **Step 3: Keep focus clear of the sticky header**
 
@@ -2728,17 +2797,12 @@ Append inside `@layer base` in `main.css`, after the `:focus-visible` rule:
 
 ```css
 	/* The sticky header must never cover a focused element or an anchor target (WCAG 2.4.11,
-	   house bar 2.4.12). The value is the header's height plus room: three rows (157 px) under
-	   768 px, two (109 px) under 1024 px, one (61 px) from there. The header is sticky only
-	   from 480 px of height (.app-header); below that only the pinned quick exit sits at the
-	   top, so the padding clears its band. */
+	   house bar 2.4.12). The value is the header's height plus room: two rows (109 px) under
+	   1024 px, one (61 px) from there. The header is sticky only from 768 px wide and 480 px
+	   tall (.app-header); elsewhere only the pinned quick exit sits at the top, so the padding
+	   clears its band. */
 	html {
 		scroll-padding-top: 3.5rem;
-	}
-	@media (min-height: 480px) {
-		html {
-			scroll-padding-top: 10.5rem;
-		}
 	}
 	@media (min-height: 480px) and (min-width: 768px) {
 		html {
@@ -2765,9 +2829,9 @@ Expected: all pass.
 Restore and rebuild after each, and record each for the PR description:
 1. `.nav-link` `min-height: 40px`: the header-row test FAILS naming `A Alle tjenester`.
 2. Remove the `scroll-padding-top` block: the focus test FAILS (as in Step 2).
-3. In `.quick-exit`, change `position: fixed` to `position: static`: the quick exit test FAILS on the 640 x 400 screen.
+3. In `.quick-exit`, change `position: fixed` to `position: static`: the quick exit test FAILS on the 640 x 400 and 375 x 700 screens.
 4. Remove the `@media (forced-colors: active)` picker block: the forced-colours test FAILS on the row colour.
-5. Remove the baseline `.header-tools { margin-inline-end: 10rem; }`: the short-screen cover test FAILS, naming the theme picker's `<summary>`. If it is red before this break (a long label wider than 10rem), raise the value until it passes; never shrink the button.
+5. Remove the baseline `.header-tools { margin-inline-end: 10rem; }`: the pinned-exit cover test FAILS, naming a picker's `<summary>` (at 375 the margin is also what keeps the pickers off the brand row, so the header-row test there may go red too). If it is red before this break (a long label wider than 10rem), raise the value until it passes; never shrink the button.
 
 - [ ] **Step 6: Commit and ship PR 3**
 
