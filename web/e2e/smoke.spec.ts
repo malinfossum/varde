@@ -15,12 +15,16 @@ test("the prerendered landing page loads in both languages without console error
 	expect(errors).toEqual([])
 })
 
-// The prerender writes file-form pages (resources/1.html). If vite preview fell back to
-// index.html instead, this would show the landing headline, and every later check would be
-// measuring the wrong page.
+// The prerender writes file-form pages (resources/1.html). The raw served HTML must already
+// contain the resource name: the SPA index.html fallback has none, and the client would render
+// it afterwards, which hides a missing prerender. Without this, every later check could be
+// measuring a client-rendered page instead of the prerendered one.
 test("vite preview serves the file-form detail page, not the landing fallback", async ({
 	page,
 }) => {
+	const response = await page.request.get("/resources/1")
+	expect(response.ok()).toBe(true)
+	expect(await response.text()).toContain("Hjelpetelefonen")
 	await page.goto("/resources/1")
 	await expect(page.getByRole("heading", { level: 1 })).toContainText("Hjelpetelefonen")
 })

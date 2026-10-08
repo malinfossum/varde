@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test"
 
-// Runs against `vite preview` of a full build (npm run build), so every check sees the real
-// prerendered pages, not the dev server. Chromium only (spec: Testing and verification).
+// Runs against `vite preview` of a full build (npm run build:site: build plus prerender), so
+// every check sees the real prerendered pages, not the dev server. Chromium only (spec: Testing and verification).
 // No retries: a flaky layout check is a finding, not noise to hide.
 export default defineConfig({
 	testDir: "e2e",
