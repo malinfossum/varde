@@ -27,9 +27,11 @@ const floors: [string, string, number][] = [
 describe.each(["light", "dark"] as const)("%s theme", (theme) => {
 	test.each(floors)("%s on %s is at least %s:1", (fg, bg, floor) => {
 		const tokens = themes[theme]
-		expect(tokens[fg], `token --${fg} missing`).toBeDefined()
-		expect(tokens[bg], `token --${bg} missing`).toBeDefined()
-		expect(contrastRatio(tokens[fg], tokens[bg])).toBeGreaterThanOrEqual(floor)
+		const fgHex = tokens[fg]
+		const bgHex = tokens[bg]
+		if (fgHex === undefined) throw new Error(`token --${fg} missing`)
+		if (bgHex === undefined) throw new Error(`token --${bg} missing`)
+		expect(contrastRatio(fgHex, bgHex)).toBeGreaterThanOrEqual(floor)
 	})
 })
 

@@ -67,7 +67,7 @@ export function usePicker() {
 			const step = event.key === "ArrowDown" ? 1 : -1
 			next = at === -1 ? (step === 1 ? 0 : all.length - 1) : (at + step + all.length) % all.length
 		}
-		all[next].focus()
+		all[next]?.focus()
 	}
 
 	// A null relatedTarget (the window lost focus) is left to the pointer-down handler.

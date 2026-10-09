@@ -84,7 +84,7 @@ test("the inline init script redirects exactly like legacyRedirect", () => {
 			location: { pathname, search, replace },
 		}
 		new Function("window", "document", script)(fakeWindow, document)
-		return replace.mock.calls.length ? replace.mock.calls[0][0] : null
+		return replace.mock.calls[0]?.[0] ?? null
 	}
 	const cases: [string, string, string | null][] = [
 		["/", "?lang=en", null],

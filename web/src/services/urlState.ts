@@ -30,8 +30,8 @@ export function parseRoute(pathname: string): Route {
 	if (pathname === "/om") return { kind: "about" }
 	const detail = pathname.match(/^\/resources\/(\d+)$/)
 	if (detail) return { kind: "detail", id: Number(detail[1]) }
-	const kommune = pathname.match(/^\/kommune\/([a-z0-9-]+)$/)
-	if (kommune) return { kind: "kommune", slug: kommune[1] }
+	const slug = pathname.match(/^\/kommune\/([a-z0-9-]+)$/)?.[1]
+	if (slug) return { kind: "kommune", slug }
 	return { kind: "notFound" }
 }
 
