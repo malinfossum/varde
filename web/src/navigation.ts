@@ -1,4 +1,4 @@
-// Navigation context — split out of App.tsx so components that need it (Link, LanguageToggle)
+// Navigation context. I split it out of App.tsx so components that need it (Link, LanguagePicker)
 // don't import App.tsx itself, which would create a circular import (App renders them, they'd
 // import back from App).
 import { createContext, useContext } from "react"

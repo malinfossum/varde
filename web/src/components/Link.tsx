@@ -9,12 +9,17 @@ export function Link({
 	className,
 	children,
 	onNavigate,
+	"aria-label": ariaLabel,
+	"aria-current": ariaCurrent,
 }: {
 	to: string
 	lang?: Lang
 	className?: string
 	children: ReactNode
-	onNavigate?: () => void
+	// Runs before navigating; returning false keeps the link a link but cancels the navigation.
+	onNavigate?: () => undefined | false
+	"aria-label"?: string
+	"aria-current"?: "page"
 }) {
 	const navigate = useNavigate()
 	const { lang: current } = useLanguage()
@@ -26,12 +31,20 @@ export function Link({
 		if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
 			return
 		event.preventDefault()
-		onNavigate?.()
+		if (onNavigate?.() === false) return
 		const url = new URL(to, window.location.origin)
 		navigate(url.pathname, url.search, { lang: target })
 	}
 	return (
-		<a href={href} className={className} hrefLang={lang} lang={lang} onClick={onClick}>
+		<a
+			href={href}
+			className={className}
+			aria-label={ariaLabel}
+			aria-current={ariaCurrent}
+			hrefLang={lang}
+			lang={lang}
+			onClick={onClick}
+		>
 			{children}
 		</a>
 	)

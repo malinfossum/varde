@@ -37,8 +37,8 @@ export function parseThemeTokens(css: string): {
 	}
 	const read = (body: string) => {
 		const tokens: Record<string, string> = {}
-		for (const match of body.matchAll(/--([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,6})\s*;/g)) {
-			tokens[match[1]] = match[2]
+		for (const [, name, value] of body.matchAll(/--([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,6})\s*;/g)) {
+			if (name && value) tokens[name] = value
 		}
 		return tokens
 	}

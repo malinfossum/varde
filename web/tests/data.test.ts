@@ -13,7 +13,7 @@ describe("loadIndex", () => {
 		stubDataFiles({ municipalities: [{ id: 1, name: "Hamar", county: "Innlandet" }] })
 		const first = await loadIndex("nb")
 		const second = await loadIndex("nb")
-		expect(first.municipalities[0].name).toBe("Hamar")
+		expect(first.municipalities[0]?.name).toBe("Hamar")
 		expect(second).toBe(first)
 		expect((fetch as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(4)
 	})

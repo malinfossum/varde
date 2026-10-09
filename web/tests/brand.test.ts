@@ -47,10 +47,18 @@ function render(svg: string, width: number, fontFiles = FONTS_ABS, background?: 
 	return { width: image.width, height: image.height, pixels: image.pixels as unknown as Uint8Array }
 }
 
-const hexRgb = (hex: string) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16))
+type Rgb = [number, number, number]
+type Box = [number, number, number, number]
+
+const hexRgb = (hex: string): Rgb => {
+	const n = Number.parseInt(hex.slice(1, 7), 16)
+	return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+// Pixel channel read that tolerates an out-of-range index (treated as 0, i.e. transparent black).
+const channel = (pixels: Uint8Array, i: number) => pixels[i] ?? 0
 
 // Opaque pixels inside box [x0, y0, x1, y1) within `tolerance` (RGB distance) of `hex`.
-function inkCount(image: Image, box: number[], hex: string, tolerance = 60) {
+function inkCount(image: Image, box: Box, hex: string, tolerance = 60) {
 	const [r, g, b] = hexRgb(hex)
 	const [x0, y0, x1, y1] = box
 	let count = 0
@@ -58,7 +66,8 @@ function inkCount(image: Image, box: number[], hex: string, tolerance = 60) {
 		for (let x = x0; x < x1; x++) {
 			const i = (y * image.width + x) * 4
 			const p = image.pixels
-			if (p[i + 3] > 128 && Math.hypot(p[i] - r, p[i + 1] - g, p[i + 2] - b) < tolerance) count++
+			const distance = Math.hypot(channel(p, i) - r, channel(p, i + 1) - g, channel(p, i + 2) - b)
+			if (channel(p, i + 3) > 128 && distance < tolerance) count++
 		}
 	}
 	return count
@@ -121,11 +130,12 @@ function skyAboveFjord(points = ringMarkPoints()) {
 	const unit = size / 32
 	const image = render(svgDoc(32, 32, ringMark("#000000", { points })), size)
 	const top = FJORD_LINES[0]
+	if (!top) throw new Error("FJORD_LINES is empty")
 	const row = Math.floor((top.y - top.strokeWidth / 2) * unit) - 2
 	let sky = 0
 	for (let x = 0; x < size; x++) {
 		const inside = Math.hypot(x / unit - 16, row / unit - 16) < 13.2
-		if (inside && image.pixels[(row * size + x) * 4 + 3] < 128) sky++
+		if (inside && channel(image.pixels, (row * size + x) * 4 + 3) < 128) sky++
 	}
 	return sky
 }
@@ -137,7 +147,7 @@ describe("ring mark geometry", () => {
 	})
 
 	test("C1 keeps the stack top where C had it, at 2.3", () => {
-		expect(sized(stackC(), C1.f, C1.k, 33)[0][0]).toBeCloseTo(2.3, 2)
+		expect(sized(stackC(), C1.f, C1.k, 33)[0]?.[0]).toBeCloseTo(2.3, 2)
 	})
 
 	test("the ring mark draws one mountain and three stones", () => {
@@ -222,7 +232,7 @@ describe("app icons", () => {
 })
 
 // Where "Varde" sits in a card: block origin + (100..250, 14..56) block units, scaled.
-const nameBox = ({ text }: Layout) => [
+const nameBox = ({ text }: Layout): Box => [
 	Math.round(text.x + 100 * text.scale),
 	Math.round(text.y + 14 * text.scale),
 	Math.round(text.x + 250 * text.scale),
@@ -237,7 +247,7 @@ function textBounds(image: Image, hex: string) {
 		for (let x = 0; x < image.width; x++) {
 			const i = (y * image.width + x) * 4
 			const p = image.pixels
-			if (Math.hypot(p[i] - r, p[i + 1] - g, p[i + 2] - b) < 60) {
+			if (Math.hypot(channel(p, i) - r, channel(p, i + 1) - g, channel(p, i + 2) - b) < 60) {
 				;[x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)]
 			}
 		}

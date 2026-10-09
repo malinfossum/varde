@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { expect, test, vi } from "vitest"
-import { applyTheme, readStoredTheme, resolveTheme } from "../src/services/theme.ts"
+import { chooseTheme, readStoredTheme, resolveTheme } from "../src/services/theme.ts"
 import { legacyRedirect } from "../src/services/urlState.ts"
 
 test("stored value wins over the system preference", () => {
@@ -26,7 +26,7 @@ test("a throwing storage reads as null instead of crashing", () => {
 	expect(readStoredTheme(undefined)).toBeNull()
 })
 
-test("applyTheme sets data-theme and survives a throwing storage", () => {
+test("chooseTheme sets data-theme and survives a throwing storage", () => {
 	const original = Object.getOwnPropertyDescriptor(window, "localStorage")
 	Object.defineProperty(window, "localStorage", {
 		configurable: true,
@@ -35,7 +35,7 @@ test("applyTheme sets data-theme and survives a throwing storage", () => {
 		},
 	})
 	try {
-		applyTheme("dark")
+		chooseTheme("dark")
 		expect(document.documentElement.dataset.theme).toBe("dark")
 	} finally {
 		if (original) Object.defineProperty(window, "localStorage", original)
@@ -84,7 +84,7 @@ test("the inline init script redirects exactly like legacyRedirect", () => {
 			location: { pathname, search, replace },
 		}
 		new Function("window", "document", script)(fakeWindow, document)
-		return replace.mock.calls.length ? replace.mock.calls[0][0] : null
+		return replace.mock.calls[0]?.[0] ?? null
 	}
 	const cases: [string, string, string | null][] = [
 		["/", "?lang=en", null],

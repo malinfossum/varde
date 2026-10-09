@@ -17,6 +17,7 @@ import { LandingPage } from "./components/LandingPage.tsx"
 import { LoadingState } from "./components/LoadingState.tsx"
 import { NotFoundState } from "./components/NotFoundState.tsx"
 import { AnnouncerProvider } from "./components/StatusRegion.tsx"
+import { useShiftExit } from "./hooks/useShiftExit.ts"
 import { useUrlState } from "./hooks/useUrlState.ts"
 import { LanguageProvider, useTranslation } from "./i18n/LanguageProvider.tsx"
 import { NavigationContext } from "./navigation.ts"
@@ -54,6 +55,7 @@ export function App() {
 }
 
 function Shell({ route, filters, arrival }: { route: Route; filters: Filters; arrival: number }) {
+	useShiftExit()
 	const t = useTranslation()
 	return (
 		<div id="app" className="flex min-h-dvh flex-col">

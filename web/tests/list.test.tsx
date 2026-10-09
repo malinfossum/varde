@@ -180,8 +180,9 @@ test("list page heading levels never skip: h1 results heading, h2 cards", async 
 	// each card name sits one level under it. This guards against any level being skipped
 	// among whatever headings the page renders.
 	const levels = screen.getAllByRole("heading").map((h) => Number(h.tagName.slice(1)))
-	for (let i = 1; i < levels.length; i++) {
-		expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1)
+	for (const [i, level] of levels.entries()) {
+		const previous = levels[i - 1]
+		if (previous !== undefined) expect(level - previous).toBeLessThanOrEqual(1)
 	}
 })
 
