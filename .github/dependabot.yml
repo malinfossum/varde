@@ -47,6 +47,11 @@ updates:
           - "Microsoft.NET.*"
           - "System.*"
         update-types: [minor, patch]
+    ignore:
+      # Microsoft.AspNetCore.OpenApi 10.x only accepts Microsoft.OpenApi 2.x (its source
+      # generator breaks on 3.x, see #57). Remove this when the API moves to .NET 11.
+      - dependency-name: "Microsoft.OpenApi"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: dotnet-sdk # global.json
     directory: /api
