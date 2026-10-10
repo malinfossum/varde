@@ -5,6 +5,11 @@ and the brand spec (2026-10-01). Where this document and an earlier one disagree
 wins. The backlog items are numbered as in the plan 5 backlog (2026-09-10); A1 to A4 and P were
 added during the brainstorm.
 
+Amended 2026-10-11: the header below 1024 px. I tested #63 at 320 px on 2026-10-08 and the
+three-row phone header was too tall, so below 1024 px the header is now one sticky row with a
+Meny (Header section, decision of 2026-10-08), and the acute strip becomes a 2 x 2 grid on
+phones. PR 3b replaces what #63 shipped for that width.
+
 ## Purpose
 
 Varde works, and people are already sharing it. What it lacks is finish and a few safety
@@ -60,7 +65,7 @@ own later sub-project; A only builds the picker so it can take them.
 
 ### Header (items 8, A1, A2, 7)
 
-One row on desktop, in this order:
+The header is one row at every width. From 1024 px it holds these slots, in this order:
 
 | Slot | Content |
 |---|---|
@@ -69,6 +74,9 @@ One row on desktop, in this order:
 | Nav | "Alle tjenester" (`/sok`), "Helsenorge", "NAV" |
 | Pickers | Language picker, theme picker |
 | Exit | "Forlat siden" |
+
+Below 1024 px the same row holds three slots: Brand, Meny, Exit (see "Below 1024 px: Meny").
+The back arrow keeps its place before the brand in installed mode.
 
 - **Links.** "Alle tjenester" / "All services" is an internal link. "Helsenorge" points to
   `https://www.helsenorge.no` (the same URL `services/hints.ts` already uses) and "NAV" to
@@ -115,9 +123,10 @@ One row on desktop, in this order:
   without JavaScript.
 - **Quick exit.** Label stays "Forlat siden" / "Leave this page", and the target stays
   `https://www.google.com` via `location.replace`, so the page does not survive the back button.
-  - **Always in view.** The header is sticky from 768 px wide and 480 px tall. Everywhere else
-    (phones and short screens) the header scrolls away and the button itself is
-    `position: fixed` in the top right corner.
+  - **Always in view.** The header is sticky at every width and height, and the exit is the
+    last slot of its one row. Nothing is `position: fixed`: no overlay can cover a link, so
+    the room the acute strip and the header tools reserved for a pinned button (the 10rem
+    padding #63 shipped) goes away.
   - **Shift three times.** A document-level listener, mounted once in `App`, counts Shift key
     releases. Any other key pressed in between resets the count (Ctrl and Alt included), so
     typing capitals or a shortcut never triggers it. Key repeat from holding Shift down counts
@@ -127,22 +136,61 @@ One row on desktop, in this order:
   - **Explainer line.** One line on the landing page, in the trust line (see Landing):
     "Trykk Shift tre ganger for å forlate siden raskt." / "Press Shift three times to leave
     quickly."
-- **Phone (375 px).** The header is three rows: brand, pickers, nav links (brand plus tools
-  needs 345 to 373 px against 343, measured 2026-10-02). It is not sticky, so its height
-  scrolls away; only the quick exit stays pinned. The pickers show their icon only (the name
-  stays as visually hidden text). Every control is 44 px tall either way.
-- **The header row rule.** Every control in a header row is 44 px tall and shares one bottom
-  edge. A Playwright check measures it at 375, 1280 and 1920.
+- **Below 1024 px: Meny.** The nav links and both pickers move into one Meny, so the row is
+  brand, Meny, exit. Meny uses the same picker shell (`<details class="picker">`, the
+  `usePicker` behaviour above) with a trigger that shows a menu icon and the word "Meny" /
+  "Menu". Its list is one aligned column of 44 px rows in three groups:
+  1. **The links:** "Alle tjenester", "Helsenorge" ↗, "NAV" ↗, with the same targets, markers
+     and hidden "(ekstern side)" text as the desktop nav.
+  2. **Språk / Language:** the language rows from the language picker (name, code, check
+     mark on the current one, `aria-current="page"`, own `lang` attribute).
+  3. **Tema / Theme:** Lyst, Mørkt and System as buttons with `aria-pressed` and a check mark.
+
+  The groups are separated by a rule, and the Språk and Tema groups each carry a visible group
+  label that looks like a label (smaller, muted, not focusable) and names its `role="group"`.
+  Every row shares one left edge for its text and one right edge for its code or check mark.
+  The trigger's accessible name is "Meny" / "Menu"; `<details>` exposes open and closed.
+  - **Behaviour.** As the pickers: ArrowUp and ArrowDown move through every row of all three
+    groups and wrap, Home and End jump, Escape closes and returns focus to the trigger, a click
+    outside or focus leaving closes it, and the list stays 8 px inside the viewport. Opening
+    focuses the first row. A link or language row navigates, and the Meny closes with the
+    page change. A theme row applies the theme and keeps the Meny open with focus on that
+    row, so a screen reader hears "trykket" / "pressed" on the new choice. (On desktop the
+    picker closes instead and the trigger's name carries the value.)
+  - **One source, two layouts.** The links, the `LANGUAGES` list and the theme choices each
+    render from one source in both places. The desktop nav and pickers are `display: none`
+    below 1024 px and the Meny is `display: none` from 1024 px, so only one of them is ever in
+    the accessibility tree and the keyboard order. The language rows are links, so changing
+    language from the Meny works before hydration, as it does on desktop.
+  - **It must fit 320 px.** Brand, Meny and exit share one row at 320 px in both languages,
+    every control 44 px tall. If the plan measures that they do not fit, the fallback runs in
+    this order and stops at the first step that fits: the Meny trigger shows its icon only
+    (the word stays as visually hidden text), then the brand shows the mark only (its link
+    keeps the name "Varde, til forsiden"). The exit label never shrinks or hides: it is the
+    control someone may need without reading.
+- **The header row rule.** Every control in the header row is 44 px tall and shares one bottom
+  edge. A Playwright check measures it at 320, 375, 1023, 1024, 1280 and 1920, in both
+  languages, and fails if the header is taller than one row.
 - **The sticky header never hides focus.** `html` gets `scroll-padding-top` equal to the
-  header height, so an element reached by Tab never ends up under the sticky header
-  (WCAG 2.4.11, house bar 2.4.12).
+  one-row header height, one value at every width now that the header never wraps, so an
+  element reached by Tab never ends up under the sticky header (WCAG 2.4.11, house bar
+  2.4.12). An open Meny may cover the page below it; that is the user's own choice and closes
+  on Escape or when focus leaves.
 - **320 px.** At 320 px width the header, like every page in this spec, reflows without
   horizontal scrolling.
 
 ### Landing (items 2, 3, 9, 16, 17)
 
-Order from top: acute strip (unchanged), header, hero, chips, then emergency and helplines side
-by side, then the trust line, then the footer.
+Order from top: acute strip, header, hero, chips, then emergency and helplines side by side,
+then the trust line, then the footer.
+
+- **Acute strip on phones (amended 2026-10-11).** Below 768 px the four numbers sit in a
+  2 x 2 grid (110 and 112 on the first row, 113 and 116 117 on the second, the order
+  `emergencyLines` already has), and "Alle nødtjenester" sits on its own row below. From
+  768 px the strip stays one row, as today. Each label may wrap to at most two lines at 320 px
+  in both languages; the English "out-of-hours medical service" wrapped to three in the #63
+  test. If a label still needs three, the plan brings me a shorter strip label to approve
+  rather than shrinking the text. The strip stays above the header and is not sticky.
 
 - **Hero spacing (16).** The h1 gets line-height 1.1 (today `text-6xl` forces 1.0 and the lines
   touch) and `text-wrap: balance`. The strings keep the last three words together with
@@ -314,11 +362,13 @@ prerender test fails on a `style=` attribute in a page.
 | A4 Back arrow | Shown only in installed mode, not on landing | | Checked in the installed app |
 | 16 Hero | | Line height 1.1, two lines, last three words together (nb and en) | |
 | 17 One screen | | Landing incl. footer at most 950 px tall at 1280 and 1920 | |
-| Header rule | | Every control in a header row is 44 px with one bottom edge | |
-| Focus not hidden | | Tabbing through the landing page, no focused element sits under the sticky header | |
+| Header rule | | One row, every control 44 px with one bottom edge, at 320 to 1920 in nb and en | |
+| Meny | Arrows wrap across the three groups, Escape returns focus, a theme row keeps the Meny open | Meny shown only below 1024 px, desktop nav and pickers only from 1024 px | NVDA reads the group labels and "trykket" on a theme row |
+| Acute strip | | 2 x 2 below 768 px, no label over two lines at 320 in nb and en | |
+| Focus not hidden | | Tabbing through the landing page at 320, 768 and 1280, no focused element sits under the sticky header | |
 | Reflow | | No horizontal scroll at 320 px on landing, list, detail and About | |
 | Forced colours | | Focus ring and the current picker row stay visible with `forcedColors: "active"` | |
-| Everything | axe on new views, Biome, prerender test (incl. no `style=`) | Same checks in light and dark | Screenshots at 375 and 1920 x 950, both themes; NVDA pass over header, pickers and helplines |
+| Everything | axe on new views, Biome, prerender test (incl. no `style=`) | Same checks in light and dark | Screenshots at 320, 375 and 1920 x 950, both themes; NVDA pass over header, pickers and helplines |
 
 - **Playwright harness.** `@playwright/test` as a dev dependency in `web/`, Chromium only.
   Config in `web/playwright.config.ts`, specs in `web/e2e/`. Playwright has no telemetry to
@@ -340,13 +390,14 @@ prerender test fails on a `style=` attribute in a page.
 
 ## Rollout
 
-Six PRs, each small enough to review in one sitting and revert on its own.
+Six PRs plus the 3b follow-up, each small enough to review in one sitting and revert on its own.
 
 | # | Branch | Contents | Why here |
 |---|---|---|---|
 | 1 | `test/playwright-harness` | Playwright, the data snapshot, the CI job, one smoke test | The later PRs need it to prove themselves |
 | 2 | `feat/om-varde` | A3: About page, footer lines, Meld feil with the new alias | People are already sharing the site |
 | 3 | `feat/header` | 8, A1, A2, 7: links, pickers, quick exit with Shift x3 | Header height is part of the 950 px budget |
+| 3b | `feat/phone-header` | Header below 1024 px: one row with Meny, exit in the row, strip 2 x 2 | #63 shipped a three-row phone header that was too tall at 320 px |
 | 4 | `feat/landing-fit` | 2, 3, 9, 16, 17: hero, chips, helplines, trust line, 950 px check | Measured with the final header and footer |
 | 5 | `feat/card-slots` | 4, 5: subgrid slots and hover | |
 | 6 | `feat/install` | P, A4: manifest, install hint, back arrow | I test the install on my phone |
@@ -374,6 +425,9 @@ and after my review. After each merge I check the live site on `varde.pages.dev`
   says what Shift does. Kept as is.
 - **A setting to turn the Shift shortcut off.** WCAG 2.1.4 covers single character keys, not
   a modifier, and a setting would need storage and UI for a rare case. Not added.
+- **The three-row phone header with a pinned exit** (shipped in #63). Tested at 320 px on
+  2026-10-08: three header rows under a strip that stacked one number per row, and the pinned
+  exit forced 10rem of reserved room into the strip. Replaced by one row with a Meny.
 - **Loading the Workbench scripts directly.** Rejected in the Header section: two owners of
   one DOM, and the CSP hashes Varde's only inline script.
 - **Sanitising every data URL on the detail page.** The new helpline link gets an `https://`
