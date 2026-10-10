@@ -1,6 +1,6 @@
 import { act, screen } from "@testing-library/react"
 import { StrictMode } from "react"
-import { hydrateRoot } from "react-dom/client"
+import { hydrateRoot, type Root } from "react-dom/client"
 import { afterEach, expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
 import { render } from "../src/entry-server.tsx"
@@ -30,7 +30,15 @@ const resource = {
 }
 const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet" }
 
+// Every hydrated root is unmounted after its test. A root left mounted keeps React's
+// scheduler busy, and work that runs after Vitest tears down jsdom throws
+// "window is not defined" as an unhandled error.
+const roots: Root[] = []
+
 afterEach(() => {
+	act(() => {
+		for (const root of roots.splice(0)) root.unmount()
+	})
 	clearIndexCache()
 	vi.unstubAllGlobals()
 	document.body.innerHTML = ""
@@ -67,7 +75,7 @@ async function hydrate(url: string, data: PageData) {
 	window.history.pushState(null, "", `${pathname}${search}`)
 	const errors: unknown[] = []
 	await act(async () => {
-		hydrateRoot(
+		const root = hydrateRoot(
 			document.getElementById("root") as HTMLElement,
 			<StrictMode>
 				<UrlContext.Provider value={{ pathname, search }}>
@@ -78,6 +86,7 @@ async function hydrate(url: string, data: PageData) {
 			</StrictMode>,
 			{ onRecoverableError: (error) => errors.push(error) }
 		)
+		roots.push(root)
 	})
 	await screen.findByRole("heading", { level: 1 })
 	return errors
