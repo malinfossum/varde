@@ -8,7 +8,7 @@ added during the brainstorm.
 Amended 2026-10-11: the header below 1024 px. I tested #63 at 320 px on 2026-10-08 and the
 three-row phone header was too tall, so below 1024 px the header is now one sticky row with a
 Meny (Header section, decision of 2026-10-08), and the acute strip becomes a 2 x 2 grid on
-phones. PR 3b replaces what #63 shipped for that width.
+phones with capital labels. Helsenorge and NAV now open in a new tab. PR 3b carries all of it.
 
 ## Purpose
 
@@ -80,9 +80,12 @@ The back arrow keeps its place before the brand in installed mode.
 
 - **Links.** "Alle tjenester" / "All services" is an internal link. "Helsenorge" points to
   `https://www.helsenorge.no` (the same URL `services/hints.ts` already uses) and "NAV" to
-  `https://www.nav.no`. Both open in the same tab, carry a small ↗ marker and a visually hidden
-  "(ekstern side)" / "(external site)". The URLs are copied from the official sites, never from
-  memory, and a unit test pins them.
+  `https://www.nav.no`. Both open in a new tab (`target="_blank" rel="noopener noreferrer"`,
+  amended 2026-10-11), so Varde stays open behind them. Each carries a small ↗ marker and a
+  visually hidden "(ekstern side, åpnes i ny fane)" / "(external site, opens in a new tab)".
+  The URLs are copied from the official sites, never from memory, and a unit test pins them,
+  `target` and `rel` included. Known limit: the quick exit replaces only Varde's own tab and
+  cannot close a tab Varde opened (browsers forbid it with `noopener`).
 - **Language picker.** A port of the Workbench picker: `<details class="picker">` with a
   `<summary>` trigger (globe icon and the current language name, "Norsk" or "English") and a
   list of `.picker-row` links, one per language, each showing the name and a code (NO, EN). No
@@ -140,8 +143,8 @@ The back arrow keeps its place before the brand in installed mode.
   brand, Meny, exit. Meny uses the same picker shell (`<details class="picker">`, the
   `usePicker` behaviour above) with a trigger that shows a menu icon and the word "Meny" /
   "Menu". Its list is one aligned column of 44 px rows in three groups:
-  1. **The links:** "Alle tjenester", "Helsenorge" ↗, "NAV" ↗, with the same targets, markers
-     and hidden "(ekstern side)" text as the desktop nav.
+  1. **The links:** "Alle tjenester", "Helsenorge" ↗, "NAV" ↗, with the same targets, new-tab
+     behaviour, markers and hidden text as the desktop nav.
   2. **Språk / Language:** the language rows from the language picker (name, code, check
      mark on the current one, `aria-current="page"`, own `lang` attribute).
   3. **Tema / Theme:** Lyst, Mørkt and System as buttons with `aria-pressed` and a check mark.
@@ -191,6 +194,12 @@ then the trust line, then the footer.
   in both languages; the English "out-of-hours medical service" wrapped to three in the #63
   test. If a label still needs three, the plan brings me a shorter strip label to approve
   rather than shrinking the text. The strip stays above the header and is not sticky.
+- **Strip labels start with a capital (amended 2026-10-11).** Each emergency service label in
+  the strip is a label, not part of a sentence, so it starts with a capital letter in both
+  languages: "Brann", "Politi", "Ambulanse", "Legevakt" and "Fire", "Police", "Ambulance",
+  "Out-of-hours medical service". Today only "Legevakt" does. Running text, such as the Om
+  Varde body and the legevakt banner, keeps normal sentence case. A unit test pins the four
+  labels in both languages.
 
 - **Hero spacing (16).** The h1 gets line-height 1.1 (today `text-6xl` forces 1.0 and the lines
   touch) and `text-wrap: balance`. The strings keep the last three words together with
@@ -356,7 +365,7 @@ prerender test fails on a `style=` attribute in a page.
 | 7 Quick exit | Shift x3 leaves, also in inputs; other keys and a slow third press don't | Still in view after scrolling | |
 | 9 Helplines | Order, throw on a missing id, numbers from the data | | |
 | P Install | Manifest valid, icons exist, maskable present | | Install on my Android phone |
-| A1 NAV | Official URLs, labelled as external | | |
+| A1 NAV | Official URLs, `target="_blank"` with `rel="noopener noreferrer"`, labelled as external and new tab | | |
 | A2 Pickers | Arrows wrap, Escape returns focus, System follows the OS | | |
 | A3 Om Varde | Footer line on every route, About in both languages and in the sitemap | | I read the text |
 | A4 Back arrow | Shown only in installed mode, not on landing | | Checked in the installed app |
@@ -397,7 +406,7 @@ Six PRs plus the 3b follow-up, each small enough to review in one sitting and re
 | 1 | `test/playwright-harness` | Playwright, the data snapshot, the CI job, one smoke test | The later PRs need it to prove themselves |
 | 2 | `feat/om-varde` | A3: About page, footer lines, Meld feil with the new alias | People are already sharing the site |
 | 3 | `feat/header` | 8, A1, A2, 7: links, pickers, quick exit with Shift x3 | Header height is part of the 950 px budget |
-| 3b | `feat/phone-header` | Header below 1024 px: one row with Meny, exit in the row, strip 2 x 2 | #63 shipped a three-row phone header that was too tall at 320 px |
+| 3b | `feat/phone-header` | Header below 1024 px: one row with Meny, exit in the row, strip 2 x 2 with capital labels, Helsenorge and NAV in a new tab | #63 shipped a three-row phone header that was too tall at 320 px |
 | 4 | `feat/landing-fit` | 2, 3, 9, 16, 17: hero, chips, helplines, trust line, 950 px check | Measured with the final header and footer |
 | 5 | `feat/card-slots` | 4, 5: subgrid slots and hover | |
 | 6 | `feat/install` | P, A4: manifest, install hint, back arrow | I test the install on my phone |
