@@ -8,14 +8,14 @@
 
 **Tech Stack:** React 19, TypeScript 7, Vite 8, Tailwind 4, vitest 4 + Testing Library + vitest-axe, Biome 2, `@playwright/test` 1.63.0 (new, Chromium only), GitHub Actions.
 
-**Spec:** `docs/superpowers/specs/2026-10-02-varde-ui-polish-design.md` (approved 2026-10-02; amended the same day with the two-column landing decision, see Landing in PR 4).
+**Spec:** `docs/superpowers/specs/2026-10-02-varde-ui-polish-design.md` (approved 2026-10-02; amended the same day with the two-column landing decision, see Landing in PR 4; amended 2026-10-11 with the one-row phone header, the Meny, new-tab links and the 2 x 2 strip, see PR 3b).
 
 ## Global Constraints
 
 Every task's requirements include these. Values are copied from the spec.
 
 - **Fit:** the landing page, footer included, is at most **950 px** tall at **1280 x 950** and **1920 x 950**, in both themes and both languages, at default zoom, with the install hint closed.
-- **Header row rule:** every control in a header row is **44 px** tall and shares one bottom edge (checked at 375, 1280 and 1920).
+- **Header row rule:** every control in a header row is **44 px** tall and shares one bottom edge (checked at 375, 1280 and 1920; from PR 3b the header is one row at every width, checked at 320, 375, 1023, 1024, 1280 and 1920 in both languages).
 - **Targets:** every new interactive element (chips, helpline buttons, the install hint's `<summary>`, footer links, picker rows, the back arrow) is at least **44 x 44 px**.
 - **CSP:** no `style` attribute in prerendered HTML. Inline styles are set from JavaScript after mount only. The inline init script in `web/index.html` and its CSP hash in `web/public/_headers` do not change in any PR.
 - **Always current:** no service worker, no offline cache, no new server.
@@ -49,9 +49,16 @@ Inputs the spec implies but no spec test names. Each line has a test in the task
 - **Install labels on a real device.** Apple's nb pages for iOS 26 and 27 leave "Share" untranslated, and Edge's nb page reads as machine-translated. Check those two labels on a real device before PR 6 merges (Task 19 lists them).
 - **Required check.** After PR 1's `web-e2e` job runs green, add it as a required check: GitHub, repo Settings, Rules, Rulesets, `protect-main`, "Require status checks to pass", add `web-e2e`.
 
+## Decided (2026-10-11)
+
+- **Supersedes "No sticky header on a phone" below.** #63 shipped that three-row phone header and I found it too tall at 320 px. PR 3b replaces it: one sticky row at every width, a Meny below 1024 px, the exit in the row, no `position: fixed` anywhere.
+- **The 116 117 strip label in English is "Out-of-hours service"** (Malin, 2026-10-11). Measured on the live site: at 320 px each 2 x 2 cell leaves 88 px for its label, and "medical service" is 97 px, so the full "Out-of-hours medical service" wraps to three lines. The short form wraps to two ("Out-of-hours" 84 px, "service" 45 px). The landing page's emergency grid keeps the full term: the strip gets its own `strip.short.*` keys.
+- **The 320 px fallback runs both steps below 360 px, and step 1 below 768 px.** Measured on the live site with fonts loaded: brand 91.4 px, Meny trigger with its word 101.5 (nb) and 102.1 px (en), icon only 54 px, exit 117.2 (nb) and 145.8 px (en), 12 px gaps, 32 px row padding. Full English needs 395 px of viewport, so the Meny word shows from 768 px (the plan's own breakpoint). Icon-only Meny with the full brand needs 315.2 + 32 = 347.2 px in English, so the brand word shows from **360 px**. That is the one breakpoint outside 768 and 1024 in this plan; it is still `min-width` and mobile-first, and it sits on the most common narrow phone width.
+- **jsdom renders both header layouts.** jsdom loads no CSS and does not hide a closed `<details>`'s content (checked: computed `display` is `block`), so once the Meny exists every "Norsk", "English", "Lyst", "Mørkt" and "System" query finds two elements. Task 11c adds `tests/scope.ts` and scopes the existing whole-App queries to the desktop tools.
+
 ## Decided (2026-10-08)
 
-- **No sticky header on a phone.** At 375 px the tools wrap below the brand (brand plus tools is 345 px nb and 373 px en against 343 px of room, measured on the live site 2026-10-02), so a sticky header would be three rows and 157 px tall. Under 768 px wide the header now scrolls away and only the quick exit stays pinned, the same pattern as short screens. Tasks 10 and 11 carry it; spec Quick exit and Phone bullets amended.
+- **No sticky header on a phone** (superseded 2026-10-11, see above). At 375 px the tools wrap below the brand (brand plus tools is 345 px nb and 373 px en against 343 px of room, measured on the live site 2026-10-02), so a sticky header would be three rows and 157 px tall. Under 768 px wide the header now scrolls away and only the quick exit stays pinned, the same pattern as short screens. Tasks 10 and 11 carry it; spec Quick exit and Phone bullets amended.
 - **Shift x3 stays.** The NVDA Shift-pause test in PR 3's manual check still runs. If a third Shift press soon after pause and resume leaves Varde, I change the shortcut before PR 3 merges.
 - **The `Link` aria-label bug is fixed in PR 3.** `Link` passed only `href`, `className`, `hrefLang`, `lang` and `onClick` to its `<a>`, and TypeScript accepts any hyphenated prop, so the brand link's `aria-label` was dropped without an error. Task 6 adds the prop and a test. The label itself becomes "Varde, til forsiden" / "Varde, home page": it is speech only, and a comma pauses the same way at every NVDA punctuation level.
 - **Every build step is `npm run build:site` (found in PR 1).** `npm run build` does not prerender: `build:site` is build plus prerender, so every command in this plan now uses it. PR 1 also hardened the harness beyond the Task 1 text: the smoke test checks `/resources/1`'s own canonical link in the raw HTML (the SPA fallback serves the prerendered landing, which gets "Hjelpetelefonen" in PR 4), `reuseExistingServer` is `false`, `noHorizontalScroll` compares against `clientWidth`, `npm run e2e` builds first, and `web-e2e` has a 15 minute timeout. The PR 1 code is the reference, not the snippets in Tasks 1 and 2.
@@ -2843,6 +2850,1357 @@ git commit -m "test: check the header row rule, hidden focus, quick exit and for
 ```
 
 Follow "Shipping a PR" with title `feat: header links, language and theme pickers, quick exit with Shift x3`. Red proofs: Task 6 Step 7, Task 7 Step 7, Task 8 Step 6, Task 9 Step 7, Task 10 Step 5, Task 11 Step 5. Manual before merge: an NVDA pass over the header and both pickers (the triggers read "Språk: Norsk" and "Tema: ...", rows read with their state). In the same pass, press Shift to pause NVDA's speech and again to resume it, as screen reader users do, and note whether a third press soon after leaves Varde; record the result in the PR so Malin can judge the Shift x3 trade-off.
+
+---
+
+# PR 3b: `feat/phone-header`
+
+**Goal:** one sticky header row at every width. Below 1024 px it holds brand, Meny and exit; the Meny holds the three links, Språk and Tema. Helsenorge and NAV open in a new tab. The acute strip becomes a 2 x 2 grid on phones with capital labels. Desktop from 1024 px looks the same as after PR 3.
+
+**Spec:** Header section (amended 2026-10-11: "Below 1024 px: Meny", "Always in view", "The header row rule", "The sticky header never hides focus", Links) and Landing ("Acute strip on phones", "Strip labels start with a capital"). Read `Decided (2026-10-11)` at the top of this plan first: it holds the measurements behind the 360 px breakpoint and the "Out-of-hours service" label.
+
+**Order.** Each task leaves every suite green. 11b moves the links and rows into shared components with no visible change except the new tab. 11c adds the Meny, hidden by CSS. 11d switches the layout and rewrites the header browser checks. 11e does the strip and ships.
+
+**Review Focus (PR 3b).** Inputs the spec implies but no spec test names. Each has a test in the task named.
+
+1. **Theme chosen in the Meny, then the window widens past 1024 px** (a tablet rotated): the desktop trigger already names the new theme. Both read one state lifted into `Header`. Test in Task 11c.
+2. **A Meny link followed by client-side navigation:** the header stays mounted across routes, so the Meny must close itself; nothing else would. Tests in Task 11c (jsdom) and Task 11d (browser).
+3. **Helsenorge or NAV from the Meny:** Varde's tab stays where it was, the Meny closes, and focus returns to the trigger instead of being lost inside a closed `<details>`. Test in Task 11c.
+4. **Changing language from the Meny on a paged results URL** (`/sok?search=nav&page=2`): `page` is dropped, as on desktop. Test in Task 11c.
+5. **Before hydration or without JavaScript:** the Meny is a native `<details>` and its language rows are real links, so it opens and switches language anyway. Test in Task 11c.
+
+Branch first: `git switch main && git pull && git switch -c feat/phone-header`.
+
+### Task 11b: Shared header links and rows, one theme state, new-tab external links
+
+**Files:**
+- Create: `web/src/components/HeaderLinks.tsx`, `web/src/components/LanguageRows.tsx`, `web/src/components/ThemeRows.tsx`
+- Modify: `web/src/components/Header.tsx`, `web/src/components/LanguagePicker.tsx`, `web/src/components/ThemePicker.tsx`, `web/src/i18n/nb.json`, `web/src/i18n/en.json`
+- Test: `web/tests/header.test.tsx`
+
+**Interfaces:**
+- Produces: `HeaderLinks({ className, onFollow? }: { className: string; onFollow?: (external: boolean) => void })`; `LanguageRows({ onDone }: { onDone: () => void })`; `ThemeRows({ theme, icons, onChosen }: { theme: ThemeApi; icons: boolean; onChosen: (row: HTMLButtonElement) => void })`; `type ThemeApi = ReturnType<typeof useThemeChoice>` and `THEME_CHOICES` exported from `ThemeRows.tsx`; `ThemePicker({ theme }: { theme: ThemeApi })`.
+
+- [ ] **Step 1: Write the failing test**
+
+In `web/tests/header.test.tsx`, replace the second and third tests ("the header nav links to all services..." and "the English nav keeps the language prefix...") with:
+
+```tsx
+test("the header nav links to all services, Helsenorge and NAV, the last two in a new tab", () => {
+	stubDataFiles()
+	render(<App />)
+	const nav = screen.getByRole("navigation", { name: "Hovedmeny" })
+	expect(within(nav).getByRole("link", { name: "Alle tjenester" })).toHaveAttribute("href", "/sok")
+	for (const [name, href] of [
+		["Helsenorge (ekstern side, åpnes i ny fane)", HELSENORGE_URL],
+		["NAV (ekstern side, åpnes i ny fane)", NAV_URL],
+	]) {
+		const link = within(nav).getByRole("link", { name })
+		expect(link).toHaveAttribute("href", href)
+		// noopener: the new tab cannot reach back into Varde. noreferrer: it is not told where
+		// the visit came from.
+		expect(link).toHaveAttribute("target", "_blank")
+		expect(link).toHaveAttribute("rel", "noopener noreferrer")
+	}
+})
+
+test("the English nav keeps the language prefix and says external and new tab in English", () => {
+	stubDataFiles()
+	window.history.replaceState(null, "", "/en/")
+	render(<App />)
+	const nav = screen.getByRole("navigation", { name: "Main menu" })
+	expect(within(nav).getByRole("link", { name: "All services" })).toHaveAttribute("href", "/en/sok")
+	expect(
+		within(nav).getByRole("link", { name: "NAV (external site, opens in a new tab)" })
+	).toBeInTheDocument()
+})
+```
+
+- [ ] **Step 2: Run it and see it fail**
+
+Run: `npx vitest run tests/header.test.tsx`
+Expected: FAIL, no link named "Helsenorge (ekstern side, åpnes i ny fane)".
+
+- [ ] **Step 3: Strings**
+
+In both JSON files change the existing `header.external` value (no new key):
+
+```json
+"header.external": "(ekstern side, åpnes i ny fane)",
+```
+
+```json
+"header.external": "(external site, opens in a new tab)",
+```
+
+- [ ] **Step 4: `HeaderLinks.tsx`**
+
+```tsx
+import { useTranslation } from "../i18n/LanguageProvider.tsx"
+import { HELSENORGE_URL, NAV_URL } from "../services/externalLinks.ts"
+import { Link } from "./Link.tsx"
+
+// One source for the header's three links, rendered by the desktop nav and by the Meny (spec:
+// One source, two layouts). Helsenorge and NAV open in a new tab so Varde stays open behind
+// them. The arrow is decoration; the hidden text says it. The space after the name is what
+// separates it from the hidden text in the accessible name.
+const EXTERNAL = [
+	{ name: "Helsenorge", href: HELSENORGE_URL },
+	{ name: "NAV", href: NAV_URL },
+] as const
+
+export function HeaderLinks({
+	className,
+	onFollow,
+}: {
+	className: string
+	// Runs when a link is followed. The Meny uses it to close; the desktop nav passes nothing.
+	onFollow?: (external: boolean) => void
+}) {
+	const t = useTranslation()
+	return (
+		<>
+			<Link to="/sok" className={className} onNavigate={() => onFollow?.(false)}>
+				<span>{t("header.allServices")}</span>
+			</Link>
+			{EXTERNAL.map(({ name, href }) => (
+				<a
+					key={name}
+					href={href}
+					target="_blank"
+					rel="noopener noreferrer"
+					className={className}
+					onClick={() => onFollow?.(true)}
+				>
+					{name} <span aria-hidden="true">↗</span>
+					<span className="visually-hidden">{t("header.external")}</span>
+				</a>
+			))}
+		</>
+	)
+}
+```
+
+If `tsc` rejects `onNavigate={() => onFollow?.(false)}` (its type is `() => undefined | false`, and `onFollow` returns `void`), write it as a block body: `onNavigate={() => { onFollow?.(false) }}`. `LanguagePicker`'s existing `onNavigate` already compiles with a block body that falls through.
+
+- [ ] **Step 5: `LanguageRows.tsx`, and `LanguagePicker` uses it**
+
+Create `web/src/components/LanguageRows.tsx`. The body is today's `LanguagePicker` row code moved unchanged, with `closeAndFocus` renamed `onDone`:
+
+```tsx
+import { LANG_STORAGE_KEY, translate, useLanguage } from "../i18n/LanguageProvider.tsx"
+import { LANGUAGES } from "../i18n/languages.ts"
+import { useCurrentUrl } from "../navigation.ts"
+import { parseUrl, routePath } from "../services/urlState.ts"
+import { CheckIcon } from "./icons.tsx"
+import { Link } from "./Link.tsx"
+import { useAnnounce } from "./StatusRegion.tsx"
+
+// One source for the language rows, rendered by the desktop language picker and by the Meny
+// (spec: One source, two layouts). onDone closes whichever list holds them and returns focus to
+// its trigger.
+export function LanguageRows({ onDone }: { onDone: () => void }) {
+	const { lang } = useLanguage()
+	const announce = useAnnounce()
+	const { pathname, search } = useCurrentUrl()
+	// A different language can change the result set entirely, so a switch resets paging the
+	// same way a search or filter change does (spec).
+	const params = new URLSearchParams(search)
+	params.delete("page")
+	const query = params.toString()
+	const to = `${routePath(parseUrl(pathname).route)}${query ? `?${query}` : ""}`
+	return (
+		<>
+			{LANGUAGES.map((language) => {
+				const isCurrent = language.code === lang
+				return (
+					<Link
+						key={language.code}
+						to={to}
+						lang={language.code}
+						className="picker-row"
+						aria-current={isCurrent ? "page" : undefined}
+						onNavigate={() => {
+							// The language you are already in: stay on the page (a navigation would push
+							// a duplicate history entry and drop page). The row stays a real link, so
+							// without JavaScript it still reloads the page.
+							if (isCurrent) {
+								onDone()
+								return false
+							}
+							try {
+								localStorage.setItem(LANG_STORAGE_KEY, language.code)
+							} catch {}
+							// Announced in the language being switched to: useTranslation() would
+							// still read the old one until the re-render lands.
+							announce(translate(language.code, "status.langChanged"))
+							onDone()
+						}}
+					>
+						<span>{language.name}</span>
+						<span className="picker-code" aria-hidden="true">
+							{language.short}
+						</span>
+						{isCurrent && <CheckIcon className="picker-check" />}
+					</Link>
+				)
+			})}
+		</>
+	)
+}
+```
+
+Replace `web/src/components/LanguagePicker.tsx` with:
+
+```tsx
+import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
+import { LANGUAGES } from "../i18n/languages.ts"
+import { GlobeIcon } from "./icons.tsx"
+import { LanguageRows } from "./LanguageRows.tsx"
+import { Picker } from "./Picker.tsx"
+
+export function LanguagePicker() {
+	const { lang } = useLanguage()
+	const t = useTranslation()
+	const current = LANGUAGES.find((language) => language.code === lang) ?? LANGUAGES[0]
+	return (
+		<Picker name={t("header.language")} value={current.name} icon={<GlobeIcon />}>
+			{(closeAndFocus) => <LanguageRows onDone={closeAndFocus} />}
+		</Picker>
+	)
+}
+```
+
+- [ ] **Step 6: `ThemeRows.tsx`, `ThemePicker` takes the state, `Header` owns it**
+
+Create `web/src/components/ThemeRows.tsx`:
+
+```tsx
+import type { useThemeChoice } from "../hooks/useThemeChoice.ts"
+import { useTranslation } from "../i18n/LanguageProvider.tsx"
+import { CheckIcon, MoonIcon, SunIcon, SystemIcon } from "./icons.tsx"
+
+export type ThemeApi = ReturnType<typeof useThemeChoice>
+
+export const THEME_CHOICES = [
+	{ choice: "light", key: "header.themeLight", Icon: SunIcon },
+	{ choice: "dark", key: "header.themeDark", Icon: MoonIcon },
+	{ choice: "system", key: "header.themeSystem", Icon: SystemIcon },
+] as const
+
+// One source for the theme rows, rendered by the desktop theme picker and by the Meny (spec:
+// One source, two layouts). The desktop picker closes on a choice; the Meny keeps the row
+// focused so a screen reader hears its new pressed state.
+export function ThemeRows({
+	theme,
+	icons,
+	onChosen,
+}: {
+	theme: ThemeApi
+	icons: boolean
+	onChosen: (row: HTMLButtonElement) => void
+}) {
+	const t = useTranslation()
+	return (
+		<>
+			{THEME_CHOICES.map(({ choice, key, Icon }) => {
+				const pressed = theme.state?.choice === choice
+				return (
+					<button
+						key={choice}
+						type="button"
+						className="picker-row"
+						aria-pressed={pressed}
+						onClick={(event) => {
+							theme.choose(choice)
+							onChosen(event.currentTarget)
+						}}
+					>
+						{icons && <Icon />}
+						<span>{t(key)}</span>
+						{pressed && <CheckIcon className="picker-check" />}
+					</button>
+				)
+			})}
+		</>
+	)
+}
+```
+
+Replace `web/src/components/ThemePicker.tsx` with:
+
+```tsx
+import { useTranslation } from "../i18n/LanguageProvider.tsx"
+import { SunIcon } from "./icons.tsx"
+import { Picker } from "./Picker.tsx"
+import { THEME_CHOICES, type ThemeApi, ThemeRows } from "./ThemeRows.tsx"
+
+export function ThemePicker({ theme }: { theme: ThemeApi }) {
+	const t = useTranslation()
+	const { state } = theme
+	let value: string | null = null
+	if (state?.choice === "system") {
+		const resolved = t(
+			state.theme === "dark" ? "header.themeResolvedDark" : "header.themeResolvedLight"
+		)
+		value = `${t("header.themeSystem")} (${resolved})`
+	} else if (state) {
+		value = t(state.choice === "dark" ? "header.themeDark" : "header.themeLight")
+	}
+	// Before mount (state null) the icon is the sun on the server and in the browser alike.
+	const Icon = THEME_CHOICES.find((c) => c.choice === state?.choice)?.Icon ?? SunIcon
+	return (
+		<Picker name={t("header.theme")} value={value} icon={<Icon />}>
+			{(closeAndFocus) => <ThemeRows theme={theme} icons onChosen={() => closeAndFocus()} />}
+		</Picker>
+	)
+}
+```
+
+Replace `web/src/components/Header.tsx` with (layout unchanged, `ExternalMark` gone into `HeaderLinks`):
+
+```tsx
+import { useThemeChoice } from "../hooks/useThemeChoice.ts"
+import { useTranslation } from "../i18n/LanguageProvider.tsx"
+import { BrandMark } from "./BrandMark.tsx"
+import { HeaderLinks } from "./HeaderLinks.tsx"
+import { LanguagePicker } from "./LanguagePicker.tsx"
+import { Link } from "./Link.tsx"
+import { QuickExit } from "./QuickExit.tsx"
+import { ThemePicker } from "./ThemePicker.tsx"
+
+export function Header() {
+	const t = useTranslation()
+	// One theme state for the desktop picker and the Meny (Task 11c), so a choice made in one is
+	// already shown in the other when the window crosses 1024 px.
+	const theme = useThemeChoice()
+	return (
+		<header className="app-header border-b border-border bg-surface">
+			{/* DOM order is the desktop order from the spec: brand, nav, pickers, exit. Under
+			    1024 px the nav drops to a row of its own below (CSS order), and under 768 px the
+			    tools wrap below the brand too (three rows, measured), so a phone's keyboard order
+			    runs brand, nav, then the rows above; I keep one DOM order rather than two.
+			    flex-wrap keeps 320 px free of horizontal scroll, and every control keeps 44 px. */}
+			<div className="header-row mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2">
+				<Link
+					to="/"
+					className="inline-flex min-h-11 items-center gap-2 font-display text-lg text-fg no-underline"
+					aria-label={t("header.home")}
+				>
+					<BrandMark className="h-8 w-8 text-accent" />
+					<span>Varde</span>
+				</Link>
+				<nav aria-label={t("header.navLabel")} className="header-nav">
+					<HeaderLinks className="nav-link" />
+				</nav>
+				<div className="header-tools">
+					<LanguagePicker />
+					<ThemePicker theme={theme} />
+					<QuickExit />
+				</div>
+			</div>
+		</header>
+	)
+}
+```
+
+- [ ] **Step 7: Run everything, show the new check red once, commit**
+
+Run from `web/`: `npm test`, then `npx biome check --write .` and `npx biome ci .`, then `npm run build:site` and `npx playwright test`.
+Expected: all PASS. The language, theme and shell tests pass unchanged: that is the proof the move kept behaviour.
+
+Red proof: delete `target="_blank"` from `HeaderLinks.tsx`, run `npx vitest run tests/header.test.tsx`, expect FAIL on `toHaveAttribute("target", "_blank")`, restore.
+
+```bash
+git add src/components/HeaderLinks.tsx src/components/LanguageRows.tsx src/components/ThemeRows.tsx src/components/Header.tsx src/components/LanguagePicker.tsx src/components/ThemePicker.tsx src/i18n/nb.json src/i18n/en.json tests/header.test.tsx
+git commit -m "feat: open Helsenorge and NAV in a new tab, and share the header rows"
+```
+
+### Task 11c: The Meny
+
+**Files:**
+- Modify: `web/src/hooks/usePicker.ts`, `web/src/components/icons.tsx`, `web/src/components/Header.tsx`, `web/src/styles/main.css`, `web/src/i18n/nb.json`, `web/src/i18n/en.json`
+- Create: `web/src/components/HeaderMenu.tsx`, `web/tests/scope.ts`, `web/tests/headerMenu.test.tsx`
+- Modify (scoping only): `web/tests/shell.test.tsx`, `web/tests/race.test.tsx`, `web/tests/languagePicker.test.tsx`, `web/tests/themePicker.test.tsx`
+
+**Interfaces:**
+- Consumes: `HeaderLinks`, `LanguageRows`, `ThemeRows`, `ThemeApi` from Task 11b.
+- Produces: `usePicker(options?: { focusOnOpen?: "active" | "first" })` returning `{ ref, onToggle, onKeyDown, onBlur, close, closeAndFocus }`; `HeaderMenu({ theme }: { theme: ThemeApi })` rendering `<details class="picker header-menu">` with `.menu-word`, `.menu-list`, `.menu-group`, `.menu-group-label`; `MenuIcon`; test helpers `desktopTools()` and `menu()`.
+
+The Meny cannot reuse `Picker.tsx`: `Picker` shows its visible word in `.picker-value`, which is hidden below 768 px, and the Meny's word must stay visible from 768 to 1023 px. So `HeaderMenu` uses `usePicker` directly with its own markup.
+
+- [ ] **Step 1: Test helpers, then scope the existing whole-App queries**
+
+Create `web/tests/scope.ts`:
+
+```ts
+import { within } from "@testing-library/react"
+
+// The header renders its links, language rows and theme rows twice: the desktop nav and
+// pickers, and the Meny (spec: One source, two layouts). CSS shows one of them; jsdom loads no
+// CSS and does not hide a closed <details>, so both are in the tree and a test scopes to one.
+function scope(selector: string) {
+	const el = document.querySelector<HTMLElement>(selector)
+	if (!el) throw new Error(`no ${selector} in the document`)
+	return within(el)
+}
+
+export const desktopTools = () => scope(".header-tools")
+export const menu = () => scope("details.header-menu")
+```
+
+Then, in these files, change `screen.getByRole(` to `desktopTools().getByRole(` (and `screen.findByRole(` to `desktopTools().findByRole(`) on the listed lines only, and add `import { desktopTools } from "./scope.ts"`:
+
+- `tests/shell.test.tsx`: lines 33, 41, 63 (the "Norsk" and "English" links)
+- `tests/race.test.tsx`: lines 61, 62 (the "English" link)
+- `tests/languagePicker.test.tsx`: lines 16, 17, 30, 31, 39
+- `tests/themePicker.test.tsx`: lines 40, 47, 59, 111 (the "System" and "Mørkt" buttons)
+
+Line numbers are from `main` at `3ef3ce5`. If `npm test` later reports "Found multiple elements" anywhere else, scope that query the same way and list it in the report.
+
+- [ ] **Step 2: Write the failing Meny tests**
+
+Create `web/tests/headerMenu.test.tsx`:
+
+```tsx
+import { render, screen, waitFor, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import { afterEach, expect, test } from "vitest"
+import { App } from "../src/App.tsx"
+import { render as prerender } from "../src/entry-server.tsx"
+import { HELSENORGE_URL } from "../src/services/externalLinks.ts"
+import { menu } from "./scope.ts"
+import { stubDataFiles } from "./stubData.ts"
+
+afterEach(() => {
+	window.history.replaceState(null, "", "/")
+	document.documentElement.removeAttribute("data-theme")
+})
+
+const menuDetails = () =>
+	document.querySelector<HTMLDetailsElement>("details.header-menu") as HTMLDetailsElement
+const trigger = () => menuDetails().querySelector("summary") as HTMLElement
+
+async function openMenu(user: ReturnType<typeof userEvent.setup>) {
+	await user.click(trigger())
+	await waitFor(() => expect(menuDetails().open).toBe(true))
+}
+
+test("the Meny holds the three links, then Språk and Tema as named groups", () => {
+	stubDataFiles()
+	render(<App />)
+	expect(trigger()).toHaveAccessibleName("Meny")
+	const m = menu()
+	expect(m.getByRole("link", { name: "Alle tjenester" })).toHaveAttribute("href", "/sok")
+	const helsenorge = m.getByRole("link", { name: "Helsenorge (ekstern side, åpnes i ny fane)" })
+	expect(helsenorge).toHaveAttribute("href", HELSENORGE_URL)
+	expect(helsenorge).toHaveAttribute("target", "_blank")
+	expect(helsenorge).toHaveAttribute("rel", "noopener noreferrer")
+	const språk = m.getByRole("group", { name: "Språk" })
+	expect(within(språk).getByRole("link", { name: "Norsk" })).toHaveAttribute("aria-current", "page")
+	expect(within(språk).getByRole("link", { name: "English" })).toHaveAttribute("lang", "en")
+	const tema = m.getByRole("group", { name: "Tema" })
+	expect(within(tema).getAllByRole("button").map((b) => b.textContent)).toEqual([
+		"Lyst",
+		"Mørkt",
+		"System",
+	])
+})
+
+test("the English Meny is named Menu, with Language and Theme groups", () => {
+	stubDataFiles()
+	window.history.replaceState(null, "", "/en/")
+	render(<App />)
+	expect(trigger()).toHaveAccessibleName("Menu")
+	expect(menu().getByRole("group", { name: "Language" })).toBeInTheDocument()
+	expect(menu().getByRole("group", { name: "Theme" })).toBeInTheDocument()
+})
+
+test("opening the Meny focuses its first row, even with a current language row", async () => {
+	const user = userEvent.setup()
+	stubDataFiles()
+	render(<App />)
+	await openMenu(user)
+	await waitFor(() => expect(menu().getByRole("link", { name: "Alle tjenester" })).toHaveFocus())
+})
+
+test("the arrows move through all three groups, skip the group labels and wrap", async () => {
+	const user = userEvent.setup()
+	stubDataFiles()
+	render(<App />)
+	await openMenu(user)
+	await waitFor(() => expect(menu().getByRole("link", { name: "Alle tjenester" })).toHaveFocus())
+	await user.keyboard("{ArrowUp}")
+	expect(menu().getByRole("button", { name: "System" })).toHaveFocus()
+	await user.keyboard("{ArrowDown}")
+	expect(menu().getByRole("link", { name: "Alle tjenester" })).toHaveFocus()
+	await user.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}")
+	expect(menu().getByRole("link", { name: "Norsk" })).toHaveFocus()
+})
+
+// Review Focus 1: one state, so the desktop trigger is right when the window widens.
+test("a theme row applies the theme, keeps the Meny open on that row, and the desktop picker follows", async () => {
+	const user = userEvent.setup()
+	stubDataFiles()
+	render(<App />)
+	await openMenu(user)
+	const mørkt = menu().getByRole("button", { name: "Mørkt" })
+	await user.click(mørkt)
+	expect(document.documentElement.dataset.theme).toBe("dark")
+	expect(menuDetails().open).toBe(true)
+	expect(mørkt).toHaveFocus()
+	expect(mørkt).toHaveAttribute("aria-pressed", "true")
+	expect(screen.getByText("Tema: Mørkt", { selector: ".visually-hidden" })).toBeInTheDocument()
+})
+
+// Review Focus 2: the header outlives the route change, so the Meny closes itself.
+test("Alle tjenester navigates and the Meny closes", async () => {
+	const user = userEvent.setup()
+	stubDataFiles()
+	render(<App />)
+	await openMenu(user)
+	await user.click(menu().getByRole("link", { name: "Alle tjenester" }))
+	expect(window.location.pathname).toBe("/sok")
+	expect(menuDetails().open).toBe(false)
+})
+
+// Review Focus 3.
+test("Helsenorge leaves Varde's tab where it was, closes the Meny and refocuses its trigger", async () => {
+	const user = userEvent.setup()
+	stubDataFiles()
+	render(<App />)
+	// jsdom does not implement navigation. This listener runs after React's handler, on the
+	// way up, and only stops jsdom from trying.
+	const cancel = (event: MouseEvent) => event.preventDefault()
+	window.addEventListener("click", cancel)
+	try {
+		await openMenu(user)
+		await user.click(menu().getByRole("link", { name: /^Helsenorge/ }))
+	} finally {
+		window.removeEventListener("click", cancel)
+	}
+	expect(window.location.pathname).toBe("/")
+	expect(menuDetails().open).toBe(false)
+	expect(trigger()).toHaveFocus()
+})
+
+// Review Focus 4.
+test("a language row in the Meny goes to the same page in that language and drops page", async () => {
+	const user = userEvent.setup()
+	stubDataFiles()
+	window.history.pushState(null, "", "/sok?search=nav&page=2")
+	render(<App />)
+	await openMenu(user)
+	await user.click(menu().getByRole("link", { name: "English" }))
+	expect(window.location.pathname + window.location.search).toBe("/en/sok?search=nav")
+	expect(localStorage.getItem("varde.lang")).toBe("en")
+	expect(menuDetails().open).toBe(false)
+})
+
+// Review Focus 5. Last on purpose: prerender() in jsdom leaves UrlContext holding the
+// prerendered URL, which would leak into any App render after it in this file.
+test("the prerendered Meny is a native details with real language links, so it works before JavaScript", async () => {
+	const { html } = await prerender("/sok", {})
+	const start = html.indexOf('<details class="picker header-menu"')
+	expect(start).toBeGreaterThan(-1)
+	const meny = html.slice(start, html.indexOf("</details>", start))
+	expect(meny).toMatch(/<a[^>]+href="\/en\/sok"/)
+	expect(meny).toMatch(/<a[^>]+href="\/sok"/)
+})
+```
+
+- [ ] **Step 3: Run them and see them fail**
+
+Run: `npx vitest run tests/headerMenu.test.tsx`
+Expected: FAIL, `menuDetails()` is null (no `details.header-menu` yet).
+
+- [ ] **Step 4: `usePicker` gets `focusOnOpen` and `close`**
+
+In `web/src/hooks/usePicker.ts`, change the signature and add `close`:
+
+```ts
+// focusOnOpen: the pickers open on their active row (spec: Picker behaviour); the Meny opens on
+// its first row (spec: Below 1024 px: Meny).
+export function usePicker({ focusOnOpen = "active" }: { focusOnOpen?: "active" | "first" } = {}) {
+```
+
+Below `closeAndFocus`, add:
+
+```ts
+	// Close without moving focus: for a navigation, which moves focus itself.
+	const close = useCallback(() => {
+		if (ref.current) ref.current.open = false
+	}, [])
+```
+
+In `onToggle`, replace the last four lines (from `const all = rows()` to the focus call) with:
+
+```ts
+		const all = rows()
+		const active =
+			focusOnOpen === "active"
+				? all.find(
+						(row) => row.hasAttribute("aria-current") || row.getAttribute("aria-pressed") === "true"
+					)
+				: undefined
+		;(active ?? all[0])?.focus()
+```
+
+Return `{ ref, onToggle, onKeyDown, onBlur, close, closeAndFocus }`.
+
+- [ ] **Step 5: Icon, strings, `HeaderMenu`**
+
+Append to `web/src/components/icons.tsx`:
+
+```tsx
+export function MenuIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M4 6h16M4 12h16M4 18h16" />
+		</Svg>
+	)
+}
+```
+
+Add to `nb.json` and `en.json` (see Global Constraints on commas):
+
+```json
+"header.menu": "Meny",
+```
+
+```json
+"header.menu": "Menu",
+```
+
+Create `web/src/components/HeaderMenu.tsx`:
+
+```tsx
+import { useId } from "react"
+import { usePicker } from "../hooks/usePicker.ts"
+import { useTranslation } from "../i18n/LanguageProvider.tsx"
+import { HeaderLinks } from "./HeaderLinks.tsx"
+import { MenuIcon } from "./icons.tsx"
+import { LanguageRows } from "./LanguageRows.tsx"
+import { type ThemeApi, ThemeRows } from "./ThemeRows.tsx"
+
+// Below 1024 px the three links and both pickers live here (spec: Below 1024 px: Meny). The
+// picker shell and behaviour, with two differences: opening focuses the first row, and a theme
+// row keeps the Meny open with focus on it, so a screen reader hears its new pressed state.
+// The trigger's name is the word itself, visible from 768 px and visually hidden below.
+export function HeaderMenu({ theme }: { theme: ThemeApi }) {
+	const t = useTranslation()
+	const { ref, onToggle, onKeyDown, onBlur, close, closeAndFocus } = usePicker({
+		focusOnOpen: "first",
+	})
+	const languageId = useId()
+	const themeId = useId()
+	return (
+		<details
+			ref={ref}
+			className="picker header-menu"
+			onToggle={onToggle}
+			onKeyDown={onKeyDown}
+			onBlur={onBlur}
+		>
+			<summary className="btn-secondary min-w-11">
+				<span aria-hidden="true" className="inline-flex">
+					<MenuIcon />
+				</span>
+				<span className="menu-word">{t("header.menu")}</span>
+			</summary>
+			<div className="picker-list menu-list">
+				<div className="menu-group">
+					{/* An internal link navigates, and the navigation moves focus. An external one
+					    opens a new tab, so focus comes back to the trigger rather than into a
+					    closed list. */}
+					<HeaderLinks
+						className="picker-row"
+						onFollow={(external) => (external ? closeAndFocus() : close())}
+					/>
+				</div>
+				{/* biome-ignore lint/a11y/useSemanticElements: Workbench picker markup, as in Picker.tsx */}
+				<div className="menu-group" role="group" aria-labelledby={languageId}>
+					<span id={languageId} className="menu-group-label">
+						{t("header.language")}
+					</span>
+					<LanguageRows onDone={closeAndFocus} />
+				</div>
+				{/* biome-ignore lint/a11y/useSemanticElements: Workbench picker markup, as in Picker.tsx */}
+				<div className="menu-group" role="group" aria-labelledby={themeId}>
+					<span id={themeId} className="menu-group-label">
+						{t("header.theme")}
+					</span>
+					{/* Safari does not focus a button on click, so the row is focused explicitly. */}
+					<ThemeRows theme={theme} icons={false} onChosen={(row) => row.focus()} />
+				</div>
+			</div>
+		</details>
+	)
+}
+```
+
+In `web/src/components/Header.tsx`, import `HeaderMenu` and render `<HeaderMenu theme={theme} />` directly after the closing `</div>` of `header-tools`, still inside `header-row`.
+
+Append to the end of `@layer components` in `web/src/styles/main.css` (Task 11d replaces it):
+
+```css
+	/* Task 11d shows the Meny below 1024 px. Until then it is in the DOM and the unit tests only. */
+	details.header-menu {
+		display: none;
+	}
+```
+
+- [ ] **Step 6: Run everything, commit**
+
+Run from `web/`: `npm test`, `npx biome check --write .`, `npx biome ci .`, `npm run build:site`, `npx playwright test`.
+Expected: all PASS. The Playwright header checks still pass because the Meny is `display: none`.
+
+Red proofs: (1) change `focusOnOpen: "first"` to `"active"` in `HeaderMenu.tsx`; the first-row test fails (focus lands on "Norsk"); restore. (2) change the Meny's `onChosen` to `() => close()`; the theme-row test fails on `open`; restore. (3) in `Header.tsx`, give `HeaderMenu` its own `useThemeChoice()` instead of the shared `theme`; the "desktop picker follows" assertion fails; restore.
+
+```bash
+git add src/hooks/usePicker.ts src/components/icons.tsx src/components/HeaderMenu.tsx src/components/Header.tsx src/styles/main.css src/i18n/nb.json src/i18n/en.json tests/scope.ts tests/headerMenu.test.tsx tests/shell.test.tsx tests/race.test.tsx tests/languagePicker.test.tsx tests/themePicker.test.tsx
+git commit -m "feat: add the Meny with the links, Språk and Tema"
+```
+
+### Task 11d: One sticky row at every width, and the header browser checks
+
+**Files:**
+- Modify: `web/src/components/Header.tsx`, `web/src/styles/main.css`, `web/e2e/anchor.spec.ts` (comment only)
+- Test: `web/e2e/header.spec.ts` (rewritten)
+
+**Interfaces:**
+- Consumes: `HeaderMenu` and the `.header-menu`, `.menu-word`, `.menu-list`, `.menu-group`, `.menu-group-label` classes from Task 11c.
+- Produces: the final header DOM order (brand, nav, tools, Meny, exit) and the CSS Task 11e builds on (`.acute-strip` padding is plain `1rem`).
+
+- [ ] **Step 1: Rewrite the header browser checks**
+
+Replace `web/e2e/header.spec.ts` with:
+
+```ts
+import { expect, type Page, test } from "@playwright/test"
+import { noHorizontalScroll, setTheme, settle, THEMES } from "./helpers.ts"
+
+type Box = { label: string; top: number; bottom: number; height: number }
+
+async function headerControls(page: Page): Promise<Box[]> {
+	return page.evaluate(() =>
+		[...document.querySelectorAll<HTMLElement>("header a, header button, header summary")]
+			// Rows inside a closed picker or the closed Meny still have boxes in Chromium
+			// (content-visibility: hidden, not display: none), so skip the lists outright.
+			// checkVisibility() drops whichever layout is display: none at this width.
+			.filter((el) => !el.closest(".picker-list") && el.checkVisibility())
+			.map((el) => {
+				const r = el.getBoundingClientRect()
+				const label = `${el.tagName} ${(el.textContent ?? "").trim().slice(0, 24)}`
+				return { label, top: r.top, bottom: r.bottom, height: r.height }
+			})
+	)
+}
+
+// Controls whose vertical centres sit within 22 px of each other share a row.
+function rowsOf(boxes: Box[]): Box[][] {
+	const rows: Box[][] = []
+	const centre = (b: Box) => (b.top + b.bottom) / 2
+	for (const box of [...boxes].sort((a, b) => centre(a) - centre(b))) {
+		const row = rows.find((r) => Math.abs(centre(r[0]) - centre(box)) < 22)
+		if (row) row.push(box)
+		else rows.push([box])
+	}
+	return rows
+}
+
+async function tabTo(page: Page, selector: string) {
+	for (let i = 0; i < 30; i++) {
+		await page.keyboard.press("Tab")
+		if (await page.evaluate((s) => document.activeElement?.matches(s) ?? false, selector)) return
+	}
+	throw new Error(`Tab never reached ${selector}`)
+}
+
+const activeName = (page: Page) =>
+	page.evaluate(() => {
+		const el = document.activeElement as HTMLElement
+		return el.getAttribute("aria-label") ?? (el.textContent ?? "").trim()
+	})
+
+// One row at every width (spec: The header row rule). 320 and 375 run the 320 px fallback,
+// 1023 and 1024 sit either side of the switch between the Meny and the desktop nav, and a
+// first visit (nothing stored) shows the widest theme value, "System (lyst)", from 1024 px.
+for (const width of [320, 375, 1023, 1024, 1280, 1920]) {
+	for (const theme of [...THEMES, "system"] as const) {
+		for (const path of ["/", "/en/"]) {
+			test(`header ${path} at ${width} px (${theme}): one row, every control 44 px tall, one bottom edge`, async ({
+				page,
+			}) => {
+				await page.setViewportSize({ width, height: 900 })
+				if (theme !== "system") await setTheme(page, theme)
+				await page.goto(path)
+				await settle(page)
+				// The theme value fills in after mount; measure the real, hydrated width.
+				await page
+					.locator("header .visually-hidden", { hasText: /^(Tema|Theme): / })
+					.waitFor({ state: "attached" })
+				const boxes = await headerControls(page)
+				const rows = rowsOf(boxes)
+				expect(rows.length, boxes.map((b) => b.label).join(" | ")).toBe(1)
+				for (const box of rows[0]) expect(box.height, box.label).toBeCloseTo(44, 0)
+				const bottoms = rows[0].map((b) => b.bottom)
+				expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThan(1)
+				expect(await noHorizontalScroll(page)).toBe(true)
+			})
+		}
+	}
+}
+
+for (const [width, menuShown] of [
+	[1023, true],
+	[1024, false],
+] as const) {
+	test(`at ${width} px only ${menuShown ? "the Meny" : "the nav and the pickers"} is shown`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width, height: 800 })
+		await page.goto("/")
+		await expect(page.locator("details.header-menu")).toBeVisible({ visible: menuShown })
+		await expect(page.locator(".header-nav")).toBeVisible({ visible: !menuShown })
+		await expect(page.locator(".header-tools")).toBeVisible({ visible: !menuShown })
+	})
+}
+
+test("at 320 px the keyboard meets the brand, the Meny and the exit, and nothing hidden", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 320, height: 640 })
+	await page.goto("/")
+	await tabTo(page, "header a[aria-label]")
+	const names = [await activeName(page)]
+	for (const _ of [1, 2]) {
+		await page.keyboard.press("Tab")
+		names.push(await activeName(page))
+	}
+	expect(names).toEqual(["Varde, til forsiden", "Meny", "Forlat siden"])
+})
+
+for (const path of ["/", "/sok"]) {
+	for (const viewport of [
+		{ width: 1280, height: 600 },
+		{ width: 1024, height: 600 },
+		{ width: 800, height: 600 },
+		{ width: 640, height: 400 },
+		{ width: 375, height: 700 },
+		{ width: 320, height: 640 },
+	]) {
+		test(`tabbing through ${path} at ${viewport.width} x ${viewport.height} never puts focus under the header`, async ({
+			page,
+		}) => {
+			await page.setViewportSize(viewport)
+			await page.goto(path)
+			await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
+			// Both directions: Chromium centres a target it has to scroll to, so going forward
+			// rarely lands under the header. Going back, an element partly under the header counts
+			// as in view and takes focus without a scroll, which only scroll-padding-top prevents.
+			for (const key of ["Tab", "Shift+Tab"]) {
+				for (let i = 0; i < 40; i++) {
+					await page.keyboard.press(key)
+					const covered = await page.evaluate(() => {
+						const el = document.activeElement as HTMLElement | null
+						const header = document.querySelector("header")
+						if (!el || !header || el === document.body || header.contains(el)) return null
+						const r = el.getBoundingClientRect()
+						const h = header.getBoundingClientRect()
+						return r.top < h.bottom - 1 && r.bottom > h.top + 1 ? el.outerHTML.slice(0, 80) : null
+					})
+					expect(covered, key).toBeNull()
+				}
+			}
+		})
+	}
+}
+
+test("the quick exit stays in view after scrolling, on a normal screen, a short one and phones", async ({
+	page,
+}) => {
+	for (const viewport of [
+		{ width: 1280, height: 950 },
+		{ width: 640, height: 400 },
+		{ width: 375, height: 700 },
+		{ width: 320, height: 640 },
+	]) {
+		await page.setViewportSize(viewport)
+		await page.goto("/sok")
+		await expect(page.getByRole("heading", { level: 1 })).toBeAttached()
+		await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+		const box = await page.getByRole("link", { name: "Forlat siden" }).boundingBox()
+		if (!box) throw new Error("no quick exit box")
+		expect(box.y).toBeGreaterThanOrEqual(0)
+		expect(box.y + box.height).toBeLessThanOrEqual(viewport.height)
+		expect(box.height).toBeCloseTo(44, 0)
+	}
+})
+
+// usePicker shifts an open list back on screen when it would start left of the 8 px edge gap.
+// The list hangs from the Meny trigger's right edge, so on a narrow phone the left edge is the
+// risk.
+for (const viewport of [
+	{ width: 375, height: 812 },
+	{ width: 320, height: 640 },
+]) {
+	test(`at ${viewport.width} x ${viewport.height} the open Meny stays 8 px inside the screen`, async ({
+		page,
+	}) => {
+		await page.setViewportSize(viewport)
+		for (const path of ["/", "/en/"]) {
+			await page.goto(path)
+			await settle(page)
+			const menu = page.locator("header details.header-menu")
+			await menu.locator("summary").click()
+			// onToggle focuses a row after it has placed the list, so focus means placed.
+			await expect(menu.locator(".picker-row:focus")).toHaveCount(1)
+			const edges = await menu.locator(".picker-list").evaluate((el) => {
+				const r = el.getBoundingClientRect()
+				return { left: r.left, right: r.right, width: document.documentElement.clientWidth }
+			})
+			expect(edges.left, path).toBeGreaterThanOrEqual(8)
+			expect(edges.right, path).toBeLessThanOrEqual(edges.width - 8)
+			await page.keyboard.press("Escape")
+			await expect(menu).not.toHaveAttribute("open")
+		}
+	})
+}
+
+test("the Meny opens on its first row, the arrows wrap, a theme row keeps it open, Escape returns to the trigger", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 375, height: 812 })
+	await page.goto("/")
+	await settle(page)
+	const menu = page.locator("header details.header-menu")
+	await menu.locator("summary").click()
+	await expect(menu.getByRole("link", { name: "Alle tjenester" })).toBeFocused()
+	await page.keyboard.press("ArrowUp")
+	await expect(menu.getByRole("button", { name: "System" })).toBeFocused()
+	await page.keyboard.press("ArrowUp")
+	const dark = menu.getByRole("button", { name: "Mørkt" })
+	await expect(dark).toBeFocused()
+	await page.keyboard.press("Enter")
+	await expect(page.locator("html")).toHaveAttribute("data-theme", "dark")
+	await expect(menu).toHaveAttribute("open", "")
+	await expect(dark).toBeFocused()
+	await expect(dark).toHaveAttribute("aria-pressed", "true")
+	await page.keyboard.press("Escape")
+	await expect(menu).not.toHaveAttribute("open")
+	await expect(menu.locator("summary")).toBeFocused()
+})
+
+test("a Meny link navigates and the Meny closes with the page change", async ({ page }) => {
+	await page.setViewportSize({ width: 375, height: 812 })
+	await page.goto("/")
+	const menu = page.locator("header details.header-menu")
+	await menu.locator("summary").click()
+	await menu.getByRole("link", { name: "Alle tjenester" }).click()
+	await expect(page).toHaveURL(/\/sok$/)
+	await expect(menu).not.toHaveAttribute("open")
+})
+
+// Spec: every row shares one left edge for its text and one right edge for its code or check.
+test("the Meny's rows share one text edge, one code edge and one check edge", async ({ page }) => {
+	await page.setViewportSize({ width: 375, height: 812 })
+	await page.goto("/")
+	await settle(page)
+	const menu = page.locator("header details.header-menu")
+	await menu.locator("summary").click()
+	await expect(menu.locator(".picker-row:focus")).toHaveCount(1)
+	// The pressed theme row (System on a first visit) exists only once the theme state mounts.
+	await expect(menu.locator('.menu-list [aria-pressed="true"]')).toHaveCount(1)
+	const edges = await page.evaluate(() => {
+		const rows = [...document.querySelectorAll<HTMLElement>(".menu-list .picker-row")]
+		const textLeft = (row: HTMLElement) => {
+			const walker = document.createTreeWalker(row, NodeFilter.SHOW_TEXT)
+			for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+				const parent = n.parentElement
+				if (!n.textContent?.trim() || parent?.closest('[aria-hidden="true"], .visually-hidden'))
+					continue
+				const range = document.createRange()
+				range.selectNodeContents(n)
+				return Math.round(range.getBoundingClientRect().left)
+			}
+			return null
+		}
+		const rights = (selector: string) =>
+			[...document.querySelectorAll<HTMLElement>(`.menu-list ${selector}`)].map((el) =>
+				Math.round(el.getBoundingClientRect().right)
+			)
+		return {
+			texts: rows.map(textLeft),
+			codes: rights(".picker-code"),
+			checks: rights(".picker-check"),
+		}
+	})
+	expect(new Set(edges.texts).size, `text lefts ${edges.texts}`).toBe(1)
+	expect(new Set(edges.codes).size, `code rights ${edges.codes}`).toBe(1)
+	expect(new Set(edges.checks).size, `check rights ${edges.checks}`).toBe(1)
+	expect(edges.checks.length).toBe(2) // the current language and the pressed theme
+})
+
+test("forced colours keep the focus ring and the current picker row visible", async ({ page }) => {
+	await page.emulateMedia({ forcedColors: "active" })
+	await page.goto("/")
+	await tabTo(page, "header summary")
+	const ring = await page.evaluate(() => {
+		const s = getComputedStyle(document.activeElement as HTMLElement)
+		return { style: s.outlineStyle, width: Number.parseFloat(s.outlineWidth) }
+	})
+	expect(ring.style).not.toBe("none")
+	expect(ring.width).toBeGreaterThanOrEqual(2)
+	await page.keyboard.press("Enter")
+	const row = page.locator('header .header-tools .picker-row[aria-current="page"]')
+	await expect(row).toBeFocused()
+	const colours = await row.evaluate((el) => ({
+		row: getComputedStyle(el).backgroundColor,
+		list: getComputedStyle(el.parentElement as HTMLElement).backgroundColor,
+	}))
+	expect(colours.row).not.toBe(colours.list)
+})
+```
+
+Gone, with reasons: the "pinned quick exit covers no other control" test (nothing is pinned any more), and the phone and short-screen tiers of the row count and the focus test (one row everywhere now). The forced-colours test runs at Playwright's default 1280 px, where the first header `summary` reached by Tab is the language picker; its row locator is scoped to `.header-tools` because the Meny holds a second current language row.
+
+- [ ] **Step 2: Run them and see them fail**
+
+Run: `npm run build:site && npx playwright test e2e/header.spec.ts`
+Expected: FAIL. Row counts are 3 at 320 and 375 and 2 at 1023, and every Meny test fails because the Meny is `display: none`.
+
+- [ ] **Step 3: The final `Header.tsx`**
+
+```tsx
+import { useThemeChoice } from "../hooks/useThemeChoice.ts"
+import { useTranslation } from "../i18n/LanguageProvider.tsx"
+import { BrandMark } from "./BrandMark.tsx"
+import { HeaderLinks } from "./HeaderLinks.tsx"
+import { HeaderMenu } from "./HeaderMenu.tsx"
+import { LanguagePicker } from "./LanguagePicker.tsx"
+import { Link } from "./Link.tsx"
+import { QuickExit } from "./QuickExit.tsx"
+import { ThemePicker } from "./ThemePicker.tsx"
+
+export function Header() {
+	const t = useTranslation()
+	// One theme state for the desktop picker and the Meny, so a choice made in one is already
+	// shown in the other when the window crosses 1024 px.
+	const theme = useThemeChoice()
+	return (
+		<header className="app-header border-b border-border bg-surface">
+			{/* One row at every width (spec: Header). DOM order is brand, nav, pickers, Meny, exit.
+			    CSS shows the nav and the pickers from 1024 px and the Meny below it, never both, so
+			    the keyboard meets only the one on screen. */}
+			<div className="header-row mx-auto flex max-w-6xl items-center gap-3 px-4 py-2">
+				<Link
+					to="/"
+					className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 font-display text-lg text-fg no-underline"
+					aria-label={t("header.home")}
+				>
+					<BrandMark className="h-8 w-8 text-accent" />
+					<span className="brand-word">Varde</span>
+				</Link>
+				<nav aria-label={t("header.navLabel")} className="header-nav">
+					<HeaderLinks className="nav-link" />
+				</nav>
+				<div className="header-tools">
+					<LanguagePicker />
+					<ThemePicker theme={theme} />
+				</div>
+				<HeaderMenu theme={theme} />
+				<QuickExit />
+			</div>
+		</header>
+	)
+}
+```
+
+- [ ] **Step 4: The CSS**
+
+In `web/src/styles/main.css`, `@layer base`: replace the comment that starts "The sticky header must never cover a focused element" and the three `scroll-padding-top` rules after it with:
+
+```css
+	/* The sticky header must never cover a focused element or an anchor target (WCAG 2.4.11,
+	   house bar 2.4.12). It is one 61 px row at every width (44 px controls, 8 px above and
+	   below, a 1 px border), so one value with room to spare covers every width. */
+	html {
+		scroll-padding-top: 5rem;
+	}
+```
+
+In `@layer components`, delete:
+- the `.app-header` comment ("Sticky only where it costs one or two rows...") and the `.app-header` rule with its `@media (min-height: 480px) and (min-width: 768px)` block;
+- the `.header-nav` rule, the `.header-tools` rule, and the `@media (min-width: 1024px)` block that holds `.header-nav { order: 0; ... }` (`.nav-link` and `.nav-link:hover` stay);
+- everything from the comment "Always in view (spec: Quick exit)" to the end of the layer: the `.quick-exit`, `.header-tools` and `.acute-strip` rules and their `@media` block;
+- Task 11c's temporary `details.header-menu { display: none; }` rule.
+
+Then append to the end of `@layer components`:
+
+```css
+	/* One sticky row at every width and height (spec: Header). Below 1024 px it holds brand,
+	   Meny and exit; from 1024 px brand, nav, pickers and exit. Only one of the Meny and the
+	   nav with the pickers is displayed, so only one is in the accessibility tree and the tab
+	   order. These rules come after .picker so `display: none` wins over its inline-block. */
+	.app-header {
+		position: sticky;
+		top: 0;
+		z-index: 10;
+	}
+	.header-nav,
+	.header-tools {
+		display: none;
+	}
+	.header-menu {
+		margin-inline-start: auto;
+	}
+	@media (min-width: 1024px) {
+		.header-nav {
+			display: flex;
+			gap: 0 0.25rem;
+		}
+		.header-tools {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			margin-inline-start: auto;
+		}
+		.header-menu {
+			display: none;
+		}
+	}
+	/* The 320 px fallback (spec: It must fit 320 px), measured on the live site 2026-10-11:
+	   brand 91.4 px, Meny with its word about 102 px, icon only 54 px, exit 117.2 px (nb) and
+	   145.8 px (en), 12 px gaps, 32 px of row padding. Below 768 px the Meny shows its icon only
+	   and the word stays as hidden text, so its name is still "Meny". Below 360 px the brand
+	   shows its mark only and the link keeps its aria-label. The exit label never shrinks. */
+	.brand-word {
+		display: none;
+	}
+	.menu-word {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+	@media (min-width: 360px) {
+		.brand-word {
+			display: inline;
+		}
+	}
+	@media (min-width: 768px) {
+		.menu-word {
+			position: static;
+			width: auto;
+			height: auto;
+			overflow: visible;
+			clip-path: none;
+		}
+	}
+	/* The Meny's list: three groups split by a rule. The Språk and Tema labels look like labels,
+	   smaller and muted, and are never focusable. Each row is a grid with a fixed last column for
+	   the check mark, so text, codes and checks each share one edge down the list. */
+	.menu-group + .menu-group {
+		margin-block-start: 0.25rem;
+		padding-block-start: 0.25rem;
+		border-block-start: 1px solid var(--border);
+	}
+	.menu-group-label {
+		display: block;
+		padding: 0.5rem 0.75rem 0.25rem;
+		font-size: 0.8125rem;
+		color: var(--muted);
+	}
+	.menu-list .picker-row {
+		display: grid;
+		grid-template-columns: 1fr auto 1.25rem;
+	}
+	.menu-list .picker-check {
+		grid-column: 3;
+		margin-inline-start: 0;
+	}
+	.acute-strip {
+		padding-inline: 1rem;
+	}
+```
+
+In `web/e2e/anchor.spec.ts`, change the first comment's second line to say the sticky header now holds the quick exit at every width; the test code stays (the exit is inside the header, so `max()` of the two boxes is the header's bottom).
+
+- [ ] **Step 5: Run everything**
+
+Run from `web/`: `npm test`, `npx biome check --write .`, `npx biome ci .`, `npm run build:site`, `npx playwright test`.
+Expected: all PASS. If the 320 px English row fails, read the labels in the failure message: the measured margin is 20 px at 320 and 12.8 px at 360, so a failure means a width changed. Report it; do not shrink the exit.
+
+- [ ] **Step 6: Red proofs, then commit**
+
+1. Delete the baseline `.brand-word { display: none; }`. The 320 px English row test fails (two rows or horizontal scroll). Restore.
+2. Delete `.header-menu { display: none; }` inside the 1024 px query. "At 1024 px only the nav and the pickers is shown" fails. Restore.
+3. Change `scroll-padding-top: 5rem` to `0`. Run the focus test at 640 x 400 and 320 x 640 on `/sok`; record whether it goes red. If it stays green, write that in the PR body as "not provable with this test" rather than claiming a red proof.
+4. Delete `.menu-list .picker-check { grid-column: 3; ... }`. The edge test fails on the check rights. Restore.
+
+```bash
+git add src/components/Header.tsx src/styles/main.css e2e/header.spec.ts e2e/anchor.spec.ts
+git commit -m "feat: one sticky header row at every width, with the Meny below 1024 px"
+```
+
+### Task 11e: The acute strip on phones, and PR 3b
+
+**Files:**
+- Modify: `web/src/components/AcuteStrip.tsx`, `web/src/i18n/nb.json`, `web/src/i18n/en.json`
+- Test: `web/tests/strip.test.tsx`, `web/e2e/strip.spec.ts` (new)
+
+**Interfaces:**
+- Consumes: `.acute-strip { padding-inline: 1rem }` from Task 11d.
+- Produces: i18n keys `strip.short.brann`, `strip.short.politi`, `strip.short.ambulanse`, `strip.short.legevakt`. `LandingPage.tsx` keeps reading `strip.<id>` until PR 4.
+
+- [ ] **Step 1: Write the failing unit test**
+
+Append to `web/tests/strip.test.tsx`:
+
+```tsx
+// Spec: Strip labels start with a capital. "Out-of-hours service" is the short English label
+// Malin approved on 2026-10-11, so it wraps to two lines at 320 px.
+test("the strip's labels start with a capital in both languages", () => {
+	const labels = {
+		nb: ["Brann", "Politi", "Ambulanse", "Legevakt"],
+		en: ["Fire", "Police", "Ambulance", "Out-of-hours service"],
+	} as const
+	for (const lang of ["nb", "en"] as const) {
+		const { unmount } = render(
+			<LanguageProvider lang={lang}>
+				<AcuteStrip />
+			</LanguageProvider>
+		)
+		const items = screen.getAllByRole("listitem").slice(0, 4)
+		expect(items.map((li) => li.querySelector("span")?.textContent)).toEqual(labels[lang])
+		unmount()
+	}
+})
+```
+
+- [ ] **Step 2: Write the failing browser check**
+
+Create `web/e2e/strip.spec.ts`:
+
+```ts
+import { expect, type Page, test } from "@playwright/test"
+import { noHorizontalScroll, settle } from "./helpers.ts"
+
+type Cell = { top: number; left: number; labelHeight: number; lineHeight: number }
+
+const cells = (page: Page): Promise<Cell[]> =>
+	page.locator(".acute-strip > li").evaluateAll((items) =>
+		items.map((li) => {
+			const r = li.getBoundingClientRect()
+			const label = li.querySelector("span")
+			return {
+				top: Math.round(r.top),
+				left: Math.round(r.left),
+				labelHeight: label ? label.getBoundingClientRect().height : 0,
+				lineHeight: label ? Number.parseFloat(getComputedStyle(label).lineHeight) : 0,
+			}
+		})
+	)
+
+// Spec: Acute strip on phones. 110 and 112 on the first row, 113 and 116 117 on the second,
+// "Alle nødtjenester" below, and no label over two lines at 320 px in either language.
+for (const width of [320, 375]) {
+	for (const path of ["/", "/en/"]) {
+		test(`the strip at ${width} px (${path}) is 2 x 2 with no label over two lines`, async ({
+			page,
+		}) => {
+			await page.setViewportSize({ width, height: 800 })
+			await page.goto(path)
+			await settle(page)
+			const [a, b, c, d, more] = await cells(page)
+			expect(a.top).toBe(b.top)
+			expect(c.top).toBe(d.top)
+			expect(c.top).toBeGreaterThan(a.top)
+			expect(a.left).toBe(c.left)
+			expect(b.left).toBe(d.left)
+			expect(more.top).toBeGreaterThan(c.top)
+			for (const cell of [a, b, c, d]) {
+				expect(cell.labelHeight).toBeLessThanOrEqual(2 * cell.lineHeight + 1)
+			}
+			expect(await noHorizontalScroll(page)).toBe(true)
+		})
+	}
+}
+
+test("from 768 px the strip is one row", async ({ page }) => {
+	for (const path of ["/", "/en/"]) {
+		await page.setViewportSize({ width: 768, height: 800 })
+		await page.goto(path)
+		await settle(page)
+		const tops = new Set((await cells(page)).map((cell) => cell.top))
+		expect(tops.size, path).toBe(1)
+	}
+})
+```
+
+- [ ] **Step 3: Run both and see them fail**
+
+Run: `npx vitest run tests/strip.test.tsx` (FAIL: labels are "brann", "fire", and so on) and `npm run build:site && npx playwright test e2e/strip.spec.ts` (FAIL: the strip still wraps as a flex row).
+
+- [ ] **Step 4: Strings and the grid**
+
+Add to `nb.json`:
+
+```json
+"strip.short.brann": "Brann",
+"strip.short.politi": "Politi",
+"strip.short.ambulanse": "Ambulanse",
+"strip.short.legevakt": "Legevakt",
+```
+
+and to `en.json`:
+
+```json
+"strip.short.brann": "Fire",
+"strip.short.politi": "Police",
+"strip.short.ambulanse": "Ambulance",
+"strip.short.legevakt": "Out-of-hours service",
+```
+
+In `web/src/components/AcuteStrip.tsx`, replace the `<ul ...>` opening tag, the label span and the last `<li>`:
+
+```tsx
+			{/* Below 768 px a 2 x 2 grid: 110 and 112, then 113 and 116 117 (the order
+			    emergencyLines has), with "Alle nødtjenester" on a row of its own. From 768 px one
+			    row (spec: Acute strip on phones). */}
+			<ul className="acute-strip mx-auto grid max-w-6xl grid-cols-2 items-center gap-x-4 gap-y-1 py-2 text-sm md:flex md:flex-wrap">
+```
+
+```tsx
+						{/* Labels, not running text, so each starts with a capital. The strip has its
+						    own short keys; the landing page's grid keeps the full terms. */}
+						<span>{t(`strip.short.${line.id}`)}</span>
+```
+
+```tsx
+				<li className="col-span-2 md:ml-auto">
+```
+
+- [ ] **Step 5: Run everything, red proofs, commit**
+
+Run from `web/`: `npm test`, `npx biome check --write .`, `npx biome ci .`, `npm run build:site`, `npx playwright test`.
+Expected: all PASS.
+
+Red proofs: (1) set `strip.short.legevakt` in `en.json` back to "Out-of-hours medical service"; the 320 px English strip test fails on the two-line rule (this also confirms the 2026-10-11 measurement); restore. (2) remove `grid-cols-2`; the 2 x 2 test fails; restore.
+
+```bash
+git add src/components/AcuteStrip.tsx src/i18n/nb.json src/i18n/en.json tests/strip.test.tsx e2e/strip.spec.ts
+git commit -m "feat: lay the acute strip out 2 x 2 on phones, with capital labels"
+```
+
+- [ ] **Step 6: Ship PR 3b**
+
+Follow "Shipping a PR" with title `feat: one-row phone header with a Meny, new-tab links and a 2 x 2 strip`. The body names what #63's phone header did (three rows, a pinned exit and 10rem of reserved room) and what replaces it. Red proofs: Task 11b Step 7, Task 11c Step 6, Task 11d Step 6, Task 11e Step 5. Manual before merge: an NVDA pass over the Meny at a narrow window (the trigger reads "Meny" and collapsed or expanded, the group labels "Språk" and "Tema" are read on entering each group, a theme row reads "trykket" after Enter, Escape returns to "Meny"). After merge: open `https://varde.pages.dev` on a phone and try the Meny, the exit and the strip in both languages.
+
+**Spec coverage (PR 3b):** one row at every width (11d); Meny with three groups, labels, alignment, behaviour (11c, 11d); one source, two layouts (11b, 11c); 320 px fallback (11d, measured in `Decided (2026-10-11)`); sticky at every width, no `position: fixed`, no 10rem (11d); header row rule at 320 to 1920 in both languages (11d); `scroll-padding-top` one value (11d); new-tab links with hidden text, pinned by test (11b); strip 2 x 2, two-line limit, capital labels pinned by test (11e).
 
 ---
 
