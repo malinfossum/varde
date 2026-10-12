@@ -21,3 +21,22 @@ test("the strip lists every emergency line as a tel link with the digits visible
 		"/sok?category=nodtjenester"
 	)
 })
+
+// Labels, not running text, so each starts with a capital. The short English label for 116 117
+// wraps to at most two lines at 320 px; the full term would wrap to three.
+test("the strip's labels start with a capital in both languages", () => {
+	const labels = {
+		nb: ["Brann", "Politi", "Ambulanse", "Legevakt"],
+		en: ["Fire", "Police", "Ambulance", "Out-of-hours service"],
+	} as const
+	for (const lang of ["nb", "en"] as const) {
+		const { unmount } = render(
+			<LanguageProvider lang={lang}>
+				<AcuteStrip />
+			</LanguageProvider>
+		)
+		const items = screen.getAllByRole("listitem").slice(0, 4)
+		expect(items.map((li) => li.querySelector("span")?.textContent)).toEqual(labels[lang])
+		unmount()
+	}
+})
