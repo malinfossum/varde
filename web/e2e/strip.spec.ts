@@ -26,6 +26,13 @@ for (const width of [320, 360, 375, 767, 768, 1280]) {
 				expect(link.height).toBeGreaterThanOrEqual(44)
 				expect(link.right).toBeLessThanOrEqual(width)
 			}
+			// Below 768 px the last link shows its first word, from 768 px the full term.
+			const full = path === "/" ? "Alle nødtjenester" : "All emergency services"
+			const short = path === "/" ? "Alle →" : "All →"
+			await expect(page.locator(".acute-strip > li:last-child > a")).toHaveText(
+				width < 768 ? short : full,
+				{ useInnerText: true }
+			)
 			expect(await noHorizontalScroll(page)).toBe(true)
 		})
 	}
