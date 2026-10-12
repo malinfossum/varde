@@ -91,3 +91,57 @@ for (const width of [320, 360, 375, 767]) {
 		})
 	}
 }
+
+// Spec: Acute strip, one line. With a mouse each number shows its label below it, inside the
+// viewport and above the sticky header. Escape closes it; keyboard focus shows it too.
+for (const width of [320, 768, 1280]) {
+	for (const [path, labels] of [
+		["/", ["Brann", "Politi", "Ambulanse", "Legevakt"]],
+		["/en/", ["Fire", "Police", "Ambulance", "Out-of-hours service"]],
+	] as const) {
+		test(`at ${width} px (${path}) hovering a number shows its label in the viewport`, async ({
+			page,
+		}) => {
+			await page.setViewportSize({ width, height: 800 })
+			await page.goto(path)
+			await settle(page)
+			const links = page.locator(".acute-strip .strip-link")
+			for (const [i, label] of labels.entries()) {
+				const link = links.nth(i)
+				const tip = link.locator(".strip-tip")
+				await link.hover()
+				await expect(tip).toBeVisible()
+				await expect(tip).toHaveText(label)
+				const t = await tip.boundingBox()
+				const l = await link.boundingBox()
+				if (!t || !l) throw new Error("no box")
+				expect(t.y, label).toBeGreaterThanOrEqual(l.y + l.height - 1)
+				expect(t.x, label).toBeGreaterThanOrEqual(0)
+				expect(t.x + t.width, label).toBeLessThanOrEqual(width)
+				// Nothing, the sticky header included, is drawn over the tooltip.
+				const onTop = await tip.evaluate((el) => {
+					const r = el.getBoundingClientRect()
+					return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2))
+				})
+				expect(onTop, label).toBe(true)
+			}
+			await page.keyboard.press("Escape")
+			await expect(links.nth(3).locator(".strip-tip")).toBeHidden()
+			await page.mouse.move(width / 2, 600)
+			await links.nth(0).focus()
+			await page.keyboard.press("Tab")
+			await expect(links.nth(1).locator(".strip-tip")).toBeVisible()
+		})
+	}
+}
+
+test.describe("on a touch phone", () => {
+	test.use({ isMobile: true, hasTouch: true })
+	test("the strip shows no tooltips", async ({ page }) => {
+		await page.setViewportSize({ width: 375, height: 800 })
+		await page.goto("/")
+		await settle(page)
+		await page.locator(".acute-strip .strip-link").first().hover()
+		await expect(page.locator(".acute-strip .strip-tip").first()).toBeHidden()
+	})
+})

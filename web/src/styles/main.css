@@ -341,4 +341,33 @@
 	.acute-strip {
 		padding-inline: 1rem;
 	}
+	/* The strip's labels as tooltips (spec: Acute strip, one line). Only where the pointer can
+	   hover, so a tap on a phone dials without a tooltip. The tooltip sits inside the link right
+	   below it, so the pointer can move onto it without it closing (WCAG 1.4.13). */
+	.strip-tip {
+		display: none;
+		position: absolute;
+		inset-block-start: 100%;
+		inset-inline-start: 50%;
+		translate: -50% 0;
+		z-index: 30;
+		padding: 0.25rem 0.5rem;
+		white-space: nowrap;
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: var(--text);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 0.5rem;
+		box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
+	}
+	@media (hover: hover) and (pointer: fine) {
+		.strip-link:hover .strip-tip,
+		.strip-link:focus-visible .strip-tip {
+			display: block;
+		}
+		.acute-strip[data-tips="hidden"] .strip-tip {
+			display: none;
+		}
+	}
 }
