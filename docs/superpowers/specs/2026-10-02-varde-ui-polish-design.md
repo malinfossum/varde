@@ -8,7 +8,11 @@ added during the brainstorm.
 Amended 2026-10-11: the header below 1024 px. I tested #63 at 320 px on 2026-10-08 and the
 three-row phone header was too tall, so below 1024 px the header is now one sticky row with a
 Meny (Header section, decision of 2026-10-08), and the acute strip becomes a 2 x 2 grid on
-phones with capital labels. Helsenorge and NAV now open in a new tab. PR 3b carries all of it.
+phones with capital labels (replaced on 2026-10-12, below). Helsenorge and NAV now open in a new tab. PR 3b carries all of it.
+
+Amended 2026-10-12: the acute strip is one line. I tested #69 and the 2 x 2 strip was 156 px
+tall on a phone, too much above the header. The strip is now an icon and a number per service
+on one line at every width, with each label as the link's name (Acute strip, one line).
 
 ## Purpose
 
@@ -199,15 +203,18 @@ to two lines. That is a known limit I accept for the smallest phones (decided 20
 Order from top: acute strip, header, hero, chips, then emergency and helplines side by side,
 then the trust line, then the footer.
 
-- **Acute strip on phones (amended 2026-10-11).** Below 768 px the four numbers sit in a
-  2 x 2 grid (110 and 112 on the first row, 113 and 116 117 on the second, the order
-  `emergencyLines` already has), and "Alle nødtjenester" sits on its own row below. From
-  768 px the strip stays one row, as today. Each label may wrap to at most two lines at 320 px
-  in both languages; the English "out-of-hours medical service" wrapped to three in the #63
-  test. If a label still needs three, the plan brings me a shorter strip label to approve
-  rather than shrinking the text. The strip stays above the header and is not sticky.
+- **Acute strip, one line (amended 2026-10-12, replaces the 2 x 2 layout).** At every width,
+  desktop too, the strip is one line: an icon and the number for each service (flame 110,
+  shield 112, ambulance 113, stethoscope 116 117, the order `emergencyLines` has), then the
+  link to all emergency services. Each icon and number form one tel link at least 44 px tall.
+  The label is not shown; it starts the link's name ("Brann 110", "Fire 110"), so a screen
+  reader still hears what each number is. Below 768 px the last link shows "Alle →" / "All →",
+  from 768 px the full "Alle nødtjenester" / "All emergency services", and its name is always
+  the full term. At 320 px the line only just fits (251 of 273 px, measured with a desktop
+  scrollbar), so with a larger browser text size the links wrap, but they never overlap or
+  leave the viewport. The strip stays above the header and is not sticky.
 - **Strip labels start with a capital (amended 2026-10-11).** Each emergency service label in
-  the strip is a label, not part of a sentence, so it starts with a capital letter in both
+  the strip (now the start of each link's name) is a label, not part of a sentence, so it starts with a capital letter in both
   languages: "Brann", "Politi", "Ambulanse", "Legevakt" and "Fire", "Police", "Ambulance",
   "Out-of-hours service". Today only "Legevakt" does. The English 116 117 label is the short
   form I approved on 2026-10-11, because the full term wraps to three lines at 320 px; the
@@ -387,7 +394,7 @@ prerender test fails on a `style=` attribute in a page.
 | 17 One screen | | Landing incl. footer at most 950 px tall at 1280 and 1920 | |
 | Header rule | | One row, every control 44 px with one bottom edge, at 320 to 1920 in nb and en | |
 | Meny | Arrows wrap across the three groups, Escape returns focus, a theme row keeps the Meny open and writes its status line, a link to the current route leaves focus on the trigger, the Meny sits in a nav named Hovedmeny / Main menu | Meny shown only below 1024 px, desktop nav and pickers only from 1024 px, one navigation landmark at 1023 and 1024; with text at 200 % the header wraps and never scrolls sideways | NVDA reads the group labels, "trykket" and "Tema: Mørkt" on a theme row |
-| Acute strip | Labels start with a capital, nb and en | 2 x 2 below 768 px, no label over two lines at 320 in nb and en | |
+| Acute strip | Each tel link is named by its capital label and number, and the last link by the full term, nb and en | One line of 44 px links at 320, 360, 375, 767, 768 and 1280 in nb and en; with text at 200 % no link over another and none past the viewport | |
 | Focus not hidden | | Tabbing both ways through the landing page and `/sok` at 320, 375, 640 x 400, 800, 1024 and 1280, no focused element sits under the sticky header | |
 | Reflow | | No horizontal scroll at 320 px on landing, list, detail and About | |
 | Forced colours | | Focus ring and the current picker row stay visible with `forcedColors: "active"` | |
@@ -420,7 +427,7 @@ Six PRs plus the 3b follow-up, each small enough to review in one sitting and re
 | 1 | `test/playwright-harness` | Playwright, the data snapshot, the CI job, one smoke test | The later PRs need it to prove themselves |
 | 2 | `feat/om-varde` | A3: About page, footer lines, Meld feil with the new alias | People are already sharing the site |
 | 3 | `feat/header` | 8, A1, A2, 7: links, pickers, quick exit with Shift x3 | Header height is part of the 950 px budget |
-| 3b | `feat/phone-header` | Header below 1024 px: one row with Meny, exit in the row, strip 2 x 2 with capital labels, Helsenorge and NAV in a new tab | #63 shipped a three-row phone header that was too tall at 320 px |
+| 3b | `feat/phone-header` | Header below 1024 px: one row with Meny, exit in the row, strip on one line with icons and numbers, Helsenorge and NAV in a new tab | #63 shipped a three-row phone header that was too tall at 320 px |
 | 4 | `feat/landing-fit` | 2, 3, 9, 16, 17: hero, chips, helplines, trust line, 950 px check | Measured with the final header and footer |
 | 5 | `feat/card-slots` | 4, 5: subgrid slots and hover | |
 | 6 | `feat/install` | P, A4: manifest, install hint, back arrow | I test the install on my phone |
