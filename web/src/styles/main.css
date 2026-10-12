@@ -47,27 +47,17 @@
 		outline-offset: 2px;
 	}
 	/* The sticky header must never cover a focused element or an anchor target (WCAG 2.4.11,
-	   house bar 2.4.12). The value is the header's height plus room: two rows (109 px) under
-	   1024 px, one (61 px) from there. The header is sticky only from 768 px wide and 480 px
-	   tall (.app-header); elsewhere only the pinned quick exit sits at the top, so the padding
-	   clears its band. */
+	   house bar 2.4.12). It is one 61 px row at every width (44 px controls, 8 px above and
+	   below, a 1 px border), so one value with room to spare covers every width. It is in rem,
+	   so it grows with a larger browser text size. */
 	html {
-		scroll-padding-top: 3.5rem;
-	}
-	@media (min-height: 480px) and (min-width: 768px) {
-		html {
-			scroll-padding-top: 8rem;
-		}
-	}
-	@media (min-height: 480px) and (min-width: 1024px) {
-		html {
-			scroll-padding-top: 5rem;
-		}
+		scroll-padding-top: 5rem;
 	}
 }
 
 @layer components {
-	.visually-hidden {
+	.visually-hidden,
+	.menu-word {
 		position: absolute;
 		width: 1px;
 		height: 1px;
@@ -79,8 +69,8 @@
 		position: absolute;
 		left: -999px;
 	}
-	/* #app is a flex column, so a focused skip link would stretch the full width and the pinned
-	   quick exit would cover the right end of its focus ring. It keeps its own width instead. */
+	/* #app is a flex column, so a focused skip link would stretch the full width. It keeps its
+	   own width instead. */
 	.skip-link:focus {
 		position: static;
 		align-self: flex-start;
@@ -123,27 +113,6 @@
 	.badge-akutt {
 		color: var(--akutt);
 	}
-	/* Sticky only where it costs one or two rows. On a phone the 10rem slot kept free for the
-	   pinned exit pushes the pickers below the brand, so a sticky header would be three rows;
-	   there it scrolls away and only the quick exit stays pinned, as on short screens
-	   (spec: Quick exit). */
-	.app-header {
-		position: static;
-	}
-	@media (min-height: 480px) and (min-width: 768px) {
-		.app-header {
-			position: sticky;
-			top: 0;
-			z-index: 10;
-		}
-	}
-	.header-nav {
-		order: 3;
-		display: flex;
-		flex-basis: 100%;
-		flex-wrap: wrap;
-		gap: 0 0.25rem;
-	}
 	.nav-link {
 		display: inline-flex;
 		align-items: center;
@@ -157,18 +126,6 @@
 	}
 	.nav-link:hover {
 		text-decoration: underline;
-	}
-	.header-tools {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		margin-inline-start: auto;
-	}
-	@media (min-width: 1024px) {
-		.header-nav {
-			order: 0;
-			flex-basis: auto;
-		}
 	}
 	.hero::before {
 		content: "";
@@ -302,33 +259,115 @@
 			color: HighlightText;
 		}
 	}
-	/* Always in view (spec: Quick exit). Wherever the header scrolls away (under 768 px wide or
-	   480 px tall, .app-header), the button pins itself to the top right corner instead. Its slot
-	   in .header-tools is then empty, so the tools keep that room free and the pinned button
-	   never covers a picker (Task 11 measures it). The acute strip sits above the header and
-	   keeps the same slot free, so the pinned button never covers the 113 link either. */
-	.quick-exit {
-		position: fixed;
-		top: 0.5rem;
-		right: 0.5rem;
-		z-index: 20;
+	/* One sticky row at every width and height (spec: Header). Below 1024 px it holds brand,
+	   Meny and exit; from 1024 px brand, nav, pickers and exit. Only one of the Meny and the
+	   nav with the pickers is displayed, so only one is in the accessibility tree and the tab
+	   order. The Meny's flex item is its .menu-nav wrapper, so its rules sit there: display: flex
+	   with centred items keeps the nav exactly as tall as its 44 px trigger. */
+	.app-header {
+		position: sticky;
+		top: 0;
+		z-index: 10;
 	}
+	.header-nav,
 	.header-tools {
-		margin-inline-end: 10rem;
+		display: none;
+	}
+	.menu-nav {
+		display: flex;
+		align-items: center;
+		margin-inline-start: auto;
+	}
+	@media (min-width: 1024px) {
+		.header-nav {
+			display: flex;
+			gap: 0 0.25rem;
+		}
+		.header-tools {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			margin-inline-start: auto;
+		}
+		.menu-nav {
+			display: none;
+		}
+	}
+	/* The 320 px fallback (spec: It must fit 320 px), measured on the live site 2026-10-11:
+	   brand 91.4 px, Meny with its word about 102 px, icon only 54 px, exit 117.2 px (nb) and
+	   145.8 px (en), 12 px gaps, 32 px of row padding. Below 768 px the Meny shows its icon only
+	   and the word stays as hidden text (it shares the .visually-hidden rule), so its name is
+	   still "Meny". Below 360 px the brand shows its mark only and the link keeps its
+	   aria-label. The exit label never shrinks. */
+	.brand-word {
+		display: none;
+	}
+	@media (min-width: 360px) {
+		.brand-word {
+			display: inline;
+		}
+	}
+	@media (min-width: 768px) {
+		.menu-word {
+			position: static;
+			width: auto;
+			height: auto;
+			overflow: visible;
+			clip-path: none;
+		}
+	}
+	/* The Meny's list: three groups split by a rule. The Språk and Tema labels look like labels,
+	   smaller and muted, and are never focusable. Each row is a grid with a fixed last column for
+	   the check mark, so text, codes and checks each share one edge down the list. */
+	.menu-group + .menu-group {
+		margin-block-start: 0.25rem;
+		padding-block-start: 0.25rem;
+		border-block-start: 1px solid var(--border);
+	}
+	.menu-group-label {
+		display: block;
+		padding: 0.5rem 0.75rem 0.25rem;
+		font-size: 0.8125rem;
+		color: var(--muted);
+	}
+	.menu-list .picker-row {
+		display: grid;
+		grid-template-columns: 1fr auto 1.25rem;
+	}
+	.menu-list .picker-check {
+		grid-column: 3;
+		margin-inline-start: 0;
 	}
 	.acute-strip {
 		padding-inline: 1rem;
-		padding-inline-end: 10rem;
 	}
-	@media (min-height: 480px) and (min-width: 768px) {
-		.quick-exit {
-			position: static;
+	/* The strip's labels as tooltips (spec: Acute strip, one line). Only where the pointer can
+	   hover, so a tap on a phone dials without a tooltip. The tooltip sits inside the link right
+	   below it, so the pointer can move onto it without it closing (WCAG 1.4.13). */
+	.strip-tip {
+		display: none;
+		position: absolute;
+		inset-block-start: 100%;
+		inset-inline-start: 50%;
+		translate: -50% 0;
+		z-index: 30;
+		padding: 0.25rem 0.5rem;
+		white-space: nowrap;
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: var(--text);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 0.5rem;
+		box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
+	}
+	@media (hover: hover) and (pointer: fine) {
+		.strip-link:hover .strip-tip,
+		.strip-link:focus-visible .strip-tip {
+			display: block;
 		}
-		.header-tools {
-			margin-inline-end: 0;
-		}
-		.acute-strip {
-			padding-inline-end: 1rem;
+		.acute-strip[data-tips="hidden"] .strip-tip {
+			display: none;
 		}
 	}
 }

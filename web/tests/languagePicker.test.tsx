@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test } from "vitest"
 import { App } from "../src/App.tsx"
 import { render as prerender } from "../src/entry-server.tsx"
+import { desktopTools } from "./scope.ts"
 import { stubDataFiles } from "./stubData.ts"
 
 afterEach(() => {
@@ -13,8 +14,8 @@ test("the trigger says Språk: Norsk, and each row carries its own lang and the 
 	stubDataFiles()
 	render(<App />)
 	expect(screen.getByText("Språk: Norsk", { selector: ".visually-hidden" })).toBeInTheDocument()
-	const norsk = screen.getByRole("link", { name: "Norsk" })
-	const english = screen.getByRole("link", { name: "English" })
+	const norsk = desktopTools().getByRole("link", { name: "Norsk" })
+	const english = desktopTools().getByRole("link", { name: "English" })
 	expect(norsk).toHaveAttribute("aria-current", "page")
 	expect(norsk).toHaveAttribute("lang", "nb")
 	expect(norsk).toHaveAttribute("href", "/")
@@ -27,8 +28,11 @@ test("on an English page the English row carries the current mark", () => {
 	stubDataFiles()
 	window.history.pushState(null, "", "/en/")
 	render(<App />)
-	expect(screen.getByRole("link", { name: "English" })).toHaveAttribute("aria-current", "page")
-	expect(screen.getByRole("link", { name: "Norsk" })).not.toHaveAttribute("aria-current")
+	expect(desktopTools().getByRole("link", { name: "English" })).toHaveAttribute(
+		"aria-current",
+		"page"
+	)
+	expect(desktopTools().getByRole("link", { name: "Norsk" })).not.toHaveAttribute("aria-current")
 })
 
 test("choosing the current language does not navigate, keeps the page and refocuses the trigger", async () => {
@@ -36,7 +40,7 @@ test("choosing the current language does not navigate, keeps the page and refocu
 	window.history.pushState(null, "", "/sok?search=nav&page=2")
 	render(<App />)
 	const before = window.history.length
-	await userEvent.click(screen.getByRole("link", { name: "Norsk" }))
+	await userEvent.click(desktopTools().getByRole("link", { name: "Norsk" }))
 	expect(window.location.pathname + window.location.search).toBe("/sok?search=nav&page=2")
 	expect(window.history.length).toBe(before)
 	expect(document.activeElement?.tagName).toBe("SUMMARY")

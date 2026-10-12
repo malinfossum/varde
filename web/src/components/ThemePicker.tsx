@@ -1,17 +1,11 @@
-import { useThemeChoice } from "../hooks/useThemeChoice.ts"
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
-import { CheckIcon, MoonIcon, SunIcon, SystemIcon } from "./icons.tsx"
+import { SunIcon } from "./icons.tsx"
 import { Picker } from "./Picker.tsx"
+import { THEME_CHOICES, type ThemeApi, ThemeRows } from "./ThemeRows.tsx"
 
-const CHOICES = [
-	{ choice: "light", key: "header.themeLight", Icon: SunIcon },
-	{ choice: "dark", key: "header.themeDark", Icon: MoonIcon },
-	{ choice: "system", key: "header.themeSystem", Icon: SystemIcon },
-] as const
-
-export function ThemePicker() {
+export function ThemePicker({ theme }: { theme: ThemeApi }) {
 	const t = useTranslation()
-	const { state, choose } = useThemeChoice()
+	const { state } = theme
 	let value: string | null = null
 	if (state?.choice === "system") {
 		const resolved = t(
@@ -22,30 +16,10 @@ export function ThemePicker() {
 		value = t(state.choice === "dark" ? "header.themeDark" : "header.themeLight")
 	}
 	// Before mount (state null) the icon is the sun on the server and in the browser alike.
-	const Icon = CHOICES.find((c) => c.choice === state?.choice)?.Icon ?? SunIcon
+	const Icon = THEME_CHOICES.find((c) => c.choice === state?.choice)?.Icon ?? SunIcon
 	return (
 		<Picker name={t("header.theme")} value={value} icon={<Icon />}>
-			{(closeAndFocus) =>
-				CHOICES.map(({ choice, key, Icon: RowIcon }) => {
-					const pressed = state?.choice === choice
-					return (
-						<button
-							key={choice}
-							type="button"
-							className="picker-row"
-							aria-pressed={pressed}
-							onClick={() => {
-								choose(choice)
-								closeAndFocus()
-							}}
-						>
-							<RowIcon />
-							<span>{t(key)}</span>
-							{pressed && <CheckIcon className="picker-check" />}
-						</button>
-					)
-				})
-			}
+			{(closeAndFocus) => <ThemeRows theme={theme} icons onChosen={() => closeAndFocus()} />}
 		</Picker>
 	)
 }

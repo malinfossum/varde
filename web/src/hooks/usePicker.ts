@@ -7,7 +7,9 @@ import { type FocusEvent, type KeyboardEvent, useCallback, useEffect, useRef } f
 const EDGE_GAP = 8
 const KEYS = ["ArrowDown", "ArrowUp", "Home", "End"]
 
-export function usePicker() {
+// focusOnOpen: the pickers open on their active row (spec: Picker behaviour); the Meny opens on
+// its first row (spec: Below 1024 px: Meny).
+export function usePicker({ focusOnOpen = "active" }: { focusOnOpen?: "active" | "first" } = {}) {
 	const ref = useRef<HTMLDetailsElement>(null)
 
 	useEffect(() => {
@@ -42,9 +44,12 @@ export function usePicker() {
 			if (overflow > 0) list.style.translate = `${overflow}px 0`
 		}
 		const all = rows()
-		const active = all.find(
-			(row) => row.hasAttribute("aria-current") || row.getAttribute("aria-pressed") === "true"
-		)
+		const active =
+			focusOnOpen === "active"
+				? all.find(
+						(row) => row.hasAttribute("aria-current") || row.getAttribute("aria-pressed") === "true"
+					)
+				: undefined
 		;(active ?? all[0])?.focus()
 	}
 

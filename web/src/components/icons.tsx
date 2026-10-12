@@ -75,3 +75,47 @@ export function ArrowLeftIcon({ className }: IconProps) {
 		</Svg>
 	)
 }
+
+export function MenuIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M4 6h16M4 12h16M4 18h16" />
+		</Svg>
+	)
+}
+
+// The acute strip's four services. Each sits inside its tel link, whose hidden text names it.
+export function FlameIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M12 3c3 4 6 6.5 6 11a6 6 0 0 1-12 0c0-2.5 1.2-4.2 2.5-5.5.2 2 1 3 2 3.5-.3-3.5.3-6 1.5-9z" />
+		</Svg>
+	)
+}
+
+export function ShieldIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M12 3l7 3v5.5c0 4.3-2.9 7.6-7 9.5-4.1-1.9-7-5.2-7-9.5V6z" />
+		</Svg>
+	)
+}
+
+export function AmbulanceIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M5.25 17.5H3V8a1 1 0 0 1 1-1h10v10.5M8.75 17.5h6.5M14 10h3.5l3.5 3.5v4h-2.25M8.5 9.5v5M6 12h5" />
+			<circle cx="7" cy="17.5" r="1.75" />
+			<circle cx="17" cy="17.5" r="1.75" />
+		</Svg>
+	)
+}
+
+export function StethoscopeIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M5 3h2M13 3h2M6 3v5a4 4 0 0 0 8 0V3M10 12v2.5a4.5 4.5 0 0 0 9 0V13" />
+			<circle cx="19" cy="11" r="2" />
+		</Svg>
+	)
+}

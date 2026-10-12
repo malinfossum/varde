@@ -1,20 +1,15 @@
 import { expect, type Page, test } from "@playwright/test"
-import { setTheme, settle, THEMES } from "./helpers.ts"
+import { noHorizontalScroll, setTheme, settle, THEMES } from "./helpers.ts"
 
 type Box = { label: string; top: number; bottom: number; height: number }
 
 async function headerControls(page: Page): Promise<Box[]> {
 	return page.evaluate(() =>
 		[...document.querySelectorAll<HTMLElement>("header a, header button, header summary")]
-			// Rows inside a closed picker still have boxes in Chromium (content-visibility: hidden,
-			// not display: none), so skip the lists outright. A pinned (position: fixed) quick exit
-			// is not in a header row, so it is skipped too.
-			.filter(
-				(el) =>
-					!el.closest(".picker-list") &&
-					el.checkVisibility() &&
-					getComputedStyle(el).position !== "fixed"
-			)
+			// Rows inside a closed picker or the closed Meny still have boxes in Chromium
+			// (content-visibility: hidden, not display: none), so skip the lists outright.
+			// checkVisibility() drops whichever layout is display: none at this width.
+			.filter((el) => !el.closest(".picker-list") && el.checkVisibility())
 			.map((el) => {
 				const r = el.getBoundingClientRect()
 				const label = `${el.tagName} ${(el.textContent ?? "").trim().slice(0, 24)}`
@@ -43,13 +38,20 @@ async function tabTo(page: Page, selector: string) {
 	throw new Error(`Tab never reached ${selector}`)
 }
 
-// 1024 is the narrowest one-row width, English has the longest labels, and a first visit
-// (nothing stored) shows the widest theme value, "System (lyst)", so all three are measured:
-// scroll-padding-top (Step 3) assumes one row from 1024 px and two rows from 768 px (800).
-for (const width of [375, 800, 1024, 1280, 1920]) {
+const activeName = (page: Page) =>
+	page.evaluate(() => {
+		const el = document.activeElement as HTMLElement
+		return el.getAttribute("aria-label") ?? (el.textContent ?? "").trim()
+	})
+
+// One row at every width (spec: The header row rule). 320 and 375 run the 320 px fallback, 360
+// is the brand word's breakpoint and the tightest fit (English needs 347.2 px of the 360),
+// 1023 and 1024 sit either side of the switch between the Meny and the desktop nav, and a
+// first visit (nothing stored) shows the widest theme value, "System (lyst)", from 1024 px.
+for (const width of [320, 360, 375, 1023, 1024, 1280, 1920]) {
 	for (const theme of [...THEMES, "system"] as const) {
 		for (const path of ["/", "/en/"]) {
-			test(`header ${path} at ${width} px (${theme}): every control 44 px tall, one bottom edge per row`, async ({
+			test(`header ${path} at ${width} px (${theme}): one row, every control 44 px tall, one bottom edge`, async ({
 				page,
 			}) => {
 				await page.setViewportSize({ width, height: 900 })
@@ -60,29 +62,75 @@ for (const width of [375, 800, 1024, 1280, 1920]) {
 				await page
 					.locator("header .visually-hidden", { hasText: /^(Tema|Theme): / })
 					.waitFor({ state: "attached" })
-				const rows = rowsOf(await headerControls(page))
-				// On a phone the 10rem slot kept free for the pinned quick exit pushes the pickers
-				// below the brand, so a phone has brand, tools and nav on three rows. Not sticky
-				// there, so the height scrolls away (Decided).
-				expect(rows.length).toBe(width >= 1024 ? 1 : width >= 768 ? 2 : 3)
-				for (const row of rows) {
-					for (const box of row) expect(box.height, box.label).toBeCloseTo(44, 0)
-					const bottoms = row.map((b) => b.bottom)
-					expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThan(1)
-				}
+				const boxes = await headerControls(page)
+				const rows = rowsOf(boxes)
+				expect(rows.length, boxes.map((b) => b.label).join(" | ")).toBe(1)
+				for (const box of rows[0]) expect(box.height, box.label).toBeCloseTo(44, 0)
+				const bottoms = rows[0].map((b) => b.bottom)
+				expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThan(1)
+				expect(await noHorizontalScroll(page)).toBe(true)
 			})
 		}
 	}
 }
+
+for (const [width, menuShown] of [
+	[1023, true],
+	[1024, false],
+] as const) {
+	test(`at ${width} px only ${menuShown ? "the Meny" : "the nav and the pickers"} is shown`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width, height: 800 })
+		await page.goto("/")
+		await expect(page.locator("details.header-menu")).toBeVisible({ visible: menuShown })
+		await expect(page.locator(".header-nav")).toBeVisible({ visible: !menuShown })
+		await expect(page.locator(".header-tools")).toBeVisible({ visible: !menuShown })
+		// One navigation landmark at every width, the Meny's or the desktop's, so a screen reader
+		// never meets two landmarks with the same name.
+		await expect(page.getByRole("navigation", { name: "Hovedmeny" })).toHaveCount(1)
+	})
+}
+
+// Spec: The header row rule. One row is the rule at default text size. With text at 200 % (a
+// browser font-size setting, which scales every rem) the row wraps instead of scrolling
+// sideways. The root font size is set from script after load, as a reader's setting would be.
+for (const width of [1024, 1280]) {
+	test(`with text at 200 % the header at ${width} px never scrolls sideways`, async ({ page }) => {
+		await page.setViewportSize({ width, height: 900 })
+		await page.goto("/en/")
+		await settle(page)
+		await page.evaluate(() => {
+			document.documentElement.style.fontSize = "200%"
+		})
+		expect(await noHorizontalScroll(page)).toBe(true)
+	})
+}
+
+test("at 320 px the keyboard meets the brand, the Meny and the exit, and nothing hidden", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 320, height: 640 })
+	await page.goto("/")
+	await tabTo(page, "header a[aria-label]")
+	const names = [await activeName(page)]
+	for (const _ of [1, 2]) {
+		await page.keyboard.press("Tab")
+		names.push(await activeName(page))
+	}
+	expect(names).toEqual(["Varde, til forsiden", "Meny", "Forlat siden"])
+})
 
 for (const path of ["/", "/sok"]) {
 	for (const viewport of [
 		{ width: 1280, height: 600 },
 		{ width: 1024, height: 600 },
 		{ width: 800, height: 600 },
+		{ width: 640, height: 400 },
 		{ width: 375, height: 700 },
+		{ width: 320, height: 640 },
 	]) {
-		test(`tabbing through ${path} at ${viewport.width} px never puts focus under the header or the pinned exit`, async ({
+		test(`tabbing through ${path} at ${viewport.width} x ${viewport.height} never puts focus under the header`, async ({
 			page,
 		}) => {
 			await page.setViewportSize(viewport)
@@ -91,26 +139,16 @@ for (const path of ["/", "/sok"]) {
 			// Both directions: Chromium centres a target it has to scroll to, so going forward
 			// rarely lands under the header. Going back, an element partly under the header counts
 			// as in view and takes focus without a scroll, which only scroll-padding-top prevents.
-			// At 375 the header scrolls away and the pinned quick exit is what could cover focus,
-			// so both boxes are checked.
 			for (const key of ["Tab", "Shift+Tab"]) {
 				for (let i = 0; i < 40; i++) {
 					await page.keyboard.press(key)
 					const covered = await page.evaluate(() => {
 						const el = document.activeElement as HTMLElement | null
 						const header = document.querySelector("header")
-						const exit = document.querySelector(".quick-exit")
-						if (!el || !header || !exit || el === document.body || header.contains(el)) return null
+						if (!el || !header || el === document.body || header.contains(el)) return null
 						const r = el.getBoundingClientRect()
-						return [header.getBoundingClientRect(), exit.getBoundingClientRect()].some(
-							(h) =>
-								r.top < h.bottom - 1 &&
-								r.bottom > h.top + 1 &&
-								r.left < h.right - 1 &&
-								r.right > h.left + 1
-						)
-							? el.outerHTML.slice(0, 80)
-							: null
+						const h = header.getBoundingClientRect()
+						return r.top < h.bottom - 1 && r.bottom > h.top + 1 ? el.outerHTML.slice(0, 80) : null
 					})
 					expect(covered, key).toBeNull()
 				}
@@ -119,13 +157,14 @@ for (const path of ["/", "/sok"]) {
 	}
 }
 
-test("the quick exit stays in view after scrolling, on a normal screen, a short one and a phone", async ({
+test("the quick exit stays in view after scrolling, on a normal screen, a short one and phones", async ({
 	page,
 }) => {
 	for (const viewport of [
 		{ width: 1280, height: 950 },
 		{ width: 640, height: 400 },
 		{ width: 375, height: 700 },
+		{ width: 320, height: 640 },
 	]) {
 		await page.setViewportSize(viewport)
 		await page.goto("/sok")
@@ -139,78 +178,109 @@ test("the quick exit stays in view after scrolling, on a normal screen, a short 
 	}
 })
 
-// The pinned exit sits top right. At scroll 0 the acute strip is under it (on a phone the strip
-// alone is taller than the exit), so every control in view is checked, not only the header's.
-// Scrolled until the header reaches the top, the header's first row is under it instead.
-for (const viewport of [
-	{ width: 640, height: 400 },
-	{ width: 375, height: 700 },
-]) {
-	test(`at ${viewport.width} x ${viewport.height} the pinned quick exit covers no other control`, async ({
-		page,
-	}) => {
-		await page.setViewportSize(viewport)
-		for (const path of ["/sok", "/en/sok"]) {
-			await page.goto(path)
-			await settle(page)
-			for (const at of ["scroll 0", "header at the top"]) {
-				if (at === "header at the top") {
-					await page.evaluate(() => {
-						const header = document.querySelector("header")
-						if (header) window.scrollTo(0, header.getBoundingClientRect().top + window.scrollY)
-					})
-				}
-				const covered = await page.evaluate(() => {
-					const exit = document.querySelector(".quick-exit")
-					if (!exit) return ["no quick exit"]
-					const e = exit.getBoundingClientRect()
-					return [...document.querySelectorAll<HTMLElement>("a, button, summary")]
-						.filter((el) => el !== exit && !el.closest(".picker-list") && el.checkVisibility())
-						.filter((el) => {
-							const r = el.getBoundingClientRect()
-							return r.left < e.right && r.right > e.left && r.top < e.bottom && r.bottom > e.top
-						})
-						.map((el) => el.outerHTML.slice(0, 80))
-				})
-				expect(covered, `${path}, ${at}`).toEqual([])
-			}
-		}
-	})
-}
-
 // usePicker shifts an open list back on screen when it would start left of the 8 px edge gap.
-// The list hangs from its trigger's right edge, so on a narrow phone the left edge is the risk.
+// The list hangs from the Meny trigger's right edge, so on a narrow phone the left edge is the
+// risk.
 for (const viewport of [
 	{ width: 375, height: 812 },
 	{ width: 320, height: 640 },
 ]) {
-	test(`at ${viewport.width} x ${viewport.height} an open picker list stays 8 px inside the screen`, async ({
+	test(`at ${viewport.width} x ${viewport.height} the open Meny stays 8 px inside the screen`, async ({
 		page,
 	}) => {
 		await page.setViewportSize(viewport)
 		for (const path of ["/", "/en/"]) {
 			await page.goto(path)
 			await settle(page)
-			const pickers = page.locator("header details.picker")
-			await expect(pickers).toHaveCount(2)
-			for (const i of [0, 1]) {
-				const picker = pickers.nth(i)
-				await picker.locator("summary").click()
-				// onToggle focuses a row after it has placed the list, so focus means placed.
-				await expect(picker.locator(".picker-row:focus")).toHaveCount(1)
-				const edges = await picker.locator(".picker-list").evaluate((el) => {
-					const r = el.getBoundingClientRect()
-					return { left: r.left, right: r.right, width: document.documentElement.clientWidth }
-				})
-				const label = `${path}, picker ${i}`
-				expect(edges.left, label).toBeGreaterThanOrEqual(8)
-				expect(edges.right, label).toBeLessThanOrEqual(edges.width - 8)
-				await page.keyboard.press("Escape")
-				await expect(picker).not.toHaveAttribute("open")
-			}
+			const menu = page.locator("header details.header-menu")
+			await menu.locator("summary").click()
+			// onToggle focuses a row after it has placed the list, so focus means placed.
+			await expect(menu.locator(".picker-row:focus")).toHaveCount(1)
+			const edges = await menu.locator(".picker-list").evaluate((el) => {
+				const r = el.getBoundingClientRect()
+				return { left: r.left, right: r.right, width: document.documentElement.clientWidth }
+			})
+			expect(edges.left, path).toBeGreaterThanOrEqual(8)
+			expect(edges.right, path).toBeLessThanOrEqual(edges.width - 8)
+			await page.keyboard.press("Escape")
+			await expect(menu).not.toHaveAttribute("open")
 		}
 	})
 }
+
+test("the Meny opens on its first row, the arrows wrap, a theme row keeps it open, Escape returns to the trigger", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 375, height: 812 })
+	await page.goto("/")
+	await settle(page)
+	const menu = page.locator("header details.header-menu")
+	await menu.locator("summary").click()
+	await expect(menu.getByRole("link", { name: "Alle tjenester" })).toBeFocused()
+	await page.keyboard.press("ArrowUp")
+	await expect(menu.getByRole("button", { name: "System" })).toBeFocused()
+	await page.keyboard.press("ArrowUp")
+	const dark = menu.getByRole("button", { name: "Mørkt" })
+	await expect(dark).toBeFocused()
+	await page.keyboard.press("Enter")
+	await expect(page.locator("html")).toHaveAttribute("data-theme", "dark")
+	await expect(menu).toHaveAttribute("open", "")
+	await expect(dark).toBeFocused()
+	await expect(dark).toHaveAttribute("aria-pressed", "true")
+	await page.keyboard.press("Escape")
+	await expect(menu).not.toHaveAttribute("open")
+	await expect(menu.locator("summary")).toBeFocused()
+})
+
+test("a Meny link navigates and the Meny closes with the page change", async ({ page }) => {
+	await page.setViewportSize({ width: 375, height: 812 })
+	await page.goto("/")
+	const menu = page.locator("header details.header-menu")
+	await menu.locator("summary").click()
+	await menu.getByRole("link", { name: "Alle tjenester" }).click()
+	await expect(page).toHaveURL(/\/sok$/)
+	await expect(menu).not.toHaveAttribute("open")
+})
+
+// Spec: every row shares one left edge for its text and one right edge for its code or check.
+test("the Meny's rows share one text edge, one code edge and one check edge", async ({ page }) => {
+	await page.setViewportSize({ width: 375, height: 812 })
+	await page.goto("/")
+	await settle(page)
+	const menu = page.locator("header details.header-menu")
+	await menu.locator("summary").click()
+	await expect(menu.locator(".picker-row:focus")).toHaveCount(1)
+	// The pressed theme row (System on a first visit) exists only once the theme state mounts.
+	await expect(menu.locator('.menu-list [aria-pressed="true"]')).toHaveCount(1)
+	const edges = await page.evaluate(() => {
+		const rows = [...document.querySelectorAll<HTMLElement>(".menu-list .picker-row")]
+		const textLeft = (row: HTMLElement) => {
+			const walker = document.createTreeWalker(row, NodeFilter.SHOW_TEXT)
+			for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+				const parent = n.parentElement
+				if (!n.textContent?.trim() || parent?.closest('[aria-hidden="true"], .visually-hidden'))
+					continue
+				const range = document.createRange()
+				range.selectNodeContents(n)
+				return Math.round(range.getBoundingClientRect().left)
+			}
+			return null
+		}
+		const rights = (selector: string) =>
+			[...document.querySelectorAll<HTMLElement>(`.menu-list ${selector}`)].map((el) =>
+				Math.round(el.getBoundingClientRect().right)
+			)
+		return {
+			texts: rows.map(textLeft),
+			codes: rights(".picker-code"),
+			checks: rights(".picker-check"),
+		}
+	})
+	expect(new Set(edges.texts).size, `text lefts ${edges.texts}`).toBe(1)
+	expect(new Set(edges.codes).size, `code rights ${edges.codes}`).toBe(1)
+	expect(new Set(edges.checks).size, `check rights ${edges.checks}`).toBe(1)
+	expect(edges.checks.length).toBe(2) // the current language and the pressed theme
+})
 
 test("forced colours keep the focus ring and the current picker row visible", async ({ page }) => {
 	await page.emulateMedia({ forcedColors: "active" })
@@ -223,7 +293,7 @@ test("forced colours keep the focus ring and the current picker row visible", as
 	expect(ring.style).not.toBe("none")
 	expect(ring.width).toBeGreaterThanOrEqual(2)
 	await page.keyboard.press("Enter")
-	const row = page.locator('header .picker-row[aria-current="page"]')
+	const row = page.locator('header .header-tools .picker-row[aria-current="page"]')
 	await expect(row).toBeFocused()
 	const colours = await row.evaluate((el) => ({
 		row: getComputedStyle(el).backgroundColor,

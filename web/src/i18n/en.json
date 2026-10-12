@@ -96,13 +96,18 @@
 	"header.home": "Varde, home page",
 	"header.navLabel": "Main menu",
 	"header.allServices": "All services",
-	"header.external": "(external site)",
+	"header.external": "(external site, opens in a new tab)",
 	"strip.label": "Emergency numbers",
 	"strip.brann": "fire",
 	"strip.politi": "police",
 	"strip.ambulanse": "ambulance",
 	"strip.legevakt": "out-of-hours medical service",
+	"strip.short.brann": "Fire",
+	"strip.short.politi": "Police",
+	"strip.short.ambulanse": "Ambulance",
+	"strip.short.legevakt": "Out-of-hours service",
 	"strip.more": "All emergency services",
+	"strip.moreShort": "All",
 	"footer.source": "Source code on GitHub",
 	"footer.noTracking": "No tracking. No cookies.",
 	"footer.liability": "Varde is a directory, not an emergency service. If a life is in danger, call",
@@ -127,5 +132,6 @@
 	"about.privacyBody": "Varde is made and run by Malin Fossum, who is responsible for the information below. No tracking, no cookies and no accounts. Your choice of language and theme is stored only in your browser. Varde is hosted by Cloudflare, which sees your IP address the way every website does, but I collect no statistics and cannot see who visits the site. If you email me about an error, I see your email address. I use it only to fix the error and reply to you, never share it, and delete the email when the matter is closed.",
 	"about.sourceHeading": "Source code",
 	"about.sourceBody": "Varde is open source (MIT licence) on GitHub.",
-	"about.updated": "This text was last changed {date}."
+	"about.updated": "This text was last changed {date}.",
+	"header.menu": "Menu"
 }

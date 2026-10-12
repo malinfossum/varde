@@ -13,28 +13,35 @@ test("the official URLs are pinned (checked live 2026-10-02)", () => {
 	expect(NAV_URL).toBe("https://www.nav.no")
 })
 
-test("the header nav links to all services, Helsenorge and NAV, the last two marked external", () => {
+test("the header nav links to all services, Helsenorge and NAV, the last two in a new tab", () => {
 	stubDataFiles()
 	render(<App />)
-	const nav = screen.getByRole("navigation", { name: "Hovedmeny" })
+	// The desktop nav comes first in DOM order; the Meny's nav has the same name.
+	const nav = screen.getAllByRole("navigation", { name: "Hovedmeny" })[0] as HTMLElement
 	expect(within(nav).getByRole("link", { name: "Alle tjenester" })).toHaveAttribute("href", "/sok")
-	expect(within(nav).getByRole("link", { name: "Helsenorge (ekstern side)" })).toHaveAttribute(
-		"href",
-		HELSENORGE_URL
-	)
-	expect(within(nav).getByRole("link", { name: "NAV (ekstern side)" })).toHaveAttribute(
-		"href",
-		NAV_URL
-	)
+	for (const [name, href] of [
+		["Helsenorge (ekstern side, åpnes i ny fane)", HELSENORGE_URL],
+		["NAV (ekstern side, åpnes i ny fane)", NAV_URL],
+	]) {
+		const link = within(nav).getByRole("link", { name })
+		expect(link).toHaveAttribute("href", href)
+		// noopener: the new tab cannot reach back into Varde. noreferrer: it is not told where
+		// the visit came from.
+		expect(link).toHaveAttribute("target", "_blank")
+		expect(link).toHaveAttribute("rel", "noopener noreferrer")
+	}
 })
 
-test("the English nav keeps the language prefix and says external in English", () => {
+test("the English nav keeps the language prefix and says external and new tab in English", () => {
 	stubDataFiles()
 	window.history.replaceState(null, "", "/en/")
 	render(<App />)
-	const nav = screen.getByRole("navigation", { name: "Main menu" })
+	// The desktop nav comes first in DOM order; the Meny's nav has the same name.
+	const nav = screen.getAllByRole("navigation", { name: "Main menu" })[0] as HTMLElement
 	expect(within(nav).getByRole("link", { name: "All services" })).toHaveAttribute("href", "/en/sok")
-	expect(within(nav).getByRole("link", { name: "NAV (external site)" })).toBeInTheDocument()
+	expect(
+		within(nav).getByRole("link", { name: "NAV (external site, opens in a new tab)" })
+	).toBeInTheDocument()
 })
 
 // Link used to drop aria-label without a type error (TypeScript accepts any hyphenated
