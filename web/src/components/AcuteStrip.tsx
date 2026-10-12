@@ -9,9 +9,10 @@ export function AcuteStrip() {
 	return (
 		<section aria-label={t("strip.label")} className="bg-akutt-soft text-akutt">
 			{/* Below 768 px a 2 x 2 grid: 110 and 112, then 113 and 116 117 (the order
-			    emergencyLines has), with "Alle nødtjenester" on a row of its own. From 768 px one
-			    row (spec: Acute strip on phones). */}
-			<ul className="acute-strip mx-auto grid max-w-6xl grid-cols-2 items-center gap-x-4 gap-y-1 py-2 text-sm md:flex md:flex-wrap">
+			    emergencyLines has), with "Alle nødtjenester" on a row of its own. At a larger browser
+			    text size the columns drop to one (see .acute-strip). From 768 px one row (spec: Acute
+			    strip on phones). */}
+			<ul className="acute-strip mx-auto grid max-w-6xl items-center gap-x-4 gap-y-1 py-2 text-sm md:flex md:flex-wrap">
 				{emergencyLines.map((line) => (
 					<li key={line.id} className="flex items-center gap-1">
 						<a
@@ -25,7 +26,7 @@ export function AcuteStrip() {
 						<span>{t(`strip.short.${line.id}`)}</span>
 					</li>
 				))}
-				<li className="col-span-2 md:ml-auto">
+				<li className="col-span-full md:ml-auto">
 					<Link
 						to="/sok?category=nodtjenester"
 						className="inline-flex min-h-11 items-center text-akutt underline"

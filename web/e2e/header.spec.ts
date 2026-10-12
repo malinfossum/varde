@@ -44,10 +44,11 @@ const activeName = (page: Page) =>
 		return el.getAttribute("aria-label") ?? (el.textContent ?? "").trim()
 	})
 
-// One row at every width (spec: The header row rule). 320 and 375 run the 320 px fallback,
+// One row at every width (spec: The header row rule). 320 and 375 run the 320 px fallback, 360
+// is the brand word's breakpoint and the tightest fit (English needs 347.2 px of the 360),
 // 1023 and 1024 sit either side of the switch between the Meny and the desktop nav, and a
 // first visit (nothing stored) shows the widest theme value, "System (lyst)", from 1024 px.
-for (const width of [320, 375, 1023, 1024, 1280, 1920]) {
+for (const width of [320, 360, 375, 1023, 1024, 1280, 1920]) {
 	for (const theme of [...THEMES, "system"] as const) {
 		for (const path of ["/", "/en/"]) {
 			test(`header ${path} at ${width} px (${theme}): one row, every control 44 px tall, one bottom edge`, async ({
@@ -95,9 +96,7 @@ for (const [width, menuShown] of [
 // browser font-size setting, which scales every rem) the row wraps instead of scrolling
 // sideways. The root font size is set from script after load, as a reader's setting would be.
 for (const width of [1024, 1280]) {
-	test(`with text at 200 % the header at ${width} px wraps and never scrolls sideways`, async ({
-		page,
-	}) => {
+	test(`with text at 200 % the header at ${width} px never scrolls sideways`, async ({ page }) => {
 		await page.setViewportSize({ width, height: 900 })
 		await page.goto("/en/")
 		await settle(page)
