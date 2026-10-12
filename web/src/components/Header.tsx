@@ -15,19 +15,19 @@ export function Header() {
 	const theme = useThemeChoice()
 	return (
 		<header className="app-header border-b border-border bg-surface">
-			{/* DOM order is the desktop order from the spec: brand, nav, pickers, exit. Under
-			    1024 px the nav drops to a row of its own below (CSS order), and under 768 px the
-			    tools wrap below the brand too (three rows, measured), so a phone's keyboard order
-			    runs brand, nav, then the rows above; I keep one DOM order rather than two.
-			    flex-wrap keeps 320 px free of horizontal scroll, and every control keeps 44 px. */}
-			<div className="header-row mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2">
+			{/* One row at every width (spec: Header). DOM order is brand, nav, pickers, Meny, exit.
+			    CSS shows the nav and the pickers from 1024 px and the Meny below it, never both, so
+			    the keyboard meets only the one on screen. flex-wrap is a safety net only: the
+			    header check holds it to one row at default text size, and with text at 200 % it
+			    wraps rather than scrolling sideways (spec: The header row rule). */}
+			<div className="header-row mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-2">
 				<Link
 					to="/"
-					className="inline-flex min-h-11 items-center gap-2 font-display text-lg text-fg no-underline"
+					className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 font-display text-lg text-fg no-underline"
 					aria-label={t("header.home")}
 				>
 					<BrandMark className="h-8 w-8 text-accent" />
-					<span>Varde</span>
+					<span className="brand-word">Varde</span>
 				</Link>
 				<nav aria-label={t("header.navLabel")} className="header-nav">
 					<HeaderLinks className="nav-link" />
@@ -35,9 +35,9 @@ export function Header() {
 				<div className="header-tools">
 					<LanguagePicker />
 					<ThemePicker theme={theme} />
-					<QuickExit />
 				</div>
 				<HeaderMenu theme={theme} />
+				<QuickExit />
 			</div>
 		</header>
 	)
