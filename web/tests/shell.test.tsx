@@ -2,6 +2,7 @@ import { act, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
+import { desktopTools } from "./scope.ts"
 import { stubDataFiles } from "./stubData.ts"
 
 function stubResources() {
@@ -30,7 +31,7 @@ test("the language is read from the path prefix", () => {
 	stubDataFiles()
 	window.history.pushState(null, "", "/en/")
 	render(<App />)
-	expect(screen.getByRole("link", { name: "Norsk" })).toHaveAttribute("href", "/")
+	expect(desktopTools().getByRole("link", { name: "Norsk" })).toHaveAttribute("href", "/")
 	expect(document.documentElement.lang).toBe("en")
 })
 
@@ -38,7 +39,7 @@ test("choosing a language goes to the same page in it, drops page, remembers it 
 	stubDataFiles()
 	window.history.pushState(null, "", "/sok?search=nav&page=2")
 	render(<App />)
-	const english = screen.getByRole("link", { name: "English" })
+	const english = desktopTools().getByRole("link", { name: "English" })
 	expect(english).toHaveAttribute("href", "/en/sok?search=nav")
 	expect(english).toHaveAttribute("hreflang", "en")
 	expect(english).toHaveAttribute("lang", "en")
@@ -60,7 +61,7 @@ test("browser back across a language change updates the UI language", () => {
 		window.history.pushState(null, "", "/")
 		window.dispatchEvent(new PopStateEvent("popstate"))
 	})
-	expect(screen.getByRole("link", { name: "English" })).toBeInTheDocument()
+	expect(desktopTools().getByRole("link", { name: "English" })).toBeInTheDocument()
 })
 
 test("the landing route renders a heading and loads no data", () => {

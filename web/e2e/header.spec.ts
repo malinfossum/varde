@@ -191,7 +191,7 @@ for (const viewport of [
 		for (const path of ["/", "/en/"]) {
 			await page.goto(path)
 			await settle(page)
-			const pickers = page.locator("header details.picker")
+			const pickers = page.locator("header .header-tools details.picker")
 			await expect(pickers).toHaveCount(2)
 			for (const i of [0, 1]) {
 				const picker = pickers.nth(i)
@@ -223,7 +223,7 @@ test("forced colours keep the focus ring and the current picker row visible", as
 	expect(ring.style).not.toBe("none")
 	expect(ring.width).toBeGreaterThanOrEqual(2)
 	await page.keyboard.press("Enter")
-	const row = page.locator('header .picker-row[aria-current="page"]')
+	const row = page.locator('header .header-tools .picker-row[aria-current="page"]')
 	await expect(row).toBeFocused()
 	const colours = await row.evaluate((el) => ({
 		row: getComputedStyle(el).backgroundColor,

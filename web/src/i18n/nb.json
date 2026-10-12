@@ -127,5 +127,6 @@
 	"about.privacyBody": "Varde er laget og drives av Malin Fossum, som er ansvarlig for opplysningene nedenfor. Ingen sporing, ingen informasjonskapsler og ingen kontoer. Valget ditt av språk og tema lagres bare i nettleseren din. Varde ligger hos Cloudflare, som ser IP-adressen din slik alle nettsider gjør, men jeg samler ikke inn statistikk og ser ikke hvem som besøker siden. Sender du meg en e-post om en feil, ser jeg e-postadressen din. Jeg bruker den bare til å rette feilen og svare deg, deler den aldri, og sletter e-posten når saken er ferdig.",
 	"about.sourceHeading": "Kildekode",
 	"about.sourceBody": "Varde er åpen kildekode (MIT-lisens) på GitHub.",
-	"about.updated": "Teksten ble sist endret {date}."
+	"about.updated": "Teksten ble sist endret {date}.",
+	"header.menu": "Meny"
 }

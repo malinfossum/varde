@@ -331,4 +331,12 @@
 			padding-inline-end: 1rem;
 		}
 	}
+
+	/* The Meny's nav is hidden until the phone layout shows it below 1024 px. Until then it is in
+	   the DOM and the unit tests only. Shown, it is display: flex with centred items, so the nav
+	   is exactly as tall as its 44 px trigger and never grows the row. */
+	.menu-nav {
+		display: none;
+		align-items: center;
+	}
 }

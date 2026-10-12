@@ -79,6 +79,9 @@ describe.each(["light", "dark"])("%s theme", (theme) => {
 		// axe's page-has-heading-one only checks that at least one h1 exists. Exactly one is the
 		// invariant that has broken three times on this branch, so assert the count directly.
 		expect(container.querySelectorAll("h1")).toHaveLength(1)
+		// jsdom loads no CSS, so both header layouts are in the tree. Hide the Meny's nav as CSS
+		// does from 1024 px; a Playwright check proves one landmark at every width.
+		container.querySelector(".menu-nav")?.setAttribute("hidden", "")
 		expect(await axe(container, options)).toHaveNoViolations()
 	})
 })

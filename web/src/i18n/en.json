@@ -127,5 +127,6 @@
 	"about.privacyBody": "Varde is made and run by Malin Fossum, who is responsible for the information below. No tracking, no cookies and no accounts. Your choice of language and theme is stored only in your browser. Varde is hosted by Cloudflare, which sees your IP address the way every website does, but I collect no statistics and cannot see who visits the site. If you email me about an error, I see your email address. I use it only to fix the error and reply to you, never share it, and delete the email when the matter is closed.",
 	"about.sourceHeading": "Source code",
 	"about.sourceBody": "Varde is open source (MIT licence) on GitHub.",
-	"about.updated": "This text was last changed {date}."
+	"about.updated": "This text was last changed {date}.",
+	"header.menu": "Menu"
 }

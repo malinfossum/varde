@@ -16,7 +16,8 @@ test("the official URLs are pinned (checked live 2026-10-02)", () => {
 test("the header nav links to all services, Helsenorge and NAV, the last two in a new tab", () => {
 	stubDataFiles()
 	render(<App />)
-	const nav = screen.getByRole("navigation", { name: "Hovedmeny" })
+	// The desktop nav comes first in DOM order; the Meny's nav has the same name.
+	const nav = screen.getAllByRole("navigation", { name: "Hovedmeny" })[0] as HTMLElement
 	expect(within(nav).getByRole("link", { name: "Alle tjenester" })).toHaveAttribute("href", "/sok")
 	for (const [name, href] of [
 		["Helsenorge (ekstern side, åpnes i ny fane)", HELSENORGE_URL],
@@ -35,7 +36,8 @@ test("the English nav keeps the language prefix and says external and new tab in
 	stubDataFiles()
 	window.history.replaceState(null, "", "/en/")
 	render(<App />)
-	const nav = screen.getByRole("navigation", { name: "Main menu" })
+	// The desktop nav comes first in DOM order; the Meny's nav has the same name.
+	const nav = screen.getAllByRole("navigation", { name: "Main menu" })[0] as HTMLElement
 	expect(within(nav).getByRole("link", { name: "All services" })).toHaveAttribute("href", "/en/sok")
 	expect(
 		within(nav).getByRole("link", { name: "NAV (external site, opens in a new tab)" })

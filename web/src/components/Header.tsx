@@ -2,6 +2,7 @@ import { useThemeChoice } from "../hooks/useThemeChoice.ts"
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import { BrandMark } from "./BrandMark.tsx"
 import { HeaderLinks } from "./HeaderLinks.tsx"
+import { HeaderMenu } from "./HeaderMenu.tsx"
 import { LanguagePicker } from "./LanguagePicker.tsx"
 import { Link } from "./Link.tsx"
 import { QuickExit } from "./QuickExit.tsx"
@@ -36,6 +37,7 @@ export function Header() {
 					<ThemePicker theme={theme} />
 					<QuickExit />
 				</div>
+				<HeaderMenu theme={theme} />
 			</div>
 		</header>
 	)
