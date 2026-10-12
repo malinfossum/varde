@@ -1,72 +1,47 @@
 import { expect, type Page, test } from "@playwright/test"
 import { noHorizontalScroll, settle } from "./helpers.ts"
 
-type Cell = { top: number; left: number; width: number; labelHeight: number; lineHeight: number }
+type Item = { top: number; right: number; height: number }
 
-const cells = (page: Page): Promise<Cell[]> =>
-	page.locator(".acute-strip > li").evaluateAll((items) =>
-		items.map((li) => {
-			const r = li.getBoundingClientRect()
-			const label = li.querySelector("span")
-			return {
-				top: Math.round(r.top),
-				left: Math.round(r.left),
-				width: Math.round(r.width),
-				labelHeight: label ? label.getBoundingClientRect().height : 0,
-				lineHeight: label ? Number.parseFloat(getComputedStyle(label).lineHeight) : 0,
-			}
+const items = (page: Page): Promise<Item[]> =>
+	page.locator(".acute-strip > li > a").evaluateAll((links) =>
+		links.map((a) => {
+			const r = a.getBoundingClientRect()
+			return { top: Math.round(r.top), right: r.right, height: r.height }
 		})
 	)
 
-// Spec: Acute strip on phones. 110 and 112 on the first row, 113 and 116 117 on the second,
-// "Alle nødtjenester" below, and no label over two lines at 320 px in either language.
-for (const width of [320, 375, 767]) {
+// Spec: Acute strip, one line. Icon and number per service and the "Alle" link on one 44 px
+// line at every width, desktop too, in both languages.
+for (const width of [320, 360, 375, 767, 768, 1280]) {
 	for (const path of ["/", "/en/"]) {
-		test(`the strip at ${width} px (${path}) is 2 x 2 with no label over two lines`, async ({
-			page,
-		}) => {
+		test(`the strip at ${width} px (${path}) is one line of 44 px links`, async ({ page }) => {
 			await page.setViewportSize({ width, height: 800 })
 			await page.goto(path)
 			await settle(page)
-			const [a, b, c, d, more] = await cells(page)
-			expect(a.top).toBe(b.top)
-			expect(c.top).toBe(d.top)
-			expect(c.top).toBeGreaterThan(a.top)
-			expect(a.left).toBe(c.left)
-			expect(b.left).toBe(d.left)
-			// Two equal columns. The "Alle nødtjenester" item spans both, which would otherwise make
-			// the grid grow a second, content-sized column by itself.
-			expect(Math.abs(a.width - b.width)).toBeLessThanOrEqual(1)
-			expect(more.top).toBeGreaterThan(c.top)
-			for (const cell of [a, b, c, d]) {
-				expect(cell.labelHeight).toBeLessThanOrEqual(2 * cell.lineHeight + 1)
+			const links = await items(page)
+			expect(links).toHaveLength(5)
+			expect(new Set(links.map((link) => link.top)).size).toBe(1)
+			for (const link of links) {
+				expect(link.height).toBeGreaterThanOrEqual(44)
+				expect(link.right).toBeLessThanOrEqual(width)
 			}
 			expect(await noHorizontalScroll(page)).toBe(true)
 		})
 	}
 }
 
-test("from 768 px the strip is one row", async ({ page }) => {
-	for (const path of ["/", "/en/"]) {
-		await page.setViewportSize({ width: 768, height: 800 })
-		await page.goto(path)
-		await settle(page)
-		const tops = new Set((await cells(page)).map((cell) => cell.top))
-		expect(tops.size, path).toBe(1)
-	}
-})
-
-// Spec: Acute strip on phones, and WCAG 1.4.4. With the browser text size at 200 % (which scales
-// every rem) the columns drop to one instead of printing a label over a number. The root font
+// Spec: Acute strip, one line, and WCAG 1.4.4. With the browser text size at 200 % (which scales
+// every rem) the line wraps instead of printing one link over another or leaving the viewport. The root font
 // size is set from script after load, as a reader's setting would be.
 type Box = { name: string; left: number; right: number; top: number; bottom: number }
 
 const stripBoxes = (page: Page): Promise<Box[]> =>
 	page.locator(".acute-strip").evaluate((ul) =>
-		[...ul.querySelectorAll("a, span")].map((el) => {
+		[...ul.querySelectorAll("a")].map((el) => {
 			const r = el.getBoundingClientRect()
 			return {
-				name: (el.textContent ?? "").trim(),
+				name: el.getAttribute("aria-label") ?? "",
 				left: r.left,
 				right: r.right,
 				top: r.top,
@@ -77,7 +52,7 @@ const stripBoxes = (page: Page): Promise<Box[]> =>
 
 for (const width of [320, 360, 375, 767]) {
 	for (const path of ["/sok", "/en/sok"]) {
-		test(`with text at 200 % the strip at ${width} px (${path}) has no label over a number and stays inside the viewport`, async ({
+		test(`with text at 200 % the strip at ${width} px (${path}) has no link over another and stays inside the viewport`, async ({
 			page,
 		}) => {
 			await page.setViewportSize({ width, height: 800 })
@@ -87,7 +62,7 @@ for (const width of [320, 360, 375, 767]) {
 				document.documentElement.style.fontSize = "200%"
 			})
 			const boxes = await stripBoxes(page)
-			expect(boxes.length).toBeGreaterThan(8)
+			expect(boxes).toHaveLength(5)
 			for (const [i, a] of boxes.entries()) {
 				for (const b of boxes.slice(i + 1)) {
 					const overlaps =

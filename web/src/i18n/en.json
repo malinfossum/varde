@@ -107,6 +107,7 @@
 	"strip.short.ambulanse": "Ambulance",
 	"strip.short.legevakt": "Out-of-hours service",
 	"strip.more": "All emergency services",
+	"strip.moreShort": "All",
 	"footer.source": "Source code on GitHub",
 	"footer.noTracking": "No tracking. No cookies.",
 	"footer.liability": "Varde is a directory, not an emergency service. If a life is in danger, call",

@@ -340,9 +340,5 @@
 	}
 	.acute-strip {
 		padding-inline: 1rem;
-		/* Two equal columns while the labels fit (8rem is the least a cell needs; 1rem is the
-		   gap-x-4). With a larger browser text size 8rem is wider than half the strip, so the
-		   columns drop to one and no label prints over a number. */
-		grid-template-columns: repeat(auto-fit, minmax(max(8rem, calc((100% - 1rem) / 2)), 1fr));
 	}
 }
