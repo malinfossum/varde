@@ -76,7 +76,10 @@ The header is one row at every width. From 1024 px it holds these slots, in this
 | Exit | "Forlat siden" |
 
 Below 1024 px the same row holds three slots: Brand, Meny, Exit (see "Below 1024 px: Meny").
-The back arrow keeps its place before the brand in installed mode.
+The back arrow keeps its place before the brand in installed mode. It adds 56 px to the row
+(the 44 px arrow and a gap), so in installed mode the brand shows its mark only until the full
+row fits (about 404 px in English, measured in PR 6). Below 356 px the installed row may wrap
+to two lines. That is a known limit I accept for the smallest phones (decided 2026-10-12).
 
 - **Links.** "Alle tjenester" / "All services" is an internal link. "Helsenorge" points to
   `https://www.helsenorge.no` (the same URL `services/hints.ts` already uses) and "NAV" to
@@ -156,14 +159,21 @@ The back arrow keeps its place before the brand in installed mode.
   - **Behaviour.** As the pickers: ArrowUp and ArrowDown move through every row of all three
     groups and wrap, Home and End jump, Escape closes and returns focus to the trigger, a click
     outside or focus leaving closes it, and the list stays 8 px inside the viewport. Opening
-    focuses the first row. A link or language row navigates, and the Meny closes with the
-    page change. A theme row applies the theme and keeps the Meny open with focus on that
-    row, so a screen reader hears "trykket" / "pressed" on the new choice. (On desktop the
+    focuses the first row. A link or language row closes the Meny and returns focus to its
+    trigger, then navigates. A route change moves focus on to the new page's heading, as
+    every arrival does. A link to the route already shown ("Alle tjenester" on `/sok`) and a
+    new-tab link leave focus on the trigger, so focus never falls to the page body. A theme
+    row applies the theme and keeps the Meny open with focus on that row, so a screen reader
+    hears "trykket" / "pressed" on the new choice. It also writes one status line, "Tema:
+    Mørkt" / "Theme: Dark", through the existing status region: a state change on a focused
+    button is not reliably spoken, and the status line is the confirmation. (On desktop the
     picker closes instead and the trigger's name carries the value.)
   - **One source, two layouts.** The links, the `LANGUAGES` list and the theme choices each
     render from one source in both places. The desktop nav and pickers are `display: none`
     below 1024 px and the Meny is `display: none` from 1024 px, so only one of them is ever in
-    the accessibility tree and the keyboard order. The language rows are links, so changing
+    the accessibility tree and the keyboard order. The Meny sits in its own `<nav>` with the
+    desktop nav's name, "Hovedmeny" / "Main menu" (decided 2026-10-12), so a screen reader
+    finds exactly one navigation landmark at every width. The language rows are links, so changing
     language from the Meny works before hydration, as it does on desktop.
   - **It must fit 320 px.** Brand, Meny and exit share one row at 320 px in both languages,
     every control 44 px tall. If the plan measures that they do not fit, the fallback runs in
@@ -173,12 +183,14 @@ The back arrow keeps its place before the brand in installed mode.
     control someone may need without reading.
 - **The header row rule.** Every control in the header row is 44 px tall and shares one bottom
   edge. A Playwright check measures it at 320, 375, 1023, 1024, 1280 and 1920, in both
-  languages, and fails if the header is taller than one row.
+  languages, and fails if the header is taller than one row. The row keeps `flex-wrap` as a
+  safety net only: at default text size the check above holds it to one row, and with text
+  enlarged to 200 % (a browser font-size setting) it wraps instead of scrolling sideways.
 - **The sticky header never hides focus.** `html` gets `scroll-padding-top` equal to the
-  one-row header height, one value at every width now that the header never wraps, so an
-  element reached by Tab never ends up under the sticky header (WCAG 2.4.11, house bar
-  2.4.12). An open Meny may cover the page below it; that is the user's own choice and closes
-  on Escape or when focus leaves.
+  one-row header height plus room, one `rem` value at every width, so an element reached by
+  Tab never ends up under the sticky header (WCAG 2.4.11, house bar 2.4.12). An open Meny
+  may cover the page below it; that is the user's own choice and closes on Escape or when
+  focus leaves.
 - **320 px.** At 320 px width the header, like every page in this spec, reflows without
   horizontal scrolling.
 
@@ -197,7 +209,9 @@ then the trust line, then the footer.
 - **Strip labels start with a capital (amended 2026-10-11).** Each emergency service label in
   the strip is a label, not part of a sentence, so it starts with a capital letter in both
   languages: "Brann", "Politi", "Ambulanse", "Legevakt" and "Fire", "Police", "Ambulance",
-  "Out-of-hours medical service". Today only "Legevakt" does. Running text, such as the Om
+  "Out-of-hours service". Today only "Legevakt" does. The English 116 117 label is the short
+  form I approved on 2026-10-11, because the full term wraps to three lines at 320 px; the
+  landing page's emergency grid keeps "out-of-hours medical service". Running text, such as the Om
   Varde body and the legevakt banner, keeps normal sentence case. A unit test pins the four
   labels in both languages.
 
@@ -368,13 +382,13 @@ prerender test fails on a `style=` attribute in a page.
 | A1 NAV | Official URLs, `target="_blank"` with `rel="noopener noreferrer"`, labelled as external and new tab | | |
 | A2 Pickers | Arrows wrap, Escape returns focus, System follows the OS | | |
 | A3 Om Varde | Footer line on every route, About in both languages and in the sitemap | | I read the text |
-| A4 Back arrow | Shown only in installed mode, not on landing | | Checked in the installed app |
+| A4 Back arrow | Shown only in installed mode, not on landing | Installed mode: one header row at 360 and 375 in nb and en, no sideways scroll at 320 | Checked in the installed app |
 | 16 Hero | | Line height 1.1, two lines, last three words together (nb and en) | |
 | 17 One screen | | Landing incl. footer at most 950 px tall at 1280 and 1920 | |
 | Header rule | | One row, every control 44 px with one bottom edge, at 320 to 1920 in nb and en | |
-| Meny | Arrows wrap across the three groups, Escape returns focus, a theme row keeps the Meny open | Meny shown only below 1024 px, desktop nav and pickers only from 1024 px | NVDA reads the group labels and "trykket" on a theme row |
-| Acute strip | | 2 x 2 below 768 px, no label over two lines at 320 in nb and en | |
-| Focus not hidden | | Tabbing through the landing page at 320, 768 and 1280, no focused element sits under the sticky header | |
+| Meny | Arrows wrap across the three groups, Escape returns focus, a theme row keeps the Meny open and writes its status line, a link to the current route leaves focus on the trigger, the Meny sits in a nav named Hovedmeny / Main menu | Meny shown only below 1024 px, desktop nav and pickers only from 1024 px, one navigation landmark at 1023 and 1024; with text at 200 % the header wraps and never scrolls sideways | NVDA reads the group labels, "trykket" and "Tema: Mørkt" on a theme row |
+| Acute strip | Labels start with a capital, nb and en | 2 x 2 below 768 px, no label over two lines at 320 in nb and en | |
+| Focus not hidden | | Tabbing both ways through the landing page and `/sok` at 320, 375, 640 x 400, 800, 1024 and 1280, no focused element sits under the sticky header | |
 | Reflow | | No horizontal scroll at 320 px on landing, list, detail and About | |
 | Forced colours | | Focus ring and the current picker row stay visible with `forcedColors: "active"` | |
 | Everything | axe on new views, Biome, prerender test (incl. no `style=`) | Same checks in light and dark | Screenshots at 320, 375 and 1920 x 950, both themes; NVDA pass over header, pickers and helplines |
@@ -445,4 +459,4 @@ and after my review. After each merge I check the live site on `varde.pages.dev`
 - **Pinning first-party actions to SHAs.** The workflow pins `actions/*` by tag today; the new
   job follows that and adds no third-party action.
 
-> Stress-tested 2026-10-02 (skill 81b73ff): 19 applied, 1 adapted, 1 decided by me.
+> Stress-tested 2026-10-12 (skill 1b85fca), the 2026-10-11 amendment: 7 applied, 1 adapted, 2 decided by me. The first pass on 2026-10-02 applied 19, adapted 1 and left 1 for me.

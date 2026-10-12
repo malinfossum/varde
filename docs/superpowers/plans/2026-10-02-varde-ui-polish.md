@@ -22,7 +22,7 @@ Every task's requirements include these. Values are copied from the spec.
 - **Storage keys stay:** theme `"theme"`, language `"varde.lang"`.
 - **External URLs:** Helsenorge `https://www.helsenorge.no`, NAV `https://www.nav.no` (both checked live 2026-10-02, both answer 200). Quick exit target `https://www.google.com` via `location.replace`.
 - **Hover:** 2 px lift with a soft shadow over 150 ms, only under `(hover: hover) and (prefers-reduced-motion: no-preference)`. Focus styles unchanged.
-- **CSS is mobile-first:** baseline is the smallest screen; layer up with `min-width` 768 px (`md:`) and 1024 px (`lg:`). Never `max-width`. The quick exit's short-screen rule uses `min-height`.
+- **CSS is mobile-first:** baseline is the smallest screen; layer up with `min-width` 768 px (`md:`) and 1024 px (`lg:`). Never `max-width`. The quick exit's short-screen rule uses `min-height` (PR 3 only; PR 3b removes it, since the header is sticky at every height).
 - **Playwright:** `@playwright/test` pinned exactly at `1.63.0`, Chromium only, licence Apache-2.0 (from `npm view` on 2026-10-02; re-read from the installed package in Task 1).
 - **Never invent contact data.** Every phone number, URL and menu label is copied from a data file or a cited source, never typed from memory. Test fixtures copy rows from `web/public/data/resources.nb.json`.
 - **Text I ship:** first person, no em dashes (rewrite the sentence instead; no en dash or spaced hyphen as a stand-in). The existing page-title pattern `<title> – Varde` stays as it is, because every page already uses it.
@@ -40,6 +40,11 @@ Inputs the spec implies but no spec test names. Each line has a test in the task
 3. **A helpline whose `chatUrl` is not `https://`** (`javascript:`, `http://`, empty) renders its name alone, never a link. Test in Task 13.
 4. **Theme on "System" while the OS flips dark/light, or another tab changes the choice:** the page and the trigger name follow without a reload. Test in Task 9.
 5. **English at 320 px**, where the labels are longest ("Leave this page", "All services", "About Varde and liability"): no horizontal scroll on any page. Test in Task 5.
+6. **A theme chosen in the Meny, then the window widens past 1024 px:** the desktop picker already shows it (one shared state). Test in Task 11c.
+7. **The header outlives a route change,** so a Meny link must close the Meny itself, and a link to the route already shown must leave focus on the trigger, not the body. Tests in Task 11c.
+8. **Helsenorge or NAV from the Meny** opens a new tab and leaves Varde's tab where it was, with focus back on the trigger. Test in Task 11c.
+9. **A language row in the Meny** drops `page`, as the desktop picker does. Test in Task 11c.
+10. **The Meny before JavaScript:** a native `<details>` with real language links. Test in Task 11c.
 
 ## Open items (owner: Malin)
 
@@ -48,6 +53,13 @@ Inputs the spec implies but no spec test names. Each line has a test in the task
 - **Arbeidslivstelefonen (id 9) needs "tast 3".** Mental Helse lists it as "116 123 (tast 3)" (mentalhelse.no/fa-hjelp/arbeidslivstelefonen/, read 2026-10-02). Varde's data shows plain `116 123`, so a caller reaches Hjelpetelefonen first. Decide before PR 4 merges: fix the row in Neon and the seed (a data change, outside this plan), or swap id 9 out of `HELPLINE_IDS`.
 - **Install labels on a real device.** Apple's nb pages for iOS 26 and 27 leave "Share" untranslated, and Edge's nb page reads as machine-translated. Check those two labels on a real device before PR 6 merges (Task 19 lists them).
 - **Required check.** After PR 1's `web-e2e` job runs green, add it as a required check: GitHub, repo Settings, Rules, Rulesets, `protect-main`, "Require status checks to pass", add `web-e2e`.
+
+## Decided (2026-10-12)
+
+From the PR 3b stress test (`.superpowers/sdd/2026-10-02-varde-ui-polish/stress-test-3b.md`).
+
+- **The Meny sits in a `<nav>` named "Hovedmeny" / "Main menu"** (`header.navLabel`, the desktop nav's name). Only one of the two is displayed, so a screen reader finds one navigation landmark at every width. Tasks 11c and 11d carry it. jsdom shows both, so the axe test hides the Meny's nav as CSS does from 1024 px, and a Playwright test proves one landmark at 1023 and 1024.
+- **The back arrow in installed mode (PR 6).** The arrow adds 56 px to the one row, so in installed mode the brand shows its mark only until about 404 px (English, from the 2026-10-11 widths: 44 + 91.4 + 54 + 145.8 + 3 x 12 + 32 = 403.2). Below 356 px the installed row may wrap to two lines, a known limit for the smallest phones. Task 20 measures the real breakpoint and adds installed-mode row checks at 360 and 375 in both languages, plus a no-sideways-scroll check at 320.
 
 ## Decided (2026-10-11)
 
@@ -2879,7 +2891,7 @@ Branch first: `git switch main && git pull && git switch -c feat/phone-header`.
 - Test: `web/tests/header.test.tsx`
 
 **Interfaces:**
-- Produces: `HeaderLinks({ className, onFollow? }: { className: string; onFollow?: (external: boolean) => void })`; `LanguageRows({ onDone }: { onDone: () => void })`; `ThemeRows({ theme, icons, onChosen }: { theme: ThemeApi; icons: boolean; onChosen: (row: HTMLButtonElement) => void })`; `type ThemeApi = ReturnType<typeof useThemeChoice>` and `THEME_CHOICES` exported from `ThemeRows.tsx`; `ThemePicker({ theme }: { theme: ThemeApi })`.
+- Produces: `HeaderLinks({ className, onFollow? }: { className: string; onFollow?: () => void })`; `LanguageRows({ onDone }: { onDone: () => void })`; `ThemeRows({ theme, icons, onChosen }: { theme: ThemeApi; icons: boolean; onChosen: (row: HTMLButtonElement, label: string) => void })`; `type ThemeApi = ReturnType<typeof useThemeChoice>` and `THEME_CHOICES` exported from `ThemeRows.tsx`; `ThemePicker({ theme }: { theme: ThemeApi })`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -2954,13 +2966,20 @@ export function HeaderLinks({
 	onFollow,
 }: {
 	className: string
-	// Runs when a link is followed. The Meny uses it to close; the desktop nav passes nothing.
-	onFollow?: (external: boolean) => void
+	// Runs when a link is followed. The Meny uses it to close and refocus its trigger; the
+	// desktop nav passes nothing.
+	onFollow?: () => void
 }) {
 	const t = useTranslation()
 	return (
 		<>
-			<Link to="/sok" className={className} onNavigate={() => onFollow?.(false)}>
+			<Link
+				to="/sok"
+				className={className}
+				onNavigate={() => {
+					onFollow?.()
+				}}
+			>
 				<span>{t("header.allServices")}</span>
 			</Link>
 			{EXTERNAL.map(({ name, href }) => (
@@ -2970,7 +2989,7 @@ export function HeaderLinks({
 					target="_blank"
 					rel="noopener noreferrer"
 					className={className}
-					onClick={() => onFollow?.(true)}
+					onClick={() => onFollow?.()}
 				>
 					{name} <span aria-hidden="true">↗</span>
 					<span className="visually-hidden">{t("header.external")}</span>
@@ -2981,7 +3000,7 @@ export function HeaderLinks({
 }
 ```
 
-If `tsc` rejects `onNavigate={() => onFollow?.(false)}` (its type is `() => undefined | false`, and `onFollow` returns `void`), write it as a block body: `onNavigate={() => { onFollow?.(false) }}`. `LanguagePicker`'s existing `onNavigate` already compiles with a block body that falls through.
+`onNavigate` has a block body on purpose: its type is `() => undefined | false`, and an expression body would return `onFollow`'s `void`. `LanguagePicker`'s existing `onNavigate` compiles the same way.
 
 - [ ] **Step 5: `LanguageRows.tsx`, and `LanguagePicker` uses it**
 
@@ -3090,7 +3109,7 @@ export const THEME_CHOICES = [
 
 // One source for the theme rows, rendered by the desktop theme picker and by the Meny (spec:
 // One source, two layouts). The desktop picker closes on a choice; the Meny keeps the row
-// focused so a screen reader hears its new pressed state.
+// focused so a screen reader hears its new pressed state, and announces the label it gets.
 export function ThemeRows({
 	theme,
 	icons,
@@ -3098,7 +3117,7 @@ export function ThemeRows({
 }: {
 	theme: ThemeApi
 	icons: boolean
-	onChosen: (row: HTMLButtonElement) => void
+	onChosen: (row: HTMLButtonElement, label: string) => void
 }) {
 	const t = useTranslation()
 	return (
@@ -3113,7 +3132,7 @@ export function ThemeRows({
 						aria-pressed={pressed}
 						onClick={(event) => {
 							theme.choose(choice)
-							onChosen(event.currentTarget)
+							onChosen(event.currentTarget, t(key))
 						}}
 					>
 						{icons && <Icon />}
@@ -3221,11 +3240,11 @@ git commit -m "feat: open Helsenorge and NAV in a new tab, and share the header 
 **Files:**
 - Modify: `web/src/hooks/usePicker.ts`, `web/src/components/icons.tsx`, `web/src/components/Header.tsx`, `web/src/styles/main.css`, `web/src/i18n/nb.json`, `web/src/i18n/en.json`
 - Create: `web/src/components/HeaderMenu.tsx`, `web/tests/scope.ts`, `web/tests/headerMenu.test.tsx`
-- Modify (scoping only): `web/tests/shell.test.tsx`, `web/tests/race.test.tsx`, `web/tests/languagePicker.test.tsx`, `web/tests/themePicker.test.tsx`
+- Modify (scoping only): `web/tests/shell.test.tsx`, `web/tests/race.test.tsx`, `web/tests/languagePicker.test.tsx`, `web/tests/themePicker.test.tsx`, `web/tests/header.test.tsx`, `web/tests/axe.test.tsx`
 
 **Interfaces:**
 - Consumes: `HeaderLinks`, `LanguageRows`, `ThemeRows`, `ThemeApi` from Task 11b.
-- Produces: `usePicker(options?: { focusOnOpen?: "active" | "first" })` returning `{ ref, onToggle, onKeyDown, onBlur, close, closeAndFocus }`; `HeaderMenu({ theme }: { theme: ThemeApi })` rendering `<details class="picker header-menu">` with `.menu-word`, `.menu-list`, `.menu-group`, `.menu-group-label`; `MenuIcon`; test helpers `desktopTools()` and `menu()`.
+- Produces: `usePicker(options?: { focusOnOpen?: "active" | "first" })` returning `{ ref, onToggle, onKeyDown, onBlur, closeAndFocus }` (unchanged); `HeaderMenu({ theme }: { theme: ThemeApi })` rendering `<nav class="menu-nav" aria-label="Hovedmeny">` around `<details class="picker header-menu">` with `.menu-word`, `.menu-list`, `.menu-group`, `.menu-group-label`; `MenuIcon`; test helpers `desktopTools()` and `menu()`.
 
 The Meny cannot reuse `Picker.tsx`: `Picker` shows its visible word in `.picker-value`, which is hidden below 768 px, and the Meny's word must stay visible from 768 to 1023 px. So `HeaderMenu` uses `usePicker` directly with its own markup.
 
@@ -3258,6 +3277,17 @@ Then, in these files, change `screen.getByRole(` to `desktopTools().getByRole(` 
 
 Line numbers are from `main` at `3ef3ce5`. If `npm test` later reports "Found multiple elements" anywhere else, scope that query the same way and list it in the report.
 
+Two more files, because the Meny gets its own `<nav>` with the same name as the desktop nav (Decided 2026-10-12):
+
+- `tests/header.test.tsx`: in the two tests Task 11b wrote, change `screen.getByRole("navigation", { name: "Hovedmeny" })` and `screen.getByRole("navigation", { name: "Main menu" })` to `screen.getAllByRole(...)[0]` with the same arguments. Add the comment `// The desktop nav comes first in DOM order; the Meny's nav has the same name.`
+- `tests/axe.test.tsx`: jsdom shows both layouts, so axe's `landmark-unique` rule would see two navigation landmarks named Hovedmeny. Directly before `expect(await axe(container, options))`, add:
+
+```ts
+		// jsdom loads no CSS, so both header layouts are in the tree. Hide the Meny's nav as CSS
+		// does from 1024 px; Task 11d's Playwright test proves one landmark at every width.
+		container.querySelector(".menu-nav")?.setAttribute("hidden", "")
+```
+
 - [ ] **Step 2: Write the failing Meny tests**
 
 Create `web/tests/headerMenu.test.tsx`:
@@ -3266,10 +3296,11 @@ Create `web/tests/headerMenu.test.tsx`:
 import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test } from "vitest"
+import { axe } from "vitest-axe"
 import { App } from "../src/App.tsx"
 import { render as prerender } from "../src/entry-server.tsx"
 import { HELSENORGE_URL } from "../src/services/externalLinks.ts"
-import { menu } from "./scope.ts"
+import { desktopTools, menu } from "./scope.ts"
 import { stubDataFiles } from "./stubData.ts"
 
 afterEach(() => {
@@ -3316,6 +3347,32 @@ test("the English Meny is named Menu, with Language and Theme groups", () => {
 	expect(menu().getByRole("group", { name: "Theme" })).toBeInTheDocument()
 })
 
+// Decided 2026-10-12: phones get the same navigation landmark as desktop.
+test("the Meny sits in a navigation landmark named Hovedmeny, and Main menu in English", () => {
+	stubDataFiles()
+	const { unmount } = render(<App />)
+	expect(menuDetails().closest("nav")).toHaveAccessibleName("Hovedmeny")
+	unmount()
+	window.history.replaceState(null, "", "/en/")
+	render(<App />)
+	expect(menuDetails().closest("nav")).toHaveAccessibleName("Main menu")
+})
+
+// The other half of the axe test's stand-in for CSS: hide the desktop nav and pickers as CSS
+// does below 1024 px, then check the phone layout with the Meny open.
+test("the phone layout with the Meny open has no axe violations", async () => {
+	const user = userEvent.setup()
+	stubDataFiles()
+	const { container } = render(<App />)
+	for (const el of container.querySelectorAll(".header-nav, .header-tools")) {
+		el.setAttribute("hidden", "")
+	}
+	await openMenu(user)
+	expect(
+		await axe(container, { rules: { "color-contrast": { enabled: false } } })
+	).toHaveNoViolations()
+})
+
 test("opening the Meny focuses its first row, even with a current language row", async () => {
 	const user = userEvent.setup()
 	stubDataFiles()
@@ -3338,8 +3395,9 @@ test("the arrows move through all three groups, skip the group labels and wrap",
 	expect(menu().getByRole("link", { name: "Norsk" })).toHaveFocus()
 })
 
-// Review Focus 1: one state, so the desktop trigger is right when the window widens.
-test("a theme row applies the theme, keeps the Meny open on that row, and the desktop picker follows", async () => {
+// Review Focus 6: one state, so the desktop trigger is right when the window widens. The
+// status line is the confirmation (spec: Below 1024 px: Meny, Behaviour).
+test("a theme row applies the theme, keeps the Meny open on that row, says so, and the desktop picker follows", async () => {
 	const user = userEvent.setup()
 	stubDataFiles()
 	render(<App />)
@@ -3350,10 +3408,14 @@ test("a theme row applies the theme, keeps the Meny open on that row, and the de
 	expect(menuDetails().open).toBe(true)
 	expect(mørkt).toHaveFocus()
 	expect(mørkt).toHaveAttribute("aria-pressed", "true")
-	expect(screen.getByText("Tema: Mørkt", { selector: ".visually-hidden" })).toBeInTheDocument()
+	expect(document.querySelector('[aria-live="polite"]')).toHaveTextContent("Tema: Mørkt")
+	// Scoped: the status region is visually hidden too and now holds the same words.
+	expect(
+		desktopTools().getByText("Tema: Mørkt", { selector: ".visually-hidden" })
+	).toBeInTheDocument()
 })
 
-// Review Focus 2: the header outlives the route change, so the Meny closes itself.
+// Review Focus 7: the header outlives the route change, so the Meny closes itself.
 test("Alle tjenester navigates and the Meny closes", async () => {
 	const user = userEvent.setup()
 	stubDataFiles()
@@ -3364,7 +3426,20 @@ test("Alle tjenester navigates and the Meny closes", async () => {
 	expect(menuDetails().open).toBe(false)
 })
 
-// Review Focus 3.
+// Review Focus 7: same route, so no arrival moves focus. It must not fall to the body.
+test("Alle tjenester on /sok closes the Meny and leaves focus on its trigger", async () => {
+	const user = userEvent.setup()
+	stubDataFiles()
+	window.history.pushState(null, "", "/sok?search=nav")
+	render(<App />)
+	await openMenu(user)
+	await user.click(menu().getByRole("link", { name: "Alle tjenester" }))
+	expect(window.location.pathname + window.location.search).toBe("/sok")
+	expect(menuDetails().open).toBe(false)
+	expect(trigger()).toHaveFocus()
+})
+
+// Review Focus 8.
 test("Helsenorge leaves Varde's tab where it was, closes the Meny and refocuses its trigger", async () => {
 	const user = userEvent.setup()
 	stubDataFiles()
@@ -3384,7 +3459,7 @@ test("Helsenorge leaves Varde's tab where it was, closes the Meny and refocuses 
 	expect(trigger()).toHaveFocus()
 })
 
-// Review Focus 4.
+// Review Focus 9.
 test("a language row in the Meny goes to the same page in that language and drops page", async () => {
 	const user = userEvent.setup()
 	stubDataFiles()
@@ -3397,15 +3472,17 @@ test("a language row in the Meny goes to the same page in that language and drop
 	expect(menuDetails().open).toBe(false)
 })
 
-// Review Focus 5. Last on purpose: prerender() in jsdom leaves UrlContext holding the
+// Review Focus 10. Last on purpose: prerender() in jsdom leaves UrlContext holding the
 // prerendered URL, which would leak into any App render after it in this file.
 test("the prerendered Meny is a native details with real language links, so it works before JavaScript", async () => {
 	const { html } = await prerender("/sok", {})
 	const start = html.indexOf('<details class="picker header-menu"')
 	expect(start).toBeGreaterThan(-1)
 	const meny = html.slice(start, html.indexOf("</details>", start))
-	expect(meny).toMatch(/<a[^>]+href="\/en\/sok"/)
-	expect(meny).toMatch(/<a[^>]+href="\/sok"/)
+	// Matched with their lang attribute: "Alle tjenester" also links to /sok, so href alone
+	// would pass without the Norsk row.
+	expect(meny).toMatch(/<a[^>]+href="\/en\/sok"[^>]*\slang="en"/)
+	expect(meny).toMatch(/<a[^>]+href="\/sok"[^>]*\slang="nb"/)
 })
 ```
 
@@ -3414,9 +3491,9 @@ test("the prerendered Meny is a native details with real language links, so it w
 Run: `npx vitest run tests/headerMenu.test.tsx`
 Expected: FAIL, `menuDetails()` is null (no `details.header-menu` yet).
 
-- [ ] **Step 4: `usePicker` gets `focusOnOpen` and `close`**
+- [ ] **Step 4: `usePicker` gets `focusOnOpen`**
 
-In `web/src/hooks/usePicker.ts`, change the signature and add `close`:
+In `web/src/hooks/usePicker.ts`, change the signature:
 
 ```ts
 // focusOnOpen: the pickers open on their active row (spec: Picker behaviour); the Meny opens on
@@ -3424,14 +3501,7 @@ In `web/src/hooks/usePicker.ts`, change the signature and add `close`:
 export function usePicker({ focusOnOpen = "active" }: { focusOnOpen?: "active" | "first" } = {}) {
 ```
 
-Below `closeAndFocus`, add:
-
-```ts
-	// Close without moving focus: for a navigation, which moves focus itself.
-	const close = useCallback(() => {
-		if (ref.current) ref.current.open = false
-	}, [])
-```
+There is no close-without-focus. Every Meny row that closes the Meny returns focus to the trigger: a route change then moves focus on to the new heading (useArrivalFocus), and a link to the route already shown has no arrival, so without the trigger focus would fall to the body.
 
 In `onToggle`, replace the last four lines (from `const all = rows()` to the focus call) with:
 
@@ -3446,7 +3516,7 @@ In `onToggle`, replace the last four lines (from `const all = rows()` to the foc
 		;(active ?? all[0])?.focus()
 ```
 
-Return `{ ref, onToggle, onKeyDown, onBlur, close, closeAndFocus }`.
+The return value stays `{ ref, onToggle, onKeyDown, onBlur, closeAndFocus }`.
 
 - [ ] **Step 5: Icon, strings, `HeaderMenu`**
 
@@ -3481,60 +3551,73 @@ import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import { HeaderLinks } from "./HeaderLinks.tsx"
 import { MenuIcon } from "./icons.tsx"
 import { LanguageRows } from "./LanguageRows.tsx"
+import { useAnnounce } from "./StatusRegion.tsx"
 import { type ThemeApi, ThemeRows } from "./ThemeRows.tsx"
 
 // Below 1024 px the three links and both pickers live here (spec: Below 1024 px: Meny). The
 // picker shell and behaviour, with two differences: opening focuses the first row, and a theme
-// row keeps the Meny open with focus on it, so a screen reader hears its new pressed state.
+// row keeps the Meny open with focus on it, so a screen reader hears its new pressed state,
+// and writes one status line as the confirmation.
 // The trigger's name is the word itself, visible from 768 px and visually hidden below.
 export function HeaderMenu({ theme }: { theme: ThemeApi }) {
 	const t = useTranslation()
-	const { ref, onToggle, onKeyDown, onBlur, close, closeAndFocus } = usePicker({
+	const announce = useAnnounce()
+	const { ref, onToggle, onKeyDown, onBlur, closeAndFocus } = usePicker({
 		focusOnOpen: "first",
 	})
 	const languageId = useId()
 	const themeId = useId()
 	return (
-		<details
-			ref={ref}
-			className="picker header-menu"
-			onToggle={onToggle}
-			onKeyDown={onKeyDown}
-			onBlur={onBlur}
-		>
-			<summary className="btn-secondary min-w-11">
-				<span aria-hidden="true" className="inline-flex">
-					<MenuIcon />
-				</span>
-				<span className="menu-word">{t("header.menu")}</span>
-			</summary>
-			<div className="picker-list menu-list">
-				<div className="menu-group">
-					{/* An internal link navigates, and the navigation moves focus. An external one
-					    opens a new tab, so focus comes back to the trigger rather than into a
-					    closed list. */}
-					<HeaderLinks
-						className="picker-row"
-						onFollow={(external) => (external ? closeAndFocus() : close())}
-					/>
-				</div>
-				{/* biome-ignore lint/a11y/useSemanticElements: Workbench picker markup, as in Picker.tsx */}
-				<div className="menu-group" role="group" aria-labelledby={languageId}>
-					<span id={languageId} className="menu-group-label">
-						{t("header.language")}
+		// The Meny's own landmark, with the desktop nav's name (Decided 2026-10-12). CSS shows
+		// one of the two, so a screen reader finds one navigation landmark at every width.
+		<nav aria-label={t("header.navLabel")} className="menu-nav">
+			<details
+				ref={ref}
+				className="picker header-menu"
+				onToggle={onToggle}
+				onKeyDown={onKeyDown}
+				onBlur={onBlur}
+			>
+				<summary className="btn-secondary min-w-11">
+					<span aria-hidden="true" className="inline-flex">
+						<MenuIcon />
 					</span>
-					<LanguageRows onDone={closeAndFocus} />
+					<span className="menu-word">{t("header.menu")}</span>
+				</summary>
+				<div className="picker-list menu-list">
+					<div className="menu-group">
+						{/* Every link closes the Meny and returns focus to the trigger, never into a
+						    closed list. A route change then moves focus on to the new heading; a link
+						    to the route already shown, or a new tab, leaves it on the trigger. */}
+						<HeaderLinks className="picker-row" onFollow={closeAndFocus} />
+					</div>
+					{/* biome-ignore lint/a11y/useSemanticElements: Workbench picker markup, as in Picker.tsx */}
+					<div className="menu-group" role="group" aria-labelledby={languageId}>
+						<span id={languageId} className="menu-group-label">
+							{t("header.language")}
+						</span>
+						<LanguageRows onDone={closeAndFocus} />
+					</div>
+					{/* biome-ignore lint/a11y/useSemanticElements: Workbench picker markup, as in Picker.tsx */}
+					<div className="menu-group" role="group" aria-labelledby={themeId}>
+						<span id={themeId} className="menu-group-label">
+							{t("header.theme")}
+						</span>
+						{/* Safari does not focus a button on click, so the row is focused explicitly.
+						    The status line is the confirmation; the pressed state alone is not
+						    reliably spoken (spec: Below 1024 px: Meny, Behaviour). */}
+						<ThemeRows
+							theme={theme}
+							icons={false}
+							onChosen={(row, label) => {
+								row.focus()
+								announce(`${t("header.theme")}: ${label}`)
+							}}
+						/>
+					</div>
 				</div>
-				{/* biome-ignore lint/a11y/useSemanticElements: Workbench picker markup, as in Picker.tsx */}
-				<div className="menu-group" role="group" aria-labelledby={themeId}>
-					<span id={themeId} className="menu-group-label">
-						{t("header.theme")}
-					</span>
-					{/* Safari does not focus a button on click, so the row is focused explicitly. */}
-					<ThemeRows theme={theme} icons={false} onChosen={(row) => row.focus()} />
-				</div>
-			</div>
-		</details>
+			</details>
+		</nav>
 	)
 }
 ```
@@ -3545,7 +3628,7 @@ Append to the end of `@layer components` in `web/src/styles/main.css` (Task 11d 
 
 ```css
 	/* Task 11d shows the Meny below 1024 px. Until then it is in the DOM and the unit tests only. */
-	details.header-menu {
+	.menu-nav {
 		display: none;
 	}
 ```
@@ -3555,10 +3638,10 @@ Append to the end of `@layer components` in `web/src/styles/main.css` (Task 11d 
 Run from `web/`: `npm test`, `npx biome check --write .`, `npx biome ci .`, `npm run build:site`, `npx playwright test`.
 Expected: all PASS. The Playwright header checks still pass because the Meny is `display: none`.
 
-Red proofs: (1) change `focusOnOpen: "first"` to `"active"` in `HeaderMenu.tsx`; the first-row test fails (focus lands on "Norsk"); restore. (2) change the Meny's `onChosen` to `() => close()`; the theme-row test fails on `open`; restore. (3) in `Header.tsx`, give `HeaderMenu` its own `useThemeChoice()` instead of the shared `theme`; the "desktop picker follows" assertion fails; restore.
+Red proofs: (1) change `focusOnOpen: "first"` to `"active"` in `HeaderMenu.tsx`; the first-row test fails (focus lands on "Norsk"); restore. (2) change the Meny's `onChosen` to `() => closeAndFocus()`; the theme-row test fails on `open`; restore. (3) in `Header.tsx`, give `HeaderMenu` its own `useThemeChoice()` instead of the shared `theme`; the "desktop picker follows" assertion fails; restore. (4) delete the `announce(...)` line in `HeaderMenu.tsx`; the theme-row test fails on the status region; restore. (5) change the Meny's `onFollow` to `() => { if (ref.current) ref.current.open = false }`; "Alle tjenester on /sok" fails on the trigger's focus; restore. (6) change the Meny's `<nav ...>` wrapper to a `<div className="menu-nav">`; the landmark test fails; restore. (7) delete the `setAttribute("hidden", "")` line from `tests/axe.test.tsx`; expect axe to report `landmark-unique`. If it stays green, delete the line for good and say so in the report, since it then guards nothing.
 
 ```bash
-git add src/hooks/usePicker.ts src/components/icons.tsx src/components/HeaderMenu.tsx src/components/Header.tsx src/styles/main.css src/i18n/nb.json src/i18n/en.json tests/scope.ts tests/headerMenu.test.tsx tests/shell.test.tsx tests/race.test.tsx tests/languagePicker.test.tsx tests/themePicker.test.tsx
+git add src/hooks/usePicker.ts src/components/icons.tsx src/components/HeaderMenu.tsx src/components/Header.tsx src/styles/main.css src/i18n/nb.json src/i18n/en.json tests/scope.ts tests/headerMenu.test.tsx tests/shell.test.tsx tests/race.test.tsx tests/languagePicker.test.tsx tests/themePicker.test.tsx tests/header.test.tsx tests/axe.test.tsx
 git commit -m "feat: add the Meny with the links, Språk and Tema"
 ```
 
@@ -3569,7 +3652,7 @@ git commit -m "feat: add the Meny with the links, Språk and Tema"
 - Test: `web/e2e/header.spec.ts` (rewritten)
 
 **Interfaces:**
-- Consumes: `HeaderMenu` and the `.header-menu`, `.menu-word`, `.menu-list`, `.menu-group`, `.menu-group-label` classes from Task 11c.
+- Consumes: `HeaderMenu` and the `.menu-nav`, `.header-menu`, `.menu-word`, `.menu-list`, `.menu-group`, `.menu-group-label` classes from Task 11c.
 - Produces: the final header DOM order (brand, nav, tools, Meny, exit) and the CSS Task 11e builds on (`.acute-strip` padding is plain `1rem`).
 
 - [ ] **Step 1: Rewrite the header browser checks**
@@ -3664,6 +3747,25 @@ for (const [width, menuShown] of [
 		await expect(page.locator("details.header-menu")).toBeVisible({ visible: menuShown })
 		await expect(page.locator(".header-nav")).toBeVisible({ visible: !menuShown })
 		await expect(page.locator(".header-tools")).toBeVisible({ visible: !menuShown })
+		// Decided 2026-10-12: one navigation landmark at every width, the Meny's or the desktop's.
+		await expect(page.getByRole("navigation", { name: "Hovedmeny" })).toHaveCount(1)
+	})
+}
+
+// Spec: The header row rule. One row is the rule at default text size. With text at 200 % (a
+// browser font-size setting, which scales every rem) the row wraps instead of scrolling
+// sideways. The root font size is set from script after load, as a reader's setting would be.
+for (const width of [1024, 1280]) {
+	test(`with text at 200 % the header at ${width} px wraps and never scrolls sideways`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width, height: 900 })
+		await page.goto("/en/")
+		await settle(page)
+		await page.evaluate(() => {
+			document.documentElement.style.fontSize = "200%"
+		})
+		expect(await noHorizontalScroll(page)).toBe(true)
 	})
 }
 
@@ -3892,8 +3994,10 @@ export function Header() {
 		<header className="app-header border-b border-border bg-surface">
 			{/* One row at every width (spec: Header). DOM order is brand, nav, pickers, Meny, exit.
 			    CSS shows the nav and the pickers from 1024 px and the Meny below it, never both, so
-			    the keyboard meets only the one on screen. */}
-			<div className="header-row mx-auto flex max-w-6xl items-center gap-3 px-4 py-2">
+			    the keyboard meets only the one on screen. flex-wrap is a safety net only: the
+			    header check holds it to one row at default text size, and with text at 200 % it
+			    wraps rather than scrolling sideways (spec: The header row rule). */}
+			<div className="header-row mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-2">
 				<Link
 					to="/"
 					className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 font-display text-lg text-fg no-underline"
@@ -3924,7 +4028,8 @@ In `web/src/styles/main.css`, `@layer base`: replace the comment that starts "Th
 ```css
 	/* The sticky header must never cover a focused element or an anchor target (WCAG 2.4.11,
 	   house bar 2.4.12). It is one 61 px row at every width (44 px controls, 8 px above and
-	   below, a 1 px border), so one value with room to spare covers every width. */
+	   below, a 1 px border), so one value with room to spare covers every width. It is in rem,
+	   so it grows with a larger browser text size. */
 	html {
 		scroll-padding-top: 5rem;
 	}
@@ -3934,7 +4039,7 @@ In `@layer components`, delete:
 - the `.app-header` comment ("Sticky only where it costs one or two rows...") and the `.app-header` rule with its `@media (min-height: 480px) and (min-width: 768px)` block;
 - the `.header-nav` rule, the `.header-tools` rule, and the `@media (min-width: 1024px)` block that holds `.header-nav { order: 0; ... }` (`.nav-link` and `.nav-link:hover` stay);
 - everything from the comment "Always in view (spec: Quick exit)" to the end of the layer: the `.quick-exit`, `.header-tools` and `.acute-strip` rules and their `@media` block;
-- Task 11c's temporary `details.header-menu { display: none; }` rule.
+- Task 11c's temporary `.menu-nav { display: none; }` rule.
 
 Then append to the end of `@layer components`:
 
@@ -3942,7 +4047,7 @@ Then append to the end of `@layer components`:
 	/* One sticky row at every width and height (spec: Header). Below 1024 px it holds brand,
 	   Meny and exit; from 1024 px brand, nav, pickers and exit. Only one of the Meny and the
 	   nav with the pickers is displayed, so only one is in the accessibility tree and the tab
-	   order. These rules come after .picker so `display: none` wins over its inline-block. */
+	   order. The Meny's flex item is its .menu-nav wrapper, so its rules sit there. */
 	.app-header {
 		position: sticky;
 		top: 0;
@@ -3952,7 +4057,7 @@ Then append to the end of `@layer components`:
 	.header-tools {
 		display: none;
 	}
-	.header-menu {
+	.menu-nav {
 		margin-inline-start: auto;
 	}
 	@media (min-width: 1024px) {
@@ -3966,7 +4071,7 @@ Then append to the end of `@layer components`:
 			gap: 0.5rem;
 			margin-inline-start: auto;
 		}
-		.header-menu {
+		.menu-nav {
 			display: none;
 		}
 	}
@@ -4037,9 +4142,10 @@ Expected: all PASS. If the 320 px English row fails, read the labels in the fail
 - [ ] **Step 6: Red proofs, then commit**
 
 1. Delete the baseline `.brand-word { display: none; }`. The 320 px English row test fails (two rows or horizontal scroll). Restore.
-2. Delete `.header-menu { display: none; }` inside the 1024 px query. "At 1024 px only the nav and the pickers is shown" fails. Restore.
+2. Delete `.menu-nav { display: none; }` inside the 1024 px query. "At 1024 px only the nav and the pickers is shown" fails on the Meny and on the landmark count. Restore.
 3. Change `scroll-padding-top: 5rem` to `0`. Run the focus test at 640 x 400 and 320 x 640 on `/sok`; record whether it goes red. If it stays green, write that in the PR body as "not provable with this test" rather than claiming a red proof.
 4. Delete `.menu-list .picker-check { grid-column: 3; ... }`. The edge test fails on the check rights. Restore.
+5. Delete `flex-wrap` from the `header-row` class in `Header.tsx`. The 200 % text test fails at 1024 (and, I expect, at 1280). Restore. If it stays green, report the measured header width rather than claiming a red proof.
 
 ```bash
 git add src/components/Header.tsx src/styles/main.css e2e/header.spec.ts e2e/anchor.spec.ts
@@ -4198,9 +4304,9 @@ git commit -m "feat: lay the acute strip out 2 x 2 on phones, with capital label
 
 - [ ] **Step 6: Ship PR 3b**
 
-Follow "Shipping a PR" with title `feat: one-row phone header with a Meny, new-tab links and a 2 x 2 strip`. The body names what #63's phone header did (three rows, a pinned exit and 10rem of reserved room) and what replaces it. Red proofs: Task 11b Step 7, Task 11c Step 6, Task 11d Step 6, Task 11e Step 5. Manual before merge: an NVDA pass over the Meny at a narrow window (the trigger reads "Meny" and collapsed or expanded, the group labels "Språk" and "Tema" are read on entering each group, a theme row reads "trykket" after Enter, Escape returns to "Meny"). After merge: open `https://varde.pages.dev` on a phone and try the Meny, the exit and the strip in both languages.
+Follow "Shipping a PR" with title `feat: one-row phone header with a Meny, new-tab links and a 2 x 2 strip`. The body names what #63's phone header did (three rows, a pinned exit and 10rem of reserved room) and what replaces it. Red proofs: Task 11b Step 7, Task 11c Step 6, Task 11d Step 6, Task 11e Step 5. Manual before merge: an NVDA pass over the Meny at a narrow window (D finds one "Hovedmeny" navigation landmark, the trigger reads "Meny" and collapsed or expanded, the group labels "Språk" and "Tema" are read on entering each group, a theme row reads "trykket" and then "Tema: Mørkt" after Enter, "Alle tjenester" on `/sok` leaves NVDA on "Meny", Escape returns to "Meny"). After merge: open `https://varde.pages.dev` on a phone and try the Meny, the exit and the strip in both languages.
 
-**Spec coverage (PR 3b):** one row at every width (11d); Meny with three groups, labels, alignment, behaviour (11c, 11d); one source, two layouts (11b, 11c); 320 px fallback (11d, measured in `Decided (2026-10-11)`); sticky at every width, no `position: fixed`, no 10rem (11d); header row rule at 320 to 1920 in both languages (11d); `scroll-padding-top` one value (11d); new-tab links with hidden text, pinned by test (11b); strip 2 x 2, two-line limit, capital labels pinned by test (11e).
+**Spec coverage (PR 3b):** one row at every width, wrapping only with text at 200 % (11d); Meny with three groups, labels, alignment, behaviour, focus back on the trigger after a link, a status line after a theme row, its own Hovedmeny landmark (11c, 11d); one source, two layouts (11b, 11c); 320 px fallback (11d, measured in `Decided (2026-10-11)`); sticky at every width, no `position: fixed`, no 10rem (11d); header row rule at 320 to 1920 in both languages (11d); `scroll-padding-top` one value (11d); new-tab links with hidden text, pinned by test (11b); strip 2 x 2, two-line limit, capital labels pinned by test (11e).
 
 ---
 
@@ -5661,7 +5767,7 @@ git commit -m "feat: add an install hint with the vendors' own menu labels"
 **Files:**
 - Create: `web/src/components/BackButton.tsx`
 - Modify: `web/src/components/Header.tsx`, `web/src/styles/main.css`, `web/src/i18n/nb.json`, `web/src/i18n/en.json`
-- Test: `web/tests/backButton.test.tsx` (create)
+- Test: `web/tests/backButton.test.tsx` (create), `web/e2e/header.spec.ts` (installed-mode row checks, Decided 2026-10-12)
 
 **Interfaces:**
 - Consumes: `ArrowLeftIcon` (Task 7), `useNavigate`, `useCurrentUrl`, `useLanguage`, `parseUrl`.
@@ -5789,18 +5895,76 @@ Append inside `@layer components` in `main.css` (after `.btn-secondary`, so this
 	}
 ```
 
+Then, after the `.brand-word` rules from Task 11d (so these win), append:
+
+```css
+	/* Installed mode adds the 44 px back arrow and a 12 px gap to the one header row (spec:
+	   Header, Decided 2026-10-12). From the 2026-10-11 widths the brand word fits beside it
+	   from 403.2 px in English, so it shows from 404 px; Step 4 measures the real value. Below
+	   356 px the row may wrap to two lines, a known limit for the smallest phones. */
+	@media (display-mode: standalone) {
+		.brand-word {
+			display: none;
+		}
+	}
+	@media (display-mode: standalone) and (min-width: 404px) {
+		.brand-word {
+			display: inline;
+		}
+	}
+```
+
 - [ ] **Step 4: Run, show red once, commit**
 
 ```bash
 npm test && npm run build:site && npx playwright test
 ```
 
-Expected: PASS. The header-row browser check is unchanged, because the arrow is `display: none` outside standalone mode.
-Red proof: change `window.history.length > 1` to `window.history.length > 2`; "with history behind it" FAILS; restore.
+Expected: PASS. The existing header-row checks are unchanged, because the arrow is `display: none` outside standalone mode.
+
+Append the installed-mode checks to `web/e2e/header.spec.ts` (Decided 2026-10-12). They use the file's `headerControls` and `rowsOf`:
+
+```ts
+// Spec: Header, installed mode. Playwright's emulateMedia has no display-mode, so this goes
+// through Chromium's CDP. The first assertion proves the emulation took, so the row check can
+// never pass on a hidden arrow.
+async function installed(page: Page) {
+	const cdp = await page.context().newCDPSession(page)
+	await cdp.send("Emulation.setEmulatedMedia", {
+		features: [{ name: "display-mode", value: "standalone" }],
+	})
+}
+
+for (const width of [320, 360, 375]) {
+	for (const path of ["/sok", "/en/sok"]) {
+		test(`installed, ${path} at ${width} px: the back arrow fits, one row from 356 px`, async ({
+			page,
+		}) => {
+			await page.setViewportSize({ width, height: 800 })
+			await page.goto(path)
+			await settle(page)
+			await installed(page)
+			await expect(page.locator(".back-button")).toBeVisible()
+			// Below 356 px two rows are a known limit (spec); sideways scroll never is.
+			if (width >= 356) {
+				const boxes = await headerControls(page)
+				const rows = rowsOf(boxes)
+				expect(rows.length, boxes.map((b) => b.label).join(" | ")).toBe(1)
+				for (const box of rows[0]) expect(box.height, box.label).toBeCloseTo(44, 0)
+			}
+			expect(await noHorizontalScroll(page)).toBe(true)
+		})
+	}
+}
+```
+
+Run `npx playwright test e2e/header.spec.ts`. Expected: PASS. If Chromium rejects the `display-mode` feature or `.back-button` stays hidden, stop and report it. Do not swap in a test-only class. Then measure: in installed mode on `/en/sok`, read the brand link's width with the word shown and confirm 404 px still fits; if not, set the breakpoint to the measured sum and update the comment.
+
+Red proofs: (1) change `window.history.length > 1` to `window.history.length > 2`; "with history behind it" FAILS; restore. (2) delete the standalone `.brand-word { display: none; }` rule; the installed 360 px English row check FAILS on the row count; restore.
 
 ```bash
 npx biome ci .
-git add src/components/BackButton.tsx src/components/Header.tsx src/styles/main.css src/i18n tests/backButton.test.tsx
+git add src/components/BackButton.tsx src/components/Header.tsx src/styles/main.css src/i18n tests/backButton.test.tsx e2e/header.spec.ts
 git commit -m "feat: add a back arrow when Varde runs as an installed app"
 ```
 
@@ -5844,4 +6008,4 @@ Blocked until the two install labels are checked on a real device (Open items). 
 - **Choosing the language that is already current** navigates to the same URL. Harmless, and the row is marked current, so I add no guard.
 - **Hardening the detail page's existing website and chat links** stays in sub-project E, as the spec says; only the new helpline link gets the `https://` check.
 
-> Stress-tested 2026-10-02 (spec-stress-test skill): 31 applied, 3 left for Malin.
+> Stress-tested 2026-10-12 (skill 1b85fca), the 2026-10-11 amendment: 7 applied, 1 adapted, 2 decided by me. The first pass on 2026-10-02 applied 31 and left 3 for me.
