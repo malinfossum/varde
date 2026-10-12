@@ -96,7 +96,7 @@
 	"header.home": "Varde, home page",
 	"header.navLabel": "Main menu",
 	"header.allServices": "All services",
-	"header.external": "(external site)",
+	"header.external": "(external site, opens in a new tab)",
 	"strip.label": "Emergency numbers",
 	"strip.brann": "fire",
 	"strip.politi": "police",

@@ -96,7 +96,7 @@
 	"header.home": "Varde, til forsiden",
 	"header.navLabel": "Hovedmeny",
 	"header.allServices": "Alle tjenester",
-	"header.external": "(ekstern side)",
+	"header.external": "(ekstern side, åpnes i ny fane)",
 	"strip.label": "Nødnumre",
 	"strip.brann": "brann",
 	"strip.politi": "politi",

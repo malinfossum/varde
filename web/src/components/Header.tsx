@@ -1,26 +1,17 @@
+import { useThemeChoice } from "../hooks/useThemeChoice.ts"
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
-import { HELSENORGE_URL, NAV_URL } from "../services/externalLinks.ts"
 import { BrandMark } from "./BrandMark.tsx"
+import { HeaderLinks } from "./HeaderLinks.tsx"
 import { LanguagePicker } from "./LanguagePicker.tsx"
 import { Link } from "./Link.tsx"
 import { QuickExit } from "./QuickExit.tsx"
 import { ThemePicker } from "./ThemePicker.tsx"
 
-// Same tab on purpose (spec: Header). The arrow is decoration; the hidden text says it.
-function ExternalMark() {
-	const t = useTranslation()
-	return (
-		<>
-			<span aria-hidden="true">↗</span>
-			{/* No leading space: the space before <ExternalMark /> in the link already separates
-			    the words, so the name reads "Helsenorge (ekstern side)" with one space. */}
-			<span className="visually-hidden">{t("header.external")}</span>
-		</>
-	)
-}
-
 export function Header() {
 	const t = useTranslation()
+	// One theme state for the desktop picker and the Meny, so a choice made in one is already
+	// shown in the other when the window crosses 1024 px.
+	const theme = useThemeChoice()
 	return (
 		<header className="app-header border-b border-border bg-surface">
 			{/* DOM order is the desktop order from the spec: brand, nav, pickers, exit. Under
@@ -38,19 +29,11 @@ export function Header() {
 					<span>Varde</span>
 				</Link>
 				<nav aria-label={t("header.navLabel")} className="header-nav">
-					<Link to="/sok" className="nav-link">
-						{t("header.allServices")}
-					</Link>
-					<a href={HELSENORGE_URL} className="nav-link">
-						Helsenorge <ExternalMark />
-					</a>
-					<a href={NAV_URL} className="nav-link">
-						NAV <ExternalMark />
-					</a>
+					<HeaderLinks className="nav-link" />
 				</nav>
 				<div className="header-tools">
 					<LanguagePicker />
-					<ThemePicker />
+					<ThemePicker theme={theme} />
 					<QuickExit />
 				</div>
 			</div>
