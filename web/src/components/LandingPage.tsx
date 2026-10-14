@@ -74,7 +74,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 								<li key={line.id} className="@container">
 									<a
 										href={telHref(line.phone)}
-										className="btn-primary h-full w-full py-2 text-center text-lg @max-[8rem]:flex-col"
+										className="btn-primary h-full w-full flex-col py-2 text-center text-lg @[8rem]:flex-row"
 									>
 										<span className="whitespace-nowrap">{line.phone}</span>{" "}
 										<span className="font-normal">{t(`strip.short.${line.id}`)}</span>
