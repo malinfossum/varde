@@ -98,3 +98,11 @@ test("baked Norwegian helplines are not reused on the English landing page", asy
 	const requested = vi.mocked(fetch).mock.calls.map(([input]) => String(input))
 	expect(requested.some((url) => url.includes("resources.en.json"))).toBe(true)
 })
+
+test("a landing page whose export holds no helplines still renders, without the section", async () => {
+	stubDataFiles({ resources: [] })
+	await loadIndex("nb")
+	render(<App />)
+	expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument()
+	expect(screen.queryByRole("region", { name: "Noen å snakke med" })).toBeNull()
+})

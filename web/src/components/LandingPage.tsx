@@ -54,7 +54,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 						<ul className="chip-grid grid grid-cols-2 gap-2 md:grid-cols-4">
 							{GRID_SLUGS.map((slug) => (
 								<li key={slug}>
-									<Link to={`/sok?category=${slug}`} className="chip w-full">
+									<Link to={`/sok?category=${slug}`} className="chip h-full w-full">
 										{t(`category.${slug}`)}
 									</Link>
 								</li>
@@ -71,9 +71,13 @@ export function LandingPage({ arrival }: { arrival: number }) {
 						<p className="mt-2 text-muted">{t("landing.emergencyIntro")}</p>
 						<ul className="mt-3 grid grid-cols-2 gap-3">
 							{emergencyLines.map((line) => (
-								<li key={line.id}>
-									<a href={telHref(line.phone)} className="btn-primary h-full w-full text-lg">
-										{line.phone} <span className="font-normal">{t(`strip.${line.id}`)}</span>
+								<li key={line.id} className="@container">
+									<a
+										href={telHref(line.phone)}
+										className="btn-primary h-full w-full py-2 text-center text-lg @max-[8rem]:flex-col"
+									>
+										<span className="whitespace-nowrap">{line.phone}</span>{" "}
+										<span className="font-normal">{t(`strip.short.${line.id}`)}</span>
 									</a>
 								</li>
 							))}

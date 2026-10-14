@@ -15,8 +15,8 @@ export function LandingSearch() {
 	const [value, setValue] = useState("")
 	const [catalog, setCatalog] = useState<Catalog | null>(null)
 
-	// The search box fetches nothing on render. The first sign of intent — focus or the pointer
-	// reaching the box — starts the index request so suggestions are ready for the first
+	// The search box fetches nothing on render. The first sign of intent (focus, or the pointer
+	// reaching the box) starts the index request so suggestions are ready for the first
 	// keystroke. A failed load is silent here: plain search still works.
 	const warm = () => prefetchIndex(lang)
 

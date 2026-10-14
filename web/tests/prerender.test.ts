@@ -345,3 +345,29 @@ test("a helpline id missing from the export fails the whole build", async () => 
 		})
 	).rejects.toThrow("helpline id 121")
 })
+
+test("each landing page bakes the helplines from its own language's export", async () => {
+	const { dataDir, distDir } = setup([row], [hamar])
+	writeFileSync(
+		join(dataDir, "resources.en.json"),
+		JSON.stringify([{ ...row, name: "NAV Hamar EN" }])
+	)
+	const render = vi.fn(async () => ({ html: "<main>x</main>", head: null }))
+	await prerenderSite({
+		dataDir,
+		distDir,
+		render,
+		split: stubSplit,
+		pickHelplines: (rows) =>
+			(rows as { id: number; name: string }[]).map((r) => ({
+				id: r.id,
+				name: r.name,
+				phone: null,
+				chatUrl: null,
+			})),
+		siteOrigin: "https://varde.pages.dev",
+		log: () => {},
+	})
+	expect(readFileSync(join(distDir, "en/index.html"), "utf8")).toContain("NAV Hamar EN")
+	expect(readFileSync(join(distDir, "index.html"), "utf8")).not.toContain("NAV Hamar EN")
+})

@@ -13,12 +13,23 @@ for (const [width, columns] of [
 		const boxes = await page.locator(".chip-grid .chip").evaluateAll((els) =>
 			els.map((el) => {
 				const r = el.getBoundingClientRect()
-				return { x: Math.round(r.left), w: Math.round(r.width) }
+				return {
+					x: Math.round(r.left),
+					w: Math.round(r.width),
+					top: Math.round(r.top),
+					h: Math.round(r.height),
+				}
 			})
 		)
 		expect(boxes).toHaveLength(8)
 		expect(new Set(boxes.map((b) => b.x)).size).toBe(columns)
 		expect(new Set(boxes.map((b) => b.w)).size).toBe(1)
+		// Chips on one grid row share one height, and none is shorter than a 44 px target.
+		for (const row of new Set(boxes.map((b) => b.top))) {
+			const heights = boxes.filter((b) => b.top === row).map((b) => b.h)
+			expect(new Set(heights).size).toBe(1)
+			expect(heights[0]).toBeGreaterThanOrEqual(44)
+		}
 	})
 
 	test(`the Nødtjenester chip sits on a row of its own, ending above the grid at ${width} px`, async ({
@@ -101,6 +112,45 @@ for (const width of [320, 375, 1280]) {
 			for (const row of [boxes.slice(0, 2), boxes.slice(2)]) {
 				expect(row[0].height).toBe(row[1].height)
 				expect(row[0].bottom).toBe(row[1].bottom)
+			}
+		})
+	}
+}
+
+for (const width of [320, 375, 1280]) {
+	for (const path of ["/", "/en/"]) {
+		test(`each emergency number stays on one line, and its text stays inside its button at ${width} px (${path})`, async ({
+			page,
+		}) => {
+			await page.setViewportSize({ width, height: 900 })
+			await page.goto(path)
+			await settle(page)
+			const buttons = await page
+				.locator("section[aria-labelledby=emergency] a")
+				.evaluateAll((els) =>
+					els.map((el) => {
+						const lineTops = (node: Node) => {
+							const range = document.createRange()
+							range.selectNodeContents(node)
+							return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size
+						}
+						const box = el.getBoundingClientRect()
+						const all = document.createRange()
+						all.selectNodeContents(el)
+						const text = all.getBoundingClientRect()
+						return {
+							label: el.textContent,
+							numberLines: lineTops(el.firstElementChild as Element),
+							pastLeft: Math.round(box.left - text.left),
+							pastRight: Math.round(text.right - box.right),
+						}
+					})
+				)
+			expect(buttons).toHaveLength(4)
+			for (const b of buttons) {
+				expect(b.numberLines, `${b.label} number lines`).toBe(1)
+				expect(b.pastLeft, `${b.label} past left`).toBeLessThanOrEqual(0)
+				expect(b.pastRight, `${b.label} past right`).toBeLessThanOrEqual(0)
 			}
 		})
 	}
