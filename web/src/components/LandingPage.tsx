@@ -12,7 +12,7 @@ import { PageHead } from "./PageHead.tsx"
 // corrected on 2026-09-09.
 const NEXT_VERIFICATION_PASS = "2027-02-17"
 
-const chipOrder = ["nodtjenester", ...CATEGORY_SLUGS.filter((s) => s !== "nodtjenester")]
+const GRID_SLUGS = CATEGORY_SLUGS.filter((s) => s !== "nodtjenester")
 
 const titles = {
 	nb: "Varde – finn riktig hjelpetjeneste",
@@ -26,32 +26,66 @@ export function LandingPage({ arrival }: { arrival: number }) {
 	return (
 		<div className="landing">
 			<PageHead title={titles[lang]} description={t("landing.subtitle")} path="/" />
-			<section className="hero relative py-10 text-center md:py-16">
-				<p className="entrance text-xs uppercase tracking-[0.24em] text-muted">
-					{t("landing.eyebrow")}
-				</p>
-				<h1 ref={ref} tabIndex={-1} className="mx-auto mt-3 max-w-2xl text-4xl md:text-6xl">
-					{t("landing.headline")}
-				</h1>
-				<p className="entrance entrance-2 mx-auto mt-4 max-w-md text-muted">
-					{t("landing.subtitle")}
-				</p>
-				<div className="entrance entrance-3 mt-6">
-					<LandingSearch />
+			{/* Two columns from 1024 px (decided 2026-10-02 so the page fits one 950 px screen):
+			    finding help on the left, calling for it on the right. Under 1024 px they stack. */}
+			<div className="landing-columns grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-10">
+				<section className="hero relative py-6 text-center lg:py-4 lg:text-left">
+					<p className="entrance text-xs uppercase tracking-[0.24em] text-muted">
+						{t("landing.eyebrow")}
+					</p>
+					<h1
+						ref={ref}
+						tabIndex={-1}
+						className="mx-auto mt-3 max-w-2xl text-4xl leading-[1.1] text-balance md:text-6xl lg:mx-0"
+					>
+						{t("landing.headline")}
+					</h1>
+					<p className="entrance entrance-2 mx-auto mt-4 max-w-xl text-muted lg:mx-0">
+						{t("landing.subtitle")}
+					</p>
+					<div className="entrance entrance-3 mt-6">
+						<LandingSearch />
+					</div>
+					<p className="entrance entrance-4 mt-6 text-xs uppercase tracking-[0.18em] text-muted">
+						{t("landing.browse")}
+					</p>
+					<div className="entrance entrance-5 mt-3 grid gap-2">
+						<Link
+							to="/sok?category=nodtjenester"
+							className="chip chip-acute justify-self-center lg:justify-self-start"
+						>
+							{t("category.nodtjenester")}
+						</Link>
+						<ul className="chip-grid grid grid-cols-2 gap-2 md:grid-cols-4">
+							{GRID_SLUGS.map((slug) => (
+								<li key={slug}>
+									<Link to={`/sok?category=${slug}`} className="chip w-full">
+										{t(`category.${slug}`)}
+									</Link>
+								</li>
+							))}
+						</ul>
+					</div>
+				</section>
+
+				<div className="landing-help grid gap-6 border-t border-border pt-6 lg:border-0 lg:py-4">
+					<section aria-labelledby="emergency">
+						<h2 id="emergency" className="text-2xl">
+							{t("landing.emergencyHeading")}
+						</h2>
+						<p className="mt-2 text-muted">{t("landing.emergencyIntro")}</p>
+						<ul className="mt-3 grid grid-cols-2 gap-3">
+							{emergencyLines.map((line) => (
+								<li key={line.id}>
+									<a href={telHref(line.phone)} className="btn-primary h-full w-full text-lg">
+										{line.phone} <span className="font-normal">{t(`strip.${line.id}`)}</span>
+									</a>
+								</li>
+							))}
+						</ul>
+					</section>
 				</div>
-				<p className="entrance entrance-4 mt-6 text-xs uppercase tracking-[0.18em] text-muted">
-					{t("landing.browse")}
-				</p>
-				<ul className="entrance entrance-5 mt-3 flex flex-wrap justify-center gap-2">
-					{chipOrder.map((slug) => (
-						<li key={slug}>
-							<Link to={`/sok?category=${slug}`} className="btn-secondary rounded-full text-sm">
-								{t(`category.${slug}`)}
-							</Link>
-						</li>
-					))}
-				</ul>
-			</section>
+			</div>
 
 			<section
 				aria-labelledby="trust"
@@ -65,22 +99,6 @@ export function LandingPage({ arrival }: { arrival: number }) {
 				<p className="text-sm text-muted">
 					{t("landing.trustVerified").replace("{date}", NEXT_VERIFICATION_PASS)}
 				</p>
-			</section>
-
-			<section aria-labelledby="emergency" className="border-t border-border py-8">
-				<h2 id="emergency" className="text-2xl">
-					{t("landing.emergencyHeading")}
-				</h2>
-				<p className="mt-2 max-w-prose text-muted">{t("landing.emergencyIntro")}</p>
-				<ul className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-					{emergencyLines.map((line) => (
-						<li key={line.id}>
-							<a href={telHref(line.phone)} className="btn-primary w-full text-lg">
-								{line.phone} <span className="font-normal">{t(`strip.${line.id}`)}</span>
-							</a>
-						</li>
-					))}
-				</ul>
 			</section>
 		</div>
 	)

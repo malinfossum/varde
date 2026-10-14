@@ -88,3 +88,45 @@ test("nine category chips link to scoped results, each with its real label, and 
 	expect(chips).toHaveLength(9)
 	expect(screen.getAllByRole("link", { name: /116 117/ }).length).toBeGreaterThanOrEqual(2) // strip + emergency section
 })
+
+test("Nødtjenester stands apart; the other eight sit in one grid in category order", () => {
+	stubCatalog()
+	render(<App />)
+	const main = screen.getByRole("main")
+	const acute = within(main).getByRole("link", { name: "Nødtjenester" })
+	expect(acute).toHaveClass("chip-acute")
+	expect(acute.closest("ul")).toBeNull()
+	const grid = within(main)
+		.getByRole("link", { name: nb["category.bolig"] })
+		.closest("ul") as HTMLElement
+	const names = within(grid)
+		.getAllByRole("link")
+		.map((a) => a.textContent)
+	expect(names).toEqual(
+		CATEGORY_SLUGS.filter((s) => s !== "nodtjenester").map((s) => nb[`category.${s}`])
+	)
+})
+
+test("the headline keeps its last three words together, in both languages", () => {
+	stubCatalog()
+	const { unmount } = render(<App />)
+	expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
+		"Finn riktig hjelp, der\u00a0du\u00a0bor."
+	)
+	unmount()
+	window.history.replaceState(null, "", "/en/")
+	render(<App />)
+	expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
+		"Find the right help, where\u00a0you\u00a0live."
+	)
+})
+
+test("the emergency intro is the plain new line, in both languages", () => {
+	stubCatalog()
+	const { unmount } = render(<App />)
+	expect(screen.getByText("Ved akutt fare, ring:")).toBeInTheDocument()
+	unmount()
+	window.history.replaceState(null, "", "/en/")
+	render(<App />)
+	expect(screen.getByText("In an emergency, call:")).toBeInTheDocument()
+})

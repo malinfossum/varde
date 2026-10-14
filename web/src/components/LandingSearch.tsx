@@ -54,7 +54,7 @@ export function LandingSearch() {
 	}
 
 	return (
-		<search className="mx-auto w-full max-w-xl">
+		<search className="mx-auto w-full max-w-xl lg:mx-0">
 			<form
 				className="flex items-center gap-2 rounded-xl border border-border bg-surface p-1.5 pl-4"
 				onSubmit={(event) => {
