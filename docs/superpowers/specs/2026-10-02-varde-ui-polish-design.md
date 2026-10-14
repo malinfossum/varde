@@ -217,8 +217,9 @@ then the trust line, then the footer.
   the strip (now the start of each link's name) is a label, not part of a sentence, so it starts with a capital letter in both
   languages: "Brann", "Politi", "Ambulanse", "Legevakt" and "Fire", "Police", "Ambulance",
   "Out-of-hours service". Today only "Legevakt" does. The English 116 117 label is the short
-  form I approved on 2026-10-11, because the full term wraps to three lines at 320 px; the
-  landing page's emergency grid keeps "out-of-hours medical service". Running text, such as the Om
+  form I approved on 2026-10-11, because the full term wraps to three lines at 320 px. The
+  landing page's emergency grid uses the same short labels (amended 2026-10-14): with the full
+  term, "116 117" broke over two lines in its 2 x 2 cell. Running text, such as the Om
   Varde body and the legevakt banner, keeps normal sentence case. A unit test pins the four
   labels in both languages.
 
@@ -231,7 +232,9 @@ then the trust line, then the footer.
   other eight in an equal grid below: 2 columns under 768 px, 4 from 768 px. All chips in the
   grid share one width.
 - **Emergency intro (2).** `landing.emergencyIntro` becomes "Ved akutt fare, ring:" / "In an
-  emergency, call:". The four emergency buttons become a 2 x 2 grid in their half.
+  emergency, call:". The four emergency buttons become a 2 x 2 grid in their half. Each
+  number stays on one line. The label sits under the number by default and beside it once the
+  cell is 8 rem wide (a container query), so a large text size never pushes it past the edge.
 - **Noen å snakke med (9).** Heading "Noen å snakke med" / "Someone to talk to", a short
   subtitle, and five entries in this order: ids 1 (Hjelpetelefonen), 2 (Kirkens SOS),
   121 (Kors på halsen), 9 (Arbeidslivstelefonen), 122 (Sidetmedord).
@@ -244,7 +247,8 @@ then the trust line, then the footer.
     instead, labelled "Chat". That link renders only when the URL starts with `https://`;
     otherwise the entry shows its name alone.
   - Visible labels stay short ("Ring 116 123", "Chat"), but each accessible name includes the
-    service ("Ring Hjelpetelefonen, 116 123"). Two of the five share 116 123 today, so a list
+    service ("Ring 116 123, Hjelpetelefonen"; amended 2026-10-14: the visible label comes
+    first, so the accessible name starts with what is on screen, WCAG 2.5.3). Two of the five share 116 123 today, so a list
     of links read out of context must still tell them apart.
   - The subtitle says only what every listed service's own source confirms. The sketch said
     "Gratis og anonymt."; the plan checks the five sources before that string is written, and
