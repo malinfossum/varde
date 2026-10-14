@@ -29,7 +29,7 @@ export function AnnouncerProvider({ children }: { children: ReactNode }) {
 		<AnnouncerContext.Provider value={announce}>
 			{children}
 			{/* The app's single aria-live region — every async announcement funnels here. */}
-			<div aria-live="polite" className="visually-hidden">
+			<div aria-live="polite" className="visually-hidden top-0">
 				{message}
 			</div>
 		</AnnouncerContext.Provider>

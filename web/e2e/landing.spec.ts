@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { settle } from "./helpers.ts"
+import { setTheme, settle, THEMES } from "./helpers.ts"
 
 for (const [width, columns] of [
 	[375, 2],
@@ -103,5 +103,25 @@ for (const width of [320, 375, 1280]) {
 				expect(row[0].bottom).toBe(row[1].bottom)
 			}
 		})
+	}
+}
+
+for (const width of [1280, 1920]) {
+	for (const theme of THEMES) {
+		for (const path of ["/", "/en/"]) {
+			test(`landing ${path} fits 950 px at ${width} px (${theme}), footer included`, async ({
+				page,
+			}) => {
+				await page.setViewportSize({ width, height: 950 })
+				await setTheme(page, theme)
+				await page.goto(path)
+				await settle(page)
+				await expect(
+					page.getByRole("region", { name: /Noen å snakke med|Someone to talk to/ })
+				).toBeVisible()
+				const height = await page.evaluate(() => document.documentElement.scrollHeight)
+				expect(height).toBeLessThanOrEqual(950)
+			})
+		}
 	}
 }

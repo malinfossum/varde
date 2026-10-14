@@ -7,12 +7,6 @@ import { LandingSearch } from "./LandingSearch.tsx"
 import { Link } from "./Link.tsx"
 import { PageHead } from "./PageHead.tsx"
 
-// Copied from README "Data verification" section (first scheduled pass, docs/superpowers/specs/
-// 2026-08-12-varde-design.md). Update it there and here together. Six months after the seed
-// pass (LastVerified 2026-08-13/08-17), so 2027 — the spec's original 2026 was a typo I
-// corrected on 2026-09-09.
-const NEXT_VERIFICATION_PASS = "2027-02-17"
-
 const GRID_SLUGS = CATEGORY_SLUGS.filter((s) => s !== "nodtjenester")
 
 const titles = {
@@ -91,16 +85,13 @@ export function LandingPage({ arrival }: { arrival: number }) {
 
 			<section
 				aria-labelledby="trust"
-				className="grid gap-4 border-t border-border py-8 md:grid-cols-3"
+				className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-border pt-4 text-sm text-muted"
 			>
 				<h2 id="trust" className="visually-hidden">
 					{t("landing.trustHeading")}
 				</h2>
-				<p className="text-sm text-muted">{t("landing.trustNoTracking")}</p>
-				<p className="text-sm text-muted">{t("landing.trustSources")}</p>
-				<p className="text-sm text-muted">
-					{t("landing.trustVerified").replace("{date}", NEXT_VERIFICATION_PASS)}
-				</p>
+				<p>{t("landing.trustLine")}</p>
+				<p>{t("landing.shiftHint")}</p>
 			</section>
 		</div>
 	)

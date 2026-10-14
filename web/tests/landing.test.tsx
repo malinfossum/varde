@@ -140,3 +140,13 @@ test("the emergency intro is the plain new line, in both languages", () => {
 	render(<App />)
 	expect(screen.getByText("In an emergency, call:")).toBeInTheDocument()
 })
+
+test("the trust line is one muted line, followed by the Shift hint", () => {
+	stubCatalog()
+	render(<App />)
+	const trust = screen.getByRole("region", { name: "Derfor kan du stole på Varde" })
+	expect(trust).toHaveTextContent(
+		"Ingen sporing · Hvert nummer kopiert fra kilden · Sjekkes hvert halvår"
+	)
+	expect(trust).toHaveTextContent("Trykk Shift tre ganger for å forlate siden raskt.")
+})
