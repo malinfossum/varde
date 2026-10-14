@@ -7,7 +7,7 @@ import { render } from "../src/entry-server.tsx"
 import { UrlContext } from "../src/navigation.ts"
 import { type PageData, PageDataContext } from "../src/pageData.ts"
 import { clearIndexCache } from "../src/services/data.ts"
-import { stubDataFiles } from "./stubData.ts"
+import { bakedHelplines, stubDataFiles } from "./stubData.ts"
 
 const resource = {
 	id: 12,
@@ -93,8 +93,8 @@ async function hydrate(url: string, data: PageData) {
 }
 
 test.each([
-	["/", {}],
-	["/en/", {}],
+	["/", bakedHelplines("nb")],
+	["/en/", bakedHelplines("en")],
 	["/om", {}],
 	["/en/om", {}],
 	["/sok", {}],

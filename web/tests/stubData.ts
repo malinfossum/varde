@@ -1,5 +1,9 @@
 import { vi } from "vitest"
+import type { PageData } from "../src/pageData.ts"
 import type { Index } from "../src/services/data.ts"
+import { pickHelplines } from "../src/services/helplines.ts"
+import type { Lang } from "../src/services/urlState.ts"
+import type { ResourceDto } from "../src/types/api.ts"
 
 const empty: Index = { resources: [], municipalities: [], categories: [], kommuner: [] }
 
@@ -25,4 +29,45 @@ export function stubDataFiles(fixture: Partial<Index> = {}): void {
 			return new Response("not found", { status: 404 })
 		})
 	)
+}
+
+function helpline(
+	id: number,
+	name: string,
+	phone: string | null,
+	chatUrl: string | null
+): ResourceDto {
+	return {
+		id,
+		name,
+		description: "",
+		isFallbackTranslation: false,
+		openingHours: null,
+		isNational: true,
+		isAlwaysOpen: false,
+		municipalityId: null,
+		municipalityName: null,
+		address: null,
+		phone,
+		email: null,
+		website: null,
+		chatUrl,
+		lastVerified: "2026-08-13",
+		categories: [],
+		servedMunicipalityIds: [],
+	}
+}
+
+// The five "Noen å snakke med" rows, not in the landing order (the test reverses them anyway).
+export const helplineRows: ResourceDto[] = [
+	helpline(1, "Hjelpetelefonen (Mental Helse)", "116 123", null),
+	helpline(2, "Kirkens SOS", "22 40 00 40", "https://www.soschat.no"),
+	helpline(9, "Arbeidslivstelefonen (Mental Helse)", "116 123", null),
+	helpline(121, "Kors på halsen (Røde Kors)", "800 33 321", "https://www.korspahalsen.no"),
+	helpline(122, "Sidetmedord (Mental Helse)", null, "https://sidetmedord.mentalhelse.no/"),
+]
+
+// The page data the prerender bakes into a landing page, for tests that render or hydrate it.
+export function bakedHelplines(lang: Lang): PageData {
+	return { helplines: { lang, entries: pickHelplines(helplineRows) } }
 }

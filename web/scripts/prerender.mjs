@@ -72,7 +72,7 @@ export function urlList(kommuner, resourcesByLang) {
 	const out = []
 	for (const lang of LANGS) {
 		const p = prefix(lang)
-		out.push({ url: `${p}/`, data: {}, lang })
+		out.push({ url: `${p}/`, data: {}, lang, landing: true })
 		out.push({ url: `${p}/sok`, data: {}, lang, chunk: CHUNKS.list })
 		out.push({ url: `${p}/om`, data: {}, lang, chunk: CHUNKS.about })
 		for (const r of resourcesByLang[lang])
@@ -191,6 +191,7 @@ export async function prerenderSite({
 	distDir,
 	render,
 	split,
+	pickHelplines,
 	siteOrigin,
 	manifest = null,
 	log = console.log,
@@ -209,7 +210,9 @@ export async function prerenderSite({
 	for (const page of pages) {
 		const data = page.kommune
 			? { kommune: split(page.kommune, resourcesByLang[page.lang]) }
-			: page.data
+			: page.landing
+				? { helplines: { lang: page.lang, entries: pickHelplines(resourcesByLang[page.lang]) } }
+				: page.data
 		const { html, head } = await render(page.url, data)
 		assertNoOutlinedBoundary(html, page.url)
 		assertNoStyleAttribute(html, page.url)
@@ -269,6 +272,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 		distDir: join(webDir, "dist"),
 		render: server.render,
 		split: server.splitForKommune,
+		pickHelplines: server.pickHelplines,
 		siteOrigin,
 		manifest,
 	})

@@ -7,6 +7,7 @@ export type PrerenderPage = {
 	lang: string
 	data: Record<string, unknown>
 	kommune?: object
+	landing?: boolean
 	chunk?: string
 }
 // The shape of dist/.vite/manifest.json that modulepreloadTags reads (Vite writes more).
@@ -16,12 +17,14 @@ export type HeadEntry = { title: string; description: string; path: string; lang
 export type RenderResult = { html: string; head: HeadEntry | null }
 export type RenderFn = (url: string, data: Record<string, unknown>) => Promise<RenderResult>
 export type SplitFn = (entry: object, resources: object[]) => unknown
+export type PickHelplinesFn = (resources: object[]) => unknown
 
 export type PrerenderOptions = {
 	dataDir: string
 	distDir: string
 	render: RenderFn
 	split: SplitFn
+	pickHelplines: PickHelplinesFn
 	siteOrigin: string
 	manifest?: Manifest | null
 	log?: (message: string) => void
