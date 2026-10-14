@@ -24,6 +24,8 @@
 	"landing.trustVerified": "Alle oppføringer sjekkes på nytt hvert halvår. Neste gang: {date}.",
 	"landing.emergencyHeading": "Akutt hjelp",
 	"landing.emergencyIntro": "Ved akutt fare, ring:",
+	"landing.helplinesHeading": "Noen å snakke med",
+	"landing.helplinesSubtitle": "Du kan være anonym.",
 	"search.label": "Søk etter tjeneste, kommune eller tema",
 	"search.suggestions": "Forslag",
 	"search.suggestionMunicipality": "kommune",

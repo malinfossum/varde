@@ -24,6 +24,8 @@
 	"landing.trustVerified": "Every listing is re-checked twice a year. Next time: {date}.",
 	"landing.emergencyHeading": "Emergency help",
 	"landing.emergencyIntro": "In an emergency, call:",
+	"landing.helplinesHeading": "Someone to talk to",
+	"landing.helplinesSubtitle": "You can stay anonymous.",
 	"search.label": "Search for services, municipalities, or topics",
 	"search.suggestions": "Suggestions",
 	"search.suggestionMunicipality": "municipality",

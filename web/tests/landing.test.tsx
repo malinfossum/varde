@@ -3,8 +3,9 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
 import nbStrings from "../src/i18n/nb.json"
+import { PageDataContext } from "../src/pageData.ts"
 import { CATEGORY_SLUGS } from "../src/services/categories.ts"
-import { stubDataFiles } from "./stubData.ts"
+import { bakedHelplines, stubDataFiles } from "./stubData.ts"
 
 const nb = nbStrings as Record<string, string>
 
@@ -32,7 +33,11 @@ afterEach(() => {
 
 test("the landing renders without a single request", () => {
 	const fetchSpy = stubCatalog()
-	render(<App />)
+	render(
+		<PageDataContext.Provider value={bakedHelplines("nb")}>
+			<App />
+		</PageDataContext.Provider>
+	)
 	expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/Finn riktig hjelp/)
 	expect(fetchSpy).not.toHaveBeenCalled()
 	expect(document.title).toBe("Varde – finn riktig hjelpetjeneste")
@@ -41,8 +46,13 @@ test("the landing renders without a single request", () => {
 test("focusing the search box prefetches the catalog; Enter submits the text to /sok", async () => {
 	const fetchSpy = stubCatalog()
 	const user = userEvent.setup()
-	render(<App />)
+	render(
+		<PageDataContext.Provider value={bakedHelplines("nb")}>
+			<App />
+		</PageDataContext.Provider>
+	)
 	const box = screen.getByRole("searchbox", { name: /Søk/ })
+	expect(fetchSpy).not.toHaveBeenCalled()
 	await user.click(box)
 	// loadIndex fetches all four data files together (resources, municipalities, categories,
 	// kommuner) — the prefetch is all-or-nothing, unlike the old two-endpoint catalog call.

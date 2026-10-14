@@ -394,4 +394,20 @@
 		color: var(--on-accent);
 		font-weight: 600;
 	}
+	.helpline-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.25rem 0.75rem;
+	}
+	.helpline-name {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		color: var(--text);
+		font-weight: 600;
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
 }

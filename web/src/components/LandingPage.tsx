@@ -2,6 +2,7 @@ import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { CATEGORY_SLUGS } from "../services/categories.ts"
 import { emergencyLines, telHref } from "../services/emergency.ts"
+import { Helplines } from "./Helplines.tsx"
 import { LandingSearch } from "./LandingSearch.tsx"
 import { Link } from "./Link.tsx"
 import { PageHead } from "./PageHead.tsx"
@@ -84,6 +85,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 							))}
 						</ul>
 					</section>
+					<Helplines />
 				</div>
 			</div>
 
