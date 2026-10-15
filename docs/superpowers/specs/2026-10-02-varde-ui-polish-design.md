@@ -239,7 +239,8 @@ from 1024 px, stacked below), then the trust line, then the footer.
   non-breaking spaces, so the line breaks at the comma and no word stands alone:
   "Finn riktig hjelp, der du bor." and "Find the right help, where you live." The hero padding
   shrinks; the exact values are whatever passes the 950 px check.
-- **Chips (3).** Nødtjenester first, as its own chip in accent colour on a row of its own. The
+- **Chips (3).** Nødtjenester first, as its own chip in accent colour on a row of its own
+  (amended 2026-10-15: from 1024 px it sits left of the grid instead, see Fit). The
   other eight in an equal grid below: 2 columns under 768 px, 4 from 768 px. All chips in the
   grid share one width.
 - **Emergency intro (2).** `landing.emergencyIntro` becomes "Ved akutt fare, ring:" / "In an
@@ -306,6 +307,12 @@ from 1024 px, stacked below), then the trust line, then the footer.
   1266 px, 316 px over, most of it in the hero. Until the page fits again, Playwright guards the
   layout itself (hero centred at 1280 and 1920, emergency buttons of one height, helpline rows
   on one grid). The 1920 x 950 fit check comes back in the commit that closes the gap.
+  (Closed 2026-10-15, option 1 of two I compared as screenshots.) From 1024 px: the heading is
+  one line, the eyebrow is hidden, Nødtjenester sits left of the chip grid and is centred on its
+  two rows, the spacing is tighter, the footer lines share one row when they fit, and "Velg
+  tast 3" sits beside its name when there is room. Measured 912 px in Norwegian and 933 px in
+  English at 1920 x 950. The fit check is back for both languages and both themes. The rejected
+  option split the help area 1:2 with the helplines in two columns, which wrapped every name.
 - **Targets.** Every new interactive element in this spec (chips, helpline buttons, the
   install hint's `<summary>`, footer links, picker rows, the back arrow) is at least 44 x 44 px.
 
@@ -435,7 +442,7 @@ prerender test fails on a `style=` attribute in a page.
 | A2 Pickers | Arrows wrap, Escape returns focus, System follows the OS | | |
 | A3 Om Varde | Footer line on every route, About in both languages and in the sitemap | | I read the text |
 | A4 Back arrow | Shown only in installed mode, not on landing | Installed mode: one header row at 360 and 375 in nb and en, no sideways scroll at 320 | Checked in the installed app |
-| 16 Hero | | Line height 1.1, two lines, last three words together (nb and en) | |
+| 16 Hero | | Line height 1.1, last three words together (nb and en); one line from 1024 px (amended 2026-10-15) | |
 | 17 One screen | | Landing incl. footer at most 950 px tall at 1920 (amended 2026-10-15: 1280 dropped; layout guards until the fit returns) | |
 | Header rule | | One row, every control 44 px with one bottom edge, at 320 to 1920 in nb and en | |
 | Meny | Arrows wrap across the three groups, Escape returns focus, a theme row keeps the Meny open and writes its status line, a link to the current route leaves focus on the trigger, the Meny sits in a nav named Hovedmeny / Main menu | Meny shown only below 1024 px, desktop nav and pickers only from 1024 px, one navigation landmark at 1023 and 1024; with text at 200 % the header wraps and never scrolls sideways | NVDA reads the group labels, "trykket" and "Tema: Mørkt" on a theme row |
