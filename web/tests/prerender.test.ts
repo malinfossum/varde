@@ -85,6 +85,7 @@ test("writes every page as a file (except / and /en/) with head, data block, lan
 		distDir,
 		render,
 		split: stubSplit,
+		pickHelplines: () => [],
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
@@ -129,6 +130,7 @@ test("a trailing slash on siteOrigin never doubles up in a canonical URL", async
 		distDir,
 		render,
 		split: stubSplit,
+		pickHelplines: () => [],
 		siteOrigin: "https://varde.pages.dev/",
 		log: () => {},
 	})
@@ -156,6 +158,7 @@ test("rejects a page whose render() output carries an outlined Suspense boundary
 			distDir,
 			render,
 			split: stubSplit,
+			pickHelplines: () => [],
 			siteOrigin: "https://varde.pages.dev",
 			log: () => {},
 		})
@@ -184,6 +187,7 @@ test("a $-replacement-pattern sequence in a resource's description renders uncha
 		distDir,
 		render,
 		split: stubSplit,
+		pickHelplines: () => [],
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
@@ -221,6 +225,7 @@ test("a prerendered route page preloads its lazy chunk and that chunk's imports,
 		distDir,
 		render: async () => ({ html: "<main></main>", head: null }),
 		split: stubSplit,
+		pickHelplines: () => [],
 		siteOrigin: "https://varde.pages.dev",
 		manifest,
 		log: () => {},
@@ -253,6 +258,7 @@ test("every page carries the share-card tags, absolute and escaped", async () =>
 		distDir,
 		render,
 		split: stubSplit,
+		pickHelplines: () => [],
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
@@ -296,8 +302,72 @@ test("rejects a page whose markup carries a style attribute, which the CSP would
 			distDir,
 			render,
 			split: stubSplit,
+			pickHelplines: () => [],
 			siteOrigin: "https://varde.pages.dev",
 			log: () => {},
 		})
 	).rejects.toThrow(/style=/)
+})
+
+test("the landing pages bake their helplines, in their own language", async () => {
+	const { dataDir, distDir } = setup([row], [hamar])
+	const render = vi.fn(async () => ({ html: "<main>x</main>", head: null }))
+	await prerenderSite({
+		dataDir,
+		distDir,
+		render,
+		split: stubSplit,
+		pickHelplines: () => [{ id: 1, name: "Hjelpetelefonen", phone: "116 123", chatUrl: null }],
+		siteOrigin: "https://varde.pages.dev",
+		log: () => {},
+	})
+	expect(readFileSync(join(distDir, "index.html"), "utf8")).toContain(
+		'"helplines":{"lang":"nb","entries":[{"id":1'
+	)
+	expect(readFileSync(join(distDir, "en/index.html"), "utf8")).toContain('"helplines":{"lang":"en"')
+	expect(readFileSync(join(distDir, "sok.html"), "utf8")).not.toContain("helplines")
+})
+
+test("a helpline id missing from the export fails the whole build", async () => {
+	const { dataDir, distDir } = setup([row], [hamar])
+	const render = vi.fn(async () => ({ html: "<main>x</main>", head: null }))
+	await expect(
+		prerenderSite({
+			dataDir,
+			distDir,
+			render,
+			split: stubSplit,
+			pickHelplines: () => {
+				throw new Error("helpline id 121 is missing from the data")
+			},
+			siteOrigin: "https://varde.pages.dev",
+			log: () => {},
+		})
+	).rejects.toThrow("helpline id 121")
+})
+
+test("each landing page bakes the helplines from its own language's export", async () => {
+	const { dataDir, distDir } = setup([row], [hamar])
+	writeFileSync(
+		join(dataDir, "resources.en.json"),
+		JSON.stringify([{ ...row, name: "NAV Hamar EN" }])
+	)
+	const render = vi.fn(async () => ({ html: "<main>x</main>", head: null }))
+	await prerenderSite({
+		dataDir,
+		distDir,
+		render,
+		split: stubSplit,
+		pickHelplines: (rows) =>
+			(rows as { id: number; name: string }[]).map((r) => ({
+				id: r.id,
+				name: r.name,
+				phone: null,
+				chatUrl: null,
+			})),
+		siteOrigin: "https://varde.pages.dev",
+		log: () => {},
+	})
+	expect(readFileSync(join(distDir, "en/index.html"), "utf8")).toContain("NAV Hamar EN")
+	expect(readFileSync(join(distDir, "index.html"), "utf8")).not.toContain("NAV Hamar EN")
 })

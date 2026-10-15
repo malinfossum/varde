@@ -3,7 +3,7 @@ import { afterEach, describe, expect, test, vi } from "vitest"
 import { axe } from "vitest-axe"
 import { App } from "../src/App.tsx"
 import type { ResourceDto } from "../src/types/api.ts"
-import { stubDataFiles } from "./stubData.ts"
+import { helplineRows, stubDataFiles } from "./stubData.ts"
 
 // Copied from tests/list.test.tsx.
 const resource: ResourceDto = {
@@ -43,14 +43,14 @@ function stub(mode: Mode) {
 	// "empty" doesn't need its own fixture: /sok?search=zzz matches nothing in the one seeded
 	// resource, so applyQuery (query.ts) naturally returns zero results, same as before this
 	// task when the API was told to return an empty page directly.
-	stubDataFiles({ resources: [resource], municipalities, categories, kommuner })
+	stubDataFiles({ resources: [resource, ...helplineRows], municipalities, categories, kommuner })
 }
 
 // jsdom does no layout, so axe cannot judge colour; tests/tokens.test.ts covers contrast.
 const options = { rules: { "color-contrast": { enabled: false } } }
 
 const pages: [string, string, Mode, RegExp][] = [
-	["landing", "/", "ok", /Finn riktig hjelp/],
+	["landing", "/", "ok", /Noen å snakke med/],
 	["results", "/sok", "ok", /treff/],
 	["empty", "/sok?search=zzz", "empty", /Ingen treff/],
 	["error", "/sok", "error", /Noe gikk galt/],

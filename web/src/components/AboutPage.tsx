@@ -5,7 +5,7 @@ import { PageHead } from "./PageHead.tsx"
 
 // The day the about.* text last changed. Bump it in the same commit as any edit to those
 // strings, in both languages.
-export const ABOUT_UPDATED = "2026-10-08"
+export const ABOUT_UPDATED = "2026-10-15"
 
 const plainSections = [
 	["what", "about.whatHeading", "about.whatBody"],

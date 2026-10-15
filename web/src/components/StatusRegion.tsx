@@ -29,7 +29,9 @@ export function AnnouncerProvider({ children }: { children: ReactNode }) {
 		<AnnouncerContext.Provider value={announce}>
 			{children}
 			{/* The app's single aria-live region — every async announcement funnels here. */}
-			<div aria-live="polite" className="visually-hidden">
+			{/* `top-0`: without it this absolute 1 px box sits after the `min-h-dvh` shell and adds 1 px of
+			    scroll to every page (the landing fit test catches it). */}
+			<div aria-live="polite" className="visually-hidden top-0">
 				{message}
 			</div>
 		</AnnouncerContext.Provider>

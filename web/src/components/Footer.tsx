@@ -10,8 +10,10 @@ export function Footer() {
 	const t = useTranslation()
 	const { lang } = useLanguage()
 	return (
-		<footer className="mt-6 border-t border-border">
-			<div className="mx-auto grid max-w-6xl gap-1 px-4 py-3 text-sm text-muted">
+		<footer className="mt-6 border-t border-border lg:mt-4">
+			{/* From 1024 px both lines share one row when they fit, which the landing page needs to
+			    fit one 1920 x 950 screen. They wrap back to two lines when they do not. */}
+			<div className="mx-auto grid max-w-6xl gap-1 px-4 py-3 text-sm text-muted lg:flex lg:flex-wrap lg:justify-between lg:gap-x-4 lg:gap-y-0">
 				{/* The 113 link keeps the text tight (a normal word space each side) and gets its 44 x 44 px
 				    target from an ::after box centred on the number. py-3 on this paragraph leaves room
 				    for that box, so it does not overlap the links in the row underneath. */}
@@ -27,7 +29,7 @@ export function Footer() {
 					)}
 					.
 				</p>
-				<p className="flex flex-wrap items-center gap-x-4">
+				<p className="flex flex-wrap items-center gap-x-4 lg:gap-x-3">
 					<Link to="/om" className="inline-flex min-h-11 items-center">
 						{t("footer.about")}
 					</Link>
