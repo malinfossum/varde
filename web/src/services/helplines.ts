@@ -22,6 +22,11 @@ export function pickHelplines(resources: readonly ResourceDto[]): Helpline[] {
 
 // A chat link renders only for an https:// URL; anything else shows the name alone. The
 // detail page's existing links are hardened in sub-project E, where outside data arrives.
+// The scheme in the returned link is written here, not copied from the data, so CodeQL
+// can see the link never starts with javascript: (the same shape as telHref's "tel:").
+const HTTPS = "https://"
+
 export function safeChatUrl(url: string | null): string | null {
-	return url?.startsWith("https://") ? url : null
+	if (!url?.startsWith(HTTPS)) return null
+	return `${HTTPS}${url.slice(HTTPS.length)}`
 }
