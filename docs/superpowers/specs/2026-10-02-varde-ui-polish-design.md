@@ -14,6 +14,13 @@ Amended 2026-10-12: the acute strip is one line. I tested #69 and the 2 x 2 stri
 tall on a phone, too much above the header. The strip is now an icon and a number per service
 on one line at every width, with each label as the link's name (Acute strip, one line).
 
+Amended 2026-10-15: the landing layout after my review of #74. The two columns gave way to one
+centred layout at every width, with Akutt hjelp and Noen å snakke med side by side under the
+hero from 1024 px (Landing, centred layout). The 950 px fit at 1280 is dropped; 1920 x 950
+stays the target (Fit). The Shift hint leaves the page and becomes the quick exit's hidden
+description, the English 116 117 label is "Out-of-hours", Arbeidslivstelefonen gets a "Velg
+tast 3" note, and the liability line says "liv og helse".
+
 ## Purpose
 
 Varde works, and people are already sharing it. What it lacks is finish and a few safety
@@ -30,7 +37,7 @@ cache that could serve a stale phone number.
 
 - **The whole landing page, footer included, fits a 950 px tall window** (a maximised browser
   on a 1080p screen) at widths 1280 and 1920. Measured 2026-10-02 at 1920 x 960: 1175 px tall,
-  hero 570 px of which 128 px is padding.
+  hero 570 px of which 128 px is padding. (Amended 2026-10-15: 1920 x 950 only; see Fit.)
 - **Cards use CSS subgrid** so every slot lines up across a row. Descriptions are never clamped.
 - **Chips:** Nødtjenester stands apart as its own accent chip; the other eight sit in an equal
   grid, 2 columns on phone and 4 from 768 px.
@@ -38,7 +45,8 @@ cache that could serve a stale phone number.
 - **Navbar:** "Alle tjenester" (`/sok`), "Helsenorge" and "NAV". No kommune index until
   sub-project C.
 - **Quick exit follows the GOV.UK "Exit this page" pattern:** always in view, Shift pressed
-  three times leaves (also inside inputs), one explainer line on the landing page.
+  three times leaves (also inside inputs). (Amended 2026-10-15: the explainer is the exit's
+  hidden description, not a line on the landing page.)
 - **Language and theme use the Workbench pickers** (DS 3.8.0, `components/picker.js` and
   `theme/theme-toggle.js`): a globe language menu built to take any number of languages, and a
   theme menu with Lyst, Mørkt and System. This replaces the segmented control and switch shown
@@ -143,9 +151,10 @@ to two lines. That is a known limit I accept for the smallest phones (decided 20
     once, and events during IME composition are ignored. The count also resets 5 seconds after
     the first press, so a slow third press does nothing. It fires inside inputs too, as on
     GOV.UK.
-  - **Explainer line.** One line on the landing page, in the trust line (see Landing):
-    "Trykk Shift tre ganger for å forlate siden raskt." / "Press Shift three times to leave
-    quickly."
+  - **Explainer (amended 2026-10-15).** The shortcut is the quick exit's description, wired
+    with `aria-describedby` to a visually hidden line: "Du kan også trykke Shift tre ganger." /
+    "You can also press Shift three times." A screen reader hears it on reaching the exit, on
+    every page. The visible line on the landing page is gone.
 - **Below 1024 px: Meny.** The nav links and both pickers move into one Meny, so the row is
   brand, Meny, exit. Meny uses the same picker shell (`<details class="picker">`, the
   `usePicker` behaviour above) with a trigger that shows a menu icon and the word "Meny" /
@@ -200,8 +209,8 @@ to two lines. That is a known limit I accept for the smallest phones (decided 20
 
 ### Landing (items 2, 3, 9, 16, 17)
 
-Order from top: acute strip, header, hero, chips, then emergency and helplines side by side,
-then the trust line, then the footer.
+Order from top: acute strip, header, hero, chips, then emergency and helplines (side by side
+from 1024 px, stacked below), then the trust line, then the footer.
 
 - **Acute strip, one line (amended 2026-10-12, replaces the 2 x 2 layout).** At every width,
   desktop too, the strip is one line: an icon and the number for each service (flame 110,
@@ -216,8 +225,10 @@ then the trust line, then the footer.
 - **Strip labels start with a capital (amended 2026-10-11).** Each emergency service label in
   the strip (now the start of each link's name) is a label, not part of a sentence, so it starts with a capital letter in both
   languages: "Brann", "Politi", "Ambulanse", "Legevakt" and "Fire", "Police", "Ambulance",
-  "Out-of-hours service". Today only "Legevakt" does. The English 116 117 label is the short
-  form I approved on 2026-10-11, because the full term wraps to three lines at 320 px. The
+  "Out-of-hours". Today only "Legevakt" does. The English 116 117 label is the short form,
+  because the full term wraps to three lines at 320 px. I approved "Out-of-hours service" on
+  2026-10-11 and shortened it to "Out-of-hours" on 2026-10-15, so the grid button fits on one
+  line like the other three. The
   landing page's emergency grid uses the same short labels (amended 2026-10-14): with the full
   term, "116 117" broke over two lines in its 2 x 2 cell. Running text, such as the Om
   Varde body and the legevakt banner, keeps normal sentence case. A unit test pins the four
@@ -235,6 +246,8 @@ then the trust line, then the footer.
   emergency, call:". The four emergency buttons become a 2 x 2 grid in their half. Each
   number stays on one line. The label sits under the number by default and beside it once the
   cell is 8 rem wide (a container query), so a large text size never pushes it past the edge.
+  (Amended 2026-10-15.) The four buttons share one height of at most 64 px: number and label
+  sit on one line when they fit and wrap as whole pieces when not, never mid-word.
 - **Noen å snakke med (9).** Heading "Noen å snakke med" / "Someone to talk to", a short
   subtitle, and five entries in this order: ids 1 (Hjelpetelefonen), 2 (Kirkens SOS),
   121 (Kors på halsen), 9 (Arbeidslivstelefonen), 122 (Sidetmedord).
@@ -250,6 +263,19 @@ then the trust line, then the footer.
     service ("Ring 116 123, Hjelpetelefonen"; amended 2026-10-14: the visible label comes
     first, so the accessible name starts with what is on screen, WCAG 2.5.3). Two of the five share 116 123 today, so a list
     of links read out of context must still tell them apart.
+  - **Rows on one grid (amended 2026-10-15).** The five rows share one grid: the call and
+    chat buttons form one column with one left edge and one width. In a column narrower than
+    21 rem every button sits under its name instead. All five rows follow the same rule, never
+    a mix.
+  - **Arbeidslivstelefonen note (amended 2026-10-15).** Ids 1 and 9 share 116 123, and the
+    seed description for id 9 says to choose option 3 in the menu. The landing row for id 9
+    shows "Velg tast 3" / "Choose option 3" under its name, and the call button's accessible
+    name includes it. The note lives in `HELPLINE_NOTES` in `src/services/helplines.ts`. The
+    data is unchanged.
+  - **Sidetmedord chat (amended 2026-10-15).** Its `chatUrl` points straight at Mental Helse's
+    chat page (`https://mentalhelse.no/hjelpechat/`, checked 200) instead of the Sidetmedord
+    front page, through the `SidetmedordChatUrl` migration. The website field keeps the front
+    page.
   - The subtitle says only what every listed service's own source confirms. The sketch said
     "Gratis og anonymt."; the plan checks the five sources before that string is written, and
     drops "Gratis" if any one of them costs a normal call.
@@ -259,14 +285,27 @@ then the trust line, then the footer.
   page therefore has two columns: hero, search and chips on the left; emergency numbers and
   helplines on the right (emergency first). The hero is left-aligned there. Trust line and
   footer run full width below. Under 1024 px everything stacks: hero, emergency, helplines.
+  (Replaced 2026-10-15 by the centred layout below.)
+- **Centred layout (amended 2026-10-15, replaces the two columns).** Decided in my review of
+  #74. The landing page is now the phone layout
+  scaled up, centred at every width: hero, search and chips on the page's centre line, then
+  Akutt hjelp and Noen å snakke med. From 1024 px those two sit side by side under the hero,
+  split by a divider; below 1024 px they stack with a divider and more room between them.
 - **Trust line (17).** The three trust paragraphs become one muted line:
-  "Ingen sporing · Hvert nummer kopiert fra kilden · Sjekkes hvert halvår", followed by the
-  quick exit explainer. Next to it sits the install hint (see Install). The visually hidden
+  "Ingen sporing · All informasjon hentet fra kilden · Sjekkes hvert halvår" / "No tracking ·
+  All information taken from its source · Checked every six months" (amended 2026-10-15; the
+  quick exit explainer moved into the exit, see Header). Next to it sits the install hint (see Install). The visually hidden
   "Derfor kan du stole på Varde" heading stays.
 - **Fit (17).** The landing page, footer included, is at most 950 px tall at 1280 x 950 and
   1920 x 950, in both themes and both languages. This is measured with the final header and
   footer, which is why the landing PR comes after both. The fit applies at default zoom only;
   at 200 % text the page scrolls, and that is correct.
+  (Amended 2026-10-15.) The centred layout is taller than the two columns, so the fit at 1280
+  is dropped: there the page scrolls. At 1920 x 950, a maximised browser on my own screen, the
+  page must still fit, footer included, and look good doing it. Measured after the change:
+  1266 px, 316 px over, most of it in the hero. Until the page fits again, Playwright guards the
+  layout itself (hero centred at 1280 and 1920, emergency buttons of one height, helpline rows
+  on one grid). The 1920 x 950 fit check comes back in the commit that closes the gap.
 - **Targets.** Every new interactive element in this spec (chips, helpline buttons, the
   install hint's `<summary>`, footer links, picker rows, the back arrow) is at least 44 x 44 px.
 
@@ -288,8 +327,10 @@ then the trust line, then the footer.
   lazy-loaded, prerendered in both languages, in the sitemap, with its own title and
   description.
 - **Footer, on every route.** Line one is the liability line: "Varde er en oversikt, ikke en
-  nødtjeneste. Ved fare for liv, ring 113." / "Varde is a directory, not an emergency service.
-  If a life is in danger, call 113." The number is a `tel:` link. Line two holds the links "Om
+  nødtjeneste. Ved fare for liv og helse, ring 113." / "Varde is a directory, not an
+  emergency service. If life or health is in danger, call 113." (Amended 2026-10-15 from "Ved
+  fare for liv" / "If a life is in danger"; the About text follows.) The number is a `tel:`
+  link. Line two holds the links "Om
   Varde og ansvar" / "About Varde and liability", "Meld feil" / "Report an error", "Kildekode på
   GitHub", and "Ingen sporing. Ingen informasjonskapsler."
 - **Meld feil.** The footer link goes to `/om#meld-feil`, not straight to `mailto:`. On a
@@ -307,7 +348,7 @@ then the trust line, then the footer.
   >
   > **Hva Varde ikke er**
   > Varde er ikke en nødtjeneste. Ingen følger med på det du gjør her, og ingen kan sende hjelp
-  > ut fra denne siden. Ved fare for liv, ring 113. Brann 110, politi 112, legevakt 116 117.
+  > ut fra denne siden. Ved fare for liv og helse, ring 113. Brann 110, politi 112, legevakt 116 117.
   > Varde gir ikke medisinske, juridiske eller økonomiske råd, og er ikke tilknyttet NAV,
   > Helsenorge eller tjenestene som står oppført.
   >
@@ -395,7 +436,7 @@ prerender test fails on a `style=` attribute in a page.
 | A3 Om Varde | Footer line on every route, About in both languages and in the sitemap | | I read the text |
 | A4 Back arrow | Shown only in installed mode, not on landing | Installed mode: one header row at 360 and 375 in nb and en, no sideways scroll at 320 | Checked in the installed app |
 | 16 Hero | | Line height 1.1, two lines, last three words together (nb and en) | |
-| 17 One screen | | Landing incl. footer at most 950 px tall at 1280 and 1920 | |
+| 17 One screen | | Landing incl. footer at most 950 px tall at 1920 (amended 2026-10-15: 1280 dropped; layout guards until the fit returns) | |
 | Header rule | | One row, every control 44 px with one bottom edge, at 320 to 1920 in nb and en | |
 | Meny | Arrows wrap across the three groups, Escape returns focus, a theme row keeps the Meny open and writes its status line, a link to the current route leaves focus on the trigger, the Meny sits in a nav named Hovedmeny / Main menu | Meny shown only below 1024 px, desktop nav and pickers only from 1024 px, one navigation landmark at 1023 and 1024; with text at 200 % the header wraps and never scrolls sideways | NVDA reads the group labels, "trykket" and "Tema: Mørkt" on a theme row |
 | Acute strip | Each tel link is named by its capital label and number, and the last link by the full term, nb and en | One line of 44 px links at 320, 360, 375, 767, 768 and 1280 in nb and en; with text at 200 % no link over another and none past the viewport | |
@@ -432,7 +473,7 @@ Six PRs plus the 3b follow-up, each small enough to review in one sitting and re
 | 2 | `feat/om-varde` | A3: About page, footer lines, Meld feil with the new alias | People are already sharing the site |
 | 3 | `feat/header` | 8, A1, A2, 7: links, pickers, quick exit with Shift x3 | Header height is part of the 950 px budget |
 | 3b | `feat/phone-header` | Header below 1024 px: one row with Meny, exit in the row, strip on one line with icons and numbers, Helsenorge and NAV in a new tab | #63 shipped a three-row phone header that was too tall at 320 px |
-| 4 | `feat/landing-fit` | 2, 3, 9, 16, 17: hero, chips, helplines, trust line, 950 px check | Measured with the final header and footer |
+| 4 | `feat/landing-fit` | 2, 3, 9, 16, 17: hero, chips, helplines, trust line, centred layout, 1920 x 950 fit | Measured with the final header and footer |
 | 5 | `feat/card-slots` | 4, 5: subgrid slots and hover | |
 | 6 | `feat/install` | P, A4: manifest, install hint, back arrow | I test the install on my phone |
 
