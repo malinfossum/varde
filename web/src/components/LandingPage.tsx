@@ -21,81 +21,81 @@ export function LandingPage({ arrival }: { arrival: number }) {
 	return (
 		<div className="landing">
 			<PageHead title={titles[lang]} description={t("landing.subtitle")} path="/" />
-			{/* Two columns from 1024 px (decided 2026-10-02 so the page fits one 950 px screen):
-			    finding help on the left, calling for it on the right. Under 1024 px they stack. */}
-			<div className="landing-columns grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-10">
-				<section className="hero relative py-6 text-center lg:py-4 lg:text-left">
-					<p className="entrance text-xs uppercase tracking-[0.24em] text-muted">
-						{t("landing.eyebrow")}
-					</p>
-					<h1
-						ref={ref}
-						tabIndex={-1}
-						className="mx-auto mt-3 max-w-2xl text-4xl leading-[1.1] text-balance md:text-6xl lg:mx-0"
-					>
-						{t("landing.headline")}
-					</h1>
-					<p className="entrance entrance-2 mx-auto mt-4 max-w-xl text-muted lg:mx-0">
-						{t("landing.subtitle")}
-					</p>
-					<div className="entrance entrance-3 mt-6">
-						<LandingSearch />
-					</div>
-					<p className="entrance entrance-4 mt-6 text-xs uppercase tracking-[0.18em] text-muted">
-						{t("landing.browse")}
-					</p>
-					<div className="entrance entrance-5 mt-3 grid gap-2">
-						<Link
-							to="/sok?category=nodtjenester"
-							className="chip chip-acute justify-self-center lg:justify-self-start"
-						>
-							{t("category.nodtjenester")}
-						</Link>
-						<ul className="chip-grid grid grid-cols-2 gap-2 md:grid-cols-4">
-							{GRID_SLUGS.map((slug) => (
-								<li key={slug}>
-									<Link to={`/sok?category=${slug}`} className="chip h-full w-full">
-										{t(`category.${slug}`)}
-									</Link>
-								</li>
-							))}
-						</ul>
-					</div>
-				</section>
-
-				<div className="landing-help grid gap-6 border-t border-border pt-6 lg:border-0 lg:py-4">
-					<section aria-labelledby="emergency">
-						<h2 id="emergency" className="text-2xl">
-							{t("landing.emergencyHeading")}
-						</h2>
-						<p className="mt-2 text-muted">{t("landing.emergencyIntro")}</p>
-						<ul className="mt-3 grid grid-cols-2 gap-3">
-							{emergencyLines.map((line) => (
-								<li key={line.id} className="@container">
-									<a
-										href={telHref(line.phone)}
-										className="btn-primary h-full w-full flex-col py-2 text-center text-lg @[8rem]:flex-row"
-									>
-										<span className="whitespace-nowrap">{line.phone}</span>{" "}
-										<span className="font-normal">{t(`strip.short.${line.id}`)}</span>
-									</a>
-								</li>
-							))}
-						</ul>
-					</section>
-					<Helplines />
+			{/* The phone layout scaled up (decided 2026-10-15, replaces the 10-02 two columns): the
+			    hero is centred at every width. Below it, calling for help and someone to talk to stack
+			    under 1024 px and sit side by side from 1024 px, split by a divider either way, since
+			    the helplines are not emergency services. */}
+			<section className="hero relative py-6 text-center lg:py-4">
+				<p className="entrance text-xs uppercase tracking-[0.24em] text-muted">
+					{t("landing.eyebrow")}
+				</p>
+				<h1
+					ref={ref}
+					tabIndex={-1}
+					className="mx-auto mt-3 max-w-2xl text-4xl leading-[1.1] text-balance md:text-6xl"
+				>
+					{t("landing.headline")}
+				</h1>
+				<p className="entrance entrance-2 mx-auto mt-4 max-w-xl text-muted">
+					{t("landing.subtitle")}
+				</p>
+				<div className="entrance entrance-3 mt-6">
+					<LandingSearch />
 				</div>
+				<p className="entrance entrance-4 mt-6 text-xs uppercase tracking-[0.18em] text-muted">
+					{t("landing.browse")}
+				</p>
+				<div className="entrance entrance-5 mx-auto mt-3 grid max-w-3xl gap-2">
+					<Link to="/sok?category=nodtjenester" className="chip chip-acute justify-self-center">
+						{t("category.nodtjenester")}
+					</Link>
+					<ul className="chip-grid grid grid-cols-2 gap-2 md:grid-cols-4">
+						{GRID_SLUGS.map((slug) => (
+							<li key={slug}>
+								<Link to={`/sok?category=${slug}`} className="chip h-full w-full">
+									{t(`category.${slug}`)}
+								</Link>
+							</li>
+						))}
+					</ul>
+				</div>
+			</section>
+
+			<div className="landing-help mt-6 grid border-t border-border pt-6 lg:grid-cols-2 lg:items-start">
+				<section aria-labelledby="emergency" className="lg:pr-10">
+					<h2 id="emergency" className="text-2xl">
+						{t("landing.emergencyHeading")}
+					</h2>
+					<p className="mt-2 text-muted">{t("landing.emergencyIntro")}</p>
+					{/* All four buttons share one height (auto-rows-fr). The number and its label sit on
+					    one line when they fit and wrap as two whole pieces when they do not. */}
+					<ul className="mt-3 grid auto-rows-fr grid-cols-2 gap-3">
+						{emergencyLines.map((line) => (
+							<li key={line.id}>
+								<a
+									href={telHref(line.phone)}
+									className="btn-primary h-full w-full flex-wrap gap-x-2 gap-y-0 px-2 py-1.5 text-center text-lg"
+								>
+									<span className="whitespace-nowrap">{line.phone}</span>{" "}
+									<span className="text-base font-normal text-balance">
+										{t(`strip.short.${line.id}`)}
+									</span>
+								</a>
+							</li>
+						))}
+					</ul>
+				</section>
+				<Helplines className="mt-8 border-t border-border pt-8 lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10" />
 			</div>
 
 			<section
 				aria-labelledby="trust"
-				className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-border pt-4 text-sm text-muted"
+				className="mt-6 border-t border-border pt-4 text-sm text-muted"
 			>
 				<h2 id="trust" className="visually-hidden">
 					{t("landing.trustHeading")}
 				</h2>
 				<p>{t("landing.trustLine")}</p>
-				<p>{t("landing.shiftHint")}</p>
 			</section>
 		</div>
 	)

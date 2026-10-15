@@ -3,7 +3,7 @@ import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { usePageData } from "../pageData.ts"
 import { loadIndex, peekIndex } from "../services/data.ts"
 import { telHref } from "../services/emergency.ts"
-import { type Helpline, pickHelplines, safeChatUrl } from "../services/helplines.ts"
+import { HELPLINE_NOTES, type Helpline, pickHelplines, safeChatUrl } from "../services/helplines.ts"
 import type { Lang } from "../services/urlState.ts"
 import { Link } from "./Link.tsx"
 
@@ -23,7 +23,7 @@ function knownHelplines(baked: Helpline[] | null, lang: Lang): Helpline[] | null
 	}
 }
 
-export function Helplines() {
+export function Helplines({ className }: { className?: string }) {
 	const { lang } = useLanguage()
 	const t = useTranslation()
 	const page = usePageData().helplines
@@ -48,31 +48,49 @@ export function Helplines() {
 	const entries = known ?? (fetched?.lang === lang ? fetched.entries : null)
 	if (!entries) return null
 	return (
-		<section aria-labelledby="helplines">
+		<section aria-labelledby="helplines" className={`@container ${className ?? ""}`}>
 			<h2 id="helplines" className="text-2xl">
 				{t("landing.helplinesHeading")}
 			</h2>
 			<p className="mt-2 text-muted">{t("landing.helplinesSubtitle")}</p>
-			<ul className="mt-3 grid gap-2">
+			{/* One grid for every row: names in the first column, buttons in the second, so all
+			    buttons share one left edge and one width. In a column narrower than 21 rem every row
+			    puts its button under the name instead, never just some of them. */}
+			<ul className="mt-3 grid gap-y-3 @[21rem]:grid-cols-[minmax(0,1fr)_auto] @[21rem]:gap-x-3 @[21rem]:gap-y-2">
 				{entries.map((entry) => {
 					const chat = safeChatUrl(entry.chatUrl)
+					const noteKey = HELPLINE_NOTES[entry.id]
+					const note = noteKey ? t(noteKey) : null
 					// The visible label stays short ("Ring 116 123"); the hidden part adds the service,
 					// since two entries share 116 123. The visible words come first in the name
 					// (WCAG 2.5.3, label in name).
+					const hidden = note ? `, ${entry.name}, ${note}` : `, ${entry.name}`
 					return (
-						<li key={entry.id} className="helpline-row">
-							<Link to={`/resources/${entry.id}`} className="helpline-name">
-								{entry.name}
-							</Link>
+						<li
+							key={entry.id}
+							className="helpline-row grid gap-1 @[21rem]:col-span-2 @[21rem]:grid-cols-subgrid @[21rem]:items-center"
+						>
+							<div>
+								<Link to={`/resources/${entry.id}`} className="helpline-name">
+									{entry.name}
+								</Link>
+								{note && <p className="text-sm text-muted">{note}</p>}
+							</div>
 							{entry.phone ? (
-								<a href={telHref(entry.phone)} className="btn-primary shrink-0">
+								<a
+									href={telHref(entry.phone)}
+									className="btn-primary justify-self-start @[21rem]:justify-self-stretch"
+								>
 									{t("card.call")} {entry.phone}
-									<span className="visually-hidden">, {entry.name}</span>
+									<span className="visually-hidden">{hidden}</span>
 								</a>
 							) : chat ? (
-								<a href={chat} className="btn-secondary shrink-0">
+								<a
+									href={chat}
+									className="btn-secondary justify-self-start @[21rem]:justify-self-stretch"
+								>
 									{t("detail.chat")}
-									<span className="visually-hidden">, {entry.name}</span>
+									<span className="visually-hidden">{hidden}</span>
 								</a>
 							) : null}
 						</li>

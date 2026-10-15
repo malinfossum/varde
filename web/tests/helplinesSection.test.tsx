@@ -50,8 +50,18 @@ test("the call buttons say the number, and their names also say the service", ()
 	})
 	expect(call).toHaveAttribute("href", "tel:116123")
 	expect(
-		within(section).getByRole("link", { name: "Ring 116 123, Arbeidslivstelefonen (Mental Helse)" })
+		within(section).getByRole("link", {
+			name: "Ring 116 123, Arbeidslivstelefonen (Mental Helse), Velg tast 3",
+		})
 	).toBeInTheDocument()
+})
+
+test("Arbeidslivstelefonen shows its menu option under the name, and only that entry does", () => {
+	renderLanding()
+	const section = screen.getByRole("region", { name: "Noen å snakke med" })
+	const rows = within(section).getAllByRole("listitem")
+	expect(within(rows[3] as HTMLElement).getByText("Velg tast 3")).toBeInTheDocument()
+	expect(within(section).getAllByText("Velg tast 3")).toHaveLength(1)
 })
 
 test("an entry without a phone gets a Chat link to its https chat", () => {

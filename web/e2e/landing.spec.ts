@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { setTheme, settle, THEMES } from "./helpers.ts"
+import { settle } from "./helpers.ts"
 
 for (const [width, columns] of [
 	[375, 2],
@@ -156,22 +156,62 @@ for (const width of [320, 375, 1280]) {
 	}
 }
 
+// Decided 2026-10-15: the centred phone layout at every width replaces the two columns that
+// fitted 950 px, so the landing scrolls on desktop. These guard the layout itself instead.
 for (const width of [1280, 1920]) {
-	for (const theme of THEMES) {
-		for (const path of ["/", "/en/"]) {
-			test(`landing ${path} fits 950 px at ${width} px (${theme}), footer included`, async ({
-				page,
-			}) => {
-				await page.setViewportSize({ width, height: 950 })
-				await setTheme(page, theme)
-				await page.goto(path)
-				await settle(page)
-				await expect(
-					page.getByRole("region", { name: /Noen å snakke med|Someone to talk to/ })
-				).toBeVisible()
-				const height = await page.evaluate(() => document.documentElement.scrollHeight)
-				expect(height).toBeLessThanOrEqual(950)
+	test(`the hero is centred on the page at ${width} px`, async ({ page }) => {
+		await page.setViewportSize({ width, height: 950 })
+		await page.goto("/")
+		await settle(page)
+		const centres = await page.evaluate(() =>
+			["h1", "search", ".chip-acute"].map((s) => {
+				const r = document.querySelector(s)?.getBoundingClientRect()
+				return r ? Math.round(r.left + r.width / 2) : -1
 			})
-		}
+		)
+		const middle = await page.evaluate(() => Math.round(document.documentElement.clientWidth / 2))
+		for (const c of centres) expect(Math.abs(c - middle)).toBeLessThanOrEqual(1)
+	})
+}
+
+for (const width of [320, 375, 1024, 1280]) {
+	for (const path of ["/", "/en/"]) {
+		test(`the four emergency buttons share one height of at most 64 px at ${width} px (${path})`, async ({
+			page,
+		}) => {
+			await page.setViewportSize({ width, height: 900 })
+			await page.goto(path)
+			await settle(page)
+			const heights = await page
+				.locator("section[aria-labelledby=emergency] a")
+				.evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().height)))
+			expect(new Set(heights).size).toBe(1)
+			expect(heights[0]).toBeLessThanOrEqual(64)
+		})
+
+		test(`every helpline row lays out the same way at ${width} px (${path})`, async ({ page }) => {
+			await page.setViewportSize({ width, height: 900 })
+			await page.goto(path)
+			await settle(page)
+			const rows = await page.locator(".helpline-row").evaluateAll((els) =>
+				els.map((li) => {
+					const name = (li.querySelector(".helpline-name") as Element).getBoundingClientRect()
+					const btn = (li.querySelector(":scope > a") as Element).getBoundingClientRect()
+					return {
+						left: Math.round(btn.left),
+						width: Math.round(btn.width),
+						below: btn.top >= name.bottom - 1,
+					}
+				})
+			)
+			expect(rows).toHaveLength(5)
+			// Either every button sits under its name or none does, never a mix.
+			expect(new Set(rows.map((r) => r.below)).size).toBe(1)
+			if (!rows[0].below) {
+				// Side by side: one shared button column, so one left edge and one width.
+				expect(new Set(rows.map((r) => r.left)).size).toBe(1)
+				expect(new Set(rows.map((r) => r.width)).size).toBe(1)
+			}
+		})
 	}
 }

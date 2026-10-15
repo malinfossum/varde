@@ -6,6 +6,10 @@ import type { ResourceDto } from "../types/api.ts"
 // fails the build instead of shipping a shorter list.
 export const HELPLINE_IDS = [1, 2, 121, 9, 122] as const
 
+// A short line under a name on the landing page. Id 9 shares 116 123 with Hjelpetelefonen,
+// and its seed description says to choose option 3 in the menu ("Velg tast 3 i menyen").
+export const HELPLINE_NOTES: Partial<Record<number, string>> = { 9: "landing.helplineNote.9" }
+
 export type Helpline = Pick<ResourceDto, "id" | "name" | "phone" | "chatUrl">
 
 export function pickHelplines(resources: readonly ResourceDto[]): Helpline[] {
