@@ -64,7 +64,10 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 			</a>
 			<AcuteStrip />
 			<Header />
-			<main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
+			<main
+				id="main"
+				className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 ${route.kind === "landing" ? "lg:py-3" : ""}`}
+			>
 				<Suspense fallback={<LoadingState />}>
 					{route.kind === "landing" && <LandingPage arrival={arrival} />}
 					{route.kind === "list" && <ListPage filters={filters} arrival={arrival} />}

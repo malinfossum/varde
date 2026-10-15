@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { settle } from "./helpers.ts"
+import { setTheme, settle, THEMES } from "./helpers.ts"
 
 for (const [width, columns] of [
 	[375, 2],
@@ -31,29 +31,48 @@ for (const [width, columns] of [
 			expect(heights[0]).toBeGreaterThanOrEqual(44)
 		}
 	})
-
-	test(`the Nødtjenester chip sits on a row of its own, ending above the grid at ${width} px`, async ({
-		page,
-	}) => {
-		await page.setViewportSize({ width, height: 900 })
-		await page.goto("/")
-		const acuteBottom = await page
-			.locator(".chip-acute")
-			.evaluate((el) => el.getBoundingClientRect().bottom)
-		const gridTop = await page
-			.locator(".chip-grid .chip")
-			.first()
-			.evaluate((el) => el.getBoundingClientRect().top)
-		expect(acuteBottom).toBeLessThanOrEqual(gridTop)
-	})
 }
+
+test("the Nødtjenester chip sits on a row of its own, ending above the grid at 375 px", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 375, height: 900 })
+	await page.goto("/")
+	const acuteBottom = await page
+		.locator(".chip-acute")
+		.evaluate((el) => el.getBoundingClientRect().bottom)
+	const gridTop = await page
+		.locator(".chip-grid .chip")
+		.first()
+		.evaluate((el) => el.getBoundingClientRect().top)
+	expect(acuteBottom).toBeLessThanOrEqual(gridTop)
+})
+
+// From 1024 px the chip sits left of the grid, centred on its two rows (decided 2026-10-15, so
+// the landing fits one 1920 x 950 screen).
+test("the Nødtjenester chip sits beside the grid, centred on its rows, at 1280 px", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 900 })
+	await page.goto("/")
+	const acute = await page.locator(".chip-acute").evaluate((el) => {
+		const r = el.getBoundingClientRect()
+		return { right: r.right, middle: r.top + r.height / 2 }
+	})
+	const grid = await page.locator(".chip-grid").evaluate((el) => {
+		const r = el.getBoundingClientRect()
+		return { left: r.left, middle: r.top + r.height / 2 }
+	})
+	expect(acute.right).toBeLessThanOrEqual(grid.left)
+	expect(Math.abs(acute.middle - grid.middle)).toBeLessThanOrEqual(1)
+})
 
 for (const width of [1280, 1920]) {
 	for (const [path, first, last] of [
 		["/", "der", "bor."],
 		["/en/", "where", "live."],
 	] as const) {
-		test(`hero at ${width} px (${path}): line height 1.1, two lines, last three words together`, async ({
+		test(`hero at ${width} px (${path}): line height 1.1, one line, last three words together`, async ({
 			page,
 		}) => {
 			await page.setViewportSize({ width, height: 950 })
@@ -81,7 +100,7 @@ for (const width of [1280, 1920]) {
 				[first, last]
 			)
 			expect(m.ratio).toBeCloseTo(1.1, 2)
-			expect(m.lines).toBe(2)
+			expect(m.lines).toBe(1)
 			expect(m.firstTop).toBe(m.lastTop)
 		})
 	}
@@ -156,15 +175,38 @@ for (const width of [320, 375, 1280]) {
 	}
 }
 
-// Decided 2026-10-15: the centred phone layout at every width replaces the two columns that
-// fitted 950 px, so the landing scrolls on desktop. These guard the layout itself instead.
+// Decided 2026-10-15: the landing page, footer included, fits a maximised browser on a 1080p
+// screen. Only at 1920; at 1280 the centred layout scrolls, and that is fine.
+for (const theme of THEMES) {
+	for (const path of ["/", "/en/"]) {
+		test(`the landing page fits one 1920 x 950 screen (${path}, ${theme})`, async ({ page }) => {
+			await setTheme(page, theme)
+			await page.setViewportSize({ width: 1920, height: 950 })
+			await page.goto(path)
+			await settle(page)
+			await page.locator(".helpline-row").first().waitFor()
+			const m = await page.evaluate(() => ({
+				scroll: document.documentElement.scrollHeight,
+				footerBottom: Math.round(
+					(document.querySelector("footer") as Element).getBoundingClientRect().bottom
+				),
+			}))
+			expect(m.scroll).toBeLessThanOrEqual(950)
+			expect(m.footerBottom).toBeLessThanOrEqual(950)
+		})
+	}
+}
+
+// The centred phone layout at every width replaced the two columns on 2026-10-15. These guard
+// the layout itself.
 for (const width of [1280, 1920]) {
 	test(`the hero is centred on the page at ${width} px`, async ({ page }) => {
 		await page.setViewportSize({ width, height: 950 })
 		await page.goto("/")
 		await settle(page)
 		const centres = await page.evaluate(() =>
-			["h1", "search", ".chip-acute"].map((s) => {
+			// The chip block (Nødtjenester beside the grid from 1024 px) is centred as a whole.
+			["h1", "search", ".hero > div:has(> .chip-acute)"].map((s) => {
 				const r = document.querySelector(s)?.getBoundingClientRect()
 				return r ? Math.round(r.left + r.width / 2) : -1
 			})

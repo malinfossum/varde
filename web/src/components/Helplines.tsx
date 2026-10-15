@@ -52,11 +52,11 @@ export function Helplines({ className }: { className?: string }) {
 			<h2 id="helplines" className="text-2xl">
 				{t("landing.helplinesHeading")}
 			</h2>
-			<p className="mt-2 text-muted">{t("landing.helplinesSubtitle")}</p>
+			<p className="mt-2 text-muted lg:mt-1">{t("landing.helplinesSubtitle")}</p>
 			{/* One grid for every row: names in the first column, buttons in the second, so all
 			    buttons share one left edge and one width. In a column narrower than 21 rem every row
 			    puts its button under the name instead, never just some of them. */}
-			<ul className="mt-3 grid gap-y-3 @[21rem]:grid-cols-[minmax(0,1fr)_auto] @[21rem]:gap-x-3 @[21rem]:gap-y-2">
+			<ul className="mt-3 grid gap-y-3 lg:mt-2 @[21rem]:grid-cols-[minmax(0,1fr)_auto] @[21rem]:gap-x-3 @[21rem]:gap-y-2">
 				{entries.map((entry) => {
 					const chat = safeChatUrl(entry.chatUrl)
 					const noteKey = HELPLINE_NOTES[entry.id]
@@ -70,7 +70,7 @@ export function Helplines({ className }: { className?: string }) {
 							key={entry.id}
 							className="helpline-row grid gap-1 @[21rem]:col-span-2 @[21rem]:grid-cols-subgrid @[21rem]:items-center"
 						>
-							<div>
+							<div className="lg:flex lg:flex-wrap lg:items-baseline lg:gap-x-2">
 								<Link to={`/resources/${entry.id}`} className="helpline-name">
 									{entry.name}
 								</Link>
