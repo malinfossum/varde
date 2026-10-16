@@ -429,4 +429,31 @@
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
+	/* A contact tile on the detail page (spec C2a): the whole tile is one link. The 1 px border
+	   keeps its edge in forced-colors mode, where the accent-soft fill disappears. 69 px is the
+	   minimum: a long child name wraps inside the tile and makes it taller, never clipped. */
+	.contact-tile {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		height: 100%;
+		min-height: 69px;
+		padding: 0.75rem 1rem;
+		border: 1px solid var(--border);
+		border-radius: 0.75rem;
+		background: var(--surface);
+		color: var(--text);
+		text-decoration: none;
+		overflow-wrap: anywhere;
+	}
+	.contact-tile-icon {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 0.5rem;
+		background: var(--accent-soft);
+		color: var(--accent);
+	}
 }

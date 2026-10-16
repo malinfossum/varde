@@ -9,10 +9,12 @@ import {
 	shareCapability,
 	shareResource,
 } from "../services/contactActions.ts"
+import { contactTiles } from "../services/contactTiles.ts"
 import { clearIndexCache, loadIndex } from "../services/data.ts"
-import { telHref } from "../services/emergency.ts"
+import { type Family, familyOf, NO_FAMILY } from "../services/family.ts"
 import { metaDescription } from "../services/site.ts"
 import type { ResourceDto } from "../types/api.ts"
+import { ContactTiles } from "./ContactTiles.tsx"
 import { ErrorState } from "./ErrorState.tsx"
 import { Link } from "./Link.tsx"
 import { LoadingState } from "./LoadingState.tsx"
@@ -25,7 +27,7 @@ type DetailState =
 	| { kind: "loading" }
 	| { kind: "error" }
 	| { kind: "missing" }
-	| { kind: "ready"; resource: ResourceDto }
+	| { kind: "ready"; resource: ResourceDto; family: Family }
 
 export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: number }) {
 	const { lang } = useLanguage()
@@ -34,7 +36,7 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	const pageData = usePageData()
 	const [state, setState] = useState<DetailState>(() =>
 		pageData.resource?.id === id
-			? { kind: "ready", resource: pageData.resource }
+			? { kind: "ready", resource: pageData.resource, family: pageData.family ?? NO_FAMILY }
 			: { kind: "loading" }
 	)
 	const [attempt, setAttempt] = useState(0)
@@ -77,7 +79,11 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 			(index) => {
 				if (cancelled) return
 				const found = index.resources.find((r) => r.id === id)
-				setState(found ? { kind: "ready", resource: found } : { kind: "missing" })
+				setState(
+					found
+						? { kind: "ready", resource: found, family: familyOf(found, index.resources) }
+						: { kind: "missing" }
+				)
 			},
 			() => {
 				if (!cancelled) setState({ kind: "error" })
@@ -102,7 +108,9 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	// else around it here — so it takes the page's one level-1 heading, same as every other route.
 	if (state.kind === "missing") return <NotFoundState arrival={arrival} />
 
-	const { resource } = state
+	const { resource, family } = state
+	const tiles = contactTiles(resource, family.children)
+	const [partOfBefore = "", partOfAfter = ""] = t("detail.partOf").split("{name}")
 
 	const onShare = async () => {
 		const outcome = await shareResource(
@@ -141,25 +149,30 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 				</Link>
 			)}
 			<header className="grid gap-3 rounded-xl border border-border bg-surface p-5 md:p-8">
-				<h1 ref={heading} tabIndex={-1} className="text-3xl md:text-5xl">
+				<h1 ref={heading} tabIndex={-1} className="text-3xl wrap-anywhere md:text-5xl">
 					{resource.name}
 				</h1>
 				<ResourceBadges resource={resource} />
 				<p className="text-muted">
 					{resource.isNational ? t("detail.nationalService") : resource.municipalityName}
 				</p>
+				{family.parent && (
+					<p className="text-sm text-muted">
+						{partOfBefore}
+						<Link to={`/resources/${family.parent.id}`} className="text-accent underline">
+							{family.parent.name}
+						</Link>
+						{partOfAfter}
+					</p>
+				)}
 				{resource.isFallbackTranslation && (
 					<p className="text-sm text-muted">{t("card.fallback")}</p>
 				)}
-				{/* Call is the hero action — the whole reason someone lands here. Share/copy-link stay
-				    available even without a phone number (a chat- or web-only service still shares). */}
-				{(resource.phone || capability !== "none") && (
+				{/* Every way to reach the service is a tile (spec C2a). Copy-number and share stay
+				    below as buttons: a chat- or web-only service still shares. */}
+				<ContactTiles tiles={tiles} />
+				{((resource.phone && canCopy) || capability !== "none") && (
 					<div className="flex flex-wrap items-center gap-2">
-						{resource.phone && (
-							<a href={telHref(resource.phone)} className="btn-primary text-xl md:text-2xl">
-								{t("card.call")} {resource.phone}
-							</a>
-						)}
 						{resource.phone && canCopy && (
 							<button
 								type="button"
@@ -181,7 +194,7 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 				</a>
 			</header>
 			<p className="max-w-prose">{resource.description}</p>
-			{/* Hours sit with the rest of the contact facts — phone moved to the hero above. */}
+			{/* Hours and the other facts. Phone and chat are tiles above. */}
 			<dl className="grid gap-3 md:grid-cols-[max-content_1fr] md:gap-x-8">
 				{resource.openingHours && (
 					<>
@@ -215,20 +228,6 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 						<dd>
 							<a href={`mailto:${resource.email}`} className="text-accent underline">
 								{resource.email}
-							</a>
-						</dd>
-					</>
-				)}
-				{resource.chatUrl && (
-					<>
-						<dt className="text-muted">{t("detail.chat")}</dt>
-						<dd>
-							<a
-								href={resource.chatUrl}
-								rel="noopener noreferrer"
-								className="text-accent underline"
-							>
-								{resource.chatUrl}
 							</a>
 						</dd>
 					</>
