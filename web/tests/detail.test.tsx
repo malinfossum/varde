@@ -397,3 +397,33 @@ test("a chat address that is not https never becomes a tile", async () => {
 	await renderDetail({ ...detail, chatUrl: "javascript:alert(1)" })
 	expect(screen.queryByRole("link", { name: /Åpne chatten/ })).toBeNull()
 })
+
+test("the email is the last contact tile, named E-post, and not a row in the facts", async () => {
+	await renderDetail({ ...detail, email: "post@krisesenter.example.no" })
+	const block = screen.getByRole("region", { name: "Kontakt" })
+	const tiles = within(block).getAllByRole("link")
+	const email = tiles.at(-1) as HTMLElement
+	expect(email).toHaveAccessibleName("E-post, post@krisesenter.example.no")
+	expect(email).toHaveAttribute("href", "mailto:post@krisesenter.example.no")
+	expect(email).not.toHaveAttribute("rel")
+	expect(email).not.toHaveAttribute("target")
+	expect([...document.querySelectorAll("dt")].map((dt) => dt.textContent)).not.toContain("E-post")
+})
+
+test("an unsafe email gets no tile and no link anywhere", async () => {
+	await renderDetail({ ...detail, email: "a@b.no?bcc=x@y.no" })
+	expect(document.querySelector('a[href^="mailto:a@b.no"]')).toBeNull()
+})
+
+test("in English the email tile is named Email", async () => {
+	stubDataFiles({ resources: [{ ...detail, email: "post@example.no" }] })
+	render(
+		<LanguageProvider lang="en">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	const block = await screen.findByRole("region", { name: "Contact" })
+	expect(within(block).getAllByRole("link").at(-1)).toHaveAccessibleName("Email, post@example.no")
+})

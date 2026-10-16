@@ -143,3 +143,13 @@ export function ChatIcon({ className }: IconProps) {
 		</Svg>
 	)
 }
+
+// An envelope: a rounded rectangle with the flap drawn as a shallow V from the top corners.
+export function MailIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<rect x="3" y="5" width="18" height="14" rx="2" />
+			<path d="M3.5 6.5l8.5 6.5 8.5-6.5" />
+		</Svg>
+	)
+}

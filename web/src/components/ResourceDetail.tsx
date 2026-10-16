@@ -221,16 +221,6 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 						</dd>
 					</>
 				)}
-				{resource.email && (
-					<>
-						<dt className="text-muted">{t("detail.email")}</dt>
-						<dd>
-							<a href={`mailto:${resource.email}`} className="text-accent underline">
-								{resource.email}
-							</a>
-						</dd>
-					</>
-				)}
 			</dl>
 			<p className="text-sm text-muted">
 				{t("card.lastVerified")} {resource.lastVerified}
