@@ -154,7 +154,8 @@ uppercase text side by side would look like a mistake.
   `var(--text)` and `text-fg`. The others are `text-muted`, `hover:text-fg`.
 - **Forced colours:** box shadows vanish there, so under `@media (forced-colors: active)` the
   group gets `outline: 1px solid CanvasText` and the pressed button
-  `outline: 2px solid Highlight; outline-offset: -2px`.
+  `border: 2px solid Highlight`. A border, not an outline, so it never replaces the house focus
+  ring (`:focus-visible` is an outline) on the pressed button.
 - **Focus:** the house focus ring, unchanged. The group does not clip it.
 
 ### Behaviour
@@ -164,8 +165,8 @@ uppercase text side by side would look like a mistake.
 - **Announcement:** a choice is announced as "Tema: Mørkt" / "Theme: Dark" through
   `useAnnounce()` from `StatusRegion.tsx`, the live region the Meny already uses, because a change in pressed state alone is not reliably
   spoken (the Meny learned this, see the comment in `HeaderMenu.tsx`). Focus stays on the
-  button. Pressing the button that is already pressed changes nothing and announces the same
-  line again, so a screen-reader user who presses it to check hears the current value.
+  button. Pressing the button that is already pressed changes nothing. The focused button
+  already reads as "pressed", so no second line is needed.
 - **Before mount** (prerender and first paint) the state is `null`. Every button renders
   `aria-pressed="false"`, so the server and the browser HTML match. The real state arrives in
   the effect. No hydration mismatch, the same model as the picker it replaces.
@@ -239,7 +240,7 @@ Unit (`vitest`):
 - `tests/themePill.test.tsx`: the group is named Tema/Theme; three buttons named Lyst, System,
   Mørkt in that order (en: Light, System, Dark); every behaviour moved from
   `themePicker.test.tsx`; a pill choice updates the Meny's pressed row in the same render tree;
-  the announcement fires, and fires again when the pressed button is pressed again.
+  the announcement fires; pressing the pressed button leaves the stored key unchanged.
 - `tests/shell.test.tsx` and `tests/header.test.tsx`: no theme picker in the header any more.
 - `tests/axe.test.tsx`: unchanged, it must stay clean.
 - `tests/i18n.test.tsx` already fails on a key with no twin, and `tests/tokens.test.ts` already
@@ -277,6 +278,10 @@ measured as above. I see them before the PR opens.
 - **Keeping a theme control in the desktop header.** Theme becomes harder to find on a long
   list page, because the footer is far down. I accepted that on 2026-10-16: theme is set once,
   and a calmer header matters more.
+- **Announcing again when the pressed button is pressed again.** The shared announcer drops a
+  message identical to the last one (React keeps the same state), and making it repeat would
+  change the announcer for every caller. Not needed: the focused button already reads as
+  "pressed".
 - **The pill before hydration.** Its buttons do nothing until the app has loaded, as with the
   Meny's rows today. The init snippet already applies the stored or system theme, so nothing
   looks wrong in the meantime.
@@ -290,4 +295,4 @@ measured as above. I see them before the PR opens.
 - Moving the language picker.
 - The workbench design-system pattern. It has its own spec in the workbench repo.
 
-> Stress-tested 2026-10-16 (skill 1b85fca): 6 applied, 1 adapted, 0 decided by me.
+> Stress-tested 2026-10-16 (skill 1b85fca): 5 applied, 2 adapted, 0 decided by me.
