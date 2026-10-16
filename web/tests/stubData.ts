@@ -31,6 +31,32 @@ export function stubDataFiles(fixture: Partial<Index> = {}): void {
 	)
 }
 
+// One national row with every optional field empty; a test overrides only what it is about.
+export function makeResource(
+	over: Partial<ResourceDto> & Pick<ResourceDto, "id" | "name">
+): ResourceDto {
+	return {
+		description: "",
+		isFallbackTranslation: false,
+		openingHours: null,
+		isNational: true,
+		isAlwaysOpen: false,
+		municipalityId: null,
+		municipalityName: null,
+		address: null,
+		phone: null,
+		email: null,
+		website: null,
+		chatUrl: null,
+		lastVerified: "2026-08-13",
+		categories: [],
+		servedMunicipalityIds: [],
+		parentId: null,
+		phoneMenuOption: null,
+		...over,
+	}
+}
+
 function helpline(
 	id: number,
 	name: string,

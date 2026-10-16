@@ -9,6 +9,8 @@ import { type PageData, PageDataContext } from "./pageData.ts"
 // dist-server/entry-server.mjs without importing KommunePage.tsx directly — that file pulls in
 // react-aria-components' ComboBox tree, which the prerender script has no use for.
 export { splitForKommune } from "./components/KommunePage.tsx"
+// The prerender finds a detail page's parent and children with the same function the browser uses.
+export { familyOf } from "./services/family.ts"
 // The prerender picks the landing page's helplines with the same function the browser uses.
 export { pickHelplines } from "./services/helplines.ts"
 

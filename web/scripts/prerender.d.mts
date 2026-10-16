@@ -18,6 +18,7 @@ export type RenderResult = { html: string; head: HeadEntry | null }
 export type RenderFn = (url: string, data: Record<string, unknown>) => Promise<RenderResult>
 export type SplitFn = (entry: object, resources: object[]) => unknown
 export type PickHelplinesFn = (resources: object[]) => unknown
+export type FamilyFn = (resource: object, resources: object[]) => unknown
 
 export type PrerenderOptions = {
 	dataDir: string
@@ -25,6 +26,7 @@ export type PrerenderOptions = {
 	render: RenderFn
 	split: SplitFn
 	pickHelplines: PickHelplinesFn
+	family: FamilyFn
 	siteOrigin: string
 	manifest?: Manifest | null
 	log?: (message: string) => void
