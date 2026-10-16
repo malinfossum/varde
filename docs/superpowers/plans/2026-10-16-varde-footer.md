@@ -1,8 +1,8 @@
-# Sanity-style footer Implementation Plan
+# Varde footer Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebuild Varde's footer in the style of the Sanity.io footer: the liability sentence, the
+**Goal:** Rebuild Varde's footer as a calmer bar: the liability sentence, the
 text links under a muted label, a small uppercase privacy note with "© Varde", the GitHub mark as
 an icon and the theme switcher as a three-icon pill, which replaces the desktop header's Tema
 picker.
@@ -426,7 +426,7 @@ import { Link } from "./Link.tsx"
 // 113 comes from emergency.ts, which tests/emergency.test.ts checks against the seed.
 const ambulance = emergencyLines.find((line) => line.id === "ambulanse")
 
-// The Sanity-style footer (spec: docs/superpowers/specs/2026-10-16-varde-footer-design.md). One
+// The footer (spec: docs/superpowers/specs/2026-10-16-varde-footer-design.md). One
 // DOM order at every width: liability, the links, the note, then the icon controls. Below
 // 1024 px it stacks; from 1280 px it is one 44 px row and stays 69 px tall, which the landing
 // needs to fit one 1920 x 950 screen. Between 1024 and about 1100 px whole groups wrap.
@@ -478,7 +478,7 @@ export function Footer() {
 						</a>
 					</span>
 				</nav>
-				{/* Two short lines, like Sanity's small text. The dot is decoration, so readers skip it;
+				{/* Two short lines of small text. The dot is decoration, so readers skip it;
 				    the space between the lines keeps the words apart for them. */}
 				<p className="footer-note lg:flex-none">
 					<span className="block">
@@ -746,7 +746,7 @@ import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import { useAnnounce } from "./StatusRegion.tsx"
 import { THEME_CHOICES, type ThemeApi } from "./ThemeRows.tsx"
 
-// Sanity's order, light to dark with System between them, so the pill reads as a scale. The Meny
+// Light to dark with System between them, so the pill reads as a scale. The Meny
 // keeps THEME_CHOICES' own order (Lyst, Mørkt, System).
 const PILL = [THEME_CHOICES[0], THEME_CHOICES[2], THEME_CHOICES[1]] as const
 

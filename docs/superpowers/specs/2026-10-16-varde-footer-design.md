@@ -1,13 +1,13 @@
-# Varde: a Sanity-style footer
+# Varde: a calmer footer with icons and a theme pill
 
 ## Why
 
 The footer today is two lines of text: the liability sentence with the 113 link, then "Om Varde
 og ansvar", "Meld feil", "Kildekode på GitHub" and "Ingen sporing. Ingen informasjonskapsler.".
-It works, but it reads as a wall of small text. My reference is the Sanity.io footer, which I
-rate 10/10: a small muted label, plain icons where the meaning is universal, short small
-uppercase text, and a theme switcher as three icons in a pill. I want Varde's footer to feel
-like that, with less text and more air, without losing a single safety word.
+It works, but it reads as a wall of small text. I want a calmer footer: a small muted label,
+plain icons where the meaning is universal, short small uppercase text, and a theme switcher as
+three icons in a pill. Less text and more air, without losing a single safety word. Inspired by
+the footer on sanity.io.
 
 Rule for this footer, and for the design-system pattern that follows it: **an icon where the
 meaning is universal, short text where it is not. A safety or trust link is always text.**
@@ -26,7 +26,7 @@ meaning is universal, short text where it is not. A safety or trust link is alwa
    From 1024 px it is visually hidden but still names the footer nav.
 5. **"© Varde" with no year**, at the start of the privacy note's first line, so it costs no
    extra width or height: "© Varde · Ingen sporing." / "Ingen informasjonskapsler.".
-6. **The privacy note is set like Sanity's small text**: two short lines, small, uppercase, muted.
+6. **The privacy note is small text**: two short lines, small, uppercase, muted.
 
 ## Layout
 
@@ -144,7 +144,7 @@ uppercase text side by side would look like a mistake.
 </div>
 ```
 
-- **Order:** Lyst, System, Mørkt (sun, monitor, moon), as in Sanity. Light to dark with System
+- **Order:** Lyst, System, Mørkt (sun, monitor, moon). Light to dark with System
   between them reads as a scale. `THEME_CHOICES` keeps its order for the Meny rows. The pill
   has its own order list in `ThemePill.tsx`, built from the same three entries.
 - **Size:** each button is 44 x 44 px and round. The pill is 132 x 44 px. Its outline is an inset
