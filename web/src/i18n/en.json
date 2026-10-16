@@ -61,6 +61,8 @@
 	"detail.phoneCopied": "Number copied",
 	"detail.copyFailed": "Could not copy",
 	"detail.contactHeading": "Contact",
+	"detail.aboutHeading": "About the service",
+	"detail.practicalHeading": "Practical details",
 	"detail.tile.alwaysOpen": "open 24/7",
 	"detail.tile.openChat": "Open the chat",
 	"detail.tile.menuOption": "press {n}",

@@ -427,3 +427,104 @@ test("in English the email tile is named Email", async () => {
 	const block = await screen.findByRole("region", { name: "Contact" })
 	expect(within(block).getAllByRole("link").at(-1)).toHaveAccessibleName("Email, post@example.no")
 })
+
+const ringsaker: ResourceDto = {
+	...detail,
+	name: "Psykisk helse- og rustjenester, Ringsaker kommune",
+	description: "Kommunens tilbud til voksne.",
+	openingHours: "Kan kontaktes i tidsrommet 08-15.30",
+	address: "Brugata 3, 2380 Brumunddal",
+	email: "postmottak.psykisk.helse@ringsaker.kommune.no",
+	website: "https://www.ringsaker.kommune.no/",
+}
+
+test("the card has an h1 and three h2 sections in order, each a region named by its heading", async () => {
+	await renderDetail(ringsaker)
+	const card = screen.getByRole("article")
+	expect(within(card).getByRole("heading", { level: 1 })).toHaveTextContent(ringsaker.name)
+	expect(
+		within(card)
+			.getAllByRole("heading", { level: 2 })
+			.map((h) => h.textContent)
+	).toEqual(["Kontakt", "Om tjenesten", "Praktisk informasjon"])
+	for (const name of ["Kontakt", "Om tjenesten", "Praktisk informasjon"]) {
+		expect(within(card).getByRole("region", { name })).toBeInTheDocument()
+	}
+})
+
+test("Praktisk informasjon lists hours, address and website in that order, each label beside its value", async () => {
+	await renderDetail(ringsaker)
+	const facts = screen.getByRole("region", { name: "Praktisk informasjon" })
+	expect([...facts.querySelectorAll("dt")].map((dt) => dt.textContent)).toEqual([
+		"Åpningstider",
+		"Adresse",
+		"Nettside",
+	])
+	for (const pair of facts.querySelectorAll("dl > div")) {
+		expect(pair.querySelectorAll("dt")).toHaveLength(1)
+		expect(pair.querySelectorAll("dd")).toHaveLength(1)
+	}
+})
+
+test("the footer holds last verified, inside the card, with no heading", async () => {
+	await renderDetail(ringsaker)
+	const footer = screen.getByText(/Sist bekreftet/).closest("footer")
+	expect(footer).not.toBeNull()
+	expect(footer).toHaveTextContent("Sist bekreftet 2026-08-13")
+	expect(screen.getByRole("article")).toContainElement(footer)
+	expect(within(footer as HTMLElement).queryByRole("heading")).toBeNull()
+})
+
+test.each(["", "   "])("a blank description (%j) leaves Om tjenesten out", async (description) => {
+	await renderDetail({ ...ringsaker, description })
+	expect(screen.queryByRole("region", { name: "Om tjenesten" })).toBeNull()
+})
+
+test("no hours, address or website leaves Praktisk informasjon out", async () => {
+	await renderDetail({ ...ringsaker, openingHours: null, address: null, website: null })
+	expect(screen.queryByRole("region", { name: "Praktisk informasjon" })).toBeNull()
+})
+
+test("no tiles leaves Kontakt out, and the other sections stay", async () => {
+	await renderDetail({ ...ringsaker, phone: null, email: null, chatUrl: null })
+	expect(screen.queryByRole("region", { name: "Kontakt" })).toBeNull()
+	expect(screen.getByRole("region", { name: "Om tjenesten" })).toBeInTheDocument()
+})
+
+function renderEnglish(resource: ResourceDto) {
+	stubDataFiles({ resources: [resource] })
+	render(
+		<LanguageProvider lang="en">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	return screen.findByRole("heading", { level: 1 })
+}
+
+test("on /en a fallback description is marked as Norwegian, and only the description", async () => {
+	await renderEnglish({ ...ringsaker, isFallbackTranslation: true })
+	expect(screen.getByText("Kommunens tilbud til voksne.")).toHaveAttribute("lang", "nb")
+	expect(screen.getByRole("heading", { level: 1 })).not.toHaveAttribute("lang")
+	expect(screen.getByRole("region", { name: "About the service" })).toBeInTheDocument()
+	expect(screen.getByRole("region", { name: "Practical details" })).toBeInTheDocument()
+})
+
+test("on /en a translated description carries no lang", async () => {
+	await renderEnglish(ringsaker)
+	expect(screen.getByText("Kommunens tilbud til voksne.")).not.toHaveAttribute("lang")
+})
+
+test("a website that is not https shows as text, never as a link", async () => {
+	await renderDetail({ ...ringsaker, website: "javascript:alert(1)" })
+	const facts = screen.getByRole("region", { name: "Praktisk informasjon" })
+	expect(within(facts).queryByRole("link")).toBeNull()
+	expect(facts).toHaveTextContent("javascript:alert(1)")
+})
+
+test("the back link stays outside the card", async () => {
+	await renderDetail(ringsaker)
+	const back = screen.getByRole("link", { name: "Tilbake til resultater" })
+	expect(screen.getByRole("article")).not.toContainElement(back)
+})

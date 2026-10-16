@@ -12,6 +12,7 @@ import {
 import { contactTiles } from "../services/contactTiles.ts"
 import { clearIndexCache, loadIndex } from "../services/data.ts"
 import { type Family, familyOf, NO_FAMILY } from "../services/family.ts"
+import { safeChatUrl } from "../services/helplines.ts"
 import { metaDescription } from "../services/site.ts"
 import type { ResourceDto } from "../types/api.ts"
 import { ContactTiles } from "./ContactTiles.tsx"
@@ -126,9 +127,14 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	}
 
 	const backLabel = t("detail.back")
+	const description = resource.description.trim()
+	// The same https guard as chat links: every website in the data is https, and anything else
+	// (a typo, a javascript: value) shows as text and never becomes a link.
+	const website = safeChatUrl(resource.website)
+	const hasFacts = Boolean(resource.openingHours || resource.address || resource.website)
 
 	return (
-		<article className="grid gap-6">
+		<div className="grid gap-6">
 			<PageHead
 				title={`${resource.name} – Varde`}
 				description={metaDescription(resource.description)}
@@ -147,84 +153,118 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 					{backLabel}
 				</Link>
 			)}
-			<header className="grid gap-3 rounded-xl border border-border bg-surface p-5 md:p-8">
-				<h1 ref={heading} tabIndex={-1} className="text-3xl wrap-anywhere md:text-5xl">
-					{resource.name}
-				</h1>
-				<ResourceBadges resource={resource} />
-				<p className="text-muted">
-					{resource.isNational ? t("detail.nationalService") : resource.municipalityName}
-				</p>
-				{family.parent && (
-					<p className="text-sm text-muted">
-						{partOfBefore}
-						<Link to={`/resources/${family.parent.id}`} className="text-accent underline">
-							{family.parent.name}
-						</Link>
-						{partOfAfter}
-					</p>
-				)}
-				{resource.isFallbackTranslation && (
-					<p className="text-sm text-muted">{t("card.fallback")}</p>
-				)}
-				{/* Every way to reach the service is a tile (spec C2a). Copy-number and share stay
-				    below as buttons: a chat- or web-only service still shares. */}
-				<ContactTiles tiles={tiles} />
-				{((resource.phone && canCopy) || capability !== "none") && (
-					<div className="flex flex-wrap items-center gap-2">
-						{resource.phone && canCopy && (
-							<button
-								type="button"
-								className="btn-secondary"
-								onClick={() => resource.phone && onCopyPhone(resource.phone)}
-							>
-								{t("detail.copyPhone")}
-							</button>
+			{/* Everything about the service sits in this one card (spec: the detail page as one
+			    card). DOM order is the reading and focus order at every width. */}
+			<article className="detail-card grid gap-6 rounded-xl border border-border bg-surface p-5 md:p-8">
+				<header className="detail-head">
+					<div className="detail-title grid min-w-0 gap-3">
+						<h1 ref={heading} tabIndex={-1} className="text-3xl wrap-anywhere md:text-5xl">
+							{resource.name}
+						</h1>
+						<ResourceBadges resource={resource} />
+						<p className="text-muted">
+							{resource.isNational ? t("detail.nationalService") : resource.municipalityName}
+						</p>
+						{family.parent && (
+							<p className="text-sm text-muted">
+								{partOfBefore}
+								<Link to={`/resources/${family.parent.id}`} className="text-accent underline">
+									{family.parent.name}
+								</Link>
+								{partOfAfter}
+							</p>
 						)}
-						{capability !== "none" && (
-							<button type="button" className="btn-secondary" onClick={onShare}>
-								{t(capability === "share" ? "detail.share" : "detail.copyLink")}
-							</button>
+						{resource.isFallbackTranslation && (
+							<p className="text-sm text-muted">{t("card.fallback")}</p>
 						)}
 					</div>
+					{/* C2a's copy, share and report controls, unchanged until the action group replaces them. */}
+					<div className="grid gap-3">
+						{((resource.phone && canCopy) || capability !== "none") && (
+							<div className="flex flex-wrap items-center gap-2">
+								{resource.phone && canCopy && (
+									<button
+										type="button"
+										className="btn-secondary"
+										onClick={() => resource.phone && onCopyPhone(resource.phone)}
+									>
+										{t("detail.copyPhone")}
+									</button>
+								)}
+								{capability !== "none" && (
+									<button type="button" className="btn-secondary" onClick={onShare}>
+										{t(capability === "share" ? "detail.share" : "detail.copyLink")}
+									</button>
+								)}
+							</div>
+						)}
+						<a
+							href={reportHref(resource.id, resource.name)}
+							className="text-sm text-accent underline"
+						>
+							{t("report.link")}
+						</a>
+					</div>
+				</header>
+				<ContactTiles tiles={tiles} />
+				{description && (
+					<section aria-labelledby="service-about" className="detail-section grid gap-3">
+						<h2 id="service-about" className="section-label">
+							{t("detail.aboutHeading")}
+						</h2>
+						{/* A fallback row on /en is Norwegian text, so a screen reader must read it as
+						    Norwegian (WCAG 3.1.2). The title and hours are short, so only this gets lang. */}
+						<p
+							className="max-w-prose"
+							lang={resource.isFallbackTranslation && lang === "en" ? "nb" : undefined}
+						>
+							{description}
+						</p>
+					</section>
 				)}
-				<a href={reportHref(resource.id, resource.name)} className="text-sm text-accent underline">
-					{t("report.link")}
-				</a>
-			</header>
-			<p className="max-w-prose">{resource.description}</p>
-			{/* Hours and the other facts. Phone and chat are tiles above. */}
-			<dl className="grid gap-3 md:grid-cols-[max-content_1fr] md:gap-x-8">
-				{resource.openingHours && (
-					<>
-						<dt className="text-muted">{t("card.hours")}</dt>
-						<dd>{resource.openingHours}</dd>
-					</>
+				{hasFacts && (
+					<section aria-labelledby="service-practical" className="detail-section grid gap-3">
+						<h2 id="service-practical" className="section-label">
+							{t("detail.practicalHeading")}
+						</h2>
+						{/* Each label and value is a div, so on a phone a label sits right above its own
+						    value. From 768 px the divs step aside and the dl is a two-column grid. */}
+						<dl className="detail-facts">
+							{resource.openingHours && (
+								<div>
+									<dt>{t("card.hours")}</dt>
+									<dd>{resource.openingHours}</dd>
+								</div>
+							)}
+							{resource.address && (
+								<div>
+									<dt>{t("detail.address")}</dt>
+									<dd>{resource.address}</dd>
+								</div>
+							)}
+							{resource.website && (
+								<div>
+									<dt>{t("detail.website")}</dt>
+									<dd className="wrap-anywhere">
+										{website ? (
+											<a href={website} rel="noopener noreferrer" className="text-accent underline">
+												{website}
+											</a>
+										) : (
+											resource.website
+										)}
+									</dd>
+								</div>
+							)}
+						</dl>
+					</section>
 				)}
-				{resource.address && (
-					<>
-						<dt className="text-muted">{t("detail.address")}</dt>
-						<dd>{resource.address}</dd>
-					</>
-				)}
-				{resource.website && (
-					<>
-						<dt className="text-muted">{t("detail.website")}</dt>
-						<dd>
-							<a
-								href={resource.website}
-								rel="noopener noreferrer"
-								className="text-accent underline"
-							>
-								{resource.website}
-							</a>
-						</dd>
-					</>
-				)}
-			</dl>
-			<p className="text-sm text-muted">
-				{t("card.lastVerified")} {resource.lastVerified}
-			</p>
-		</article>
+				{/* A footer inside an article is not a contentinfo landmark, so the site footer stays
+				    the only one. No heading: a heading over one date is noise in the heading list. */}
+				<footer className="detail-section text-sm text-muted">
+					{t("card.lastVerified")} {resource.lastVerified}
+				</footer>
+			</article>
+		</div>
 	)
 }

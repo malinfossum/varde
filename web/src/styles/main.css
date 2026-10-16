@@ -428,9 +428,11 @@
 	.helpline-name:focus-visible {
 		text-decoration: underline;
 	}
-	/* The age-group labels: small, uppercase and muted, so they read as labels beside the bold
-	   names, by size, weight and colour. */
-	.helpline-group {
+	/* The age-group labels on the landing and the section headings on the detail page: small,
+	   uppercase and muted, so they read as labels beside the bold names and body text, by size,
+	   weight and colour. */
+	.helpline-group,
+	.section-label {
 		color: var(--muted);
 		font-size: 0.75rem;
 		font-weight: 400;
@@ -464,5 +466,39 @@
 		border-radius: 0.5rem;
 		background: var(--accent-soft);
 		color: var(--accent);
+	}
+	/* The detail page card (spec: the detail page as one card). Each section after the head starts
+	   with a 1 px line: the card's gap-6 puts 1.5rem above it and this puts 1.5rem below. */
+	.detail-section {
+		border-block-start: 1px solid var(--border);
+		padding-block-start: 1.5rem;
+	}
+	.detail-head {
+		display: grid;
+		gap: 1rem;
+	}
+	/* Praktisk informasjon. On a phone each label sits over its value, 0.25rem apart, with 1rem
+	   between pairs, so it is clear which label belongs to which value. From 768 px it is the C2a
+	   two-column grid. minmax(0, 1fr), not 1fr, so a long URL can shrink the column and wrap. */
+	.detail-facts {
+		display: grid;
+		gap: 1rem;
+	}
+	.detail-facts > div {
+		display: grid;
+		gap: 0.25rem;
+	}
+	.detail-facts dt {
+		color: var(--muted);
+	}
+	@media (min-width: 768px) {
+		.detail-facts {
+			grid-template-columns: max-content minmax(0, 1fr);
+			column-gap: 2rem;
+			row-gap: 0.75rem;
+		}
+		.detail-facts > div {
+			display: contents;
+		}
 	}
 }

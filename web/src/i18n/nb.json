@@ -61,6 +61,8 @@
 	"detail.phoneCopied": "Nummeret er kopiert",
 	"detail.copyFailed": "Kunne ikke kopiere",
 	"detail.contactHeading": "Kontakt",
+	"detail.aboutHeading": "Om tjenesten",
+	"detail.practicalHeading": "Praktisk informasjon",
 	"detail.tile.alwaysOpen": "døgnåpen",
 	"detail.tile.openChat": "Åpne chatten",
 	"detail.tile.menuOption": "tast {n}",

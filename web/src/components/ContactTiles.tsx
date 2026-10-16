@@ -22,13 +22,13 @@ function tileValue(tile: ContactTile, t: Translate): string {
 // The detail page's contact block (spec C2a). The whole tile is one link, and its name is the
 // visible text in reading order, so voice control works with what is on screen. The " · " is
 // hidden from screen readers and a hidden comma stands in, so NVDA reads "Ring, døgnåpen, 116 123"
-// and not "Ring dot døgnåpen". The hidden h2 puts the block in the heading list.
+// and not "Ring dot døgnåpen". The h2 is a visible label and puts the block in the heading list.
 export function ContactTiles({ tiles }: { tiles: ContactTile[] }) {
 	const t = useTranslation()
 	if (tiles.length === 0) return null
 	return (
-		<section aria-labelledby="contact">
-			<h2 id="contact" className="visually-hidden">
+		<section aria-labelledby="contact" className="detail-section grid gap-3">
+			<h2 id="contact" className="section-label">
 				{t("detail.contactHeading")}
 			</h2>
 			{/* One column below 768 px, each tile as tall as its own content. Side by side from
