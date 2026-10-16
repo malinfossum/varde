@@ -8,11 +8,16 @@ import { createRoot, hydrateRoot } from "react-dom/client"
 import { App } from "./App.tsx"
 import { PageDataContext } from "./pageData.ts"
 import { readPageData } from "./services/data.ts"
+import { markStandalone } from "./services/standalone.ts"
 import { canHydrate } from "./services/urlState.ts"
 import "./styles/main.css"
 
 const root = document.getElementById("root")
 if (!root) throw new Error("Missing #root element in index.html")
+
+// Before hydrating, so the first frame the app owns already shows the history controls on an
+// iPhone. <html> is outside React's tree, so this cannot cause a hydration mismatch.
+markStandalone(document.documentElement, navigator)
 
 const app = (
 	<StrictMode>

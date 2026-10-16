@@ -26,3 +26,17 @@ export async function noHorizontalScroll(page: Page): Promise<boolean> {
 		() => document.documentElement.scrollWidth <= document.documentElement.clientWidth
 	)
 }
+
+// Installed mode for e2e. Playwright's Chromium cannot emulate (display-mode: standalone):
+// emulateMedia has no display mode and the CDP media feature is ignored (probed 2026-10-16,
+// Chromium 156, Playwright 1.64; re-probed 2026-10-17 on the installed version, same result). So
+// the tests take the iPhone path: navigator.standalone, which main.tsx turns into data-standalone
+// on <html>. Call it before page.goto.
+export async function forceInstalled(page: Page): Promise<void> {
+	await page.addInitScript(() => {
+		Object.defineProperty(Navigator.prototype, "standalone", {
+			get: () => true,
+			configurable: true,
+		})
+	})
+}
