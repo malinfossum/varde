@@ -57,43 +57,57 @@ export function makeResource(
 	}
 }
 
-function helpline(
-	id: number,
-	name: string,
-	phone: string | null,
-	chatUrl: string | null
-): ResourceDto {
-	return {
-		id,
-		name,
-		description: "",
-		isFallbackTranslation: false,
-		openingHours: null,
-		isNational: true,
-		isAlwaysOpen: false,
-		municipalityId: null,
-		municipalityName: null,
-		address: null,
-		phone,
-		email: null,
-		website: null,
-		chatUrl,
-		lastVerified: "2026-08-13",
-		categories: [],
-		servedMunicipalityIds: [],
-		parentId: null,
-		phoneMenuOption: null,
-	}
-}
-
-// The five "Noen å snakke med" rows, not in the landing order (the test reverses them anyway).
+// The four landing rows and Mental Helse's two children (9 and 122), not in landing order (the
+// tests reverse them anyway). Copied from SeedData.cs: Mental Helse has no chat of its own, so its
+// chat comes from Sidetmedord.
 export const helplineRows: ResourceDto[] = [
-	helpline(1, "Hjelpetelefonen (Mental Helse)", "116 123", null),
-	helpline(2, "Kirkens SOS", "22 40 00 40", "https://www.soschat.no"),
-	helpline(9, "Arbeidslivstelefonen (Mental Helse)", "116 123", null),
-	helpline(121, "Kors på halsen (Røde Kors)", "800 33 321", "https://www.korspahalsen.no"),
-	helpline(122, "Sidetmedord (Mental Helse)", null, "https://sidetmedord.mentalhelse.no/"),
+	makeResource({
+		id: 1,
+		name: "Hjelpetelefonen (Mental Helse)",
+		phone: "116 123",
+		isAlwaysOpen: true,
+	}),
+	makeResource({
+		id: 2,
+		name: "Kirkens SOS",
+		phone: "22 40 00 40",
+		chatUrl: "https://www.soschat.no",
+		isAlwaysOpen: true,
+	}),
+	makeResource({
+		id: 4,
+		name: "Alarmtelefonen for barn og unge",
+		phone: "116 111",
+		chatUrl: "https://www.116111.no",
+		isAlwaysOpen: true,
+	}),
+	makeResource({
+		id: 9,
+		name: "Arbeidslivstelefonen (Mental Helse)",
+		phone: "116 123",
+		parentId: 1,
+		phoneMenuOption: 3,
+	}),
+	makeResource({
+		id: 121,
+		name: "Kors på halsen (Røde Kors)",
+		phone: "800 33 321",
+		chatUrl: "https://www.korspahalsen.no",
+	}),
+	makeResource({
+		id: 122,
+		name: "Sidetmedord (Mental Helse)",
+		chatUrl: "https://mentalhelse.no/hjelpechat/",
+		parentId: 1,
+	}),
 ]
+
+// What a sighted user sees on a button: its text without the visually hidden parts.
+export function visibleText(element: HTMLElement): string {
+	const copy = element.cloneNode(true) as HTMLElement
+	for (const hidden of copy.querySelectorAll(".visually-hidden")) hidden.remove()
+	return copy.textContent?.trim() ?? ""
+}
 
 // The page data the prerender bakes into a landing page, for tests that render or hydrate it.
 export function bakedHelplines(lang: Lang): PageData {

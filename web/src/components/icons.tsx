@@ -119,3 +119,24 @@ export function StethoscopeIcon({ className }: IconProps) {
 		</Svg>
 	)
 }
+
+// A telephone handset, drawn upright with its ends down and then turned so the handle sits at the
+// bottom left and the earpiece and mouthpiece point to the top right.
+export function PhoneIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path
+				transform="translate(0 -3.5) rotate(-135 12 15.5)"
+				d="M3 15.5c0-1 .5-1.6 1.4-2C6 12.8 8 12 12 12s6 .8 7.6 1.5c.9.4 1.4 1 1.4 2V17a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 15 17v-1c0-.5-.5-.8-1-1a8 8 0 0 0-4 0c-.5.2-1 .5-1 1v1a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 3 17z"
+			/>
+		</Svg>
+	)
+}
+
+export function ChatIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L3 21l1.9-5.3A8.5 8.5 0 1 1 21 11.5z" />
+		</Svg>
+	)
+}

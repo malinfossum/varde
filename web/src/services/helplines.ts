@@ -1,23 +1,55 @@
 import type { ResourceDto } from "../types/api.ts"
+import { childrenOf } from "./family.ts"
 
-// "Noen å snakke med" on the landing page, in this order (spec: Landing, item 9): seed ids
-// 1 Hjelpetelefonen, 2 Kirkens SOS, 121 Kors på halsen, 9 Arbeidslivstelefonen,
-// 122 Sidetmedord. The prerender picks them from the exported data, so an id that vanishes
-// fails the build instead of shipping a shorter list.
-export const HELPLINE_IDS = [1, 2, 121, 9, 122] as const
+// "Noen å snakke med" on the landing page (spec C2a): two age groups of two, in this order. The
+// names are short landing labels, never translated, and each must be part of its row's data name,
+// so a renamed row cannot keep a stale label. The prerender picks the rows from the exported data,
+// so a missing id or a stale label fails the build instead of shipping a wrong list.
+export const HELPLINE_GROUPS = [
+	{
+		key: "adults",
+		rows: [
+			{ id: 1, name: "Mental Helse" },
+			{ id: 2, name: "Kirkens SOS" },
+		],
+	},
+	{
+		key: "young",
+		rows: [
+			{ id: 4, name: "Alarmtelefonen for barn og unge" },
+			{ id: 121, name: "Kors på halsen" },
+		],
+	},
+] as const
 
-// A short line under a name on the landing page. Id 9 shares 116 123 with Hjelpetelefonen,
-// and its seed description says to choose option 3 in the menu ("Velg tast 3 i menyen").
-export const HELPLINE_NOTES: Partial<Record<number, string>> = { 9: "landing.helplineNote.9" }
+export type HelplineGroupKey = (typeof HELPLINE_GROUPS)[number]["key"]
+// `name` is the short landing label. `chatUrl` has already been through safeChatUrl.
+export type Helpline = { id: number; name: string; phone: string | null; chatUrl: string | null }
+export type HelplineGroup = { key: HelplineGroupKey; rows: Helpline[] }
 
-export type Helpline = Pick<ResourceDto, "id" | "name" | "phone" | "chatUrl">
+export function pickHelplines(resources: readonly ResourceDto[]): HelplineGroup[] {
+	return HELPLINE_GROUPS.map((group) => ({
+		key: group.key,
+		rows: group.rows.map(({ id, name }) => {
+			const row = resources.find((r) => r.id === id)
+			if (!row) throw new Error(`helpline id ${id} is missing from the data`)
+			if (!row.name.includes(name))
+				throw new Error(`helpline label "${name}" is not part of "${row.name}" (id ${id})`)
+			return { id, name, phone: row.phone, chatUrl: chatFor(row, resources) }
+		}),
+	}))
+}
 
-export function pickHelplines(resources: readonly ResourceDto[]): Helpline[] {
-	return HELPLINE_IDS.map((id) => {
-		const row = resources.find((r) => r.id === id)
-		if (!row) throw new Error(`helpline id ${id} is missing from the data`)
-		return { id: row.id, name: row.name, phone: row.phone, chatUrl: row.chatUrl }
-	})
+// A service's chat is its own, or else the first child's (in id order) that is safe. Mental
+// Helse's chat lives on Sidetmedord (row 122) only, so the URL has one source.
+export function chatFor(row: ResourceDto, resources: readonly ResourceDto[]): string | null {
+	const own = safeChatUrl(row.chatUrl)
+	if (own) return own
+	for (const child of childrenOf(row.id, resources)) {
+		const chat = safeChatUrl(child.chatUrl)
+		if (chat) return chat
+	}
+	return null
 }
 
 // A chat link renders only for an https:// URL; anything else shows the name alone. The

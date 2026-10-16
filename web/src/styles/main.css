@@ -404,20 +404,27 @@
 		color: var(--on-accent);
 		font-weight: 600;
 	}
-	.helpline-row {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.25rem 0.75rem;
-	}
+	/* Bold names alone in their rows, beside buttons: no underline at rest. They get one on hover
+	   and on focus, so they still show they are links when it matters (spec C2a). */
 	.helpline-name {
 		display: inline-flex;
 		align-items: center;
 		min-height: 44px;
 		color: var(--text);
 		font-weight: 600;
+		text-decoration: none;
+	}
+	.helpline-name:hover,
+	.helpline-name:focus-visible {
 		text-decoration: underline;
-		text-underline-offset: 0.15em;
+	}
+	/* The age-group labels: small, uppercase and muted, so they read as labels beside the bold
+	   names, by size, weight and colour. */
+	.helpline-group {
+		color: var(--muted);
+		font-size: 0.75rem;
+		font-weight: 400;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
 	}
 }
