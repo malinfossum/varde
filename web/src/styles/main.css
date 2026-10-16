@@ -128,13 +128,13 @@
 		text-decoration: underline;
 	}
 	/* From 1024 px the landing's vertical gaps grow with the window height (decided 2026-10-16).
-	   At 950 px tall and below --air is 0, so the page keeps its one-screen fit; on a taller window
-	   the extra height opens the gaps instead of collecting as an empty band above the footer.
-	   The gaps take eleven shares of --air between them (three each under the header and above the
-	   help sections), so half a share stays as slack; 3rem caps it. */
+	   Below 900 px tall --air is 0 (English needs 892 px without it), so the page keeps its
+	   one-screen fit at 950; on a taller window the extra height opens the gaps instead of
+	   collecting as an empty band above the footer. The gaps take 12.5 shares of --air (four each
+	   under the header and above the help sections), so half a share stays as slack; 4rem caps it. */
 	@media (min-width: 1024px) {
 		.landing {
-			--air: clamp(0px, calc((100dvh - 950px) / 11.5), 3rem);
+			--air: clamp(0px, calc((100dvh - 900px) / 13), 4rem);
 		}
 	}
 	.hero::before {

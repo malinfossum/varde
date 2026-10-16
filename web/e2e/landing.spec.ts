@@ -106,7 +106,7 @@ for (const width of [1280, 1920]) {
 	}
 }
 
-for (const width of [320, 375, 1280]) {
+for (const width of [320, 375, 768]) {
 	for (const path of ["/", "/en/"]) {
 		test(`the four emergency buttons form a 2 x 2 grid of equal rows at ${width} px (${path})`, async ({
 			page,
@@ -134,6 +134,33 @@ for (const width of [320, 375, 1280]) {
 			}
 		})
 	}
+}
+
+// From 1024 px the help sections sit in a block narrower than the chip row, and the emergency
+// numbers stack as one list of equal rows (decided 2026-10-16).
+for (const width of [1024, 1280, 1920]) {
+	test(`the emergency buttons stack as one list, and the help block is narrower than the chips, at ${width} px`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width, height: 950 })
+		await page.goto("/")
+		await settle(page)
+		const m = await page.evaluate(() => {
+			const box = (s: string) => (document.querySelector(s) as Element).getBoundingClientRect()
+			const buttons = [...document.querySelectorAll("section[aria-labelledby=emergency] a")].map(
+				(el) => el.getBoundingClientRect()
+			)
+			return {
+				lefts: new Set(buttons.map((b) => Math.round(b.left))).size,
+				heights: new Set(buttons.map((b) => Math.round(b.height))).size,
+				helpWidth: Math.round(box(".landing-help > div").width),
+				chipsWidth: Math.round(box(".hero > div:has(> .chip-acute)").width),
+			}
+		})
+		expect(m.lefts).toBe(1)
+		expect(m.heights).toBe(1)
+		expect(m.helpWidth).toBeLessThan(m.chipsWidth)
+	})
 }
 
 for (const width of [320, 375, 1280]) {
@@ -197,7 +224,7 @@ for (const theme of THEMES) {
 	}
 }
 
-// Decided 2026-10-16: on a window taller than 950 px the landing's gaps grow with the height
+// Decided 2026-10-16: on a window taller than 900 px the landing's gaps grow with the height
 // (--air in main.css), so the extra height does not collect as an empty band above the footer.
 for (const path of ["/", "/en/"]) {
 	test(`the landing page fills a 1638 x 1286 window (${path})`, async ({ page }) => {
@@ -212,12 +239,12 @@ for (const path of ["/", "/en/"]) {
 				chipsToDivider: Math.round(
 					box(".landing-help").top - box(".hero > div:has(> .chip-acute)").bottom
 				),
-				trustToFooter: Math.round(box("footer").top - box("section[aria-labelledby=trust]").bottom),
+				helpToFooter: Math.round(box("footer").top - box(".helpline-row:last-child").bottom),
 			}
 		})
-		expect(m.headerToH1).toBeGreaterThanOrEqual(90)
-		expect(m.chipsToDivider).toBeGreaterThanOrEqual(90)
-		expect(m.trustToFooter).toBeLessThanOrEqual(120)
+		expect(m.headerToH1).toBeGreaterThanOrEqual(120)
+		expect(m.chipsToDivider).toBeGreaterThanOrEqual(120)
+		expect(m.helpToFooter).toBeLessThanOrEqual(120)
 	})
 }
 
