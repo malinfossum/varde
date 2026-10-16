@@ -35,7 +35,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 				<h1
 					ref={ref}
 					tabIndex={-1}
-					className="mx-auto mt-3 max-w-2xl text-4xl leading-[1.1] text-balance md:text-6xl lg:mt-0 lg:max-w-none"
+					className="mx-auto mt-3 max-w-2xl text-4xl leading-[1.1] text-balance break-words md:text-6xl lg:mt-0 lg:max-w-none"
 				>
 					{t("landing.headline")}
 				</h1>
@@ -91,7 +91,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 								<li key={line.id}>
 									<a
 										href={telHref(line.phone)}
-										className="btn-primary h-full w-full flex-wrap gap-x-2 gap-y-0 px-2 py-[5px] text-center text-lg lg:text-base"
+										className="btn-primary h-full w-full flex-wrap gap-x-2 gap-y-0 px-2 py-[calc(0.375rem-1px)] text-center text-lg lg:text-base"
 									>
 										<span className="whitespace-nowrap">{line.phone}</span>{" "}
 										<span className="text-base font-normal text-balance lg:text-sm">

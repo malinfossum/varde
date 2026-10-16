@@ -74,7 +74,7 @@ export function LandingSearch() {
 					onPointerEnter={warm}
 					placeholder={t("landing.searchPlaceholder")}
 					autoComplete="off"
-					className="min-h-11 flex-1 bg-transparent text-fg outline-none"
+					className="min-h-11 min-w-0 flex-1 bg-transparent text-fg outline-none"
 				/>
 				<button type="submit" className="btn-primary">
 					{t("landing.searchButton")}
