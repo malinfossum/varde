@@ -131,9 +131,11 @@ export const HELPLINE_GROUPS = [
   column's heading, intro and content are placed in those rows through `grid-template-rows:
   subgrid`. Headings, intro lines and content tops line up across the divider. Each column keeps
   its own left alignment.
-- **Shared columns:** both groups sit in one grid with columns `minmax(0,1fr) 136px 92px`. Group
-  labels span all three columns. Every phone button shares one left edge and one width across both
-  groups, and every chat button too.
+- **Shared columns:** both groups sit in one grid with columns `minmax(0,1fr) 8.5rem 5.75rem`
+  (136 px and 92 px at the default text size). Group labels span all three columns. Every phone
+  button shares one left edge and one width across both groups, and every chat button too.
+- With a larger text size the column can get narrower than 26 rem. Then the rows use the phone
+  layout below instead, so names are never squeezed into a sliver beside the buttons.
 - A row without a chat keeps its chat cell empty, so nothing moves sideways. All four have a chat
   today.
 - Within a row, the name and the two buttons share one centre line.
@@ -150,13 +152,17 @@ export const HELPLINE_GROUPS = [
 
 ### Buttons
 
-- Phone: `btn-primary`, a lucide-style phone icon, then "Ring 116 123" / "Call 116 123".
+- Phone: `btn-primary`, a lucide-style phone icon, then the number: "116 123". The word "Ring" /
+  "Call" is hidden text in front of the number. This matches the mockups the 136 px and 167 px
+  sizes were measured from, and the emergency buttons beside it, which show the number too.
+  (Changed 2026-10-16 while writing the plan: "Ring 22 40 00 40" does not fit 136 px.)
 - Chat: `btn-secondary`, a lucide-style message-circle icon, then "Chat".
 - Icons are new `PhoneIcon` and `ChatIcon` in `web/src/components/icons.tsx`, drawn for Varde on
   the same 24-unit stroke grid as the existing set, with `aria-hidden="true"`. No path is copied
   from Lucide. If one ever is, Lucide's ISC notice goes into the file with it.
-- Each button has hidden text naming its service: "Ring 116 123, Mental Helse". The visible words
-  come first (WCAG 2.5.3, label in name).
+- Each button has hidden text naming its service: "Ring 116 123, Mental Helse" and "Chat, Mental
+  Helse". The visible label is always part of the name (WCAG 2.5.3, label in name), so a voice
+  user can say "click 116 123" or "click Chat".
 - Chat links open in the same tab, like every link on Varde today. Backlog item 19 (new tab for
   content links) changes all links at once in its own change, not this one.
 
@@ -185,7 +191,10 @@ same rules as today.
 2. **Chat** (the service has a safe `chatUrl`). Top line: "Chat", never with an open-24/7
    suffix.
    Value: "Åpne chatten" / "Open the chat". The link is the chat URL, through `safeChatUrl`.
-3. **One tile per child**, in id order. Top line: the child's data name, plus the open-24/7 suffix
+3. **One tile per child.** Children that become chat tiles come first, then children that become
+   phone tiles, each in id order, so a chat sits second the way it does on Mental Helse's own site.
+   (Settled 2026-10-16 while writing the plan: "in id order" alone put Sidetmedord's chat last,
+   against the example below.) Top line: the child's data name, plus the open-24/7 suffix
    from the child's own `isAlwaysOpen` when the tile is a phone tile. If the child has a phone, the value is its number and
    menu option and the link is `tel:`. Otherwise the value is "Åpne chatten" and the link is its
    chat. A child with neither gets no tile.
@@ -292,7 +301,7 @@ Tests first for each change.
   name, and a fixture with a renamed row makes that test fail. Mental Helse's chat resolves to row 122's URL. A missing id
   throws.
 - `helplinesSection.test.tsx`: two `h3` labels with the right copy in nb and en. Four rows in
-  order. No "tast 3" text. Each button's accessible name starts with its visible label and ends
+  order. No "tast 3" text. Each button's accessible name contains its visible label and ends
   with the service name.
 - `detail.test.tsx`: tile order and text on id 1. "døgnåpen" only on phone tiles with
   `isAlwaysOpen`, never on a chat tile (Kirkens SOS). The id 1 phone tile's accessible name is
