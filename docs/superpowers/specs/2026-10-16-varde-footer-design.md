@@ -290,4 +290,4 @@ measured as above. I see them before the PR opens.
 - Moving the language picker.
 - The workbench design-system pattern. It has its own spec in the workbench repo.
 
-> Stress-tested 2026-10-16 (skill 1b85fca) — 6 applied, 1 adapted, 0 decided by me.
+> Stress-tested 2026-10-16 (skill 1b85fca): 6 applied, 1 adapted, 0 decided by me.
