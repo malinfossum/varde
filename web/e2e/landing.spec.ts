@@ -209,10 +209,14 @@ for (const path of ["/", "/en/"]) {
 			const box = (s: string) => (document.querySelector(s) as Element).getBoundingClientRect()
 			return {
 				headerToH1: Math.round(box("h1").top - box("header").bottom),
+				chipsToDivider: Math.round(
+					box(".landing-help").top - box(".hero > div:has(> .chip-acute)").bottom
+				),
 				trustToFooter: Math.round(box("footer").top - box("section[aria-labelledby=trust]").bottom),
 			}
 		})
-		expect(m.headerToH1).toBeGreaterThanOrEqual(60)
+		expect(m.headerToH1).toBeGreaterThanOrEqual(90)
+		expect(m.chipsToDivider).toBeGreaterThanOrEqual(90)
 		expect(m.trustToFooter).toBeLessThanOrEqual(120)
 	})
 }

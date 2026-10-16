@@ -130,10 +130,11 @@
 	/* From 1024 px the landing's vertical gaps grow with the window height (decided 2026-10-16).
 	   At 950 px tall and below --air is 0, so the page keeps its one-screen fit; on a taller window
 	   the extra height opens the gaps instead of collecting as an empty band above the footer.
-	   The gaps take eight shares of --air between them, so a ninth stays as slack; 3rem caps it. */
+	   The gaps take eleven shares of --air between them (three each under the header and above the
+	   help sections), so half a share stays as slack; 3rem caps it. */
 	@media (min-width: 1024px) {
 		.landing {
-			--air: clamp(0px, calc((100dvh - 950px) / 9), 3rem);
+			--air: clamp(0px, calc((100dvh - 950px) / 11.5), 3rem);
 		}
 	}
 	.hero::before {

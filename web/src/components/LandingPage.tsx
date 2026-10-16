@@ -27,8 +27,9 @@ export function LandingPage({ arrival }: { arrival: number }) {
 			    the helplines are not emergency services. From 1024 px the page fits one 1920 x 950
 			    screen (decided 2026-10-15): one-line heading, no eyebrow, Nødtjenester beside the grid
 			    and tighter spacing. Each divider has even space above and below it, and every gap grows
-			    with the window height (--air in main.css, 2026-10-16). */}
-			<section className="hero relative py-6 text-center lg:pt-[calc(0.25rem+var(--air)*1.5)] lg:pb-0">
+			    with the window height (--air in main.css, 2026-10-16). The help sections are a step
+			    smaller and inset from 1024 px, so the search and the chips lead the page. */}
+			<section className="hero relative py-6 text-center lg:pt-[calc(0.25rem+var(--air)*3)] lg:pb-0">
 				<p className="entrance text-xs uppercase tracking-[0.24em] text-muted lg:hidden">
 					{t("landing.eyebrow")}
 				</p>
@@ -67,23 +68,23 @@ export function LandingPage({ arrival }: { arrival: number }) {
 				</div>
 			</section>
 
-			<div className="landing-help mt-6 grid border-t border-border pt-6 lg:mt-[calc(1rem+var(--air)*1.5)] lg:grid-cols-2 lg:items-start lg:pt-[calc(1rem+var(--air))]">
+			<div className="landing-help mt-6 grid border-t border-border pt-6 lg:mt-[calc(1rem+var(--air)*3)] lg:grid-cols-2 lg:items-start lg:px-6 lg:pt-[calc(1rem+var(--air))]">
 				<section aria-labelledby="emergency" className="lg:pr-10">
-					<h2 id="emergency" className="text-2xl">
+					<h2 id="emergency" className="text-2xl lg:text-xl">
 						{t("landing.emergencyHeading")}
 					</h2>
-					<p className="mt-2 text-muted lg:mt-1">{t("landing.emergencyIntro")}</p>
+					<p className="mt-2 text-muted lg:mt-1 lg:text-sm">{t("landing.emergencyIntro")}</p>
 					{/* All four buttons share one height (auto-rows-fr). The number and its label sit on
 					    one line when they fit and wrap as two whole pieces when they do not. */}
-					<ul className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 lg:mt-2">
+					<ul className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 lg:mt-2 lg:gap-2">
 						{emergencyLines.map((line) => (
 							<li key={line.id}>
 								<a
 									href={telHref(line.phone)}
-									className="btn-primary h-full w-full flex-wrap gap-x-2 gap-y-0 px-2 py-1.5 text-center text-lg"
+									className="btn-primary h-full w-full flex-wrap gap-x-2 gap-y-0 px-2 py-1.5 text-center text-lg lg:text-base"
 								>
 									<span className="whitespace-nowrap">{line.phone}</span>{" "}
-									<span className="text-base font-normal text-balance">
+									<span className="text-base font-normal text-balance lg:text-sm">
 										{t(`strip.short.${line.id}`)}
 									</span>
 								</a>
