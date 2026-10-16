@@ -105,7 +105,7 @@ In forced colours a disabled button uses `GrayText`.
 **Back.**
 - When there is an earlier entry, Back calls `history.back()`.
 - When there is none and the page is not the landing page, Back navigates to the landing page
-  in the current language through the router. That adds an entry, so Forward can return.
+  in the current language through the router. That adds an entry, so Back can return.
 - When there is none and the page is the landing page, Back is disabled.
 
 **Forward.** Calls `history.forward()` when there is an entry ahead; otherwise it is disabled.
@@ -204,7 +204,7 @@ New i18n keys, in nb and en:
   results list, which is the misclick this feature exists to fix.
 - **A double tap on Back-to-home undoes itself.** The first tap goes home and adds an entry, so
   the second, now on the landing page with something behind it, goes back to the page you
-  started on. Replacing the entry instead would stop that, but then Forward could not return
+  started on. Replacing the entry instead would stop that, but then Back could not return
   (decision 3). It is harmless: you end where you were, and a third tap goes home.
 - **Saving the scroll when you leave by Back or Forward.** The browser's own buttons cannot be
   intercepted before they move, so only pushes save. Forward to a page you left by Back opens
@@ -256,8 +256,8 @@ New i18n keys, in nb and en:
 - Print emulation (`page.emulateMedia({ media: "print" })`) hides both layouts.
 - axe passes in installed mode in both themes, at 375 and 1280 px.
 - A first load of the landing page: Back is disabled.
-- A first load of a detail page: Back goes to the landing page; Forward then returns to the
-  detail page.
+- A first load of a detail page: Back goes to the landing page; Back again returns to the
+  detail page, and Forward then goes home again.
 - /sok, scroll down, open a result, press Back: the scroll position matches what it was and the
   result's link has focus. Forward opens the detail page again.
 - Quick exit, with `https://www.google.com/**` answered by `page.route` with a marked stub page.

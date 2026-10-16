@@ -10,9 +10,9 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-16-varde-back-forward-design.md` (approved 2026-10-16, on `docs/back-forward-spec`). Read it before any task. Where this plan and the spec disagree, the spec wins; stop and ask. The one known disagreement is below, and Malin settles it before the build starts.
 
-## Spec correction (needs Malin's yes before Task 8)
+## Spec correction (applied 2026-10-17)
 
-The spec says Back-to-home "adds an entry, so Forward can return", and its Testing section says "Back goes to the landing page; Forward then returns to the detail page". A browser cannot do that. Going home through the router is a push, and a push puts the landing page *after* the detail page: the detail page is then behind you, so **Back** returns to it and Forward stays disabled. No history API can insert an entry before the current one. The spec's own "Considered and rejected" note on the double tap already describes this (the second tap of Back returns to where you started). This plan builds and tests the real behaviour: after Back-to-home, Back returns to the detail page and Forward is off. The spec line should read "That adds an entry, so Back can return" and the test line "Back goes to the landing page; Back again returns to the detail page, and Forward then goes home again".
+The spec says Back-to-home "adds an entry, so Forward can return", and its Testing section says "Back goes to the landing page; Forward then returns to the detail page". A browser cannot do that. Going home through the router is a push, and a push puts the landing page *after* the detail page: the detail page is then behind you, so **Back** returns to it and Forward stays disabled. No history API can insert an entry before the current one. The spec's own "Considered and rejected" note on the double tap already describes this (the second tap of Back returns to where you started). This plan builds and tests the real behaviour: after Back-to-home, Back returns to the detail page and Forward is off. The spec line should read "That adds an entry, so Back can return" and the test line "Back goes to the landing page; Back again returns to the detail page, and Forward then goes home again". Applied to the spec on 2026-10-17, together with the matching "Back could not return" in its "Considered and rejected" note.
 
 ## Global Constraints
 
