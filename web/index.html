@@ -2,13 +2,18 @@
 <html lang="nb">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 		<meta name="referrer" content="no-referrer" />
 		<meta name="google-site-verification" content="fHlTUUnZesbjsg05HrjoB8KMyI1bA4ul0FhdMaTCR38" />
 		<!-- sizes="32x32" keeps browsers that read both from picking the .ico over the SVG. -->
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 		<link rel="icon" href="/favicon.ico" sizes="32x32" />
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<!-- The installed app (spec: The manifest). No service worker: an offline copy would fight
+		     "always current". default-src 'self' in the CSP already covers manifest-src. -->
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<meta name="theme-color" content="#f6f2ea" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#0b0d10" media="(prefers-color-scheme: dark)" />
 
 		<!-- No-flash theme init and legacy-URL redirect: must run BEFORE the stylesheet,
 		     synchronously (no defer/module). Inline, not a second request, so first paint is not
