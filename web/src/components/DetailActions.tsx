@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from "react"
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import {
 	copyText,
@@ -92,12 +92,12 @@ export function DetailActions({
 		}
 	}, [])
 
-	const clearFeedback = () => {
+	const clearFeedback = useCallback(() => {
 		clearTimeout(timer.current)
 		setFeedback(null)
-	}
+	}, [])
 	// A second click on the same action lands here again and restarts the 4 seconds.
-	const confirm = (action: Feedback["action"], key: string) => {
+	const showConfirmation = (action: Feedback["action"], key: string) => {
 		announce(t(key))
 		if (!mounted.current) return
 		clearTimeout(timer.current)
@@ -112,12 +112,11 @@ export function DetailActions({
 		const onKeyDown = (event: KeyboardEvent) => {
 			if (event.key !== "Escape") return
 			setTipsHidden(true)
-			clearTimeout(timer.current)
-			setFeedback(null)
+			clearFeedback()
 		}
 		document.addEventListener("keydown", onKeyDown)
 		return () => document.removeEventListener("keydown", onKeyDown)
-	}, [])
+	}, [clearFeedback])
 	const showTips = () => setTipsHidden(false)
 
 	// A click on any action first clears a confirmation that another action shows.
@@ -125,15 +124,15 @@ export function DetailActions({
 		if (!phone) return
 		clearFeedback()
 		const ok = await copyText(phone, navigator)
-		confirm("copy", ok ? "detail.phoneCopied" : "detail.copyFailed")
+		showConfirmation("copy", ok ? "detail.phoneCopied" : "detail.copyFailed")
 	}
 
 	// A native share sheet ("shared") is its own feedback, and a cancelled one says nothing.
 	const onShare = async () => {
 		clearFeedback()
 		const outcome = await shareResource({ name, phone, url: window.location.href }, navigator)
-		if (outcome === "copied") confirm("share", "detail.linkCopied")
-		if (outcome === "failed") confirm("share", "detail.copyFailed")
+		if (outcome === "copied") showConfirmation("share", "detail.linkCopied")
+		if (outcome === "failed") showConfirmation("share", "detail.copyFailed")
 	}
 
 	const copyName = t("detail.copyPhone")
