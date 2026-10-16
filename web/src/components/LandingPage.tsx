@@ -26,8 +26,9 @@ export function LandingPage({ arrival }: { arrival: number }) {
 			    under 1024 px and sit side by side from 1024 px, split by a divider either way, since
 			    the helplines are not emergency services. From 1024 px the page fits one 1920 x 950
 			    screen (decided 2026-10-15): one-line heading, no eyebrow, Nødtjenester beside the grid
-			    and tighter spacing. */}
-			<section className="hero relative py-6 text-center lg:pt-1 lg:pb-0">
+			    and tighter spacing. Every gap grows with the window height (--air in main.css, 2026-10-16)
+			    and the help sections are a step smaller, so the search and the chips lead the page. */}
+			<section className="hero relative py-6 text-center lg:pt-[calc(0.25rem+var(--air)*4)] lg:pb-0">
 				<p className="entrance text-xs uppercase tracking-[0.24em] text-muted lg:hidden">
 					{t("landing.eyebrow")}
 				</p>
@@ -38,13 +39,13 @@ export function LandingPage({ arrival }: { arrival: number }) {
 				>
 					{t("landing.headline")}
 				</h1>
-				<p className="entrance entrance-2 mx-auto mt-4 max-w-xl text-muted">
+				<p className="entrance entrance-2 mx-auto mt-4 max-w-xl text-muted lg:mt-[calc(1rem+var(--air)*0.5)]">
 					{t("landing.subtitle")}
 				</p>
-				<div className="entrance entrance-3 mt-6 lg:mt-3">
+				<div className="entrance entrance-3 mt-6 lg:mt-[calc(0.75rem+var(--air))]">
 					<LandingSearch />
 				</div>
-				<p className="entrance entrance-4 mt-6 lg:mt-3 text-xs uppercase tracking-[0.18em] text-muted">
+				<p className="entrance entrance-4 mt-6 lg:mt-[calc(0.75rem+var(--air))] text-xs uppercase tracking-[0.18em] text-muted">
 					{t("landing.browse")}
 				</p>
 				<div className="entrance entrance-5 mx-auto mt-3 grid max-w-3xl gap-2 lg:mt-2 lg:max-w-4xl lg:grid-cols-[auto_1fr] lg:items-center">
@@ -66,42 +67,37 @@ export function LandingPage({ arrival }: { arrival: number }) {
 				</div>
 			</section>
 
-			<div className="landing-help mt-6 grid border-t border-border pt-6 lg:mt-4 lg:grid-cols-2 lg:items-start lg:pt-2">
-				<section aria-labelledby="emergency" className="lg:pr-10">
-					<h2 id="emergency" className="text-2xl">
-						{t("landing.emergencyHeading")}
-					</h2>
-					<p className="mt-2 text-muted lg:mt-1">{t("landing.emergencyIntro")}</p>
-					{/* All four buttons share one height (auto-rows-fr). The number and its label sit on
-					    one line when they fit and wrap as two whole pieces when they do not. */}
-					<ul className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 lg:mt-2">
-						{emergencyLines.map((line) => (
-							<li key={line.id}>
-								<a
-									href={telHref(line.phone)}
-									className="btn-primary h-full w-full flex-wrap gap-x-2 gap-y-0 px-2 py-1.5 text-center text-lg"
-								>
-									<span className="whitespace-nowrap">{line.phone}</span>{" "}
-									<span className="text-base font-normal text-balance">
-										{t(`strip.short.${line.id}`)}
-									</span>
-								</a>
-							</li>
-						))}
-					</ul>
-				</section>
-				<Helplines className="mt-8 border-t border-border pt-8 lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10" />
+			{/* The divider spans the page; the two help sections sit in a narrower block under it,
+			    narrower than the chip row, so the search and the chips lead (2026-10-16). From 1024 px
+			    the emergency numbers stack as one list, which leaves the helplines the wider column. */}
+			<div className="landing-help mt-6 border-t border-border pt-6 lg:mt-[calc(1rem+var(--air)*4)] lg:pt-[calc(1rem+var(--air))] lg:pb-[var(--air)]">
+				<div className="grid lg:mx-auto lg:max-w-3xl lg:grid-cols-[2fr_3fr] lg:items-start">
+					<section aria-labelledby="emergency" className="lg:pr-8">
+						<h2 id="emergency" className="text-2xl lg:text-xl">
+							{t("landing.emergencyHeading")}
+						</h2>
+						<p className="mt-2 text-muted lg:mt-1 lg:text-sm">{t("landing.emergencyIntro")}</p>
+						{/* All four buttons share one height (auto-rows-fr). The number and its label sit on
+						    one line when they fit and wrap as two whole pieces when they do not. */}
+						<ul className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 lg:mt-2 lg:grid-cols-1 lg:gap-2">
+							{emergencyLines.map((line) => (
+								<li key={line.id}>
+									<a
+										href={telHref(line.phone)}
+										className="btn-primary h-full w-full flex-wrap gap-x-2 gap-y-0 px-2 py-1.5 text-center text-lg lg:text-base"
+									>
+										<span className="whitespace-nowrap">{line.phone}</span>{" "}
+										<span className="text-base font-normal text-balance lg:text-sm">
+											{t(`strip.short.${line.id}`)}
+										</span>
+									</a>
+								</li>
+							))}
+						</ul>
+					</section>
+					<Helplines className="mt-8 border-t border-border pt-8 lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8" />
+				</div>
 			</div>
-
-			<section
-				aria-labelledby="trust"
-				className="mt-6 border-t border-border pt-4 text-sm text-muted lg:mt-2 lg:pt-3"
-			>
-				<h2 id="trust" className="visually-hidden">
-					{t("landing.trustHeading")}
-				</h2>
-				<p>{t("landing.trustLine")}</p>
-			</section>
 		</div>
 	)
 }

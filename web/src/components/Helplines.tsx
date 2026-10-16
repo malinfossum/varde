@@ -49,10 +49,10 @@ export function Helplines({ className }: { className?: string }) {
 	if (!entries) return null
 	return (
 		<section aria-labelledby="helplines" className={`@container ${className ?? ""}`}>
-			<h2 id="helplines" className="text-2xl">
+			<h2 id="helplines" className="text-2xl lg:text-xl">
 				{t("landing.helplinesHeading")}
 			</h2>
-			<p className="mt-2 text-muted lg:mt-1">{t("landing.helplinesSubtitle")}</p>
+			<p className="mt-2 text-muted lg:mt-1 lg:text-sm">{t("landing.helplinesSubtitle")}</p>
 			{/* One grid for every row: names in the first column, buttons in the second, so all
 			    buttons share one left edge and one width. In a column narrower than 21 rem every row
 			    puts its button under the name instead, never just some of them. */}
@@ -71,7 +71,7 @@ export function Helplines({ className }: { className?: string }) {
 							className="helpline-row grid gap-1 @[21rem]:col-span-2 @[21rem]:grid-cols-subgrid @[21rem]:items-center"
 						>
 							<div className="lg:flex lg:flex-wrap lg:items-baseline lg:gap-x-2">
-								<Link to={`/resources/${entry.id}`} className="helpline-name">
+								<Link to={`/resources/${entry.id}`} className="helpline-name lg:text-sm">
 									{entry.name}
 								</Link>
 								{note && <p className="text-sm text-muted">{note}</p>}
@@ -79,7 +79,7 @@ export function Helplines({ className }: { className?: string }) {
 							{entry.phone ? (
 								<a
 									href={telHref(entry.phone)}
-									className="btn-primary justify-self-start @[21rem]:justify-self-stretch"
+									className="btn-primary justify-self-start lg:text-sm @[21rem]:justify-self-stretch"
 								>
 									{t("card.call")} {entry.phone}
 									<span className="visually-hidden">{hidden}</span>
@@ -87,7 +87,7 @@ export function Helplines({ className }: { className?: string }) {
 							) : chat ? (
 								<a
 									href={chat}
-									className="btn-secondary justify-self-start @[21rem]:justify-self-stretch"
+									className="btn-secondary justify-self-start lg:text-sm @[21rem]:justify-self-stretch"
 								>
 									{t("detail.chat")}
 									<span className="visually-hidden">{hidden}</span>

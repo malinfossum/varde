@@ -141,14 +141,12 @@ test("the emergency intro is the plain new line, in both languages", () => {
 	expect(screen.getByText("In an emergency, call:")).toBeInTheDocument()
 })
 
-test("the trust line is one muted line, and the Shift hint lives on the quick exit instead", () => {
+test("the landing has no trust line, and the Shift hint lives on the quick exit", () => {
 	stubCatalog()
 	render(<App />)
-	const trust = screen.getByRole("region", { name: "Derfor kan du stole på Varde" })
-	expect(trust).toHaveTextContent(
-		"Ingen sporing · All informasjon hentet fra kilden · Sjekkes hvert halvår"
-	)
-	expect(trust).not.toHaveTextContent("Shift")
+	// The trust line went on 2026-10-16: the footer says "Ingen sporing" and About covers the
+	// sources and the six-month check.
+	expect(screen.queryByRole("region", { name: "Derfor kan du stole på Varde" })).toBeNull()
 	expect(screen.getByRole("link", { name: "Forlat siden" })).toHaveAccessibleDescription(
 		"Du kan også trykke Shift tre ganger."
 	)
