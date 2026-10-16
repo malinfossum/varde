@@ -26,8 +26,9 @@ export function LandingPage({ arrival }: { arrival: number }) {
 			    under 1024 px and sit side by side from 1024 px, split by a divider either way, since
 			    the helplines are not emergency services. From 1024 px the page fits one 1920 x 950
 			    screen (decided 2026-10-15): one-line heading, no eyebrow, Nødtjenester beside the grid
-			    and tighter spacing. Each divider has even space above and below it (2026-10-16). */}
-			<section className="hero relative py-6 text-center lg:pt-1 lg:pb-0">
+			    and tighter spacing. Each divider has even space above and below it, and every gap grows
+			    with the window height (--air in main.css, 2026-10-16). */}
+			<section className="hero relative py-6 text-center lg:pt-[calc(0.25rem+var(--air)*1.5)] lg:pb-0">
 				<p className="entrance text-xs uppercase tracking-[0.24em] text-muted lg:hidden">
 					{t("landing.eyebrow")}
 				</p>
@@ -38,13 +39,13 @@ export function LandingPage({ arrival }: { arrival: number }) {
 				>
 					{t("landing.headline")}
 				</h1>
-				<p className="entrance entrance-2 mx-auto mt-4 max-w-xl text-muted">
+				<p className="entrance entrance-2 mx-auto mt-4 max-w-xl text-muted lg:mt-[calc(1rem+var(--air)*0.5)]">
 					{t("landing.subtitle")}
 				</p>
-				<div className="entrance entrance-3 mt-6 lg:mt-3">
+				<div className="entrance entrance-3 mt-6 lg:mt-[calc(0.75rem+var(--air))]">
 					<LandingSearch />
 				</div>
-				<p className="entrance entrance-4 mt-6 lg:mt-3 text-xs uppercase tracking-[0.18em] text-muted">
+				<p className="entrance entrance-4 mt-6 lg:mt-[calc(0.75rem+var(--air))] text-xs uppercase tracking-[0.18em] text-muted">
 					{t("landing.browse")}
 				</p>
 				<div className="entrance entrance-5 mx-auto mt-3 grid max-w-3xl gap-2 lg:mt-2 lg:max-w-4xl lg:grid-cols-[auto_1fr] lg:items-center">
@@ -66,7 +67,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 				</div>
 			</section>
 
-			<div className="landing-help mt-6 grid border-t border-border pt-6 lg:mt-4 lg:grid-cols-2 lg:items-start lg:pt-4">
+			<div className="landing-help mt-6 grid border-t border-border pt-6 lg:mt-[calc(1rem+var(--air)*1.5)] lg:grid-cols-2 lg:items-start lg:pt-[calc(1rem+var(--air))]">
 				<section aria-labelledby="emergency" className="lg:pr-10">
 					<h2 id="emergency" className="text-2xl">
 						{t("landing.emergencyHeading")}
@@ -95,7 +96,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 
 			<section
 				aria-labelledby="trust"
-				className="mt-6 border-t border-border pt-4 text-center text-sm text-muted lg:mt-3 lg:pt-3"
+				className="mt-6 border-t border-border pt-4 text-center text-sm text-muted lg:mt-[calc(0.75rem+var(--air))] lg:pt-[calc(0.75rem+var(--air)*0.5)]"
 			>
 				<h2 id="trust" className="visually-hidden">
 					{t("landing.trustHeading")}

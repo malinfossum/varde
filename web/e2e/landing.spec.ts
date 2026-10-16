@@ -197,6 +197,26 @@ for (const theme of THEMES) {
 	}
 }
 
+// Decided 2026-10-16: on a window taller than 950 px the landing's gaps grow with the height
+// (--air in main.css), so the extra height does not collect as an empty band above the footer.
+for (const path of ["/", "/en/"]) {
+	test(`the landing page fills a 1638 x 1286 window (${path})`, async ({ page }) => {
+		await page.setViewportSize({ width: 1638, height: 1286 })
+		await page.goto(path)
+		await settle(page)
+		await page.locator(".helpline-row").first().waitFor()
+		const m = await page.evaluate(() => {
+			const box = (s: string) => (document.querySelector(s) as Element).getBoundingClientRect()
+			return {
+				headerToH1: Math.round(box("h1").top - box("header").bottom),
+				trustToFooter: Math.round(box("footer").top - box("section[aria-labelledby=trust]").bottom),
+			}
+		})
+		expect(m.headerToH1).toBeGreaterThanOrEqual(60)
+		expect(m.trustToFooter).toBeLessThanOrEqual(120)
+	})
+}
+
 // The centred phone layout at every width replaced the two columns on 2026-10-15. These guard
 // the layout itself.
 for (const width of [1280, 1920]) {
