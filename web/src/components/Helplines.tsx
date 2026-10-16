@@ -49,68 +49,72 @@ export function Helplines({ className }: { className?: string }) {
 	const groups = known ?? (fetched?.lang === lang ? fetched.entries : null)
 	if (!groups) return null
 	return (
-		<section aria-labelledby="helplines" className={`@container ${className ?? ""}`}>
+		<section aria-labelledby="helplines" className={className}>
 			<h2 id="helplines" className="text-2xl lg:text-xl">
 				{t("landing.helplinesHeading")}
 			</h2>
 			<p className="mt-2 text-muted lg:mt-1 lg:text-sm">{t("landing.helplinesSubtitle")}</p>
-			{/* From 1024 px, in a column at least 26 rem wide, both groups share one grid: names,
+			{/* The container sits on this wrapper, not on the section: a section with a container type
+			    cannot be a subgrid, and the landing shares its rows with the emergency section.
+			    From 1024 px, in a column at least 26 rem wide, both groups share one grid: names,
 			    then every phone button in one column, then every chat button in one, so their edges
 			    line up across the groups (8.5 and 5.75 rem are 136 and 92 px at the default text
 			    size). In a narrower column, or with a larger text size, each name sits on its own
 			    line with its buttons below. */}
-			<div className="helpline-groups mt-3 grid gap-y-5 lg:mt-2 lg:self-start lg:@[26rem]:grid-cols-[minmax(0,1fr)_8.5rem_5.75rem] lg:@[26rem]:gap-x-2 lg:@[26rem]:gap-y-3">
-				{groups.map((group) => (
-					<section
-						key={group.key}
-						className="grid gap-y-2 lg:@[26rem]:col-span-3 lg:@[26rem]:grid-cols-subgrid"
-					>
-						<h3 id={`helplines-${group.key}`} className="helpline-group lg:@[26rem]:col-span-3">
-							{t(`landing.helplineGroup.${group.key}`)}
-						</h3>
-						<ul
-							aria-labelledby={`helplines-${group.key}`}
-							className="grid gap-y-4 lg:@[26rem]:col-span-3 lg:@[26rem]:grid-cols-subgrid lg:@[26rem]:gap-y-2"
+			<div className="@container lg:self-start">
+				<div className="helpline-groups mt-3 grid gap-y-5 lg:mt-2 lg:@[26rem]:grid-cols-[minmax(0,1fr)_8.5rem_5.75rem] lg:@[26rem]:gap-x-2 lg:@[26rem]:gap-y-3">
+					{groups.map((group) => (
+						<section
+							key={group.key}
+							className="grid gap-y-2 lg:@[26rem]:col-span-3 lg:@[26rem]:grid-cols-subgrid"
 						>
-							{group.rows.map((row) => (
-								<li
-									key={row.id}
-									className="helpline-row grid gap-y-1 lg:@[26rem]:col-span-3 lg:@[26rem]:grid-cols-subgrid lg:@[26rem]:items-center"
-								>
-									<Link to={`/resources/${row.id}`} className="helpline-name lg:text-sm">
-										{row.name}
-									</Link>
-									{/* Two buttons side by side, or stacked in a column under 20 rem (320 px, or a
+							<h3 id={`helplines-${group.key}`} className="helpline-group lg:@[26rem]:col-span-3">
+								{t(`landing.helplineGroup.${group.key}`)}
+							</h3>
+							<ul
+								aria-labelledby={`helplines-${group.key}`}
+								className="grid gap-y-4 lg:@[26rem]:col-span-3 lg:@[26rem]:grid-cols-subgrid lg:@[26rem]:gap-y-2"
+							>
+								{group.rows.map((row) => (
+									<li
+										key={row.id}
+										className="helpline-row grid gap-y-1 lg:@[26rem]:col-span-3 lg:@[26rem]:grid-cols-subgrid lg:@[26rem]:items-center"
+									>
+										<Link to={`/resources/${row.id}`} className="helpline-name lg:text-sm">
+											{row.name}
+										</Link>
+										{/* Two buttons side by side, or stacked in a column under 20 rem (320 px, or a
 									    larger text size). A row without a chat gives its phone the full width. From
 									    1024 px the wrapper steps aside (display: contents) so the buttons sit in the
 									    shared columns. The hidden words make the names "Ring 116 123, Mental Helse"
 									    and "Chat, Mental Helse": the visible label is always part of the name. */}
-									<div
-										className={`helpline-actions grid gap-2 lg:@[26rem]:contents ${row.chatUrl ? "@[20rem]:grid-cols-2" : ""}`}
-									>
-										{row.phone && (
-											<a href={telHref(row.phone)} className="btn-primary px-3 lg:text-sm">
-												<PhoneIcon className="size-5 shrink-0 lg:size-4" />
-												<span className="visually-hidden">{t("card.call")}</span> {row.phone}
-												<span className="visually-hidden">, {row.name}</span>
-											</a>
-										)}
-										{row.chatUrl && (
-											<a
-												href={row.chatUrl}
-												className="btn-secondary px-3 lg:text-sm lg:@[26rem]:col-start-3"
-											>
-												<ChatIcon className="size-5 shrink-0 lg:size-4" />
-												{t("detail.chat")}
-												<span className="visually-hidden">, {row.name}</span>
-											</a>
-										)}
-									</div>
-								</li>
-							))}
-						</ul>
-					</section>
-				))}
+										<div
+											className={`helpline-actions grid gap-2 lg:@[26rem]:contents ${row.chatUrl ? "@[20rem]:grid-cols-2" : ""}`}
+										>
+											{row.phone && (
+												<a href={telHref(row.phone)} className="btn-primary px-3 lg:text-sm">
+													<PhoneIcon className="size-5 shrink-0 lg:size-4" />
+													<span className="visually-hidden">{t("card.call")}</span> {row.phone}
+													<span className="visually-hidden">, {row.name}</span>
+												</a>
+											)}
+											{row.chatUrl && (
+												<a
+													href={row.chatUrl}
+													className="btn-secondary px-3 lg:text-sm lg:@[26rem]:col-start-3"
+												>
+													<ChatIcon className="size-5 shrink-0 lg:size-4" />
+													{t("detail.chat")}
+													<span className="visually-hidden">, {row.name}</span>
+												</a>
+											)}
+										</div>
+									</li>
+								))}
+							</ul>
+						</section>
+					))}
+				</div>
 			</div>
 		</section>
 	)

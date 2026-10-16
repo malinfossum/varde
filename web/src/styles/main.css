@@ -83,6 +83,8 @@
 		min-height: 44px;
 		padding: 0 1.25rem;
 		border-radius: 0.75rem;
+		/* Invisible normally; forced-colors mode paints it, so the button keeps its edge. */
+		border: 1px solid transparent;
 		background: var(--accent);
 		color: var(--on-accent);
 		font-weight: 600;
