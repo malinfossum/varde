@@ -272,7 +272,11 @@ test("a cancelled share sheet announces nothing", async () => {
 	await renderDetail()
 	await userEvent.click(screen.getByRole("button", { name: "Del" }))
 	await act(async () => {})
-	expect(screen.queryByText(/kopiert/)).not.toBeInTheDocument()
+	// Nothing is spoken (the live region is empty) and nothing is shown (no bubble under the button).
+	for (const region of document.querySelectorAll("[aria-live]")) {
+		expect(region).toBeEmptyDOMElement()
+	}
+	expect(document.querySelector(".action-feedback")).toBeNull()
 })
 
 test("no phone means no copy-phone button", async () => {

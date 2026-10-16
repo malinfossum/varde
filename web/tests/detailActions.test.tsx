@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { act, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, expect, test, vi } from "vitest"
 import { ResourceDetail } from "../src/components/ResourceDetail.tsx"
 import { AnnouncerProvider } from "../src/components/StatusRegion.tsx"
@@ -131,4 +131,182 @@ test("a service with no phone has two actions, share and report, and no empty sl
 		"Meld feil i oppføringen",
 	])
 	expect(document.querySelector(".detail-actions")?.children).toHaveLength(2)
+})
+
+// Escape hides the tooltips until the pointer or focus comes back (WCAG 1.4.13), as on the acute strip.
+test("Escape hides the tooltips; pointer enter or focus brings them back", () => {
+	renderBaked()
+	const group = document.querySelector(".detail-actions")
+	const report = screen.getByRole("link", { name: "Meld feil i oppføringen" })
+	expect(group).not.toHaveAttribute("data-tips")
+	fireEvent.keyDown(document, { key: "Escape" })
+	expect(group).toHaveAttribute("data-tips", "hidden")
+	fireEvent.pointerEnter(report)
+	expect(group).not.toHaveAttribute("data-tips")
+	fireEvent.keyDown(document, { key: "Escape" })
+	expect(group).toHaveAttribute("data-tips", "hidden")
+	fireEvent.focus(report)
+	expect(group).not.toHaveAttribute("data-tips")
+})
+
+// Only setTimeout and clearTimeout are fake, so React's scheduler (setImmediate) is untouched and
+// vi.getTimerCount() counts this component's timers alone. Nothing here waits with findBy, so no
+// real time has to pass. Clicks go through fireEvent, not user-event: user-event's wrapper waits
+// on a faked setTimeout(0) that nothing advances outside jest.
+function setupTimers() {
+	vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+}
+afterEach(() => {
+	vi.useRealTimers()
+})
+
+const flush = () => act(async () => {})
+const feedbackIn = (el: HTMLElement) => el.querySelector(".action-feedback")
+const tipIn = (el: HTMLElement) => el.querySelector(".action-tip")
+const click = async (el: HTMLElement) => {
+	fireEvent.click(el)
+	await flush()
+}
+
+test("a copy shows Nummeret er kopiert in place of the tooltip, hidden from screen readers, for 4 seconds", async () => {
+	setupTimers()
+	restoreNavigator = installNavigator({
+		clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+	})
+	renderBaked()
+	const copy = screen.getByRole("button", { name: "Kopier nummer" })
+	await click(copy)
+	expect(feedbackIn(copy)).toHaveTextContent("Nummeret er kopiert")
+	expect(feedbackIn(copy)).toHaveAttribute("aria-hidden", "true")
+	expect(tipIn(copy)).toBeNull()
+	// The live region still speaks it, once.
+	expect(screen.getAllByText("Nummeret er kopiert", { selector: "[aria-live]" })).toHaveLength(1)
+	act(() => vi.advanceTimersByTime(3999))
+	expect(feedbackIn(copy)).not.toBeNull()
+	act(() => vi.advanceTimersByTime(1))
+	expect(feedbackIn(copy)).toBeNull()
+	expect(tipIn(copy)).toHaveTextContent("Kopier nummer")
+})
+
+test("switching language while the confirmation shows switches the bubble too", async () => {
+	setupTimers()
+	restoreNavigator = installNavigator({
+		clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+	})
+	const { rerender } = renderBaked()
+	await click(screen.getByRole("button", { name: "Kopier nummer" }))
+	rerender(tree(ringsaker, "en"))
+	expect(feedbackIn(screen.getByRole("button", { name: "Copy number" }))).toHaveTextContent(
+		"Number copied"
+	)
+})
+
+test("a refused copy shows Kunne ikke kopiere on screen too, then the name tooltip is back", async () => {
+	setupTimers()
+	restoreNavigator = installNavigator({
+		clipboard: {
+			writeText: vi.fn().mockRejectedValue(new DOMException("denied", "NotAllowedError")),
+		},
+	})
+	renderBaked()
+	const copy = screen.getByRole("button", { name: "Kopier nummer" })
+	await click(copy)
+	expect(feedbackIn(copy)).toHaveTextContent("Kunne ikke kopiere")
+	expect(tipIn(copy)).toBeNull()
+	act(() => vi.advanceTimersByTime(4000))
+	expect(feedbackIn(copy)).toBeNull()
+	expect(tipIn(copy)).toHaveTextContent("Kopier nummer")
+})
+
+test("share by copy shows Lenken er kopiert under the share button", async () => {
+	setupTimers()
+	restoreNavigator = installNavigator({
+		clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+	})
+	renderBaked()
+	const share = screen.getByRole("button", { name: "Kopier lenke" })
+	await click(share)
+	expect(feedbackIn(share)).toHaveTextContent("Lenken er kopiert")
+})
+
+test("a native share sheet shows nothing: the sheet is the feedback", async () => {
+	setupTimers()
+	restoreNavigator = installNavigator({ share: vi.fn().mockResolvedValue(undefined) })
+	renderBaked()
+	await click(screen.getByRole("button", { name: "Del" }))
+	expect(document.querySelector(".action-feedback")).toBeNull()
+})
+
+test("Escape clears the confirmation early", async () => {
+	setupTimers()
+	restoreNavigator = installNavigator({
+		clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+	})
+	renderBaked()
+	const copy = screen.getByRole("button", { name: "Kopier nummer" })
+	await click(copy)
+	expect(feedbackIn(copy)).not.toBeNull()
+	fireEvent.keyDown(document, { key: "Escape" })
+	expect(feedbackIn(copy)).toBeNull()
+	expect(document.querySelector(".detail-actions")).toHaveAttribute("data-tips", "hidden")
+})
+
+test("a click on another action clears it, and the report link clears it too", async () => {
+	setupTimers()
+	restoreNavigator = installNavigator({
+		clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+	})
+	renderBaked()
+	const copy = screen.getByRole("button", { name: "Kopier nummer" })
+	const share = screen.getByRole("button", { name: "Kopier lenke" })
+	await click(copy)
+	await click(share)
+	expect(feedbackIn(copy)).toBeNull()
+	expect(feedbackIn(share)).toHaveTextContent("Lenken er kopiert")
+	// jsdom does not follow a mailto link; a click event is enough to prove the handler.
+	fireEvent.click(screen.getByRole("link", { name: "Meld feil i oppføringen" }))
+	expect(document.querySelector(".action-feedback")).toBeNull()
+})
+
+test("a second click on the same action restarts the 4 seconds", async () => {
+	setupTimers()
+	restoreNavigator = installNavigator({
+		clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+	})
+	renderBaked()
+	const copy = screen.getByRole("button", { name: "Kopier nummer" })
+	await click(copy)
+	act(() => vi.advanceTimersByTime(3000))
+	await click(copy)
+	act(() => vi.advanceTimersByTime(3000))
+	expect(feedbackIn(copy)).toHaveTextContent("Nummeret er kopiert")
+	act(() => vi.advanceTimersByTime(1000))
+	expect(feedbackIn(copy)).toBeNull()
+})
+
+test("leaving the page mid-message leaves no timer and logs no error", async () => {
+	setupTimers()
+	const errors = vi.spyOn(console, "error").mockImplementation(() => {})
+	restoreNavigator = installNavigator({
+		clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+	})
+	const { unmount } = renderBaked()
+	await click(screen.getByRole("button", { name: "Kopier nummer" }))
+	unmount()
+	expect(vi.getTimerCount()).toBe(0)
+	act(() => vi.advanceTimersByTime(5000))
+	expect(errors).not.toHaveBeenCalled()
+	errors.mockRestore()
+})
+
+test("leaving the page while the clipboard is still writing starts no timer", async () => {
+	setupTimers()
+	let finish: () => void = () => {}
+	const writeText = vi.fn(() => new Promise<void>((resolve) => (finish = resolve)))
+	restoreNavigator = installNavigator({ clipboard: { writeText } })
+	const { unmount } = renderBaked()
+	fireEvent.click(screen.getByRole("button", { name: "Kopier nummer" }))
+	unmount()
+	await act(async () => finish())
+	expect(vi.getTimerCount()).toBe(0)
 })
