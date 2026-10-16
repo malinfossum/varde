@@ -105,7 +105,7 @@ export const helplineRows: ResourceDto[] = [
 // What a sighted user sees on a button: its text without the visually hidden parts.
 export function visibleText(element: HTMLElement): string {
 	const copy = element.cloneNode(true) as HTMLElement
-	for (const hidden of copy.querySelectorAll(".visually-hidden")) hidden.remove()
+	for (const hidden of copy.querySelectorAll(".visually-hidden, .hidden-inline")) hidden.remove()
 	return copy.textContent?.trim() ?? ""
 }
 

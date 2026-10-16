@@ -391,3 +391,13 @@ test("every helpline and emergency button keeps a visible edge in forced-colors 
 	// Tailwind's reset makes every border-style solid, so the width is what proves the edge.
 	for (const edge of edges) expect(edge).toBe("solid 1px")
 })
+
+// Chromium puts a space around an absolutely positioned part of a link's name, which used to make
+// these "Ring 116 123 , Mental Helse". jsdom does not, so a real browser has to lock the names.
+test("the landing helpline buttons have clean accessible names", async ({ page }) => {
+	await page.goto("/")
+	await expect(
+		page.getByRole("link", { name: "Ring 116 123, Mental Helse", exact: true })
+	).toHaveCount(1)
+	await expect(page.getByRole("link", { name: "Chat, Mental Helse", exact: true })).toHaveCount(1)
+})

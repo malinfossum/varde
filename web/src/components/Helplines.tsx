@@ -18,8 +18,9 @@ function knownHelplines(baked: HelplineGroup[] | null, lang: Lang): HelplineGrou
 	try {
 		return pickHelplines(index.resources)
 	} catch {
-		// An id missing from the data fails the build at prerender; in the browser the section
-		// just stays hidden rather than taking the landing page down with it.
+		// A missing id, or a landing label that no longer sits inside its row's name, fails the
+		// build at prerender; in the browser either one just leaves the section hidden rather
+		// than taking the landing page down with it.
 		return null
 	}
 }
@@ -87,15 +88,19 @@ export function Helplines({ className }: { className?: string }) {
 									    larger text size). A row without a chat gives its phone the full width. From
 									    1024 px the wrapper steps aside (display: contents) so the buttons sit in the
 									    shared columns. The hidden words make the names "Ring 116 123, Mental Helse"
-									    and "Chat, Mental Helse": the visible label is always part of the name. */}
+									    and "Chat, Mental Helse": the visible label is always part of the name. The
+									    buttons are flex containers, which turns every child into a block and makes
+									    Chromium put a space before the hidden comma, so the text sits in one span. */}
 										<div
 											className={`helpline-actions grid gap-2 lg:@[26rem]:contents ${row.chatUrl ? "@[20rem]:grid-cols-2" : ""}`}
 										>
 											{row.phone && (
 												<a href={telHref(row.phone)} className="btn-primary px-3 lg:text-sm">
 													<PhoneIcon className="size-5 shrink-0 lg:size-4" />
-													<span className="visually-hidden">{t("card.call")}</span> {row.phone}
-													<span className="visually-hidden">, {row.name}</span>
+													<span>
+														<span className="visually-hidden">{t("card.call")}</span> {row.phone}
+														<span className="hidden-inline">, {row.name}</span>
+													</span>
 												</a>
 											)}
 											{row.chatUrl && (
@@ -104,8 +109,10 @@ export function Helplines({ className }: { className?: string }) {
 													className="btn-secondary px-3 lg:text-sm lg:@[26rem]:col-start-3"
 												>
 													<ChatIcon className="size-5 shrink-0 lg:size-4" />
-													{t("detail.chat")}
-													<span className="visually-hidden">, {row.name}</span>
+													<span>
+														{t("detail.chat")}
+														<span className="hidden-inline">, {row.name}</span>
+													</span>
 												</a>
 											)}
 										</div>

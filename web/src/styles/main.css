@@ -65,6 +65,14 @@
 		clip-path: inset(50%);
 		white-space: nowrap;
 	}
+	/* Hidden text that sits inside a sentence read by a screen reader (a comma, a trailing name).
+	   .visually-hidden is absolutely positioned, which makes Chromium put a space on each side of
+	   it when it builds a link's name ("Ring , døgnåpen"). This one stays inline and has no size,
+	   so the name reads "Ring, døgnåpen" and nothing shows or is picked up by a selection. */
+	.hidden-inline {
+		font-size: 0;
+		user-select: none;
+	}
 	.skip-link {
 		position: absolute;
 		left: -999px;
@@ -431,7 +439,8 @@
 	}
 	/* A contact tile on the detail page (spec C2a): the whole tile is one link. The 1 px border
 	   keeps its edge in forced-colors mode, where the accent-soft fill disappears. 69 px is the
-	   minimum: a long child name wraps inside the tile and makes it taller, never clipped. */
+	   minimum: a long child name wraps inside the tile and makes it taller, never clipped.
+	   overflow-wrap: anywhere is what keeps a long name inside the tile at 200 % text. */
 	.contact-tile {
 		display: flex;
 		align-items: center;

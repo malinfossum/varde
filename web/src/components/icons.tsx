@@ -133,10 +133,13 @@ export function PhoneIcon({ className }: IconProps) {
 	)
 }
 
+// A speech bubble: a rounded rectangle (3 to 21 across, 4 to 17 down, corner radius 3) with a
+// square-cornered tail dropping from its bottom edge at the left. No circle and no curved tail,
+// so it reads as a bubble at 16 px without borrowing any other set's outline.
 export function ChatIcon({ className }: IconProps) {
 	return (
 		<Svg className={className}>
-			<path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L3 21l1.9-5.3A8.5 8.5 0 1 1 21 11.5z" />
+			<path d="M6 4h12a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-6.5L7 20.5V17H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" />
 		</Svg>
 	)
 }

@@ -92,3 +92,41 @@ test("each contact tile keeps a visible border in forced-colors mode", async ({ 
 	expect(borders).toHaveLength(3)
 	for (const b of borders) expect(b).toBe("solid 1px")
 })
+
+// Chromium builds a link's name from its parts and puts a space around any absolutely positioned
+// one, so a hidden comma used to give "Ring , døgnåpen". jsdom does not do that, so only a real
+// browser can lock the names the spec asks for.
+for (const [path, names] of [
+	[
+		"/resources/1",
+		[
+			"Ring, døgnåpen, 116 123",
+			"Sidetmedord (Mental Helse), Åpne chatten",
+			"Arbeidslivstelefonen (Mental Helse), 116 123, tast 3",
+		],
+	],
+	["/en/resources/1", ["Call, open 24/7, 116 123"]],
+] as const) {
+	test(`the contact tiles have clean accessible names (${path})`, async ({ page }) => {
+		await page.goto(path)
+		for (const name of names) {
+			await expect(page.getByRole("link", { name, exact: true })).toHaveCount(1)
+		}
+	})
+}
+
+// Back from a parent to a directly loaded child page must show the child again.
+test("Back from the parent returns to the directly loaded child page", async ({ page }) => {
+	await page.goto("/resources/9")
+	await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+		"Arbeidslivstelefonen (Mental Helse)"
+	)
+	await page.getByRole("link", { name: "Hjelpetelefonen (Mental Helse)", exact: true }).click()
+	await expect(page).toHaveURL(/\/resources\/1$/)
+	await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hjelpetelefonen (Mental Helse)")
+	await page.goBack()
+	await expect(page).toHaveURL(/\/resources\/9$/)
+	await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+		"Arbeidslivstelefonen (Mental Helse)"
+	)
+})

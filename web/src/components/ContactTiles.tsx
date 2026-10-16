@@ -30,11 +30,11 @@ export function ContactTiles({ tiles }: { tiles: ContactTile[] }) {
 									{tile.name ?? t(tile.kind === "phone" ? "card.call" : "detail.chat")}
 									{tile.kind === "phone" && tile.alwaysOpen && (
 										<>
-											<span className="visually-hidden">,</span> <span aria-hidden="true">·</span>{" "}
+											<span className="hidden-inline">,</span> <span aria-hidden="true">·</span>{" "}
 											{t("detail.tile.alwaysOpen")}
 										</>
 									)}
-									<span className="visually-hidden">,</span>
+									<span className="hidden-inline">,</span>
 								</span>
 								{/* A real space between the lines: name computation trims each span, so without it
 								    the label's comma runs into the value. */}{" "}
