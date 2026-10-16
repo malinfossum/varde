@@ -127,6 +127,16 @@
 	.nav-link:hover {
 		text-decoration: underline;
 	}
+	/* From 1024 px the landing's vertical gaps grow with the window height (decided 2026-10-16).
+	   Below 900 px tall --air is 0 (English needs 892 px without it), so the page keeps its
+	   one-screen fit at 950; on a taller window the extra height opens the gaps instead of
+	   collecting as an empty band above the footer. The gaps take 12.5 shares of --air (four each
+	   under the header and above the help sections), so half a share stays as slack; 4rem caps it. */
+	@media (min-width: 1024px) {
+		.landing {
+			--air: clamp(0px, calc((100dvh - 900px) / 13), 4rem);
+		}
+	}
 	.hero::before {
 		content: "";
 		position: absolute;
@@ -369,5 +379,45 @@
 		.acute-strip[data-tips="hidden"] .strip-tip {
 			display: none;
 		}
+	}
+
+	/* Category chips on the landing page. Nødtjenester is the accent chip on a row of its own;
+	   the other eight share one width in the grid (spec: Chips, item 3). */
+	.chip {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px;
+		padding: 0 1rem;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		background: var(--surface);
+		color: var(--text);
+		font-size: 0.875rem;
+		font-weight: 500;
+		text-align: center;
+		text-decoration: none;
+	}
+	.chip-acute {
+		border-color: var(--accent);
+		background: var(--accent);
+		color: var(--on-accent);
+		font-weight: 600;
+	}
+	.helpline-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.25rem 0.75rem;
+	}
+	.helpline-name {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		color: var(--text);
+		font-weight: 600;
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
 	}
 }

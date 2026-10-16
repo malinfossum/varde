@@ -25,9 +25,17 @@ jobs:
       # EF check off until Ward restores local tools and resolves paths from the repo root, and the API has a design-time connection string (2026-10-07).
       dotnet-ef-project: ""                  # EF Core project path, e.g. "src/App.Data"
 
+  # CodeQL on every pull request, forks included; the main ruleset waits for its results.
+  codeql:
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    uses: malinfossum/ward/.github/workflows/codeql.yml@6616cb64aca999157934d2a69d2af92d6e847011 # v1.4.0
+
   automerge:
     if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]'
     permissions:
       contents: write
       pull-requests: write
-    uses: malinfossum/ward/.github/workflows/dependabot-automerge.yml@0f9842e422ecbaf885e42ff619888fd7cdc306bf # v1.2.0
+    uses: malinfossum/ward/.github/workflows/dependabot-automerge.yml@c2fff634a4b07d6fa80337dd8af805002562be48 # v1.3.0

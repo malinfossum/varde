@@ -97,7 +97,7 @@ for (const width of [320, 360, 375, 767]) {
 for (const width of [320, 768, 1280]) {
 	for (const [path, labels] of [
 		["/", ["Brann", "Politi", "Ambulanse", "Legevakt"]],
-		["/en/", ["Fire", "Police", "Ambulance", "Out-of-hours service"]],
+		["/en/", ["Fire", "Police", "Ambulance", "Out-of-hours"]],
 	] as const) {
 		test(`at ${width} px (${path}) hovering a number shows its label in the viewport`, async ({
 			page,

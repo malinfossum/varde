@@ -16,7 +16,7 @@ const renderStrip = (lang: "nb" | "en") =>
 test("the strip lists every emergency line as one tel link named by its label and number", () => {
 	const labels = {
 		nb: ["Brann", "Politi", "Ambulanse", "Legevakt"],
-		en: ["Fire", "Police", "Ambulance", "Out-of-hours service"],
+		en: ["Fire", "Police", "Ambulance", "Out-of-hours"],
 	} as const
 	for (const lang of ["nb", "en"] as const) {
 		const { unmount } = renderStrip(lang)

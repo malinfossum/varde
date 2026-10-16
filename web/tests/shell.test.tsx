@@ -2,8 +2,9 @@ import { act, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
+import { PageDataContext } from "../src/pageData.ts"
 import { desktopTools } from "./scope.ts"
-import { stubDataFiles } from "./stubData.ts"
+import { bakedHelplines, stubDataFiles } from "./stubData.ts"
 
 function stubResources() {
 	// Left permanently pending — these tests assert on the shell/toggle only, never on
@@ -71,7 +72,11 @@ test("the landing route renders a heading and loads no data", () => {
 	vi.restoreAllMocks()
 	const fetchSpy = vi.spyOn(globalThis, "fetch")
 	window.history.pushState(null, "", "/")
-	render(<App />)
+	render(
+		<PageDataContext.Provider value={bakedHelplines("nb")}>
+			<App />
+		</PageDataContext.Provider>
+	)
 	// The header carries no heading of its own — the landing page's own h1 is the only
 	// level-1 heading on this route, and it lives inside <main>, with the real headline copy,
 	// so this checks for that text rather than the old placeholder's "Varde".
