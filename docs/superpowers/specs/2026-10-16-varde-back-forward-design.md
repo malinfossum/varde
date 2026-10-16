@@ -24,7 +24,8 @@ I looked at three placements rendered on a detail page at 375 and 1280 px before
    installed and the buttons tested on a real phone. The install hint stays in its own later PR.
 3. **Back goes home when there is nothing behind it**, and is disabled on the landing page in
    that case. Nobody is stuck on a detail page the app opened straight onto.
-4. **Phones and tablets get a bottom bar; desktop gets two icons before the brand.** Icons in
+4. **Phones and tablets get a bottom bar; desktop gets two icons before the brand.** Both
+   show arrows only, never visible text. Icons in
    the phone header were measured and do not fit: at 375 px the row needs 343 of 343 px in
    Norwegian and about 20 px more in English, even with the brand cut to its mark, so "Forlat
    siden" wraps. A bar under the header fitted but made the sticky header 52 px taller on every
@@ -62,16 +63,18 @@ header nav share the header today.
 - Fixed to the bottom edge, full width, `--surface` background, a 1 px `--border` on top, and
   `0.5rem 1rem` padding plus `env(safe-area-inset-bottom)` at the bottom. The viewport meta gets
   `viewport-fit=cover` so the inset is reported.
-- Two equal columns (`1fr 1fr`, `0.5rem` gap) holding "‹ Tilbake" and "Fremover ›" (English
-  "‹ Back" and "Forward ›"), in the `btn-secondary` shape, 44 px tall, with the 24 px stroke
-  chevrons Rookdex uses (`M15 5l-7 7 7 7` and `M9 5l7 7-7 7`). The chevrons are `aria-hidden`;
-  the visible text is the name.
+- Two equal columns (`1fr 1fr`, `0.5rem` gap) holding a Back and a Forward button in the
+  `btn-secondary` shape, 44 px tall. Each shows only its arrow, centred: the 24 px stroke
+  chevrons Rookdex uses (`M15 5l-7 7 7 7` and `M9 5l7 7-7 7`), `aria-hidden`. There is no
+  visible text (my call at spec approval, 2026-10-16); the name is visually hidden text,
+  "Tilbake" / "Back" and "Fremover" / "Forward". Phones have no hover, so the bar has no
+  tooltips.
 - The bar sits after the footer in the DOM, so Tab reaches it last, in the order it is seen.
 - `z-index` above page content and below the open Meny sheet and the open pickers.
 - In installed mode below 1024 px, `body` gets a bottom padding equal to the bar's height, and
   `html` gets the same `scroll-padding-bottom`. The bar then never covers the footer, a call
   button or a control that Tab has just focused (WCAG 2.4.11). The height is the bar's real
-  one: a `ResizeObserver` writes it to `--history-bar-h` on `<html>`, so a label that wraps at
+  one: a `ResizeObserver` writes it to `--history-bar-h` on `<html>`, so a bar that grows at
   200 % text grows the padding with it. Until the observer runs, the value is `4.25rem` plus
   the safe-area inset (the bar's height at default text).
 - The header is unchanged on phones.
@@ -151,8 +154,8 @@ New navigations (link clicks, the search form) keep today's arrival: top of the 
 the heading. "Visible" means `checkVisibility()` is true, so a link inside a closed Meny never
 takes focus.
 
-**Keyboard and screen readers.** Both are real `<button>`s: Enter and Space press them. On
-phones the visible text is the accessible name; on desktop the visually hidden text is.
+**Keyboard and screen readers.** Both are real `<button>`s: Enter and Space press them. In both
+layouts the accessible name is the visually hidden text.
 Landing on a page by Back or Forward announces the focused link (or the heading) and the page
 title changes as on any arrival.
 
@@ -246,7 +249,9 @@ New i18n keys, in nb and en:
   control on the header row and on the bar shares one height and one bottom edge. No sideways
   scroll at 320 px. The header stays one row at 1024 px.
 - The bar never covers the footer's last line at 375 px, and at 320 px with text at 200 %
-  (the labels may wrap; the padding follows).
+  (the padding follows the bar's real height).
+- Neither layout shows visible text: each button holds only its arrow and its visually hidden
+  name.
 - With a mouse at 1280 px, hovering a desktop icon shows its tooltip and Escape hides it.
 - Print emulation (`page.emulateMedia({ media: "print" })`) hides both layouts.
 - axe passes in installed mode in both themes, at 375 and 1280 px.
