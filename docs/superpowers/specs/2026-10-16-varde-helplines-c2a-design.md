@@ -116,12 +116,14 @@ export const HELPLINE_GROUPS = [
 - The `h2` "Noen å snakke med" and the line "Du kan være anonym." stay.
 - **The age wording is verified, not assumed.** Before the copy ships, the age range for rows 4
   and 121 is read from each service's own site and recorded with its URL in the seed docs. If
-  either serves a different range than "under 18", the group label changes to match.
+  either serves a different range than "under 18", the group label changes to match. Checked
+  2026-10-16: Alarmtelefonen states 7-12 and 13-18 and Kors på halsen states under 18, so the
+  label carries no age.
 - Each group is a `section` with an `h3` label and its own `ul`. Labels are small, uppercase and
   muted, set apart from the bold names by size, weight and colour.
 - A row is a `li`. The name is a link to `/resources/{id}`. Then comes the phone button, then the
   chat button.
-- Names are bold with no underline at rest. They get an underline on hover and on focus, so
+- Names are bold with no underline at rest. They get an underline on hover and on keyboard focus (`:focus-visible`), so
   they still show that they are links when it matters.
 
 ### Desktop (1024 px and up)
@@ -276,7 +278,7 @@ is removed from both files.
   already holds every row.
 - **Underlines on the landing names at rest.** WCAG 1.4.1 asks for links inside running text to
   stand out without colour. These names sit alone in rows, bold, beside buttons, and get an
-  underline on hover and focus.
+  underline on hover and keyboard focus.
 - **`lang="nb"` on Norwegian service names in English.** Proper names are exempt from WCAG 3.1.2,
   and marking only these four would make them behave differently from every other name on Varde.
 - **Enforcing the one-level rule in the database.** It needs a trigger. The seed is the only
