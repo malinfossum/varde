@@ -30,6 +30,8 @@ const resource: ResourceDto = {
 	lastVerified: "2026-08-13",
 	categories: [{ id: 9, slug: "nodtjenester", name: "Nødtjenester", isFallbackTranslation: false }],
 	servedMunicipalityIds: [],
+	parentId: null,
+	phoneMenuOption: null,
 }
 
 function withLang(ui: React.ReactNode) {

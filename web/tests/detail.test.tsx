@@ -1,11 +1,13 @@
-import { act, render, screen, waitFor } from "@testing-library/react"
+import { act, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test, vi } from "vitest"
 import { ResourceDetail } from "../src/components/ResourceDetail.tsx"
 import { AnnouncerProvider } from "../src/components/StatusRegion.tsx"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
+import { PageDataContext } from "../src/pageData.ts"
+import { familyOf } from "../src/services/family.ts"
 import type { ResourceDto } from "../src/types/api.ts"
-import { stubDataFiles } from "./stubData.ts"
+import { helplineRows, stubDataFiles, visibleText } from "./stubData.ts"
 
 const detail: ResourceDto = {
 	id: 12,
@@ -25,6 +27,8 @@ const detail: ResourceDto = {
 	lastVerified: "2026-08-13",
 	categories: [],
 	servedMunicipalityIds: [],
+	parentId: null,
+	phoneMenuOption: null,
 }
 
 // The two ready-branch tests below set window.history state directly (replaceState, and a
@@ -80,9 +84,9 @@ test("a 404 renders NotFoundState with a way back", async () => {
 	expect(screen.getByRole("link", { name: "Tilbake til resultater" })).toBeInTheDocument()
 })
 
-// --- ready branch: call-first hero + stateful back link -------------------------------------
+// --- ready branch: contact tiles + stateful back link -------------------------------------
 
-test("the call button is the hero and the back link is a plain link without history state", async () => {
+test("the phone tile calls the service and the back link is a plain link without history state", async () => {
 	stubDataFiles({ resources: [detail] })
 	window.history.replaceState(null, "", "/resources/12")
 	render(
@@ -92,16 +96,14 @@ test("the call button is the hero and the back link is a plain link without hist
 			</AnnouncerProvider>
 		</LanguageProvider>
 	)
-	const call = await screen.findByRole("link", { name: /Ring 62 00 00 00/ })
+	const call = await screen.findByRole("link", { name: "Ring, døgnåpen, 62 00 00 00" })
 	expect(call).toHaveAttribute("href", "tel:62000000")
-	// Assert role + accessible name, not the class that styles the button — a redesign must
-	// not have to touch this test.
+	// Assert role + accessible name, not the class that styles the tile, so a redesign does not
+	// have to touch this test.
 	expect(screen.getByRole("link", { name: "Tilbake til resultater" })).toHaveAttribute(
 		"href",
 		"/sok"
 	)
-	// PageHead sets the title in a passive effect that can flush after the link is already in
-	// the DOM — a synchronous read failed once in Deploy Web with the previous test's title.
 	await waitFor(() => expect(document.title).toBe("Krisesenteret i Hamar – Varde"))
 })
 
@@ -281,4 +283,117 @@ test("a share sheet without a clipboard shows Del but no copy-phone button", asy
 	await renderDetail()
 	expect(screen.getByRole("button", { name: "Del" })).toBeInTheDocument()
 	expect(screen.queryByRole("button", { name: "Kopier nummer" })).not.toBeInTheDocument()
+})
+
+function renderHelpline(id: number, lang: "nb" | "en" = "nb") {
+	stubDataFiles({ resources: helplineRows })
+	render(
+		<LanguageProvider lang={lang}>
+			<AnnouncerProvider>
+				<ResourceDetail id={id} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+}
+
+test("Mental Helse's contact block: its phone, Sidetmedord's chat, then Arbeidslivstelefonen", async () => {
+	renderHelpline(1)
+	const block = await screen.findByRole("region", { name: "Kontakt" })
+	expect(within(block).getByRole("heading", { level: 2, name: "Kontakt" })).toBeInTheDocument()
+	const tiles = within(block).getAllByRole("link")
+	expect(tiles.map((a) => a.getAttribute("href"))).toEqual([
+		"tel:116123",
+		"https://mentalhelse.no/hjelpechat/",
+		"tel:116123",
+	])
+	expect(tiles[0]).toHaveAccessibleName("Ring, døgnåpen, 116 123")
+	expect(tiles[0]).not.toHaveAccessibleName(/·/)
+	expect(visibleText(tiles[0] as HTMLElement)).toContain("Ring · døgnåpen")
+	expect(tiles[1]).toHaveAccessibleName("Sidetmedord (Mental Helse), Åpne chatten")
+	expect(tiles[2]).toHaveAccessibleName("Arbeidslivstelefonen (Mental Helse), 116 123, tast 3")
+})
+
+test("døgnåpen sits on Kirkens SOS's phone tile and never on its chat tile", async () => {
+	renderHelpline(2)
+	const block = await screen.findByRole("region", { name: "Kontakt" })
+	const [phone, chat] = within(block).getAllByRole("link")
+	expect(phone).toHaveAccessibleName("Ring, døgnåpen, 22 40 00 40")
+	expect(chat).toHaveAccessibleName("Chat, Åpne chatten")
+	expect(chat).toHaveAttribute("href", "https://www.soschat.no")
+})
+
+test("in English the tiles say Call, open 24/7, Open the chat and press 3", async () => {
+	renderHelpline(1, "en")
+	const block = await screen.findByRole("region", { name: "Contact" })
+	expect(within(block).getAllByRole("link")).toHaveLength(3)
+	const [phone, chat, work] = within(block).getAllByRole("link")
+	expect(phone).toHaveAccessibleName("Call, open 24/7, 116 123")
+	expect(chat).toHaveAccessibleName("Sidetmedord (Mental Helse), Open the chat")
+	expect(work).toHaveAccessibleName("Arbeidslivstelefonen (Mental Helse), 116 123, press 3")
+})
+
+test("a child page says which service it belongs to, linking there", async () => {
+	renderHelpline(9)
+	await screen.findByRole("heading", { level: 1, name: "Arbeidslivstelefonen (Mental Helse)" })
+	const parent = screen.getByRole("link", { name: "Hjelpetelefonen (Mental Helse)" })
+	expect(parent).toHaveAttribute("href", "/resources/1")
+	expect(parent.parentElement).toHaveTextContent("Del av Hjelpetelefonen (Mental Helse)")
+})
+
+test("in English the parent link keeps the English prefix", async () => {
+	renderHelpline(9, "en")
+	const parent = await screen.findByRole("link", { name: "Hjelpetelefonen (Mental Helse)" })
+	expect(parent).toHaveAttribute("href", "/en/resources/1")
+	expect(parent.parentElement).toHaveTextContent("Part of Hjelpetelefonen (Mental Helse)")
+})
+
+test("a child whose parent is missing from the data shows no Del av line", async () => {
+	stubDataFiles({ resources: helplineRows.filter((r) => r.id !== 1) })
+	render(
+		<LanguageProvider lang="nb">
+			<AnnouncerProvider>
+				<ResourceDetail id={9} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	await screen.findByRole("heading", { level: 1, name: "Arbeidslivstelefonen (Mental Helse)" })
+	expect(screen.queryByText(/Del av/)).toBeNull()
+})
+
+test("a prerendered Mental Helse page shows its child tiles without a request", () => {
+	const fetchSpy = vi.spyOn(globalThis, "fetch")
+	const resource = helplineRows.find((r) => r.id === 1) as ResourceDto
+	render(
+		<PageDataContext.Provider value={{ resource, family: familyOf(resource, helplineRows) }}>
+			<LanguageProvider lang="nb">
+				<AnnouncerProvider>
+					<ResourceDetail id={1} />
+				</AnnouncerProvider>
+			</LanguageProvider>
+		</PageDataContext.Provider>
+	)
+	const block = screen.getByRole("region", { name: "Kontakt" })
+	expect(within(block).getAllByRole("link")).toHaveLength(3)
+	expect(fetchSpy).not.toHaveBeenCalled()
+	fetchSpy.mockRestore()
+})
+
+test("a service with no phone, no chat and no children has no contact block", async () => {
+	await renderDetail({ ...detail, phone: null, chatUrl: null })
+	expect(screen.queryByRole("region", { name: "Kontakt" })).toBeNull()
+})
+
+test("the chat is a tile now, not a raw address in the facts list", async () => {
+	await renderDetail({ ...detail, chatUrl: "https://chat.example.test/" })
+	expect(screen.queryByText("https://chat.example.test/")).toBeNull()
+	expect([...document.querySelectorAll("dt")].map((dt) => dt.textContent)).not.toContain("Chat")
+	expect(screen.getByRole("link", { name: "Chat, Åpne chatten" })).toHaveAttribute(
+		"href",
+		"https://chat.example.test/"
+	)
+})
+
+test("a chat address that is not https never becomes a tile", async () => {
+	await renderDetail({ ...detail, chatUrl: "javascript:alert(1)" })
+	expect(screen.queryByRole("link", { name: /Åpne chatten/ })).toBeNull()
 })

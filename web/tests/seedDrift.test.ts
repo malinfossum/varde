@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url"
 import { expect, test } from "vitest"
 import { nationalFallbacks } from "../src/i18n/fallbacks.ts"
 import { CATEGORY_SLUGS } from "../src/services/categories.ts"
+import { HELPLINE_GROUPS } from "../src/services/helplines.ts"
 
 // Two more tables copied out of the API's seed by hand, guarded the same way emergency.test.ts
 // guards the acute strip: read the real C# file and fail if the copy has drifted. The fallbacks
@@ -48,4 +49,12 @@ test("CATEGORY_SLUGS matches Categories.cs, same slugs in the same order", () =>
 	const slugs = [...block.matchAll(/Slug = "([^"]+)"/g)].map((m) => m[1])
 	expect(slugs).toHaveLength(9)
 	expect([...CATEGORY_SLUGS]).toEqual(slugs)
+})
+
+test("every landing helpline label is part of its seed row's name", () => {
+	for (const group of HELPLINE_GROUPS) {
+		for (const row of group.rows) {
+			expect(seededResource(row.id).name, `helpline ${row.id}`).toContain(row.name)
+		}
+	}
 })

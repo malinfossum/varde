@@ -36,6 +36,21 @@ public class VardeDbContext(DbContextOptions<VardeDbContext> options) : DbContex
                 .HasForeignKey(r => r.MunicipalityId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Restrict: a parent with children cannot be deleted by accident.
+            resource.HasOne(r => r.Parent)
+                .WithMany(r => r.Children)
+                .HasForeignKey(r => r.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            resource.ToTable(table =>
+            {
+                // A row can never be its own parent. NULL passes, as every check does.
+                table.HasCheckConstraint("CK_Resources_ParentId", "\"ParentId\" <> \"Id\"");
+                table.HasCheckConstraint(
+                    "CK_Resources_PhoneMenuOption",
+                    "\"PhoneMenuOption\" IS NULL OR (\"PhoneMenuOption\" BETWEEN 1 AND 9 AND \"Phone\" IS NOT NULL)");
+            });
+
             // Local-before-national is the first sort key on every query.
             resource.HasIndex(r => new { r.IsNational, r.Name, r.Id });
             resource.HasIndex(r => r.MunicipalityId);

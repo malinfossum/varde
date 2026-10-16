@@ -4,7 +4,7 @@ import { App } from "../src/App.tsx"
 import { type PageData, PageDataContext } from "../src/pageData.ts"
 import { clearIndexCache, loadIndex } from "../src/services/data.ts"
 import { pickHelplines } from "../src/services/helplines.ts"
-import { bakedHelplines, helplineRows, stubDataFiles } from "./stubData.ts"
+import { bakedHelplines, helplineRows, stubDataFiles, visibleText } from "./stubData.ts"
 
 afterEach(() => {
 	vi.restoreAllMocks()
@@ -20,75 +20,94 @@ function renderLanding(data: PageData = bakedHelplines("nb")) {
 	)
 }
 
-test("baked helplines render in order, each name linking to its page, without a request", () => {
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+test("two labelled groups hold the four rows in order, each name linking to its page, without a request", () => {
 	const fetchSpy = vi.spyOn(globalThis, "fetch")
 	renderLanding()
 	const section = screen.getByRole("region", { name: "Noen å snakke med" })
 	expect(within(section).getByText("Du kan være anonym.")).toBeInTheDocument()
-	const names = within(section)
-		.getAllByRole("listitem")
-		.map((li) => within(li).getAllByRole("link").at(0)?.textContent)
-	expect(names).toEqual([
-		"Hjelpetelefonen (Mental Helse)",
-		"Kirkens SOS",
-		"Kors på halsen (Røde Kors)",
-		"Arbeidslivstelefonen (Mental Helse)",
-		"Sidetmedord (Mental Helse)",
-	])
+	expect(
+		within(section)
+			.getAllByRole("heading", { level: 3 })
+			.map((h) => h.textContent)
+	).toEqual(["For voksne og generelle livskriser", "For barn og unge"])
+	const names = (label: string) =>
+		within(within(section).getByRole("list", { name: label }))
+			.getAllByRole("listitem")
+			.map((li) => within(li).getAllByRole("link")[0]?.textContent)
+	expect(names("For voksne og generelle livskriser")).toEqual(["Mental Helse", "Kirkens SOS"])
+	expect(names("For barn og unge")).toEqual(["Alarmtelefonen for barn og unge", "Kors på halsen"])
 	expect(within(section).getByRole("link", { name: "Kirkens SOS" })).toHaveAttribute(
 		"href",
 		"/resources/2"
 	)
+	expect(within(section).queryByText(/tast 3|Arbeidslivstelefonen|Sidetmedord/)).toBeNull()
 	expect(fetchSpy).not.toHaveBeenCalled()
 })
 
-test("the call buttons say the number, and their names also say the service", () => {
+test("the phone button shows the number and the chat button says Chat, each naming the service", () => {
 	renderLanding()
 	const section = screen.getByRole("region", { name: "Noen å snakke med" })
-	const call = within(section).getByRole("link", {
-		name: "Ring 116 123, Hjelpetelefonen (Mental Helse)",
-	})
+	const call = within(section).getByRole("link", { name: "Ring 116 123, Mental Helse" })
 	expect(call).toHaveAttribute("href", "tel:116123")
-	expect(
-		within(section).getByRole("link", {
-			name: "Ring 116 123, Arbeidslivstelefonen (Mental Helse), Velg tast 3",
-		})
-	).toBeInTheDocument()
+	expect(visibleText(call)).toBe("116 123")
+	const chat = within(section).getByRole("link", { name: "Chat, Mental Helse" })
+	expect(chat).toHaveAttribute("href", "https://mentalhelse.no/hjelpechat/")
+	expect(visibleText(chat)).toBe("Chat")
 })
 
-test("Arbeidslivstelefonen shows its menu option under the name, and only that entry does", () => {
+test("every button's name contains its visible label and ends with its service (WCAG 2.5.3)", () => {
 	renderLanding()
 	const section = screen.getByRole("region", { name: "Noen å snakke med" })
 	const rows = within(section).getAllByRole("listitem")
-	expect(within(rows[3] as HTMLElement).getByText("Velg tast 3")).toBeInTheDocument()
-	expect(within(section).getAllByText("Velg tast 3")).toHaveLength(1)
+	expect(rows).toHaveLength(4)
+	for (const li of rows) {
+		const [name, ...buttons] = within(li).getAllByRole("link")
+		const service = name?.textContent ?? ""
+		expect(buttons).toHaveLength(2)
+		for (const button of buttons) {
+			expect(button).toHaveAccessibleName(
+				new RegExp(`${escapeRegExp(visibleText(button))}.*, ${escapeRegExp(service)}$`)
+			)
+		}
+	}
 })
 
-test("an entry without a phone gets a Chat link to its https chat", () => {
-	renderLanding()
-	const section = screen.getByRole("region", { name: "Noen å snakke med" })
+test("the English landing labels the groups in English and keeps the service names", async () => {
+	stubDataFiles({ resources: helplineRows })
+	window.history.replaceState(null, "", "/en/")
+	renderLanding(bakedHelplines("en"))
+	const section = await screen.findByRole("region", { name: "Someone to talk to" })
 	expect(
-		within(section).getByRole("link", { name: "Chat, Sidetmedord (Mental Helse)" })
-	).toHaveAttribute("href", "https://sidetmedord.mentalhelse.no/")
-})
-
-test("a chat URL that is not https shows the name alone, never a link", () => {
-	const entries = pickHelplines(helplineRows).map((h) =>
-		h.id === 122 ? { ...h, chatUrl: "javascript:alert(1)" } : h
-	)
-	renderLanding({ helplines: { lang: "nb", entries } })
-	const section = screen.getByRole("region", { name: "Noen å snakke med" })
-	expect(within(section).queryByRole("link", { name: /Chat/ })).toBeNull()
+		within(section)
+			.getAllByRole("heading", { level: 3 })
+			.map((h) => h.textContent)
+	).toEqual(["For adults and general life crises", "For children and young people"])
 	expect(
-		within(section).getByRole("link", { name: "Sidetmedord (Mental Helse)" })
+		within(section).getByRole("link", { name: "Call 116 123, Mental Helse" })
 	).toBeInTheDocument()
+})
+
+test("a row whose only chat is not https shows its phone button and no chat link", () => {
+	const groups = pickHelplines(
+		helplineRows.map((r) => (r.id === 122 ? { ...r, chatUrl: "javascript:alert(1)" } : r))
+	)
+	renderLanding({ helplines: { lang: "nb", entries: groups } })
+	const section = screen.getByRole("region", { name: "Noen å snakke med" })
+	const mentalHelse = within(section).getAllByRole("listitem")[0] as HTMLElement
+	expect(
+		within(mentalHelse)
+			.getAllByRole("link")
+			.map((a) => a.getAttribute("href"))
+	).toEqual(["/resources/1", "tel:116123"])
 })
 
 test("coming back to the landing page without baked data loads the helplines", async () => {
 	stubDataFiles({ resources: helplineRows })
 	render(<App />)
 	const section = await screen.findByRole("region", { name: "Noen å snakke med" })
-	expect(within(section).getAllByRole("listitem")).toHaveLength(5)
+	expect(within(section).getAllByRole("listitem")).toHaveLength(4)
 })
 
 test("with the index already loaded, the section shows on the first render", async () => {
@@ -96,7 +115,7 @@ test("with the index already loaded, the section shows on the first render", asy
 	await loadIndex("nb")
 	render(<App />)
 	const section = screen.getByRole("region", { name: "Noen å snakke med" })
-	expect(within(section).getAllByRole("listitem")).toHaveLength(5)
+	expect(within(section).getAllByRole("listitem")).toHaveLength(4)
 })
 
 test("baked Norwegian helplines are not reused on the English landing page", async () => {
@@ -104,7 +123,7 @@ test("baked Norwegian helplines are not reused on the English landing page", asy
 	window.history.replaceState(null, "", "/en/")
 	renderLanding()
 	const section = await screen.findByRole("region", { name: "Someone to talk to" })
-	expect(within(section).getAllByRole("listitem")).toHaveLength(5)
+	expect(within(section).getAllByRole("listitem")).toHaveLength(4)
 	const requested = vi.mocked(fetch).mock.calls.map(([input]) => String(input))
 	expect(requested.some((url) => url.includes("resources.en.json"))).toBe(true)
 })

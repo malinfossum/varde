@@ -24,6 +24,8 @@ const resourceFor = (lang: "nb" | "en"): ResourceDto[] => [
 		lastVerified: "2026-08-17",
 		categories: [],
 		servedMunicipalityIds: [],
+		parentId: null,
+		phoneMenuOption: null,
 	},
 ]
 

@@ -239,7 +239,7 @@ for (const path of ["/", "/en/"]) {
 				chipsToDivider: Math.round(
 					box(".landing-help").top - box(".hero > div:has(> .chip-acute)").bottom
 				),
-				helpToFooter: Math.round(box("footer").top - box(".helpline-row:last-child").bottom),
+				helpToFooter: Math.round(box("footer").top - box(".helpline-groups").bottom),
 			}
 		})
 		expect(m.headerToH1).toBeGreaterThanOrEqual(120)
@@ -281,30 +281,123 @@ for (const width of [320, 375, 1024, 1280]) {
 			expect(new Set(heights).size).toBe(1)
 			expect(heights[0]).toBeLessThanOrEqual(64)
 		})
-
-		test(`every helpline row lays out the same way at ${width} px (${path})`, async ({ page }) => {
-			await page.setViewportSize({ width, height: 900 })
-			await page.goto(path)
-			await settle(page)
-			const rows = await page.locator(".helpline-row").evaluateAll((els) =>
-				els.map((li) => {
-					const name = (li.querySelector(".helpline-name") as Element).getBoundingClientRect()
-					const btn = (li.querySelector(":scope > a") as Element).getBoundingClientRect()
-					return {
-						left: Math.round(btn.left),
-						width: Math.round(btn.width),
-						below: btn.top >= name.bottom - 1,
-					}
-				})
-			)
-			expect(rows).toHaveLength(5)
-			// Either every button sits under its name or none does, never a mix.
-			expect(new Set(rows.map((r) => r.below)).size).toBe(1)
-			if (!rows[0].below) {
-				// Side by side: one shared button column, so one left edge and one width.
-				expect(new Set(rows.map((r) => r.left)).size).toBe(1)
-				expect(new Set(rows.map((r) => r.width)).size).toBe(1)
-			}
-		})
 	}
 }
+
+// Spec C2a: the help sections share their rows, and both helpline groups share their button
+// columns, so edges line up across the divider and across the groups.
+for (const width of [1024, 1280, 1920]) {
+	test(`the help sections share their rows at ${width} px`, async ({ page }) => {
+		await page.setViewportSize({ width, height: 950 })
+		await page.goto("/")
+		await settle(page)
+		await page.locator(".helpline-row").first().waitFor()
+		const m = await page.evaluate(() => {
+			const top = (s: string) => (document.querySelector(s) as Element).getBoundingClientRect().top
+			return [
+				[top("#emergency"), top("#helplines")],
+				[
+					top("section[aria-labelledby=emergency] > p"),
+					top("section[aria-labelledby=helplines] > p"),
+				],
+				[top("section[aria-labelledby=emergency] > ul"), top(".helpline-groups")],
+			]
+		})
+		for (const [left, right] of m) expect(Math.abs(left - right)).toBeLessThanOrEqual(1)
+	})
+
+	test(`the helpline buttons share their columns across both groups at ${width} px`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width, height: 950 })
+		await page.goto("/")
+		await settle(page)
+		await page.locator(".helpline-row").first().waitFor()
+		const rows = await page.locator(".helpline-row").evaluateAll((els) =>
+			els.map((li) => {
+				const box = (s: string) => (li.querySelector(s) as Element).getBoundingClientRect()
+				const name = box(".helpline-name")
+				const phone = box('a[href^="tel:"]')
+				const chat = box('a[href^="https:"]')
+				const mids = [name, phone, chat].map((r) => r.top + r.height / 2)
+				return {
+					phoneLeft: Math.round(phone.left),
+					phoneWidth: Math.round(phone.width),
+					chatLeft: Math.round(chat.left),
+					chatWidth: Math.round(chat.width),
+					spread: Math.max(...mids) - Math.min(...mids),
+				}
+			})
+		)
+		expect(rows).toHaveLength(4)
+		for (const key of ["phoneLeft", "phoneWidth", "chatLeft", "chatWidth"] as const) {
+			expect(new Set(rows.map((r) => r[key])).size, key).toBe(1)
+		}
+		expect(rows[0]?.phoneWidth).toBe(136)
+		expect(rows[0]?.chatWidth).toBe(92)
+		for (const r of rows)
+			expect(r.spread, "name and buttons share a centre line").toBeLessThanOrEqual(1)
+	})
+}
+
+for (const path of ["/", "/en/"]) {
+	test(`at 375 px each helpline row has its name above two equal 44 px buttons on one bottom edge (${path})`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 375, height: 900 })
+		await page.goto(path)
+		await settle(page)
+		const rows = await page.locator(".helpline-row").evaluateAll((els) =>
+			els.map((li) => {
+				const box = (s: string) => (li.querySelector(s) as Element).getBoundingClientRect()
+				const name = box(".helpline-name")
+				const phone = box('a[href^="tel:"]')
+				const chat = box('a[href^="https:"]')
+				return {
+					below: phone.top >= name.bottom - 1,
+					widths: [Math.round(phone.width), Math.round(chat.width)],
+					heights: [Math.round(phone.height), Math.round(chat.height)],
+					bottoms: [Math.round(phone.bottom), Math.round(chat.bottom)],
+				}
+			})
+		)
+		expect(rows).toHaveLength(4)
+		for (const r of rows) {
+			expect(r.below).toBe(true)
+			expect(r.widths[0]).toBe(r.widths[1])
+			expect(r.heights).toEqual([44, 44])
+			expect(r.bottoms[0]).toBe(r.bottoms[1])
+		}
+	})
+}
+
+test("every helpline and emergency button keeps a visible edge in forced-colors mode", async ({
+	page,
+}) => {
+	await page.emulateMedia({ forcedColors: "active" })
+	await page.setViewportSize({ width: 1280, height: 900 })
+	await page.goto("/")
+	await page.locator(".helpline-row").first().waitFor()
+	const edges = await page
+		.locator(
+			".helpline-row a[href^='tel:'], .helpline-row a[href^='https:'], section[aria-labelledby=emergency] a"
+		)
+		.evaluateAll((els) =>
+			els.map(
+				(el) => `${getComputedStyle(el).borderTopStyle} ${getComputedStyle(el).borderTopWidth}`
+			)
+		)
+	expect(edges).toHaveLength(12)
+	// Tailwind's reset makes every border-style solid, so the width is what proves the edge.
+	for (const edge of edges) expect(edge).toBe("solid 1px")
+})
+
+// Chromium puts a space around an absolutely positioned part of a link's name, which used to make
+// these "Ring 116 123 , Mental Helse". jsdom does not, so a real browser has to lock the names.
+test("the landing helpline buttons have clean accessible names", async ({ page }) => {
+	await page.goto("/")
+	await expect(
+		page.getByRole("link", { name: "Ring 116 123, Mental Helse", exact: true })
+	).toHaveCount(1)
+	await expect(page.getByRole("link", { name: "Chat, Mental Helse", exact: true })).toHaveCount(1)
+})

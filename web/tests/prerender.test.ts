@@ -3,6 +3,9 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, expect, test, vi } from "vitest"
 import { escapeJson, prerenderSite, urlList } from "../scripts/prerender.mjs"
+import type { PageData } from "../src/pageData.ts"
+import { familyOf } from "../src/services/family.ts"
+import type { ResourceDto } from "../src/types/api.ts"
 
 const dirs: string[] = []
 afterEach(() => {
@@ -48,6 +51,12 @@ const stubSplit = (entry: object, resources: object[]) => ({
 	national: [],
 })
 
+// prerenderSite takes the server bundle's familyOf the same way; pages in these older tests
+// have no parents or children.
+const noFamily = () => ({ parent: null, children: [] })
+const realFamily = (resource: object, resources: object[]) =>
+	familyOf(resource as ResourceDto, resources as ResourceDto[])
+
 test("escapeJson cannot close a script block", () => {
 	expect(escapeJson({ d: "</script>" })).toBe('{"d":"\\u003c/script>"}')
 	expect(escapeJson({ d: "a\u2028b" })).toBe('{"d":"a\\u2028b"}')
@@ -86,6 +95,7 @@ test("writes every page as a file (except / and /en/) with head, data block, lan
 		render,
 		split: stubSplit,
 		pickHelplines: () => [],
+		family: noFamily,
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
@@ -131,6 +141,7 @@ test("a trailing slash on siteOrigin never doubles up in a canonical URL", async
 		render,
 		split: stubSplit,
 		pickHelplines: () => [],
+		family: noFamily,
 		siteOrigin: "https://varde.pages.dev/",
 		log: () => {},
 	})
@@ -159,6 +170,7 @@ test("rejects a page whose render() output carries an outlined Suspense boundary
 			render,
 			split: stubSplit,
 			pickHelplines: () => [],
+			family: noFamily,
 			siteOrigin: "https://varde.pages.dev",
 			log: () => {},
 		})
@@ -188,6 +200,7 @@ test("a $-replacement-pattern sequence in a resource's description renders uncha
 		render,
 		split: stubSplit,
 		pickHelplines: () => [],
+		family: noFamily,
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
@@ -226,6 +239,7 @@ test("a prerendered route page preloads its lazy chunk and that chunk's imports,
 		render: async () => ({ html: "<main></main>", head: null }),
 		split: stubSplit,
 		pickHelplines: () => [],
+		family: noFamily,
 		siteOrigin: "https://varde.pages.dev",
 		manifest,
 		log: () => {},
@@ -259,6 +273,7 @@ test("every page carries the share-card tags, absolute and escaped", async () =>
 		render,
 		split: stubSplit,
 		pickHelplines: () => [],
+		family: noFamily,
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
@@ -303,6 +318,7 @@ test("rejects a page whose markup carries a style attribute, which the CSP would
 			render,
 			split: stubSplit,
 			pickHelplines: () => [],
+			family: noFamily,
 			siteOrigin: "https://varde.pages.dev",
 			log: () => {},
 		})
@@ -318,6 +334,7 @@ test("the landing pages bake their helplines, in their own language", async () =
 		render,
 		split: stubSplit,
 		pickHelplines: () => [{ id: 1, name: "Hjelpetelefonen", phone: "116 123", chatUrl: null }],
+		family: noFamily,
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
@@ -340,6 +357,7 @@ test("a helpline id missing from the export fails the whole build", async () => 
 			pickHelplines: () => {
 				throw new Error("helpline id 121 is missing from the data")
 			},
+			family: noFamily,
 			siteOrigin: "https://varde.pages.dev",
 			log: () => {},
 		})
@@ -365,9 +383,41 @@ test("each landing page bakes the helplines from its own language's export", asy
 				phone: null,
 				chatUrl: null,
 			})),
+		family: noFamily,
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
 	expect(readFileSync(join(distDir, "en/index.html"), "utf8")).toContain("NAV Hamar EN")
 	expect(readFileSync(join(distDir, "index.html"), "utf8")).not.toContain("NAV Hamar EN")
+})
+
+test("a detail page bakes its parent and children from its own language's export", async () => {
+	const parent = { ...row, id: 1, name: "Hjelpetelefonen (Mental Helse)", parentId: null }
+	const work = { ...row, id: 9, name: "Arbeidslivstelefonen (Mental Helse)", parentId: 1 }
+	const chat = { ...row, id: 122, name: "Sidetmedord (Mental Helse)", parentId: 1 }
+	const { dataDir, distDir } = setup([chat, parent, work], [hamar])
+	const render = vi.fn(async (_url: string, _data: Record<string, unknown>) => ({
+		html: "<main>x</main>",
+		head: null,
+	}))
+	await prerenderSite({
+		dataDir,
+		distDir,
+		render,
+		split: stubSplit,
+		pickHelplines: () => [],
+		family: realFamily,
+		siteOrigin: "https://varde.pages.dev",
+		log: () => {},
+	})
+	const dataFor = (url: string) =>
+		render.mock.calls.find(([called]) => called === url)?.[1] as PageData | undefined
+	for (const prefix of ["", "/en"]) {
+		expect(dataFor(`${prefix}/resources/1`)?.family?.children.map((c) => c.id)).toEqual([9, 122])
+		expect(dataFor(`${prefix}/resources/9`)?.family?.parent).toEqual({
+			id: 1,
+			name: "Hjelpetelefonen (Mental Helse)",
+		})
+	}
+	expect(dataFor("/")?.family).toBeUndefined()
 })

@@ -38,7 +38,7 @@ Rows whose Notes flag a genuine conflict between two official sources, or an amb
 | 1 | Hjelpetelefonen (Mental Helse) | (national) | psykisk-helse | 116 123 | https://mentalhelse.no | Døgnåpent | https://mentalhelse.no/fa-hjelp/hjelpetelefonen/ | 2026-08-13 | ☑ | Matches the spec's 116 123. Page also gives +47 911 16 123 for calls from abroad, and an administrative number 352 96 060 that is NOT the helpline — do not seed the admin number. Døgnåpen. |
 | 2 | Kirkens SOS | (national) | psykisk-helse | 22 40 00 40 | https://www.kirkens-sos.no | Døgnåpent | https://www.kirkens-sos.no/telefon | 2026-08-13 | ☑ | Number was not in the spec; read off Kirkens SOS' own page. Døgnåpen, all year. |
 | 3 | Legevakt | (national) | psykisk-helse, nodtjenester | 116 117 | https://www.helsenorge.no/legevakt/ | Døgnåpent | https://www.helsenorge.no/legevakt/ | 2026-09-07 | ☑ | Matches the spec's 116 117. The page renders it unspaced in body text ("Ring 116117") and spaced elsewhere; I used the spaced form per Norwegian convention — worth a second look. Page also states 113 for life-threatening emergencies. Hours added 2026-09-07 from the same page: "Du kan ringe 116 117 hele døgnet og kommer da i kontakt med den legevaktsentralen som er nærmest der du er." Seeded as Døgnåpent / Open 24 hours with IsAlwaysOpen; LastVerified moved to 2026-09-07 for this row only. |
-| 4 | Alarmtelefonen for barn og unge | (national) | familie-og-barn, vold-og-overgrep, nodtjenester | 116 111 | https://www.116111.no | Døgnåpent | https://www.116111.no/omalarmtelefonen | 2026-08-13 | ☑ | Phone and email 24/7. SMS 417 16 111 and chat only 16:15–22:45 (Saturdays to 23:45) — restricted hours, do not present SMS as always-on. From abroad: +47 954 11 755. |
+| 4 | Alarmtelefonen for barn og unge | (national) | familie-og-barn, vold-og-overgrep, nodtjenester | 116 111 | https://www.116111.no | Døgnåpent | https://www.116111.no/omalarmtelefonen | 2026-08-13 | ☑ | Phone and email 24/7. SMS 417 16 111 and chat only 16:15–22:45 (Saturdays to 23:45) — restricted hours, do not present SMS as always-on. From abroad: +47 954 11 755. Age range (C2a, 2026-10-16): "Her finner du gode råd til deg som er ungdom 13-18 år." (https://www.116111.no/ungdom); the site's page title "Barn 7–12 år" (https://www.116111.no/barn). |
 | 5 | VO-linjen | (national) | vold-og-overgrep, nodtjenester | 116 006 | https://www.volinjen.no | Døgnåpent | https://www.volinjen.no/ | 2026-08-13 | ☑ | Phone døgnåpen. Own site says chat is Mon–Fri 09:00–15:00; a third-party listing claimed 09:00–20:00 — I trusted volinjen.no. Chat hours are not seeded, only noted. |
 | 6 | Navs økonomi- og gjeldsveiledningstelefon | (national) | okonomi | 55 55 33 39 | https://www.nav.no | Hverdager 09:00–15:00 | https://www.nav.no/800gjeld | 2026-08-13 | ☑ | RESOLVED 2026-08-17 (no-calls policy): keep 55 55 33 39 — nav.no's own current page prints it; the 800 45 353 variant exists only on Løten kommune's page (see ring row 109) and is not shipped. The old "800GJELD" branding no longer maps to a working 800-number on this page. Open weekdays 09–15 only — flag the restricted hours in the UI. |
 | 7 | Jussbuss | (national) | juridisk-hjelp | 22 84 29 00 | https://foreninger.uio.no/jussbuss/ | Mandag 17:00–20:00 og tirsdag 10:00–15:00 | https://foreninger.uio.no/jussbuss/ | 2026-08-13 | ☑ | Copied exactly as printed — the site writes it unspaced with country code, unlike every other row. Consider normalising to 22 84 29 00, but only after I confirm. Case intake Mon 17:00–20:00 and Tue 10:00–15:00 only; student-run, closed in parts of the summer. Phone normalised from "+47 22842900" as printed on the source, to match the spacing used by every other row. Digits unchanged — verify against the source. |
@@ -110,8 +110,8 @@ Rows whose Notes flag a genuine conflict between two official sources, or an amb
 - **hours-en:** Weekdays 11:00–14:30 and 15:00–18:00
 
 ### 9. Arbeidslivstelefonen (Mental Helse)
-- **nb:** Rådgivning om vanskelige forhold på jobben, som konflikt, mobbing, sykefravær eller oppsigelse. Åpen for arbeidstakere, ledere, tillitsvalgte og arbeidssøkere. Velg tast 3 i menyen.
-- **en:** Advice about difficult situations at work, such as conflict, bullying, sick leave or dismissal. Open to employees, managers, union representatives and jobseekers. Choose option 3 in the menu.
+- **nb:** Rådgivning om vanskelige forhold på jobben, som konflikt, mobbing, sykefravær eller oppsigelse. Åpen for arbeidstakere, ledere, tillitsvalgte og arbeidssøkere.
+- **en:** Advice about difficult situations at work, such as conflict, bullying, sick leave or dismissal. Open to employees, managers, union representatives and jobseekers.
 
 ### 10. Familievernkontoret Innlandet Øst, avdeling Hamar
 - **nb:** Gratis tilbud om samtale, parterapi og mekling for familier, par og enkeltpersoner. Du trenger ingen henvisning for å bestille time.
@@ -202,3 +202,14 @@ Rows whose Notes flag a genuine conflict between two official sources, or an amb
 - **en:** Call 113 when the situation is critical and life or health is at risk.
 - **hours-nb:** Døgnåpent
 - **hours-en:** Open 24 hours
+
+## Parents and phone menu options (C2a, 2026-10-16)
+
+Some services belong to another, and some numbers need a key press after the call connects. Both
+facts live here and in their own fields, never in description text. One level only: a row with a
+parent never has children of its own.
+
+| # | Name | ParentId | PhoneMenuOption | Source |
+|---|---|---|---|---|
+| 9 | Arbeidslivstelefonen (Mental Helse) | 1 | 3 | Row 9's own descriptions until 2026-10-16 ("Velg tast 3 i menyen"), from its source page in the table above. |
+| 122 | Sidetmedord (Mental Helse) | 1 |  | Mental Helse's own "få hjelp" page lists it as their chat and forum service (docs/seed-data-innlandet-ring.md row 122). |

@@ -192,6 +192,7 @@ export async function prerenderSite({
 	render,
 	split,
 	pickHelplines,
+	family,
 	siteOrigin,
 	manifest = null,
 	log = console.log,
@@ -212,7 +213,9 @@ export async function prerenderSite({
 			? { kommune: split(page.kommune, resourcesByLang[page.lang]) }
 			: page.landing
 				? { helplines: { lang: page.lang, entries: pickHelplines(resourcesByLang[page.lang]) } }
-				: page.data
+				: page.data.resource
+					? { ...page.data, family: family(page.data.resource, resourcesByLang[page.lang]) }
+					: page.data
 		const { html, head } = await render(page.url, data)
 		assertNoOutlinedBoundary(html, page.url)
 		assertNoStyleAttribute(html, page.url)
@@ -273,6 +276,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 		render: server.render,
 		split: server.splitForKommune,
 		pickHelplines: server.pickHelplines,
+		family: server.familyOf,
 		siteOrigin,
 		manifest,
 	})

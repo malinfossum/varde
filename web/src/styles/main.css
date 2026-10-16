@@ -65,6 +65,14 @@
 		clip-path: inset(50%);
 		white-space: nowrap;
 	}
+	/* Hidden text that sits inside a sentence read by a screen reader (a comma, a trailing name).
+	   .visually-hidden is absolutely positioned, which makes Chromium put a space on each side of
+	   it when it builds a link's name ("Ring , døgnåpen"). This one stays inline and has no size,
+	   so the name reads "Ring, døgnåpen" and nothing shows or is picked up by a selection. */
+	.hidden-inline {
+		font-size: 0;
+		user-select: none;
+	}
 	.skip-link {
 		position: absolute;
 		left: -999px;
@@ -83,6 +91,8 @@
 		min-height: 44px;
 		padding: 0 1.25rem;
 		border-radius: 0.75rem;
+		/* Invisible normally; forced-colors mode paints it, so the button keeps its edge. */
+		border: 1px solid transparent;
 		background: var(--accent);
 		color: var(--on-accent);
 		font-weight: 600;
@@ -404,20 +414,55 @@
 		color: var(--on-accent);
 		font-weight: 600;
 	}
-	.helpline-row {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.25rem 0.75rem;
-	}
+	/* Bold names alone in their rows, beside buttons: no underline at rest. They get one on hover
+	   and on focus, so they still show they are links when it matters (spec C2a). */
 	.helpline-name {
 		display: inline-flex;
 		align-items: center;
 		min-height: 44px;
 		color: var(--text);
 		font-weight: 600;
+		text-decoration: none;
+	}
+	.helpline-name:hover,
+	.helpline-name:focus-visible {
 		text-decoration: underline;
-		text-underline-offset: 0.15em;
+	}
+	/* The age-group labels: small, uppercase and muted, so they read as labels beside the bold
+	   names, by size, weight and colour. */
+	.helpline-group {
+		color: var(--muted);
+		font-size: 0.75rem;
+		font-weight: 400;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+	/* A contact tile on the detail page (spec C2a): the whole tile is one link. The 1 px border
+	   keeps its edge in forced-colors mode, where the accent-soft fill disappears. 69 px is the
+	   minimum: a long child name wraps inside the tile and makes it taller, never clipped.
+	   overflow-wrap: anywhere is what keeps a long name inside the tile at 200 % text. */
+	.contact-tile {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		height: 100%;
+		min-height: 69px;
+		padding: 0.75rem 1rem;
+		border: 1px solid var(--border);
+		border-radius: 0.75rem;
+		background: var(--surface);
+		color: var(--text);
+		text-decoration: none;
+		overflow-wrap: anywhere;
+	}
+	.contact-tile-icon {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 0.5rem;
+		background: var(--accent-soft);
+		color: var(--accent);
 	}
 }

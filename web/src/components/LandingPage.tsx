@@ -35,7 +35,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 				<h1
 					ref={ref}
 					tabIndex={-1}
-					className="mx-auto mt-3 max-w-2xl text-4xl leading-[1.1] text-balance md:text-6xl lg:mt-0 lg:max-w-none"
+					className="mx-auto mt-3 max-w-2xl text-4xl leading-[1.1] text-balance break-words md:text-6xl lg:mt-0 lg:max-w-none"
 				>
 					{t("landing.headline")}
 				</h1>
@@ -71,20 +71,27 @@ export function LandingPage({ arrival }: { arrival: number }) {
 			    narrower than the chip row, so the search and the chips lead (2026-10-16). From 1024 px
 			    the emergency numbers stack as one list, which leaves the helplines the wider column. */}
 			<div className="landing-help mt-6 border-t border-border pt-6 lg:mt-[calc(1rem+var(--air)*4)] lg:pt-[calc(1rem+var(--air))] lg:pb-[var(--air)]">
-				<div className="grid lg:mx-auto lg:max-w-3xl lg:grid-cols-[2fr_3fr] lg:items-start">
-					<section aria-labelledby="emergency" className="lg:pr-8">
+				{/* Both help sections share three rows (heading, intro line, content) through subgrid, so
+				    the headings, the intro lines and the tops of both lists line up across the divider
+				    (spec C2a). Each content block keeps its own height (self-start): the emergency list's
+				    equal rows must never stretch to the helplines' height. */}
+				<div className="grid lg:mx-auto lg:max-w-3xl lg:grid-cols-[2fr_3fr] lg:grid-rows-[auto_auto_auto]">
+					<section
+						aria-labelledby="emergency"
+						className="lg:row-span-3 lg:grid lg:grid-rows-subgrid lg:pr-8"
+					>
 						<h2 id="emergency" className="text-2xl lg:text-xl">
 							{t("landing.emergencyHeading")}
 						</h2>
 						<p className="mt-2 text-muted lg:mt-1 lg:text-sm">{t("landing.emergencyIntro")}</p>
 						{/* All four buttons share one height (auto-rows-fr). The number and its label sit on
 						    one line when they fit and wrap as two whole pieces when they do not. */}
-						<ul className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 lg:mt-2 lg:grid-cols-1 lg:gap-2">
+						<ul className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 lg:mt-2 lg:grid-cols-1 lg:gap-2 lg:self-start">
 							{emergencyLines.map((line) => (
 								<li key={line.id}>
 									<a
 										href={telHref(line.phone)}
-										className="btn-primary h-full w-full flex-wrap gap-x-2 gap-y-0 px-2 py-1.5 text-center text-lg lg:text-base"
+										className="btn-primary h-full w-full flex-wrap gap-x-2 gap-y-0 px-2 py-[calc(0.375rem-1px)] text-center text-lg lg:text-base"
 									>
 										<span className="whitespace-nowrap">{line.phone}</span>{" "}
 										<span className="text-base font-normal text-balance lg:text-sm">
@@ -95,7 +102,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 							))}
 						</ul>
 					</section>
-					<Helplines className="mt-8 border-t border-border pt-8 lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8" />
+					<Helplines className="mt-8 border-t border-border pt-8 lg:row-span-3 lg:mt-0 lg:grid lg:grid-rows-subgrid lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8" />
 				</div>
 			</div>
 		</div>
