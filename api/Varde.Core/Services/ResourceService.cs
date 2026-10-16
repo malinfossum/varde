@@ -79,7 +79,9 @@ public class ResourceService(IResourceRepository repository)
             resource.ChatUrl,
             resource.LastVerified,
             categories,
-            served);
+            served,
+            resource.ParentId,
+            resource.PhoneMenuOption);
     }
 
     /// <summary>

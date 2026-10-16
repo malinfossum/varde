@@ -17,7 +17,7 @@ namespace Varde.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -363,9 +363,15 @@ namespace Varde.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Phone")
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
+
+                    b.Property<int?>("PhoneMenuOption")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -378,9 +384,16 @@ namespace Varde.Data.Migrations
 
                     b.HasIndex("MunicipalityId");
 
+                    b.HasIndex("ParentId");
+
                     b.HasIndex("IsNational", "Name", "Id");
 
-                    b.ToTable("Resources");
+                    b.ToTable("Resources", t =>
+                        {
+                            t.HasCheckConstraint("CK_Resources_ParentId", "\"ParentId\" <> \"Id\"");
+
+                            t.HasCheckConstraint("CK_Resources_PhoneMenuOption", "\"PhoneMenuOption\" IS NULL OR (\"PhoneMenuOption\" BETWEEN 1 AND 9 AND \"Phone\" IS NOT NULL)");
+                        });
 
                     b.HasData(
                         new
@@ -490,7 +503,9 @@ namespace Varde.Data.Migrations
                             IsNational = true,
                             LastVerified = new DateOnly(2026, 8, 13),
                             Name = "Arbeidslivstelefonen (Mental Helse)",
+                            ParentId = 1,
                             Phone = "116 123",
+                            PhoneMenuOption = 3,
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
                             Website = "https://mentalhelse.no"
                         },
@@ -998,6 +1013,7 @@ namespace Varde.Data.Migrations
                             IsNational = true,
                             LastVerified = new DateOnly(2026, 8, 13),
                             Name = "Sidetmedord (Mental Helse)",
+                            ParentId = 1,
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
                             Website = "https://sidetmedord.mentalhelse.no/"
                         },
@@ -2826,14 +2842,14 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 17,
-                            Description = "Rådgivning om vanskelige forhold på jobben, som konflikt, mobbing, sykefravær eller oppsigelse. Åpen for arbeidstakere, ledere, tillitsvalgte og arbeidssøkere. Velg tast 3 i menyen.",
+                            Description = "Rådgivning om vanskelige forhold på jobben, som konflikt, mobbing, sykefravær eller oppsigelse. Åpen for arbeidstakere, ledere, tillitsvalgte og arbeidssøkere.",
                             LanguageCode = "nb",
                             ResourceId = 9
                         },
                         new
                         {
                             Id = 18,
-                            Description = "Advice about difficult situations at work, such as conflict, bullying, sick leave or dismissal. Open to employees, managers, union representatives and jobseekers. Choose option 3 in the menu.",
+                            Description = "Advice about difficult situations at work, such as conflict, bullying, sick leave or dismissal. Open to employees, managers, union representatives and jobseekers.",
                             LanguageCode = "en",
                             ResourceId = 9
                         },
@@ -4177,7 +4193,14 @@ namespace Varde.Data.Migrations
                         .HasForeignKey("MunicipalityId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Varde.Core.Models.Resource", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Municipality");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("Varde.Core.Models.ResourceCategory", b =>
@@ -4236,6 +4259,8 @@ namespace Varde.Data.Migrations
 
             modelBuilder.Entity("Varde.Core.Models.Resource", b =>
                 {
+                    b.Navigation("Children");
+
                     b.Navigation("ResourceCategories");
 
                     b.Navigation("ServedMunicipalities");

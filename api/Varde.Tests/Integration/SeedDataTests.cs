@@ -211,4 +211,63 @@ public class SeedDataTests
         Assert.Equal(recorded, flagged);          // flag ⇔ recorded verbatim hours, both directions
         Assert.Equal(13, flagged.Count); // 10 + rows 23-25 (nødnumre), source-verified 2026-09-09
     }
+
+    [DbFact]
+    public async Task Mental_Helse_sub_services_hang_off_row_1_one_level_deep()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+        var children = await db.Resources
+            .Where(r => r.ParentId != null)
+            .OrderBy(r => r.Id)
+            .Select(r => new { r.Id, r.ParentId })
+            .ToListAsync();
+
+        Assert.Equal([9, 122], children.Select(c => c.Id));
+        Assert.All(children, c => Assert.Equal(1, c.ParentId));
+
+        // One level only: a resource with a parent never has children of its own. The database
+        // cannot say this without a trigger, and the seed is the only writer, so this test does.
+        Assert.Empty(await db.Resources
+            .Where(r => r.ParentId != null && r.Children.Any())
+            .Select(r => r.Id)
+            .ToListAsync());
+    }
+
+    [DbFact]
+    public async Task Row_9_carries_its_menu_option_as_data_not_prose()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+        var row9 = await db.Resources.Include(r => r.Translations).SingleAsync(r => r.Id == 9);
+
+        Assert.Equal(3, row9.PhoneMenuOption);
+        Assert.Equal(2, row9.Translations.Count);
+        Assert.All(row9.Translations, t =>
+        {
+            Assert.DoesNotContain("tast 3", t.Description, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("option 3", t.Description, StringComparison.OrdinalIgnoreCase);
+        });
+    }
+
+    [DbFact]
+    public async Task Every_phone_menu_option_is_1_to_9_on_a_row_with_a_phone()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+        Assert.Empty(await db.Resources
+            .Where(r => r.PhoneMenuOption != null
+                && (r.PhoneMenuOption < 1 || r.PhoneMenuOption > 9 || r.Phone == null))
+            .Select(r => r.Id)
+            .ToListAsync());
+        Assert.Equal(
+            [9],
+            await db.Resources.Where(r => r.PhoneMenuOption != null).Select(r => r.Id).ToListAsync());
+    }
 }

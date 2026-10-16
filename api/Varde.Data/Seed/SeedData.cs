@@ -38,6 +38,10 @@ namespace Varde.Data.Seed;
 /// (91 71 33 38 -> 917 13 338). Every regrouping is confirmed against an alternate grouping of
 /// the same digits already present in the row's own Notes in docs/seed-data.md.
 ///
+/// C2a (2026-10-16) adds ParentId and PhoneMenuOption from docs/seed-data.md's "Parents and phone
+/// menu options" table: rows 9 and 122 hang off row 1, and row 9's "tast 3" moved out of its
+/// descriptions into PhoneMenuOption.
+///
 /// IsAlwaysOpen (added plan 2) is true exactly where the nb OpeningHours reads "Døgnåpent" — the
 /// SeedDataTests guard enforces both directions.
 /// </summary>
@@ -195,6 +199,8 @@ public static class SeedData
                 IsNational = true,
                 MunicipalityId = null,
                 Phone = "116 123",
+                ParentId = 1,
+                PhoneMenuOption = 3,
                 Website = "https://mentalhelse.no",
                 LastVerified = Verified,
                 CreatedAt = SeededAt,
@@ -662,6 +668,7 @@ public static class SeedData
                 Name = "Sidetmedord (Mental Helse)",
                 IsNational = true,
                 MunicipalityId = null,
+                ParentId = 1,
                 Website = "https://sidetmedord.mentalhelse.no/",
                 ChatUrl = "https://mentalhelse.no/hjelpechat/",
                 LastVerified = Verified,
@@ -1398,14 +1405,14 @@ public static class SeedData
                 Id = 17,
                 ResourceId = 9,
                 LanguageCode = "nb",
-                Description = "Rådgivning om vanskelige forhold på jobben, som konflikt, mobbing, sykefravær eller oppsigelse. Åpen for arbeidstakere, ledere, tillitsvalgte og arbeidssøkere. Velg tast 3 i menyen.",
+                Description = "Rådgivning om vanskelige forhold på jobben, som konflikt, mobbing, sykefravær eller oppsigelse. Åpen for arbeidstakere, ledere, tillitsvalgte og arbeidssøkere.",
             },
             new ResourceTranslation
             {
                 Id = 18,
                 ResourceId = 9,
                 LanguageCode = "en",
-                Description = "Advice about difficult situations at work, such as conflict, bullying, sick leave or dismissal. Open to employees, managers, union representatives and jobseekers. Choose option 3 in the menu.",
+                Description = "Advice about difficult situations at work, such as conflict, bullying, sick leave or dismissal. Open to employees, managers, union representatives and jobseekers.",
             },
             new ResourceTranslation
             {

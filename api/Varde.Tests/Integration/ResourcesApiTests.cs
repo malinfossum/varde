@@ -336,4 +336,38 @@ public class ResourcesApiTests
         var mentalHelse = Assert.Single(result!.Items);
         Assert.True(mentalHelse.IsAlwaysOpen);
     }
+
+    [DbFact]
+    public async Task Get_exposes_parent_id_and_phone_menu_option_null_where_unset()
+    {
+        using var factory = new VardeApiFactory();
+        SeedDirectory(factory);
+        factory.Seed(db => db.Resources.Add(new Resource
+        {
+            Name = "Arbeidslivstelefonen (Mental Helse)",
+            IsNational = true,
+            ParentId = 2,
+            Phone = "116 123",
+            PhoneMenuOption = 3,
+            LastVerified = Verified,
+            Translations =
+            {
+                new ResourceTranslation { LanguageCode = "nb", Description = "Rådgivning om jobben." },
+            },
+        }));
+
+        var client = factory.CreateClient();
+        var child = await client.GetFromJsonAsync<ResourceDto>("/api/resources/3");
+        var parent = await client.GetFromJsonAsync<ResourceDto>("/api/resources/2");
+        var parentJson = await client.GetStringAsync("/api/resources/2");
+
+        Assert.Equal(2, child!.ParentId);
+        Assert.Equal(3, child.PhoneMenuOption);
+        Assert.Null(parent!.ParentId);
+        Assert.Null(parent.PhoneMenuOption);
+        // The web reads these by name and treats a missing key as stale data, so null must be
+        // written out, not omitted.
+        Assert.Contains("\"parentId\":null", parentJson);
+        Assert.Contains("\"phoneMenuOption\":null", parentJson);
+    }
 }

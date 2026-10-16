@@ -12,6 +12,8 @@ public record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, int
 /// <param name="OpeningHours">Plain text, in the requested language. Null when not recorded for this service.</param>
 /// <param name="IsAlwaysOpen">True only where the verified source records 24/7 service. False is "not recorded", never "closed".</param>
 /// <param name="ServedMunicipalityIds">Other municipalities this service covers, ascending. Never contains MunicipalityId.</param>
+/// <param name="ParentId">The service this one belongs to, or null. One level only.</param>
+/// <param name="PhoneMenuOption">The key to press after the call connects (1 to 9), or null.</param>
 public record ResourceDto(
     int Id,
     string Name,
@@ -29,4 +31,6 @@ public record ResourceDto(
     string? ChatUrl,
     DateOnly LastVerified,
     IReadOnlyList<CategoryDto> Categories,
-    IReadOnlyList<int> ServedMunicipalityIds);
+    IReadOnlyList<int> ServedMunicipalityIds,
+    int? ParentId,
+    int? PhoneMenuOption);

@@ -28,6 +28,21 @@ public class Resource
     /// <summary>Chat is a first-class contact channel — for some users the only safe one.</summary>
     public string? ChatUrl { get; set; }
 
+    /// <summary>
+    /// A service that belongs to another (Arbeidslivstelefonen under Mental Helse). Its phone and
+    /// chat show as tiles on the parent's page. One level only: a resource with a parent never has
+    /// children. SeedDataTests enforces that, because the seed is the only writer.
+    /// </summary>
+    public int? ParentId { get; set; }
+    public Resource? Parent { get; set; }
+    public List<Resource> Children { get; set; } = [];
+
+    /// <summary>
+    /// The key to press in the phone menu after the call connects, 1 to 9. It belongs to the
+    /// service, and a service has one phone number. A check constraint refuses it without a phone.
+    /// </summary>
+    public int? PhoneMenuOption { get; set; }
+
     /// <summary>Shown on every card. A dead number on a bad day is the failure this field prevents.</summary>
     public DateOnly LastVerified { get; set; }
 
