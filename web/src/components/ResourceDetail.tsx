@@ -59,10 +59,9 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	// The site sends no referrer and pushState never sets one, so whether this page was reached
 	// from /sok travels in history state (useUrlState's navigate sets it on the way out). A
 	// direct load — bookmark, shared link, refresh — has no such state. Unlike the capability
-	// checks above, this is a fact about *this navigation*: App.tsx renders ResourceDetail
-	// without a `key`, so a detail-to-detail transition (e.g. history.go(-2) landing on a
-	// different resource) reuses this instance instead of remounting it — the effect must
-	// depend on `id` or it would keep showing the previous resource's back-link style.
+	// checks above, this is a fact about *this navigation*. App.tsx keys ResourceDetail by id, so
+	// a detail-to-detail transition remounts it and this runs again; the `id` dependency keeps
+	// the effect right even for a caller that does not key it.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: id forces the recompute per navigation
 	useEffect(() => {
 		setCameFromResults((window.history.state as { from?: string } | null)?.from === "sok")

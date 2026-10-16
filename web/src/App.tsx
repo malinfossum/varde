@@ -72,7 +72,11 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 					{route.kind === "landing" && <LandingPage arrival={arrival} />}
 					{route.kind === "list" && <ListPage filters={filters} arrival={arrival} />}
 					{route.kind === "about" && <AboutPage arrival={arrival} />}
-					{route.kind === "detail" && <ResourceDetail id={route.id} arrival={arrival} />}
+					{/* Keyed by id: a detail page owns its resource, so another id is a new page. Without
+					    the key, Back from a parent to a directly loaded child kept showing the parent. */}
+					{route.kind === "detail" && (
+						<ResourceDetail key={route.id} id={route.id} arrival={arrival} />
+					)}
 					{route.kind === "kommune" && <KommunePage slug={route.slug} arrival={arrival} />}
 					{route.kind === "notFound" && <NotFoundState arrival={arrival} />}
 				</Suspense>

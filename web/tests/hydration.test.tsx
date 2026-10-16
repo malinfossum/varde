@@ -1,4 +1,5 @@
-import { act, screen } from "@testing-library/react"
+import { act, render as renderApp, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { StrictMode } from "react"
 import { hydrateRoot, type Root } from "react-dom/client"
 import { afterEach, expect, test, vi } from "vitest"
@@ -7,7 +8,8 @@ import { render } from "../src/entry-server.tsx"
 import { UrlContext } from "../src/navigation.ts"
 import { type PageData, PageDataContext } from "../src/pageData.ts"
 import { clearIndexCache } from "../src/services/data.ts"
-import { bakedHelplines, stubDataFiles } from "./stubData.ts"
+import { familyOf } from "../src/services/family.ts"
+import { bakedHelplines, helplineRows, stubDataFiles } from "./stubData.ts"
 
 const resource = {
 	id: 12,
@@ -125,4 +127,31 @@ test("the prerendered resource page works before JavaScript", async () => {
 	expect(html).toContain('href="tel:12345678"')
 	expect(html).toMatch(/<a[^>]+href="https:\/\/www\.google\.com"[^>]*>Forlat siden<\/a>/)
 	expect(html).toContain('href="/en/resources/12"')
+})
+
+// Back between two detail pages must show the page you left. Row 9 is loaded directly (its page
+// data is baked in), then the "Del av" link goes to row 1, then Back returns to /resources/9.
+test("Back from a parent to a directly loaded child page shows the child again", async () => {
+	stubDataFiles({ resources: helplineRows })
+	const child = helplineRows.find((r) => r.id === 9) as (typeof helplineRows)[number]
+	window.history.pushState(null, "", "/resources/9")
+	const { unmount } = renderApp(
+		<UrlContext.Provider value={{ pathname: "/resources/9", search: "" }}>
+			<PageDataContext.Provider value={{ resource: child, family: familyOf(child, helplineRows) }}>
+				<App />
+			</PageDataContext.Provider>
+		</UrlContext.Provider>
+	)
+	// The first findBy waits for the lazy ResourceDetail chunk, which can take longer than 1 s.
+	await screen.findByRole(
+		"heading",
+		{ level: 1, name: "Arbeidslivstelefonen (Mental Helse)" },
+		{ timeout: 3000 }
+	)
+	await userEvent.click(screen.getByRole("link", { name: "Hjelpetelefonen (Mental Helse)" }))
+	await screen.findByRole("heading", { level: 1, name: "Hjelpetelefonen (Mental Helse)" })
+	act(() => window.history.back())
+	await waitFor(() => expect(window.location.pathname).toBe("/resources/9"))
+	await screen.findByRole("heading", { level: 1, name: "Arbeidslivstelefonen (Mental Helse)" })
+	unmount()
 })
