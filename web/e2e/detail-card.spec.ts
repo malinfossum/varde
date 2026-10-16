@@ -1,0 +1,240 @@
+import { expect, type Page, test } from "@playwright/test"
+import { noHorizontalScroll, settle } from "./helpers.ts"
+
+// Spec: the detail page as one card. Every check here was run red against the C2a layout before
+// the build, which proves it can fail.
+
+type Box = {
+	top: number
+	bottom: number
+	left: number
+	right: number
+	width: number
+	height: number
+	fits: boolean
+}
+
+// Rounded boxes, plus whether the element's own content fits inside it (no sideways overflow).
+async function boxes(page: Page, selector: string): Promise<Box[]> {
+	return page.locator(selector).evaluateAll((els) =>
+		els.map((el) => {
+			const r = el.getBoundingClientRect()
+			return {
+				top: Math.round(r.top),
+				bottom: Math.round(r.bottom),
+				left: Math.round(r.left),
+				right: Math.round(r.right),
+				width: Math.round(r.width),
+				height: Math.round(r.height),
+				fits: el.scrollWidth <= el.clientWidth + 1,
+			}
+		})
+	)
+}
+
+async function one(page: Page, selector: string): Promise<Box> {
+	const [box] = await boxes(page, selector)
+	if (!box) throw new Error(`nothing matches ${selector}`)
+	return box
+}
+
+const overlaps = (a: Box, b: Box) =>
+	a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+
+const RINGSAKER = ["/resources/102", "/en/resources/102"] as const
+
+// Icon mode: Desktop Chrome has a mouse, so from 768 px the actions are 44 px icons in the
+// card's top-right corner, beside the title and never over it.
+for (const width of [768, 1024, 1920]) {
+	for (const path of RINGSAKER) {
+		test(`icon mode at ${width} px (${path}): three 44 px actions on one line beside the title`, async ({
+			page,
+		}) => {
+			await page.setViewportSize({ width, height: 900 })
+			await page.goto(path)
+			await settle(page)
+			const h1 = await one(page, "h1")
+			const group = await one(page, ".detail-actions")
+			const buttons = await boxes(page, ".action-btn")
+			expect(buttons).toHaveLength(3)
+			expect(overlaps(group, h1)).toBe(false)
+			expect(Math.abs(group.top - h1.top)).toBeLessThanOrEqual(1)
+			for (const b of buttons) {
+				expect(b.width).toBe(44)
+				expect(b.height).toBe(44)
+			}
+			expect(new Set(buttons.map((b) => b.top)).size).toBe(1)
+			expect(new Set(buttons.map((b) => b.bottom)).size).toBe(1)
+		})
+	}
+}
+
+// Review focus 5: a larger text size on a desktop window keeps icon mode intact.
+test("icon mode at 1024 px with 200 % text keeps 44 px actions clear of the title", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1024, height: 900 })
+	await page.goto("/resources/102")
+	await page.addStyleTag({ content: "html { font-size: 200% }" })
+	await page.evaluate(() => document.fonts.ready)
+	const h1 = await one(page, "h1")
+	const group = await one(page, ".detail-actions")
+	expect(overlaps(group, h1)).toBe(false)
+	for (const b of await boxes(page, ".action-btn")) {
+		expect(b.width).toBe(44)
+		expect(b.height).toBe(44)
+	}
+	expect(await noHorizontalScroll(page)).toBe(true)
+})
+
+// Labelled mode on a phone: three buttons in a row under the title, one width, one height of at
+// least 56 px, one bottom edge. Every action and every tile is at least 44 px tall. The website
+// and "Del av" links are text links in a line of text (WCAG 2.5.8 exempts them).
+for (const path of RINGSAKER) {
+	test(`labelled mode at 375 px (${path}): three equal buttons under the title`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 375, height: 900 })
+		await page.goto(path)
+		await settle(page)
+		const h1 = await one(page, "h1")
+		const buttons = await boxes(page, ".action-btn")
+		expect(buttons).toHaveLength(3)
+		expect(new Set(buttons.map((b) => b.width)).size).toBe(1)
+		expect(new Set(buttons.map((b) => b.height)).size).toBe(1)
+		expect(new Set(buttons.map((b) => b.bottom)).size).toBe(1)
+		expect(buttons[0]?.height).toBeGreaterThanOrEqual(56)
+		expect(buttons[0]?.top).toBeGreaterThanOrEqual(h1.bottom)
+		for (const label of await page.locator(".action-label").all()) await expect(label).toBeVisible()
+		for (const c of await boxes(page, ".detail-card .action-btn, .detail-card .contact-tile")) {
+			expect(c.height).toBeGreaterThanOrEqual(44)
+		}
+	})
+}
+
+// Reflow: nothing scrolls sideways, and the tiles, the facts and the actions stay inside the card.
+for (const [label, width, fontSize] of [
+	["320 px", 320, "100%"],
+	["200 % text at 375 px", 375, "200%"],
+] as const) {
+	for (const path of ["/resources/1", ...RINGSAKER]) {
+		test(`the card reflows at ${label} (${path})`, async ({ page }) => {
+			await page.setViewportSize({ width, height: 900 })
+			await page.goto(path)
+			await page.addStyleTag({ content: `html { font-size: ${fontSize} }` })
+			await page.evaluate(() => document.fonts.ready)
+			expect(await noHorizontalScroll(page)).toBe(true)
+			const card = await one(page, "article.detail-card")
+			const inner = await boxes(
+				page,
+				".detail-card .contact-tile, .detail-card .detail-facts dd, .detail-card .action-btn"
+			)
+			expect(inner.length).toBeGreaterThan(0)
+			for (const b of inner) {
+				expect(b.left).toBeGreaterThanOrEqual(card.left)
+				expect(b.right).toBeLessThanOrEqual(card.right)
+				expect(b.fits).toBe(true)
+			}
+		})
+	}
+}
+
+// Below 768 px each tile is as tall as its own content: at 200 % text Ringsaker's email tile
+// wraps and the phone tile does not stretch to match it.
+test("below 768 px a tile is as tall as its own content (id 102, 200 % text)", async ({ page }) => {
+	await page.setViewportSize({ width: 375, height: 900 })
+	await page.goto("/resources/102")
+	await page.addStyleTag({ content: "html { font-size: 200% }" })
+	await page.evaluate(() => document.fonts.ready)
+	const tiles = await boxes(page, ".contact-tile")
+	expect(tiles).toHaveLength(2)
+	expect(tiles[0]?.height).toBeLessThan(tiles[1]?.height ?? 0)
+})
+
+// The tooltip: hover and keyboard focus show the full name, Escape hides it, it stays inside the
+// card, and the pointer can move onto it without it closing (WCAG 1.4.13).
+test("at 1024 px the tooltips show on hover and focus, close on Escape and stay in the card", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1024, height: 900 })
+	await page.goto("/resources/102")
+	await settle(page)
+	const card = await one(page, "article.detail-card")
+	const buttons = page.locator(".action-btn")
+	const names = ["Kopier nummer", /^(Del|Kopier lenke)$/, "Meld feil i oppføringen"] as const
+	for (const [i, name] of names.entries()) {
+		const button = buttons.nth(i)
+		const tip = button.locator(".action-tip")
+		await button.hover()
+		await expect(tip).toBeVisible()
+		await expect(tip).toHaveText(name)
+		const t = await tip.boundingBox()
+		const b = await button.boundingBox()
+		if (!t || !b) throw new Error("no box")
+		expect(t.y).toBeGreaterThanOrEqual(b.y + b.height)
+		expect(t.x).toBeGreaterThanOrEqual(card.left)
+		expect(t.x + t.width).toBeLessThanOrEqual(card.right)
+		// Down across the 6 px gap and onto the bubble: it stays open.
+		await page.mouse.move(b.x + b.width / 2, b.y + b.height + 3)
+		await page.mouse.move(t.x + t.width - 4, t.y + t.height / 2)
+		await expect(tip).toBeVisible()
+	}
+	await page.keyboard.press("Escape")
+	await expect(buttons.nth(2).locator(".action-tip")).toBeHidden()
+	await page.mouse.move(10, 890)
+	await buttons.nth(0).focus()
+	await page.keyboard.press("Tab")
+	await expect(buttons.nth(1).locator(".action-tip")).toBeVisible()
+})
+
+test("Desktop Chrome at 1024 px gets icon mode: labels hidden, 44 px buttons", async ({ page }) => {
+	await page.setViewportSize({ width: 1024, height: 900 })
+	await page.goto("/resources/102")
+	await settle(page)
+	await expect(page.locator(".action-btn")).toHaveCount(3)
+	for (const label of await page.locator(".action-label").all()) await expect(label).toBeHidden()
+	for (const b of await boxes(page, ".action-btn")) expect(b.width).toBe(44)
+})
+
+// The confirmation sits inside its button, over the content below it. A tap there must reach
+// that content, not copy again. Copy either succeeds or fails here; both show a bubble.
+test("at 375 px the copy confirmation lets taps through to what it covers", async ({ page }) => {
+	await page.setViewportSize({ width: 375, height: 900 })
+	await page.goto("/resources/102")
+	await settle(page)
+	await page.locator(".action-btn").first().click()
+	const bubble = page.locator(".action-feedback")
+	await expect(bubble).toBeVisible()
+	expect(await bubble.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe("none")
+})
+
+// Forced-colors mode drops fills, so each action keeps its edge only through its border.
+test("each action keeps a visible border in forced-colors mode", async ({ page }) => {
+	await page.emulateMedia({ forcedColors: "active" })
+	await page.setViewportSize({ width: 375, height: 900 })
+	await page.goto("/resources/102")
+	const borders = await page
+		.locator(".action-btn")
+		.evaluateAll((els) =>
+			els.map(
+				(el) => `${getComputedStyle(el).borderTopStyle} ${getComputedStyle(el).borderTopWidth}`
+			)
+		)
+	expect(borders).toHaveLength(3)
+	for (const b of borders) expect(b).toBe("solid 1px")
+})
+
+// A touch tablet has the room but no hover, so it gets labelled mode at any width.
+test.describe("on a touch tablet", () => {
+	test.use({ isMobile: true, hasTouch: true })
+	test("at 1024 px the actions are labelled buttons under the title", async ({ page }) => {
+		await page.setViewportSize({ width: 1024, height: 900 })
+		await page.goto("/resources/102")
+		await settle(page)
+		const h1 = await one(page, "h1")
+		const group = await one(page, ".detail-actions")
+		expect(group.top).toBeGreaterThanOrEqual(h1.bottom)
+		await expect(page.locator(".action-label")).toHaveCount(3)
+		for (const label of await page.locator(".action-label").all()) await expect(label).toBeVisible()
+	})
+})
