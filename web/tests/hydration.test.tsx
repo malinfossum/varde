@@ -129,6 +129,15 @@ test("the prerendered resource page works before JavaScript", async () => {
 	expect(html).toContain('href="/en/resources/12"')
 })
 
+// Spec: Hydration. The prerender shows all three actions, with share labelled Del, so the row
+// does not jump from one button to three on load.
+test("the prerendered detail page holds all three actions", async () => {
+	const { html } = await render("/resources/12", { resource })
+	expect(html).toContain('aria-label="Kopier nummer"')
+	expect(html).toContain('aria-label="Del"')
+	expect(html).toContain('aria-label="Meld feil i oppføringen"')
+})
+
 // Back between two detail pages must show the page you left. Row 9 is loaded directly (its page
 // data is baked in), then the "Del av" link goes to row 1, then Back returns to /resources/9.
 test("Back from a parent to a directly loaded child page shows the child again", async () => {

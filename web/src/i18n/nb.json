@@ -68,6 +68,7 @@
 	"detail.tile.menuOption": "tast {n}",
 	"detail.partOf": "Del av {name}",
 	"report.link": "Meld feil i oppføringen",
+	"report.short": "Meld feil",
 	"list.pagerPrev": "Forrige",
 	"list.pagerNext": "Neste",
 	"list.pagerStatus": "Side {page} av {pages}",

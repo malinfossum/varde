@@ -216,6 +216,9 @@ async function renderDetail(resource: ResourceDto = detail) {
 		</LanguageProvider>
 	)
 	await screen.findByRole("heading", { name: resource.name })
+	// findByRole resolves on the DOM mutation, before the actions' mount effect has hidden what
+	// this browser cannot do. Let it settle so the tests read the final buttons.
+	await act(async () => {})
 }
 
 test("with a share sheet the Del button shares name, phone and this page", async () => {
@@ -237,7 +240,9 @@ test("without a share sheet the button copies the link and says so", async () =>
 	expect(screen.queryByRole("button", { name: "Del" })).not.toBeInTheDocument()
 	await userEvent.click(screen.getByRole("button", { name: "Kopier lenke" }))
 	expect(writeText).toHaveBeenCalledWith(window.location.href)
-	expect(await screen.findByText("Lenken er kopiert")).toBeInTheDocument()
+	expect(
+		await screen.findByText("Lenken er kopiert", { selector: "[aria-live]" })
+	).toBeInTheDocument()
 })
 
 test("copy-phone copies the number as shown and announces it", async () => {
@@ -246,7 +251,9 @@ test("copy-phone copies the number as shown and announces it", async () => {
 	await renderDetail()
 	await userEvent.click(screen.getByRole("button", { name: "Kopier nummer" }))
 	expect(writeText).toHaveBeenCalledWith("62 00 00 00")
-	expect(await screen.findByText("Nummeret er kopiert")).toBeInTheDocument()
+	expect(
+		await screen.findByText("Nummeret er kopiert", { selector: "[aria-live]" })
+	).toBeInTheDocument()
 })
 
 test("a refused clipboard write is announced, not swallowed", async () => {
@@ -254,7 +261,9 @@ test("a refused clipboard write is announced, not swallowed", async () => {
 	restoreNavigator = installNavigator({ clipboard: { writeText } })
 	await renderDetail()
 	await userEvent.click(screen.getByRole("button", { name: "Kopier nummer" }))
-	expect(await screen.findByText("Kunne ikke kopiere")).toBeInTheDocument()
+	expect(
+		await screen.findByText("Kunne ikke kopiere", { selector: "[aria-live]" })
+	).toBeInTheDocument()
 })
 
 test("a cancelled share sheet announces nothing", async () => {

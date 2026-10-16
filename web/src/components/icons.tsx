@@ -153,3 +153,33 @@ export function MailIcon({ className }: IconProps) {
 		</Svg>
 	)
 }
+
+// The detail page's actions. Each sits in a control whose aria-label names it.
+
+// Two offset rounded squares: the front one whole, the back one showing only its top-left edge.
+export function CopyIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<rect x="8" y="8" width="12" height="12" rx="2" />
+			<path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+		</Svg>
+	)
+}
+
+// An arrow rising out of an open box.
+export function ShareIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M12 15V3M7.5 7.5L12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
+		</Svg>
+	)
+}
+
+// A pole with a flag whose free edge is notched.
+export function FlagIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M5 21V4M5 4h13l-3.5 4.5L18 13H5" />
+		</Svg>
+	)
+}

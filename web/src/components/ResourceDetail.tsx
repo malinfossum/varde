@@ -2,13 +2,6 @@ import { useEffect, useState } from "react"
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { usePageData } from "../pageData.ts"
-import {
-	copyText,
-	reportHref,
-	type ShareCapability,
-	shareCapability,
-	shareResource,
-} from "../services/contactActions.ts"
 import { contactTiles } from "../services/contactTiles.ts"
 import { clearIndexCache, loadIndex } from "../services/data.ts"
 import { type Family, familyOf, NO_FAMILY } from "../services/family.ts"
@@ -16,13 +9,13 @@ import { safeChatUrl } from "../services/helplines.ts"
 import { metaDescription } from "../services/site.ts"
 import type { ResourceDto } from "../types/api.ts"
 import { ContactTiles } from "./ContactTiles.tsx"
+import { DetailActions } from "./DetailActions.tsx"
 import { ErrorState } from "./ErrorState.tsx"
 import { Link } from "./Link.tsx"
 import { LoadingState } from "./LoadingState.tsx"
 import { NotFoundState } from "./NotFoundState.tsx"
 import { PageHead } from "./PageHead.tsx"
 import { ResourceBadges } from "./ResourceBadges.tsx"
-import { useAnnounce } from "./StatusRegion.tsx"
 
 type DetailState =
 	| { kind: "loading" }
@@ -33,7 +26,6 @@ type DetailState =
 export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: number }) {
 	const { lang } = useLanguage()
 	const t = useTranslation()
-	const announce = useAnnounce()
 	const pageData = usePageData()
 	const [state, setState] = useState<DetailState>(() =>
 		pageData.resource?.id === id
@@ -43,26 +35,15 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	const [attempt, setAttempt] = useState(0)
 	const { ref: heading } = useArrivalFocus<HTMLHeadingElement>(arrival, state.kind === "ready")
 
-	// Browser-only facts that must not be read during the first render (prerendering has no
-	// navigator or history.state to read, and reading them synchronously in the browser would
-	// make hydration mismatch the server's markup). The neutral defaults below are what the
-	// prerender emits; an effect fills in the real values right after mount.
-	const [capability, setCapability] = useState<ShareCapability>("none")
-	const [canCopy, setCanCopy] = useState(false)
-	// Share/copy support is a fact about this browser, not this navigation — it never changes
-	// across an id change, so this stays a mount-only effect.
-	useEffect(() => {
-		setCapability(shareCapability(navigator))
-		setCanCopy(Boolean(navigator.clipboard))
-	}, [])
-
 	const [cameFromResults, setCameFromResults] = useState(false)
-	// The site sends no referrer and pushState never sets one, so whether this page was reached
-	// from /sok travels in history state (useUrlState's navigate sets it on the way out). A
-	// direct load — bookmark, shared link, refresh — has no such state. Unlike the capability
-	// checks above, this is a fact about *this navigation*. App.tsx keys ResourceDetail by id, so
-	// a detail-to-detail transition remounts it and this runs again; the `id` dependency keeps
-	// the effect right even for a caller that does not key it.
+	// Browser-only fact that must not be read during the first render (prerendering has no
+	// history.state, and reading it synchronously would make hydration mismatch the server's
+	// markup), so an effect fills it in right after mount. The site sends no referrer and pushState
+	// never sets one, so whether this page was reached from /sok travels in history state
+	// (useUrlState's navigate sets it on the way out). A direct load (bookmark, shared link,
+	// refresh) has no such state. This is a fact about *this navigation*. App.tsx keys
+	// ResourceDetail by id, so a detail-to-detail transition remounts it and this runs again; the
+	// `id` dependency keeps the effect right even for a caller that does not key it.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: id forces the recompute per navigation
 	useEffect(() => {
 		setCameFromResults((window.history.state as { from?: string } | null)?.from === "sok")
@@ -111,20 +92,6 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	const { resource, family } = state
 	const tiles = contactTiles(resource, family.children)
 	const [partOfBefore = "", partOfAfter = ""] = t("detail.partOf").split("{name}")
-
-	const onShare = async () => {
-		const outcome = await shareResource(
-			{ name: resource.name, phone: resource.phone, url: window.location.href },
-			navigator
-		)
-		if (outcome === "copied") announce(t("detail.linkCopied"))
-		if (outcome === "failed") announce(t("detail.copyFailed"))
-	}
-
-	const onCopyPhone = async (phone: string) => {
-		const ok = await copyText(phone, navigator)
-		announce(t(ok ? "detail.phoneCopied" : "detail.copyFailed"))
-	}
 
 	const backLabel = t("detail.back")
 	const description = resource.description.trim()
@@ -178,33 +145,7 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 							<p className="text-sm text-muted">{t("card.fallback")}</p>
 						)}
 					</div>
-					{/* C2a's copy, share and report controls, unchanged until the action group replaces them. */}
-					<div className="grid gap-3">
-						{((resource.phone && canCopy) || capability !== "none") && (
-							<div className="flex flex-wrap items-center gap-2">
-								{resource.phone && canCopy && (
-									<button
-										type="button"
-										className="btn-secondary"
-										onClick={() => resource.phone && onCopyPhone(resource.phone)}
-									>
-										{t("detail.copyPhone")}
-									</button>
-								)}
-								{capability !== "none" && (
-									<button type="button" className="btn-secondary" onClick={onShare}>
-										{t(capability === "share" ? "detail.share" : "detail.copyLink")}
-									</button>
-								)}
-							</div>
-						)}
-						<a
-							href={reportHref(resource.id, resource.name)}
-							className="text-sm text-accent underline"
-						>
-							{t("report.link")}
-						</a>
-					</div>
+					<DetailActions id={resource.id} name={resource.name} phone={resource.phone} />
 				</header>
 				<ContactTiles tiles={tiles} />
 				{description && (

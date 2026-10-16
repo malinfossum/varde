@@ -68,6 +68,7 @@
 	"detail.tile.menuOption": "press {n}",
 	"detail.partOf": "Part of {name}",
 	"report.link": "Report an error in this listing",
+	"report.short": "Report",
 	"list.pagerPrev": "Previous",
 	"list.pagerNext": "Next",
 	"list.pagerStatus": "Page {page} of {pages}",
