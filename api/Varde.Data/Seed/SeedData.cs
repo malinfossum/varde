@@ -663,7 +663,7 @@ public static class SeedData
                 IsNational = true,
                 MunicipalityId = null,
                 Website = "https://sidetmedord.mentalhelse.no/",
-                ChatUrl = "https://sidetmedord.mentalhelse.no/",
+                ChatUrl = "https://mentalhelse.no/hjelpechat/",
                 LastVerified = Verified,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,

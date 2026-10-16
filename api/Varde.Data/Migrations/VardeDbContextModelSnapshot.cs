@@ -17,7 +17,7 @@ namespace Varde.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -992,7 +992,7 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 122,
-                            ChatUrl = "https://sidetmedord.mentalhelse.no/",
+                            ChatUrl = "https://mentalhelse.no/hjelpechat/",
                             CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsAlwaysOpen = false,
                             IsNational = true,

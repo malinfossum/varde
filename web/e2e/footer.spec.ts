@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test"
 import { settle } from "./helpers.ts"
 
-const widths = [375, 1280]
+// 1920: the two footer lines share one row there, so the 113 target must not reach the links.
+const widths = [375, 1280, 1920]
 const paths = ["/", "/en/"]
 
 for (const width of widths) {

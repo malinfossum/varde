@@ -3,8 +3,9 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
 import nbStrings from "../src/i18n/nb.json"
+import { PageDataContext } from "../src/pageData.ts"
 import { CATEGORY_SLUGS } from "../src/services/categories.ts"
-import { stubDataFiles } from "./stubData.ts"
+import { bakedHelplines, stubDataFiles } from "./stubData.ts"
 
 const nb = nbStrings as Record<string, string>
 
@@ -32,7 +33,11 @@ afterEach(() => {
 
 test("the landing renders without a single request", () => {
 	const fetchSpy = stubCatalog()
-	render(<App />)
+	render(
+		<PageDataContext.Provider value={bakedHelplines("nb")}>
+			<App />
+		</PageDataContext.Provider>
+	)
 	expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/Finn riktig hjelp/)
 	expect(fetchSpy).not.toHaveBeenCalled()
 	expect(document.title).toBe("Varde – finn riktig hjelpetjeneste")
@@ -41,8 +46,13 @@ test("the landing renders without a single request", () => {
 test("focusing the search box prefetches the catalog; Enter submits the text to /sok", async () => {
 	const fetchSpy = stubCatalog()
 	const user = userEvent.setup()
-	render(<App />)
+	render(
+		<PageDataContext.Provider value={bakedHelplines("nb")}>
+			<App />
+		</PageDataContext.Provider>
+	)
 	const box = screen.getByRole("searchbox", { name: /Søk/ })
+	expect(fetchSpy).not.toHaveBeenCalled()
 	await user.click(box)
 	// loadIndex fetches all four data files together (resources, municipalities, categories,
 	// kommuner) — the prefetch is all-or-nothing, unlike the old two-endpoint catalog call.
@@ -87,4 +97,57 @@ test("nine category chips link to scoped results, each with its real label, and 
 		.filter((a) => a.getAttribute("href")?.startsWith("/sok?category="))
 	expect(chips).toHaveLength(9)
 	expect(screen.getAllByRole("link", { name: /116 117/ }).length).toBeGreaterThanOrEqual(2) // strip + emergency section
+})
+
+test("Nødtjenester stands apart; the other eight sit in one grid in category order", () => {
+	stubCatalog()
+	render(<App />)
+	const main = screen.getByRole("main")
+	const acute = within(main).getByRole("link", { name: "Nødtjenester" })
+	expect(acute).toHaveClass("chip-acute")
+	expect(acute.closest("ul")).toBeNull()
+	const grid = within(main)
+		.getByRole("link", { name: nb["category.bolig"] })
+		.closest("ul") as HTMLElement
+	const names = within(grid)
+		.getAllByRole("link")
+		.map((a) => a.textContent)
+	expect(names).toEqual(
+		CATEGORY_SLUGS.filter((s) => s !== "nodtjenester").map((s) => nb[`category.${s}`])
+	)
+})
+
+test("the headline keeps its last three words together, in both languages", () => {
+	stubCatalog()
+	const { unmount } = render(<App />)
+	expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
+		"Finn riktig hjelp, der\u00a0du\u00a0bor."
+	)
+	unmount()
+	window.history.replaceState(null, "", "/en/")
+	render(<App />)
+	expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
+		"Find the right help, where\u00a0you\u00a0live."
+	)
+})
+
+test("the emergency intro is the plain new line, in both languages", () => {
+	stubCatalog()
+	const { unmount } = render(<App />)
+	expect(screen.getByText("Ved akutt fare, ring:")).toBeInTheDocument()
+	unmount()
+	window.history.replaceState(null, "", "/en/")
+	render(<App />)
+	expect(screen.getByText("In an emergency, call:")).toBeInTheDocument()
+})
+
+test("the landing has no trust line, and the Shift hint lives on the quick exit", () => {
+	stubCatalog()
+	render(<App />)
+	// The trust line went on 2026-10-16: the footer says "Ingen sporing" and About covers the
+	// sources and the six-month check.
+	expect(screen.queryByRole("region", { name: "Derfor kan du stole på Varde" })).toBeNull()
+	expect(screen.getByRole("link", { name: "Forlat siden" })).toHaveAccessibleDescription(
+		"Du kan også trykke Shift tre ganger."
+	)
 })
