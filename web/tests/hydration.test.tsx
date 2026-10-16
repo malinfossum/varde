@@ -27,6 +27,8 @@ const resource = {
 	lastVerified: "2026-08-17",
 	categories: [],
 	servedMunicipalityIds: [],
+	parentId: null,
+	phoneMenuOption: null,
 }
 const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet" }
 

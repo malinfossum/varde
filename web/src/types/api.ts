@@ -21,4 +21,8 @@ export type ResourceDto = {
 	lastVerified: string
 	categories: CategoryDto[]
 	servedMunicipalityIds: number[]
+	// The service this one belongs to (Arbeidslivstelefonen under Mental Helse), or null.
+	parentId: number | null
+	// The key to press after the call connects (1 to 9), or null.
+	phoneMenuOption: number | null
 }

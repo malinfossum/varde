@@ -55,6 +55,8 @@ function helpline(
 		lastVerified: "2026-08-13",
 		categories: [],
 		servedMunicipalityIds: [],
+		parentId: null,
+		phoneMenuOption: null,
 	}
 }
 

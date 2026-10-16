@@ -9,12 +9,13 @@ afterEach(() => {
 	for (const d of dirs) rmSync(d, { recursive: true, force: true })
 })
 
-function fakeApi(total: number) {
+function fakeApi(total: number, extra: (id: number) => object = () => ({})) {
 	const rows = Array.from({ length: total }, (_, i) => ({
 		id: i + 1,
 		name: `R${i + 1}`,
 		municipalityId: (i % 3) + 1,
 		servedMunicipalityIds: [],
+		...extra(i + 1),
 	}))
 	return vi.fn(async (input: string) => {
 		const url = new URL(input, "http://api")
@@ -78,4 +79,26 @@ test("refuses to write below the row floor", async () => {
 		})
 	).rejects.toThrow(/row floor/)
 	expect(() => readFileSync(join(outDir, "resources.nb.json"))).toThrow()
+})
+
+test("parent links and menu options reach both languages' files untouched", async () => {
+	const outDir = mkdtempSync(join(tmpdir(), "varde-export-"))
+	dirs.push(outDir)
+	const api = fakeApi(MIN_RESOURCES, (id) => ({
+		parentId: id === 9 ? 1 : null,
+		phoneMenuOption: id === 9 ? 3 : null,
+	}))
+	await exportData({
+		baseUrl: "http://api",
+		outDir,
+		fetchImpl: api as unknown as typeof fetch,
+		log: () => {},
+	})
+	for (const lang of ["nb", "en"]) {
+		const rows = JSON.parse(readFileSync(join(outDir, `resources.${lang}.json`), "utf8")) as {
+			id: number
+		}[]
+		expect(rows.find((r) => r.id === 9)).toMatchObject({ parentId: 1, phoneMenuOption: 3 })
+		expect(rows.find((r) => r.id === 1)).toMatchObject({ parentId: null, phoneMenuOption: null })
+	}
 })

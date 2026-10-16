@@ -35,6 +35,8 @@ const rows = [
 	chatUrl: null,
 	lastVerified: "2026-08-17",
 	categories: [],
+	parentId: null,
+	phoneMenuOption: null,
 	...r,
 }))
 

@@ -25,6 +25,8 @@ const detail: ResourceDto = {
 	lastVerified: "2026-08-13",
 	categories: [],
 	servedMunicipalityIds: [],
+	parentId: null,
+	phoneMenuOption: null,
 }
 
 // The two ready-branch tests below set window.history state directly (replaceState, and a
