@@ -26,7 +26,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 			    under 1024 px and sit side by side from 1024 px, split by a divider either way, since
 			    the helplines are not emergency services. From 1024 px the page fits one 1920 x 950
 			    screen (decided 2026-10-15): one-line heading, no eyebrow, Nødtjenester beside the grid
-			    and tighter spacing. */}
+			    and tighter spacing. Each divider has even space above and below it (2026-10-16). */}
 			<section className="hero relative py-6 text-center lg:pt-1 lg:pb-0">
 				<p className="entrance text-xs uppercase tracking-[0.24em] text-muted lg:hidden">
 					{t("landing.eyebrow")}
@@ -66,7 +66,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 				</div>
 			</section>
 
-			<div className="landing-help mt-6 grid border-t border-border pt-6 lg:mt-4 lg:grid-cols-2 lg:items-start lg:pt-2">
+			<div className="landing-help mt-6 grid border-t border-border pt-6 lg:mt-4 lg:grid-cols-2 lg:items-start lg:pt-4">
 				<section aria-labelledby="emergency" className="lg:pr-10">
 					<h2 id="emergency" className="text-2xl">
 						{t("landing.emergencyHeading")}
@@ -95,7 +95,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 
 			<section
 				aria-labelledby="trust"
-				className="mt-6 border-t border-border pt-4 text-sm text-muted lg:mt-2 lg:pt-3"
+				className="mt-6 border-t border-border pt-4 text-center text-sm text-muted lg:mt-3 lg:pt-3"
 			>
 				<h2 id="trust" className="visually-hidden">
 					{t("landing.trustHeading")}
