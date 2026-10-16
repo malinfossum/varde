@@ -19,7 +19,7 @@ function renderLink(onNavigate = vi.fn(), lang: Lang = "nb", to = "/resources/1"
 test("a plain click navigates client-side", () => {
 	const onNavigate = renderLink()
 	fireEvent.click(screen.getByRole("link", { name: "Krisesenteret" }))
-	expect(onNavigate).toHaveBeenCalledWith("/resources/1", "", { lang: "nb" })
+	expect(onNavigate).toHaveBeenCalledWith("/resources/1", "", { lang: "nb", href: "/resources/1" })
 })
 
 test("ctrl/meta/shift clicks are left alone for the browser to open a new tab", () => {
