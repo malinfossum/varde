@@ -19,7 +19,7 @@ Every task's requirements include these. Values are copied from the spec.
 - **`ParentId`:** `int?`, foreign key to `Resource`, navigations `Parent` and `Children`, on delete **restrict**, check constraint refuses `ParentId = Id`, one level only (enforced by the seed test, not the database). Rows 9 and 122 get `ParentId = 1`.
 - **`PhoneMenuOption`:** `int?`, check constraint exactly `"PhoneMenuOption" IS NULL OR ("PhoneMenuOption" BETWEEN 1 AND 9 AND "Phone" IS NOT NULL)`. Row 9 gets 3, no other row gets a value. "Velg tast 3 i menyen." and "Choose option 3 in the menu." leave row 9's descriptions.
 - **One migration, `HelplineParentAndMenuOption`,** generated with `dotnet ef`, never hand-written, read before commit. It lands before any Lavterskel C1 migration.
-- **Copy (exact):** `landing.helplineGroup.adults` "For voksne og generelle livskriser" / "For adults and general life crises"; `landing.helplineGroup.young` "For barn og unge (under 18 år)" / "For children and young people (under 18)"; `detail.contactHeading` "Kontakt" / "Contact"; `detail.tile.alwaysOpen` "døgnåpen" / "open 24/7"; `detail.tile.openChat` "Åpne chatten" / "Open the chat"; `detail.tile.menuOption` "tast {n}" / "press {n}"; `detail.partOf` "Del av {name}" / "Part of {name}". Tiles reuse `card.call` ("Ring" / "Call") and `detail.chat` ("Chat"). `landing.helplineNote.9` is removed from both files.
+- **Copy (exact):** `landing.helplineGroup.adults` "For voksne og generelle livskriser" / "For adults and general life crises"; `landing.helplineGroup.young` "For barn og unge" / "For children and young people"; `detail.contactHeading` "Kontakt" / "Contact"; `detail.tile.alwaysOpen` "døgnåpen" / "open 24/7"; `detail.tile.openChat` "Åpne chatten" / "Open the chat"; `detail.tile.menuOption` "tast {n}" / "press {n}"; `detail.partOf` "Del av {name}" / "Part of {name}". Tiles reuse `card.call` ("Ring" / "Call") and `detail.chat` ("Chat"). `landing.helplineNote.9` is removed from both files.
 - **"Døgnåpen" only on phone tiles** whose row has `isAlwaysOpen`, never on a chat tile.
 - **Links open in the same tab.** No `target="_blank"` anywhere in this change (backlog item 19 does that for all links at once).
 - **Icons:** `PhoneIcon` and `ChatIcon` drawn for Varde on the 24-unit stroke grid in `icons.tsx`, `aria-hidden`. No path copied from Lucide.
@@ -1114,13 +1114,13 @@ test("two labelled groups hold the four rows in order, each name linking to its 
 		within(section)
 			.getAllByRole("heading", { level: 3 })
 			.map((h) => h.textContent)
-	).toEqual(["For voksne og generelle livskriser", "For barn og unge (under 18 år)"])
+	).toEqual(["For voksne og generelle livskriser", "For barn og unge"])
 	const names = (label: string) =>
 		within(within(section).getByRole("list", { name: label }))
 			.getAllByRole("listitem")
 			.map((li) => within(li).getAllByRole("link")[0]?.textContent)
 	expect(names("For voksne og generelle livskriser")).toEqual(["Mental Helse", "Kirkens SOS"])
-	expect(names("For barn og unge (under 18 år)")).toEqual([
+	expect(names("For barn og unge")).toEqual([
 		"Alarmtelefonen for barn og unge",
 		"Kors på halsen",
 	])
@@ -1169,7 +1169,7 @@ test("the English landing labels the groups in English and keeps the service nam
 		within(section)
 			.getAllByRole("heading", { level: 3 })
 			.map((h) => h.textContent)
-	).toEqual(["For adults and general life crises", "For children and young people (under 18)"])
+	).toEqual(["For adults and general life crises", "For children and young people"])
 	expect(within(section).getByRole("link", { name: "Call 116 123, Mental Helse" })).toBeInTheDocument()
 })
 
@@ -1311,14 +1311,14 @@ In `web/src/i18n/nb.json`, replace the line `"landing.helplineNote.9": "Velg tas
 
 ```json
 	"landing.helplineGroup.adults": "For voksne og generelle livskriser",
-	"landing.helplineGroup.young": "For barn og unge (under 18 år)",
+	"landing.helplineGroup.young": "For barn og unge",
 ```
 
 In `web/src/i18n/en.json`, replace `"landing.helplineNote.9": "Choose option 3",` with:
 
 ```json
 	"landing.helplineGroup.adults": "For adults and general life crises",
-	"landing.helplineGroup.young": "For children and young people (under 18)",
+	"landing.helplineGroup.young": "For children and young people",
 ```
 
 - [ ] **Step 9: Page data type**

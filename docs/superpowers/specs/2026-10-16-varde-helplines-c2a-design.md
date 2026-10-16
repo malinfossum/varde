@@ -24,7 +24,7 @@ does it.
    Hjelpetelefoner page plus the 11 services not yet in the seed, each verified at source), then
    the Lavterskel PRs.
 2. **Two landing groups.** "For voksne og generelle livskriser": Mental Helse (id 1) and Kirkens
-   SOS (id 2). "For barn og unge (under 18 år)": Alarmtelefonen for barn og unge (id 4) and Kors på
+   SOS (id 2). "For barn og unge": Alarmtelefonen for barn og unge (id 4) and Kors på
    halsen (id 121). Rows 9 and 122 leave the landing, and the "tast 3" note goes with them.
 3. **No stopgap links.** "Se mer informasjon →" under each group and the Spesialtjenester object
    wait for C2b, where the page they point to exists.
@@ -236,7 +236,7 @@ Mental Helse (id 1) shows three tiles: "Ring · døgnåpen / 116 123", "Sidetmed
 | Key | nb | en |
 |---|---|---|
 | `landing.helplineGroup.adults` | For voksne og generelle livskriser | For adults and general life crises |
-| `landing.helplineGroup.young` | For barn og unge (under 18 år) | For children and young people (under 18) |
+| `landing.helplineGroup.young` | For barn og unge | For children and young people |
 | `detail.contactHeading` | Kontakt | Contact |
 | `detail.tile.alwaysOpen` | døgnåpen | open 24/7 |
 | `detail.tile.openChat` | Åpne chatten | Open the chat |
