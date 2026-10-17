@@ -69,7 +69,8 @@ for (const width of [768, 1024, 1920]) {
 	}
 }
 
-// Review focus 5: a larger text size on a desktop window keeps icon mode intact.
+// I scale the text to 200 % on a desktop window: icon mode must stay intact, with the actions
+// clear of the title.
 test("icon mode at 1024 px with 200 % text keeps 44 px actions clear of the title", async ({
 	page,
 }) => {
@@ -105,6 +106,7 @@ for (const path of RINGSAKER) {
 		expect(new Set(buttons.map((b) => b.bottom)).size).toBe(1)
 		expect(buttons[0]?.height).toBeGreaterThanOrEqual(56)
 		expect(buttons[0]?.top).toBeGreaterThanOrEqual(h1.bottom)
+		await expect(page.locator(".action-label")).toHaveCount(3)
 		for (const label of await page.locator(".action-label").all()) await expect(label).toBeVisible()
 		for (const c of await boxes(page, ".detail-card .action-btn, .detail-card .contact-tile")) {
 			expect(c.height).toBeGreaterThanOrEqual(44)
@@ -192,8 +194,43 @@ test("Desktop Chrome at 1024 px gets icon mode: labels hidden, 44 px buttons", a
 	await page.goto("/resources/102")
 	await settle(page)
 	await expect(page.locator(".action-btn")).toHaveCount(3)
+	await expect(page.locator(".action-label")).toHaveCount(3)
 	for (const label of await page.locator(".action-label").all()) await expect(label).toBeHidden()
 	for (const b of await boxes(page, ".action-btn")) expect(b.width).toBe(44)
+})
+
+// A service with a chat link and no phone (id 122) has no Copy action, so only two corner
+// actions remain. They keep the same rules: equal size in labelled mode, 44 px side by side in
+// icon mode.
+test("labelled mode at 375 px, no phone (id 122): two equal buttons", async ({ page }) => {
+	await page.setViewportSize({ width: 375, height: 900 })
+	await page.goto("/resources/122")
+	await settle(page)
+	const buttons = await boxes(page, ".action-btn")
+	expect(buttons).toHaveLength(2)
+	const [a, b] = buttons as [Box, Box]
+	expect(Math.abs(a.width - b.width)).toBeLessThanOrEqual(1)
+	expect(Math.abs(a.height - b.height)).toBeLessThanOrEqual(1)
+	expect(a.height).toBeGreaterThanOrEqual(56)
+	expect(Math.abs(a.bottom - b.bottom)).toBeLessThanOrEqual(1)
+	expect(await noHorizontalScroll(page)).toBe(true)
+})
+
+test("icon mode at 1024 px, no phone (id 122): two 44 px buttons side by side", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1024, height: 900 })
+	await page.goto("/resources/122")
+	await settle(page)
+	const buttons = await boxes(page, ".action-btn")
+	expect(buttons).toHaveLength(2)
+	const [a, b] = buttons as [Box, Box]
+	for (const box of buttons) {
+		expect(Math.abs(box.width - 44)).toBeLessThanOrEqual(1)
+		expect(Math.abs(box.height - 44)).toBeLessThanOrEqual(1)
+	}
+	expect(Math.abs(a.top - b.top)).toBeLessThanOrEqual(1)
+	expect(b.left).toBeGreaterThanOrEqual(a.right)
 })
 
 // The confirmation sits inside its button, over the content below it. A tap there must reach
