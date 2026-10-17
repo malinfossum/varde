@@ -46,8 +46,8 @@ const activeName = (page: Page) =>
 
 // One row at every width (spec: The header row rule). 320 and 375 run the 320 px fallback, 360
 // is the brand word's breakpoint and the tightest fit (English needs 347.2 px of the 360),
-// 1023 and 1024 sit either side of the switch between the Meny and the desktop nav, and a
-// first visit (nothing stored) shows the widest theme value, "System (lyst)", from 1024 px.
+// 1023 and 1024 sit either side of the switch between the Meny and the desktop nav. I also run
+// a first visit (nothing stored), because the header must fit before any theme is saved.
 for (const width of [320, 360, 375, 1023, 1024, 1280, 1920]) {
 	for (const theme of [...THEMES, "system"] as const) {
 		for (const path of ["/", "/en/"]) {
@@ -58,10 +58,6 @@ for (const width of [320, 360, 375, 1023, 1024, 1280, 1920]) {
 				if (theme !== "system") await setTheme(page, theme)
 				await page.goto(path)
 				await settle(page)
-				// The theme value fills in after mount; measure the real, hydrated width.
-				await page
-					.locator("header .visually-hidden", { hasText: /^(Tema|Theme): / })
-					.waitFor({ state: "attached" })
 				const boxes = await headerControls(page)
 				const rows = rowsOf(boxes)
 				expect(rows.length, boxes.map((b) => b.label).join(" | ")).toBe(1)
@@ -78,7 +74,7 @@ for (const [width, menuShown] of [
 	[1023, true],
 	[1024, false],
 ] as const) {
-	test(`at ${width} px only ${menuShown ? "the Meny" : "the nav and the pickers"} is shown`, async ({
+	test(`at ${width} px only ${menuShown ? "the Meny" : "the nav and the language picker"} is shown`, async ({
 		page,
 	}) => {
 		await page.setViewportSize({ width, height: 800 })
