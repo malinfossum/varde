@@ -51,7 +51,7 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt only forces a re-fetch
 	useEffect(() => {
-		// The prerendered page already carries this resource in its data block — no fetch needed
+		// The prerendered page already carries this resource in its data block, so no fetch is needed
 		// on a direct load. A later id/lang change (or a retry) still goes to the index.
 		if (pageData.resource?.id === id) return
 		let cancelled = false
@@ -85,8 +85,8 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 				}}
 			/>
 		)
-	// NotFoundState is the sole content of the page in this state — the shell renders nothing
-	// else around it here — so it takes the page's one level-1 heading, same as every other route.
+	// NotFoundState is the sole content of the page in this state (the shell renders nothing
+	// else around it here), so it takes the page's one level-1 heading, same as every other route.
 	if (state.kind === "missing") return <NotFoundState arrival={arrival} />
 
 	const { resource, family } = state
