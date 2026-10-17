@@ -596,6 +596,9 @@
 		.action-btn:focus-visible .action-tip {
 			display: block;
 		}
+		/* A confirmation replaces the name tooltips while it shows (it is in the DOM only then), so
+		   hovering another action never stacks a second bubble over it. */
+		.detail-actions:has(.action-feedback) .action-tip,
 		.detail-actions[data-tips="hidden"] .action-tip {
 			display: none;
 		}

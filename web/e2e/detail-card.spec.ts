@@ -189,6 +189,35 @@ test("at 1024 px the tooltips show on hover and focus, close on Escape and stay 
 	await expect(buttons.nth(1).locator(".action-tip")).toBeVisible()
 })
 
+// A confirmation replaces the name tooltip (spec: Visible feedback), so while it shows no other
+// action may open its own tooltip over it: exactly one bubble, and the tooltips come back after.
+test("at 1024 px a copy confirmation is the only bubble, on hover and on focus", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1024, height: 900 })
+	await page.goto("/resources/102")
+	await settle(page)
+	const buttons = page.locator(".action-btn")
+	const bubble = page.locator(".action-feedback")
+	const tips = page.locator(".action-tip")
+	await buttons.nth(0).click()
+	await expect(bubble).toBeVisible()
+	await buttons.nth(2).hover()
+	await expect(bubble).toBeVisible()
+	await expect(tips.filter({ visible: true })).toHaveCount(0)
+	// Keyboard focus on the next action behaves the same way.
+	await page.mouse.move(10, 890)
+	await page.keyboard.press("Tab")
+	await expect(buttons.nth(1)).toBeFocused()
+	await expect(bubble).toBeVisible()
+	await expect(tips.filter({ visible: true })).toHaveCount(0)
+	// After the 4 seconds the tooltips work again.
+	await expect(bubble).toHaveCount(0, { timeout: 6000 })
+	await expect(buttons.nth(1).locator(".action-tip")).toBeVisible()
+	await buttons.nth(2).hover()
+	await expect(buttons.nth(2).locator(".action-tip")).toBeVisible()
+})
+
 test("Desktop Chrome at 1024 px gets icon mode: labels hidden, 44 px buttons", async ({ page }) => {
 	await page.setViewportSize({ width: 1024, height: 900 })
 	await page.goto("/resources/102")
