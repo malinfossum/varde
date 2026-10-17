@@ -193,9 +193,11 @@ test("Back to another route scrolls to the saved spot and focuses the followed l
 	expect(scrollTo).toHaveBeenCalledWith({ top: 480, behavior: "instant" })
 })
 
-// The second press stays on the same route as the first lands on, so `arrival` does not move:
-// the pending return must read the entry it ends on, not the one current when it was set.
-test("the values are read when the page is ready, so two quick presses restore the last entry", () => {
+// The second press stays on the same route as the first lands on, so `arrival` does not move.
+// It bumps `restore` while the return is still pending, on a page with its own token (the results
+// list). The pending return must survive that and read the entry it ends on when the page is
+// ready, not turn into a plain restore or read the entry current when it was set.
+test("two quick presses keep the pending return and restore the entry you end on", () => {
 	const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {})
 	const links = (
 		<>
@@ -205,13 +207,19 @@ test("the values are read when the page is ready, so two quick presses restore t
 	)
 	window.history.replaceState({ idx: 1, scrollY: 100, href: "/resources/1" }, "", "/sok")
 	const { rerender } = render(
-		<ReturnProbe arrival={2} ready={false}>
+		<ReturnProbe arrival={2} ready={false} restore={0} token={{ page: 1 }}>
 			{links}
 		</ReturnProbe>
 	)
 	window.history.replaceState({ idx: 0, scrollY: 900, href: "/resources/2" }, "", "/sok")
 	rerender(
-		<ReturnProbe arrival={2} ready={true}>
+		<ReturnProbe arrival={2} ready={false} restore={1} token={{ page: 2 }}>
+			{links}
+		</ReturnProbe>
+	)
+	expect(scrollTo).not.toHaveBeenCalled()
+	rerender(
+		<ReturnProbe arrival={2} ready={true} restore={1} token={{ page: 3 }}>
 			{links}
 		</ReturnProbe>
 	)

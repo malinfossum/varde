@@ -15,6 +15,12 @@ export function takePressed(): HTMLButtonElement | null {
 	return button
 }
 
+// Safari before 17.4 has no checkVisibility. A link with no layout box (inside a closed <details>
+// or a display: none menu) has no client rects, which is the same answer.
+function isVisible(element: Element): boolean {
+	return element.checkVisibility?.() ?? element.getClientRects().length > 0
+}
+
 // Each link's href attribute is compared with the saved string. It is never built into a CSS
 // selector, so a quote or bracket in a search URL cannot break the lookup. A link inside a
 // closed Meny or picker is not visible and never matches.
@@ -23,7 +29,7 @@ export function findVisibleLink(
 	root: ParentNode = document
 ): HTMLAnchorElement | null {
 	for (const link of root.querySelectorAll<HTMLAnchorElement>("a[href]")) {
-		if (link.getAttribute("href") === href && link.checkVisibility()) return link
+		if (link.getAttribute("href") === href && isVisible(link)) return link
 	}
 	return null
 }

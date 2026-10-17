@@ -124,3 +124,24 @@ test("a pressed button that is still enabled keeps its focus", () => {
 	restoreSameRoute({ idx: 1 }, screen.getByRole("heading"), takePressed())
 	expect(button).toHaveFocus()
 })
+
+test("without checkVisibility (Safari before 17.4) a link with no layout box is skipped", () => {
+	const original = Element.prototype.checkVisibility
+	// @ts-expect-error: the property is removed on purpose and put back below
+	Element.prototype.checkVisibility = undefined
+	try {
+		render(
+			<>
+				<a href="/resources/12">I menyen</a>
+				<a href="/resources/12">I listen</a>
+			</>
+		)
+		const [hidden, shown] = screen.getAllByRole("link")
+		// jsdom has no layout: give each link the rects a browser would.
+		hidden.getClientRects = () => [] as unknown as DOMRectList
+		shown.getClientRects = () => [new DOMRect(0, 0, 10, 10)] as unknown as DOMRectList
+		expect(findVisibleLink("/resources/12")).toBe(shown)
+	} finally {
+		Element.prototype.checkVisibility = original
+	}
+})
