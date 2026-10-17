@@ -342,6 +342,27 @@ for (const [name, path, index, fontSize] of [
 	})
 }
 
+// Icon mode: the 20 px icon sits in the middle of its 44 px button, not at the top (the labelled
+// mode top-aligns its content, and icon mode must put it back).
+test("icon mode at 1024 px: each icon is centred in its button", async ({ page }) => {
+	await page.setViewportSize({ width: 1024, height: 900 })
+	await page.goto("/resources/102")
+	await settle(page)
+	const buttons = await boxes(page, ".action-btn")
+	const icons = await page.locator(".action-btn > svg").evaluateAll((els) =>
+		els.map((el) => {
+			const r = el.getBoundingClientRect()
+			return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+		})
+	)
+	expect(buttons).toHaveLength(3)
+	expect(icons).toHaveLength(3)
+	buttons.forEach((b, i) => {
+		expect(Math.abs((icons[i]?.x ?? 0) - (b.left + b.width / 2))).toBeLessThanOrEqual(1)
+		expect(Math.abs((icons[i]?.y ?? 0) - (b.top + b.height / 2))).toBeLessThanOrEqual(1)
+	})
+})
+
 // Forced-colors mode drops fills, so each action keeps its edge only through its border.
 test("each action keeps a visible border in forced-colors mode", async ({ page }) => {
 	await page.emulateMedia({ forcedColors: "active" })

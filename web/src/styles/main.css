@@ -573,6 +573,8 @@
 			height: 44px;
 			min-height: 44px;
 			padding: 0;
+			/* Labelled mode top-aligns; the lone icon goes back to the middle. */
+			justify-content: center;
 		}
 		.action-label {
 			display: none;
