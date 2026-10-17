@@ -136,7 +136,8 @@ test("without checkVisibility (Safari before 17.4) a link with no layout box is 
 				<a href="/resources/12">I listen</a>
 			</>
 		)
-		const [hidden, shown] = screen.getAllByRole("link")
+		const hidden = screen.getByRole("link", { name: "I menyen" })
+		const shown = screen.getByRole("link", { name: "I listen" })
 		// jsdom has no layout: give each link the rects a browser would.
 		hidden.getClientRects = () => [] as unknown as DOMRectList
 		shown.getClientRects = () => [new DOMRect(0, 0, 10, 10)] as unknown as DOMRectList
