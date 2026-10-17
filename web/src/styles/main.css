@@ -171,7 +171,7 @@
 			);
 	}
 	/* Entrance stagger: each element carries its own delay class rather than a positional
-	   selector like :nth-of-type, which counts per tag name — the lone <div> and the lone <ul>
+	   selector like :nth-of-type, which counts per tag name. The lone <div> and the lone <ul>
 	   both land at 0ms under that scheme, and the "browse" <p> gets bumped to a delay meant for
 	   something else. Explicit classes tie the delay to the element, not to its position among
 	   same-tag siblings. */

@@ -48,12 +48,12 @@ afterEach(() => {
 	document.body.innerHTML = ""
 })
 
-// A Suspense boundary that resolves can still be "outlined" — written out-of-band with a
-// completion <template> plus an inline <script>$RC(...)</script> that moves it into place —
+// A Suspense boundary that resolves can still be "outlined": written out-of-band with a
+// completion <template> plus an inline <script>$RC(...)</script> that moves it into place,
 // whenever the shell plus that boundary's bytes cross Fizz's byte budget, or the boundary has
 // "suspensey content". index.html's CSP is script-src 'self' with no inline scripts, so an
 // outlined boundary's real content would sit inert until React hydrates and replaces it
-// client-side — the exact regression prerendering exists to avoid. No inline <script>, no
+// client-side. That is the exact regression prerendering exists to avoid. No inline <script>, no
 // out-of-band <template>, and no leftover "<!--$?-->" pending marker: none of the six routes
 // below may ship a page whose real content depends on a script the CSP blocks.
 function assertNoOutlinedBoundary(html: string) {
@@ -63,7 +63,7 @@ function assertNoOutlinedBoundary(html: string) {
 }
 
 // Wait for the page's h1 to appear before reading `errors` so lazy chunks and Suspense
-// have settled — a late recoverable error from a chunk that resolves after `act` returns
+// have settled. A late recoverable error from a chunk that resolves after `act` returns
 // would otherwise land after this function has already returned an empty array.
 async function hydrate(url: string, data: PageData) {
 	stubDataFiles({

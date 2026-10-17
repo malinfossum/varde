@@ -53,7 +53,7 @@ export async function shareResource(entry: ShareEntry, nav: ShareTarget): Promis
 			})
 			return "shared"
 		} catch (error: unknown) {
-			// The user closed the sheet — nothing to announce and nothing to fall back to.
+			// The user closed the sheet, so there is nothing to announce and nothing to fall back to.
 			if (error instanceof DOMException && error.name === "AbortError") return "cancelled"
 			// Anything else (unsupported payload, sheet unavailable) degrades to copying the link.
 		}

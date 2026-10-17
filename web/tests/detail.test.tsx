@@ -33,7 +33,7 @@ const detail: ResourceDto = {
 
 // The two ready-branch tests below set window.history state directly (replaceState, and a
 // back() spy) to drive the stateful back link. Reset both after every test in this file so
-// that state can't leak into a later test that never asked for it — a review caught the share
+// that state can't leak into a later test that never asked for it. A review caught the share
 // and copy-phone tests below silently inheriting `{ from: "sok" }` this way.
 afterEach(() => {
 	window.history.replaceState(null, "", "/")
@@ -49,7 +49,7 @@ test("detail shows hours with contact info and no handover banner", async () => 
 	expect(await screen.findByRole("heading", { name: "Krisesenteret i Hamar" })).toBeInTheDocument()
 	expect(screen.getByText(/Åpningstider/)).toBeInTheDocument()
 	expect(screen.queryByText(/legevakt 116 117/i)).not.toBeInTheDocument() // banner is list-only
-	// The card dropped its website link — the detail page is now the only place this rel
+	// The card dropped its website link, so the detail page is now the only place this rel
 	// attribute matters.
 	const website = screen.getByRole("link", { name: /example.test|Nettside/ })
 	expect(website).toHaveAttribute("rel", "noopener noreferrer")
@@ -121,7 +121,7 @@ test("with from=sok in history state the back control goes back", async () => {
 	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
 	await userEvent.setup().click(screen.getByRole("button", { name: "Tilbake til resultater" }))
 	expect(back).toHaveBeenCalledTimes(1)
-	// This is a spy on the real window.history, not a per-test fake — left in place it's a
+	// This is a spy on the real window.history, not a per-test fake. Left in place, it's a
 	// permanent no-op for every test below that runs after this one in the file.
 	back.mockRestore()
 })
@@ -180,7 +180,7 @@ test("badges render on the detail page in the fixed order Akutt, Nasjonal, Døgn
 	)
 	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
 	// ResourceBadges was extracted out of ResourceCard, and ResourceDetail is its second
-	// consumer — a broken import, wrong prop, or reordering here would otherwise go undetected,
+	// consumer. A broken import, wrong prop, or reordering here would otherwise go undetected,
 	// since only list.test.tsx exercised the component before this.
 	const badges = screen
 		.getAllByText(/^(Akutt|Nasjonal|Døgnåpent)$/, { selector: ".badge" })
