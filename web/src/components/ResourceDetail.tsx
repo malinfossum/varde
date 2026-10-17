@@ -11,6 +11,7 @@ import type { ResourceDto } from "../types/api.ts"
 import { ContactTiles } from "./ContactTiles.tsx"
 import { DetailActions } from "./DetailActions.tsx"
 import { ErrorState } from "./ErrorState.tsx"
+import { ArrowLeftIcon } from "./icons.tsx"
 import { Link } from "./Link.tsx"
 import { LoadingState } from "./LoadingState.tsx"
 import { NotFoundState } from "./NotFoundState.tsx"
@@ -94,6 +95,12 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	const [partOfBefore = "", partOfAfter = ""] = t("detail.partOf").split("{name}")
 
 	const backLabel = t("detail.back")
+	const backContent = (
+		<>
+			<ArrowLeftIcon className="h-5 w-5" />
+			{t("detail.backShort")}
+		</>
+	)
 	const description = resource.description.trim()
 	// The same https guard as chat links: every website in the data is https, and anything else
 	// (a typo, a javascript: value) shows as text and never becomes a link.
@@ -107,17 +114,20 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 				description={metaDescription(resource.description)}
 				path={`/resources/${resource.id}`}
 			/>
+			{/* The way back stays in the page, since the back and forward buttons exist only in the
+			    installed app. It shows one word and keeps the full name for screen readers. */}
 			{cameFromResults ? (
 				<button
 					type="button"
-					className="justify-self-start text-accent underline"
+					className="back-pill justify-self-start"
+					aria-label={backLabel}
 					onClick={() => window.history.back()}
 				>
-					{backLabel}
+					{backContent}
 				</button>
 			) : (
-				<Link to="/sok" className="justify-self-start text-accent underline">
-					{backLabel}
+				<Link to="/sok" className="back-pill justify-self-start" aria-label={backLabel}>
+					{backContent}
 				</Link>
 			)}
 			{/* Everything about the service sits in this one card (spec: the detail page as one

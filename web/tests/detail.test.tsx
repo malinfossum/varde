@@ -126,6 +126,37 @@ test("with from=sok in history state the back control goes back", async () => {
 	back.mockRestore()
 })
 
+test.each([
+	{ lang: "nb", state: null, role: "link", name: "Tilbake til resultater", short: "Resultater" },
+	{
+		lang: "nb",
+		state: { from: "sok" },
+		role: "button",
+		name: "Tilbake til resultater",
+		short: "Resultater",
+	},
+	{ lang: "en", state: null, role: "link", name: "Back to results", short: "Results" },
+	{ lang: "en", state: { from: "sok" }, role: "button", name: "Back to results", short: "Results" },
+] as const)(
+	"the back pill shows an arrow and $short, and keeps the full name for screen readers ($lang, $role)",
+	async ({ lang, state, role, name, short }) => {
+		stubDataFiles({ resources: [detail] })
+		window.history.replaceState(state, "", lang === "en" ? "/en/resources/12" : "/resources/12")
+		render(
+			<LanguageProvider lang={lang}>
+				<AnnouncerProvider>
+					<ResourceDetail id={12} />
+				</AnnouncerProvider>
+			</LanguageProvider>
+		)
+		const back = await screen.findByRole(role, { name })
+		// The visible word is part of the name (WCAG 2.5.3), and the arrow is hidden from screen readers.
+		expect(back).toHaveTextContent(new RegExp(`^${short}$`))
+		expect(name.toLowerCase()).toContain(short.toLowerCase())
+		expect(back.querySelector("svg")).toHaveAttribute("aria-hidden", "true")
+	}
+)
+
 test("cameFromResults recomputes per id, not just on mount", async () => {
 	// App.tsx renders <ResourceDetail id={route.id} /> without a `key`, so a detail-to-detail
 	// transition (e.g. history.go(-2) landing on a different resource while still on a detail
