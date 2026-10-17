@@ -86,3 +86,15 @@ test("the landing route renders a heading and loads no data", () => {
 	).toBeInTheDocument()
 	expect(fetchSpy).not.toHaveBeenCalled()
 })
+
+test("the history icons open the header row and the bar comes after the footer", () => {
+	stubResources()
+	render(<App />)
+	const [icons, bar] = screen.getAllByRole("navigation", { name: "Sidehistorikk" })
+	if (!icons || !bar) throw new Error("missing history nav")
+	expect(icons).toHaveClass("history-icons")
+	expect(icons.parentElement?.firstElementChild).toBe(icons)
+	expect(bar).toHaveClass("history-bar")
+	const footer = screen.getByRole("contentinfo")
+	expect(footer.compareDocumentPosition(bar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+})

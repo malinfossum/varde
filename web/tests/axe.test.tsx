@@ -84,6 +84,8 @@ describe.each(["light", "dark"])("%s theme", (theme) => {
 		// jsdom loads no CSS, so both header layouts are in the tree. Hide the Meny's nav as CSS
 		// does from 1024 px; a Playwright check proves one landmark at every width.
 		container.querySelector(".menu-nav")?.setAttribute("hidden", "")
+		// Likewise both history layouts are in the tree; the test width shows the header icons.
+		container.querySelector(".history-bar")?.setAttribute("hidden", "")
 		expect(await axe(container, options)).toHaveNoViolations()
 	})
 })

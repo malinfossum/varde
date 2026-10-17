@@ -61,6 +61,12 @@ if (typeof window !== "undefined" && typeof window.localStorage === "undefined")
 // keeps that path runnable, and tests spy on it to assert the scroll happened.
 Element.prototype.scrollIntoView ??= () => {}
 
+// jsdom has no checkVisibility. A [hidden] ancestor is the one invisibility the tests need: a
+// link inside a closed menu must never take focus back (spec: Focus and scroll).
+Element.prototype.checkVisibility ??= function (this: Element) {
+	return this.closest("[hidden]") === null
+}
+
 // react-aria-components' popover positioning observes the trigger's size; jsdom has no
 // ResizeObserver at all.
 globalThis.ResizeObserver ??= class {

@@ -9,10 +9,11 @@
    - components/  rendering + event wiring — no business logic
    ====================================================================== */
 
-import { lazy, Suspense } from "react"
+import { lazy, Suspense, useMemo } from "react"
 import { AcuteStrip } from "./components/AcuteStrip.tsx"
 import { Footer } from "./components/Footer.tsx"
 import { Header } from "./components/Header.tsx"
+import { HistoryButtons } from "./components/HistoryButtons.tsx"
 import { LandingPage } from "./components/LandingPage.tsx"
 import { LoadingState } from "./components/LoadingState.tsx"
 import { NotFoundState } from "./components/NotFoundState.tsx"
@@ -21,7 +22,7 @@ import { useShiftExit } from "./hooks/useShiftExit.ts"
 import { useThemeChoice } from "./hooks/useThemeChoice.ts"
 import { useUrlState } from "./hooks/useUrlState.ts"
 import { LanguageProvider, useTranslation } from "./i18n/LanguageProvider.tsx"
-import { NavigationContext } from "./navigation.ts"
+import { ArrivalContext, HistoryEventsContext, NavigationContext } from "./navigation.ts"
 import type { Filters, Route } from "./services/urlState.ts"
 
 // ListPage and ResourceDetail pull in react-aria-components (the municipality combobox)
@@ -43,12 +44,18 @@ const AboutPage = lazy(() =>
 )
 
 export function App() {
-	const { lang, route, filters, arrival, navigate } = useUrlState()
+	const { lang, route, filters, arrival, via, restore, navigate, historyEvents } = useUrlState()
+	// A new object only when one of the two changes, so pages don't re-render for nothing.
+	const arrivalContext = useMemo(() => ({ via, restore }), [via, restore])
 	return (
 		<LanguageProvider lang={lang}>
 			<AnnouncerProvider>
 				<NavigationContext.Provider value={navigate}>
-					<Shell route={route} filters={filters} arrival={arrival} />
+					<HistoryEventsContext.Provider value={historyEvents}>
+						<ArrivalContext.Provider value={arrivalContext}>
+							<Shell route={route} filters={filters} arrival={arrival} />
+						</ArrivalContext.Provider>
+					</HistoryEventsContext.Provider>
 				</NavigationContext.Provider>
 			</AnnouncerProvider>
 		</LanguageProvider>
@@ -67,7 +74,7 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 				{t("app.skipToContent")}
 			</a>
 			<AcuteStrip />
-			<Header theme={theme} />
+			<Header theme={theme} atLanding={route.kind === "landing"} />
 			<main
 				id="main"
 				className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 ${route.kind === "landing" ? "lg:py-3" : ""}`}
@@ -86,6 +93,8 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 				</Suspense>
 			</main>
 			<Footer theme={theme} />
+			{/* After the footer, so Tab reaches the bar last, in the order it is seen. */}
+			<HistoryButtons layout="bar" atLanding={route.kind === "landing"} />
 		</div>
 	)
 }

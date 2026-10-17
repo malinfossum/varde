@@ -26,3 +26,56 @@ export async function noHorizontalScroll(page: Page): Promise<boolean> {
 		() => document.documentElement.scrollWidth <= document.documentElement.clientWidth
 	)
 }
+
+// Installed mode for e2e. Playwright's Chromium cannot emulate (display-mode: standalone):
+// emulateMedia has no display mode and the CDP media feature is ignored (probed 2026-10-16,
+// Chromium 156, Playwright 1.64; re-probed 2026-10-17 on the installed version, same result). So
+// the tests take the iPhone path: navigator.standalone, which main.tsx turns into data-standalone
+// on <html>. Call it before page.goto.
+export async function forceInstalled(page: Page): Promise<void> {
+	await page.addInitScript(() => {
+		Object.defineProperty(Navigator.prototype, "standalone", {
+			get: () => true,
+			configurable: true,
+		})
+	})
+}
+
+// The app has hydrated: the theme state is null until mount, so the footer pill marks a choice
+// pressed only after it.
+export async function hydrated(page: Page): Promise<void> {
+	await page.locator('.theme-pill [aria-pressed="true"]').waitFor({ state: "attached" })
+}
+
+export type Box = { label: string; top: number; bottom: number; height: number }
+
+export async function headerControls(page: Page): Promise<Box[]> {
+	return page.evaluate(() =>
+		[
+			...document.querySelectorAll<HTMLElement>(
+				".app-header a, .app-header button, .app-header summary"
+			),
+		]
+			// Rows inside a closed picker or the closed Meny still have boxes in Chromium
+			// (content-visibility: hidden, not display: none), so skip the lists outright.
+			// checkVisibility() drops whichever layout is display: none at this width.
+			.filter((el) => !el.closest(".picker-list") && el.checkVisibility())
+			.map((el) => {
+				const r = el.getBoundingClientRect()
+				const label = `${el.tagName} ${(el.textContent ?? "").trim().slice(0, 24)}`
+				return { label, top: r.top, bottom: r.bottom, height: r.height }
+			})
+	)
+}
+
+// Controls whose vertical centres sit within 22 px of each other share a row.
+export function rowsOf(boxes: Box[]): Box[][] {
+	const rows: Box[][] = []
+	const centre = (b: Box) => (b.top + b.bottom) / 2
+	for (const box of [...boxes].sort((a, b) => centre(a) - centre(b))) {
+		const row = rows.find((r) => Math.abs(centre(r[0]) - centre(box)) < 22)
+		if (row) row.push(box)
+		else rows.push([box])
+	}
+	return rows
+}

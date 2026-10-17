@@ -1,8 +1,10 @@
 import { act, render, screen } from "@testing-library/react"
+import type { ReactNode } from "react"
 import { afterEach, expect, test, vi } from "vitest"
 import { PageHead } from "../src/components/PageHead.tsx"
 import { useArrivalFocus } from "../src/hooks/useArrivalFocus.ts"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
+import { ArrivalContext } from "../src/navigation.ts"
 
 afterEach(() => {
 	document.title = ""
@@ -129,4 +131,161 @@ test("PageHead sets and updates the title", () => {
 		</LanguageProvider>
 	)
 	expect(document.title).toBe("Varde")
+})
+
+function ReturnProbe({
+	arrival,
+	ready,
+	via = "traverse",
+	restore = 0,
+	token,
+	children,
+}: {
+	arrival: number
+	ready: boolean
+	via?: "push" | "traverse"
+	restore?: number
+	token?: unknown
+	children?: ReactNode
+}) {
+	return (
+		<ArrivalContext.Provider value={{ via, restore }}>
+			<ReturnPage arrival={arrival} ready={ready} token={token}>
+				{children}
+			</ReturnPage>
+		</ArrivalContext.Provider>
+	)
+}
+
+function ReturnPage({
+	arrival,
+	ready,
+	token,
+	children,
+}: {
+	arrival: number
+	ready: boolean
+	token?: unknown
+	children?: ReactNode
+}) {
+	// No token given means the default (token === settled): a page with no content of its own
+	// that changes on the same route.
+	const { ref } = useArrivalFocus<HTMLHeadingElement>(arrival, ready, ready, token ?? ready)
+	return (
+		<>
+			<h1 ref={ref} tabIndex={-1}>
+				Treff
+			</h1>
+			{children}
+		</>
+	)
+}
+
+test("Back to another route scrolls to the saved spot and focuses the followed link", () => {
+	const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {})
+	window.history.replaceState({ idx: 0, scrollY: 480, href: "/resources/12" }, "", "/sok")
+	render(
+		<ReturnProbe arrival={1} ready={true}>
+			<a href="/resources/12">NAV Hamar</a>
+		</ReturnProbe>
+	)
+	expect(screen.getByRole("link", { name: "NAV Hamar" })).toHaveFocus()
+	expect(scrollTo).toHaveBeenCalledWith({ top: 480, behavior: "instant" })
+})
+
+// The second press stays on the same route as the first lands on, so `arrival` does not move.
+// It bumps `restore` while the return is still pending, on a page with its own token (the results
+// list). The pending return must survive that and read the entry it ends on when the page is
+// ready, not turn into a plain restore or read the entry current when it was set.
+test("two quick presses keep the pending return and restore the entry you end on", () => {
+	const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {})
+	const links = (
+		<>
+			<a href="/resources/1">Første</a>
+			<a href="/resources/2">Andre</a>
+		</>
+	)
+	window.history.replaceState({ idx: 1, scrollY: 100, href: "/resources/1" }, "", "/sok")
+	const { rerender } = render(
+		<ReturnProbe arrival={2} ready={false} restore={0} token={{ page: 1 }}>
+			{links}
+		</ReturnProbe>
+	)
+	window.history.replaceState({ idx: 0, scrollY: 900, href: "/resources/2" }, "", "/sok")
+	rerender(
+		<ReturnProbe arrival={2} ready={false} restore={1} token={{ page: 2 }}>
+			{links}
+		</ReturnProbe>
+	)
+	expect(scrollTo).not.toHaveBeenCalled()
+	rerender(
+		<ReturnProbe arrival={2} ready={true} restore={1} token={{ page: 3 }}>
+			{links}
+		</ReturnProbe>
+	)
+	expect(screen.getByRole("link", { name: "Andre" })).toHaveFocus()
+	expect(scrollTo).toHaveBeenLastCalledWith({ top: 900, behavior: "instant" })
+})
+
+test("Back with no saved link, or a link inside a closed menu, arrives at the top and the heading", () => {
+	const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {})
+	window.history.replaceState({ idx: 0, scrollY: 480 }, "", "/")
+	const noHref = render(
+		<ReturnProbe arrival={1} ready={true}>
+			<a href="/resources/12">NAV Hamar</a>
+		</ReturnProbe>
+	)
+	expect(screen.getByRole("heading")).toHaveFocus()
+	expect(scrollTo).toHaveBeenCalledWith({ top: 0 })
+	noHref.unmount()
+	scrollTo.mockClear()
+	window.history.replaceState({ idx: 0, scrollY: 480, href: "/resources/12" }, "", "/")
+	render(
+		<ReturnProbe arrival={1} ready={true}>
+			<div hidden>
+				<a href="/resources/12">I menyen</a>
+			</div>
+		</ReturnProbe>
+	)
+	expect(screen.getByRole("heading")).toHaveFocus()
+	expect(scrollTo).toHaveBeenCalledWith({ top: 0 })
+})
+
+test("a new navigation (push) keeps today's arrival even when the entry has a saved link", () => {
+	vi.spyOn(window, "scrollTo").mockImplementation(() => {})
+	window.history.replaceState({ idx: 1, scrollY: 480, href: "/resources/12" }, "", "/sok")
+	render(
+		<ReturnProbe arrival={1} ready={true} via="push">
+			<a href="/resources/12">NAV Hamar</a>
+		</ReturnProbe>
+	)
+	expect(screen.getByRole("heading")).toHaveFocus()
+})
+
+test("a same-route restore on a page without its own token scrolls at once", () => {
+	const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {})
+	window.history.replaceState({ idx: 0, scrollY: 700 }, "", "/om")
+	const { rerender } = render(<ReturnProbe arrival={0} ready={true} restore={0} />)
+	expect(scrollTo).not.toHaveBeenCalled()
+	rerender(<ReturnProbe arrival={0} ready={true} restore={1} />)
+	expect(scrollTo).toHaveBeenCalledWith({ top: 700, behavior: "instant" })
+	expect(screen.getByRole("heading")).not.toHaveFocus()
+})
+
+test("a same-route restore on a page with a token waits for that page's next answer", () => {
+	const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {})
+	window.history.replaceState({ idx: 0, scrollY: 700 }, "", "/sok")
+	const first = { page: 1 }
+	const { rerender } = render(<ReturnProbe arrival={0} ready={true} restore={0} token={first} />)
+	rerender(<ReturnProbe arrival={0} ready={true} restore={1} token={first} />)
+	expect(scrollTo).not.toHaveBeenCalled()
+	rerender(<ReturnProbe arrival={0} ready={true} restore={1} token={{ page: 2 }} />)
+	expect(scrollTo).toHaveBeenCalledWith({ top: 700, behavior: "instant" })
+})
+
+test("a page mounted after earlier restores does not replay them", () => {
+	const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {})
+	window.history.replaceState({ idx: 0, scrollY: 700 }, "", "/om")
+	render(<ReturnProbe arrival={0} ready={true} restore={3} />)
+	expect(scrollTo).not.toHaveBeenCalled()
 })

@@ -1,4 +1,6 @@
 import { type RefObject, useEffect, useRef } from "react"
+import { useArrival } from "../navigation.ts"
+import { restoreSameRoute, returnToLink, takePressed } from "../services/returnFocus.ts"
 
 // Moves focus to a page's heading after a route change (arrival > 0) once the page is ready,
 // and on demand (requestFocus) for the pager. Scroll first, then focus without a second
@@ -23,6 +25,14 @@ import { type RefObject, useEffect, useRef } from "react"
 // nothing left to re-trigger the effect with. Passing the freshly computed result object as
 // `token` gives every distinct answer its own identity even when its ready/settled booleans
 // don't change; a caller that never has this problem can leave it out.
+//
+// Back and Forward (spec: Focus and scroll). An arrival by a traversal is a "return": once the
+// page is ready, the scroll goes back to the saved spot and focus lands on the link that was
+// followed, read from history.state at that moment so two quick presses restore the last entry.
+// No saved link, or no visible one, falls back to the ordinary arrival. A traversal that stays
+// on the same route is a "restore": the scroll comes back and focus stays. A page whose `token`
+// is its own (the results list) waits for its next answer before restoring; any other page
+// restores at once.
 export function useArrivalFocus<T extends HTMLElement>(
 	arrival: number,
 	ready: boolean,
@@ -30,11 +40,24 @@ export function useArrivalFocus<T extends HTMLElement>(
 	token: unknown = settled
 ): { ref: RefObject<T | null>; requestFocus: () => void } {
 	const ref = useRef<T>(null)
-	const pending = useRef<"arrival" | "request" | null>(null)
+	const { via, restore } = useArrival()
+	const pending = useRef<"arrival" | "return" | "restore" | "request" | null>(null)
+	// The restore count this page has already seen, so a page mounted later never replays one.
+	const restoreSeen = useRef(restore)
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: via is read at the arrival, not a trigger
 	useEffect(() => {
-		if (arrival > 0) pending.current = "arrival"
+		if (arrival > 0) pending.current = via === "traverse" ? "return" : "arrival"
 	}, [arrival])
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: restore is the trigger; token and settled are read
+	useEffect(() => {
+		if (restore === restoreSeen.current) return
+		restoreSeen.current = restore
+		if (pending.current === "arrival" || pending.current === "return") return
+		if (token !== settled) pending.current = "restore"
+		else restoreSameRoute(window.history.state, ref.current, takePressed())
+	}, [restore])
 
 	// arrival isn't read in the body, but a page that's ready from its very first render (the
 	// landing placeholder, NotFoundState) never toggles `ready` — without arrival as a trigger
@@ -44,9 +67,15 @@ export function useArrivalFocus<T extends HTMLElement>(
 		if (!pending.current || !settled) return
 		const reason = pending.current
 		pending.current = null
+		const pressed = takePressed()
+		if (reason === "restore") {
+			restoreSameRoute(window.history.state, ready ? ref.current : null, pressed)
+			return
+		}
 		if (!ready || !ref.current) return
-		if (reason === "arrival") window.scrollTo({ top: 0 })
-		else ref.current.scrollIntoView({ block: "start" })
+		if (reason === "return" && returnToLink(window.history.state)) return
+		if (reason === "request") ref.current.scrollIntoView({ block: "start" })
+		else window.scrollTo({ top: 0 })
 		ref.current.focus({ preventScroll: true })
 	}, [ready, settled, arrival, token])
 

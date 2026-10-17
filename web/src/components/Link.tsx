@@ -33,7 +33,7 @@ export function Link({
 		event.preventDefault()
 		if (onNavigate?.() === false) return
 		const url = new URL(to, window.location.origin)
-		navigate(url.pathname, url.search, { lang: target })
+		navigate(url.pathname, url.search, { lang: target, href })
 	}
 	return (
 		<a

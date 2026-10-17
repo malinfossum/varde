@@ -358,6 +358,93 @@
 			clip-path: none;
 		}
 	}
+	/* Back and Forward in the installed app (spec: Layout). Both layouts are display: none by
+	   default, so a browser tab has them in neither the tab order nor the accessibility tree.
+	   Installed mode sets three switches on :root from either trigger below; nothing else reads
+	   the triggers. Both are screen-only, so neither layout prints. tests/historyCss.test.ts keeps
+	   the two blocks identical. */
+	@media screen and (display-mode: standalone) {
+		:root {
+			--history-bar: grid;
+			--history-icons: flex;
+			--history-space: var(--history-bar-h, calc(4.25rem + env(safe-area-inset-bottom)));
+		}
+	}
+	/* iPhones report installed mode through navigator.standalone, not the media query; main.tsx
+	   turns that into data-standalone before it hydrates. */
+	@media screen {
+		:root[data-standalone] {
+			--history-bar: grid;
+			--history-icons: flex;
+			--history-space: var(--history-bar-h, calc(4.25rem + env(safe-area-inset-bottom)));
+		}
+	}
+	/* Below 1024 px: fixed to the bottom edge, two equal columns. Above the page, below the
+	   sticky header (z-index 10), so the open Meny and pickers cover it. */
+	.history-bar {
+		display: var(--history-bar, none);
+		position: fixed;
+		inset-inline: 0;
+		inset-block-end: 0;
+		z-index: 5;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.5rem;
+		padding: 0.5rem calc(1rem + env(safe-area-inset-right))
+			calc(0.5rem + env(safe-area-inset-bottom)) calc(1rem + env(safe-area-inset-left));
+		background: var(--surface);
+		border-block-start: 1px solid var(--border);
+	}
+	.history-icons {
+		display: none;
+		align-items: center;
+		gap: 0.25rem;
+	}
+	.history-btn {
+		position: relative;
+	}
+	.history-icons .history-btn {
+		min-width: 44px;
+		padding-inline: 0;
+	}
+	/* A button that cannot act stays where it is, so nothing beside it moves. */
+	.history-btn:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
+	/* Room for the bar under the page's last line, and for focus scrolled to the bottom (WCAG
+	   2.4.11). The value is the bar's real height (useBarHeight), or the default until it runs. */
+	body {
+		padding-block-end: var(--history-space, 0);
+	}
+	html {
+		scroll-padding-block-end: var(--history-space, 0);
+	}
+	@media (min-width: 1024px) {
+		.history-bar {
+			display: none;
+		}
+		.history-icons {
+			display: var(--history-icons, none);
+		}
+		body {
+			padding-block-end: 0;
+		}
+		html {
+			scroll-padding-block-end: 0;
+		}
+	}
+	@media (forced-colors: active) {
+		.history-btn:disabled {
+			opacity: 1;
+			color: GrayText;
+			border-color: GrayText;
+		}
+	}
+	/* viewport-fit=cover (index.html) lets the page run under a notch in landscape, so the
+	   content keeps itself inside the safe area. Every inset is 0 in portrait and on desktop. */
+	body {
+		padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+	}
 	/* The Meny's list: three groups split by a rule. The Språk and Tema labels look like labels,
 	   smaller and muted, and are never focusable. Each row is a grid with a fixed last column for
 	   the check mark, so text, codes and checks each share one edge down the list. */
@@ -383,9 +470,11 @@
 	.acute-strip {
 		padding-inline: 1rem;
 	}
-	/* The look every tooltip shares: the acute strip's labels, the detail page's action names
-	   and copy confirmations, and the footer's control names. Each sets its own position. */
+	/* The look every tooltip shares: the acute strip's labels, the history icons' names, the
+	   detail page's action names and copy confirmations, and the footer's control names. Each
+	   sets its own position. */
 	.strip-tip,
+	.history-tip,
 	.action-tip,
 	.action-feedback,
 	.footer-tip-bubble {
@@ -399,10 +488,12 @@
 		border-radius: 0.5rem;
 		box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
 	}
-	/* The strip's labels as tooltips (spec: Acute strip, one line). Only where the pointer can
-	   hover, so a tap on a phone dials without a tooltip. The tooltip sits inside the link right
-	   below it, so the pointer can move onto it without it closing (WCAG 1.4.13). */
-	.strip-tip {
+	/* The strip's labels and the history icons' names as tooltips (spec: Acute strip, one line;
+	   Layout). Only where the pointer can hover, so a tap on a phone dials without a tooltip. The
+	   tooltip sits inside the link or button right below it, so the pointer can move onto it
+	   without it closing (WCAG 1.4.13). */
+	.strip-tip,
+	.history-tip {
 		display: none;
 		position: absolute;
 		inset-block-start: 100%;
@@ -412,10 +503,13 @@
 	}
 	@media (hover: hover) and (pointer: fine) {
 		.strip-link:hover .strip-tip,
-		.strip-link:focus-visible .strip-tip {
+		.strip-link:focus-visible .strip-tip,
+		.history-btn:hover .history-tip,
+		.history-btn:focus-visible .history-tip {
 			display: block;
 		}
-		.acute-strip[data-tips="hidden"] .strip-tip {
+		.acute-strip[data-tips="hidden"] .strip-tip,
+		.history-icons[data-tips="hidden"] .history-tip {
 			display: none;
 		}
 	}
