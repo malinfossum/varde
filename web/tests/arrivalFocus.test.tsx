@@ -229,6 +229,16 @@ test("two quick presses keep the pending return and restore the entry you end on
 
 test("Back with no saved link, or a link inside a closed menu, arrives at the top and the heading", () => {
 	const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {})
+	window.history.replaceState({ idx: 0, scrollY: 480 }, "", "/")
+	const noHref = render(
+		<ReturnProbe arrival={1} ready={true}>
+			<a href="/resources/12">NAV Hamar</a>
+		</ReturnProbe>
+	)
+	expect(screen.getByRole("heading")).toHaveFocus()
+	expect(scrollTo).toHaveBeenCalledWith({ top: 0 })
+	noHref.unmount()
+	scrollTo.mockClear()
 	window.history.replaceState({ idx: 0, scrollY: 480, href: "/resources/12" }, "", "/")
 	render(
 		<ReturnProbe arrival={1} ready={true}>

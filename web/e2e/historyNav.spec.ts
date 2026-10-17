@@ -2,8 +2,9 @@ import { expect, type Page, test } from "@playwright/test"
 import { forceInstalled, hydrated, settle } from "./helpers.ts"
 
 const names = {
-	nb: { back: "Tilbake", forward: "Fremover", home: /\/$/ },
-	en: { back: "Back", forward: "Forward", home: /\/en\/$/ },
+	// A regex ending in \/$ would also match /en/, so the home check compares the whole path.
+	nb: { back: "Tilbake", forward: "Fremover", home: (url: URL) => url.pathname === "/" },
+	en: { back: "Back", forward: "Forward", home: (url: URL) => url.pathname === "/en/" },
 }
 
 function bar(page: Page, lang: "nb" | "en" = "nb") {

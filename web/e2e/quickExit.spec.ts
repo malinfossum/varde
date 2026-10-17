@@ -31,7 +31,10 @@ test("after exiting from a detail page reached from /sok, Back lands on /sok, ne
 	await expect(page).toHaveURL(/\/sok$/)
 })
 
-test("in a one-page session, Back after the exit leaves Varde entirely", async ({ page }) => {
+test("in a one-page session, Back after the exit leaves Varde entirely", async ({
+	page,
+	baseURL,
+}) => {
 	await page.goto("/resources/1")
 	await hydrated(page)
 	await exit(page)
@@ -40,7 +43,9 @@ test("in a one-page session, Back after the exit leaves Varde entirely", async (
 	// served from google.com. So the page must be gone and must not be the stub.
 	await expect(page.locator("#exit-stub")).toHaveCount(0)
 	expect(page.url()).not.toMatch(/^https:\/\/www\.google\.com\//)
-	expect(new URL(page.url()).host).not.toBe("localhost:4173")
+	// The origin comes from the config, so the check holds on whichever port the preview runs.
+	if (!baseURL) throw new Error("the Playwright config sets no baseURL")
+	expect(new URL(page.url()).origin).not.toBe(new URL(baseURL).origin)
 })
 
 test("Back-to-home raises history.length by exactly one", async ({ page }) => {
