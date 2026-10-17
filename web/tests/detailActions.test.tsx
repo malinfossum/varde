@@ -229,6 +229,21 @@ test("share by copy shows Lenken er kopiert under the share button", async () =>
 	expect(feedbackIn(share)).toHaveTextContent("Lenken er kopiert")
 })
 
+test("a failed share with a refused clipboard shows Kunne ikke kopiere under the share button", async () => {
+	setupTimers()
+	restoreNavigator = installNavigator({
+		share: vi.fn().mockRejectedValue(new DOMException("denied", "NotAllowedError")),
+		clipboard: {
+			writeText: vi.fn().mockRejectedValue(new DOMException("denied", "NotAllowedError")),
+		},
+	})
+	renderBaked()
+	const share = screen.getByRole("button", { name: "Del" })
+	await click(share)
+	expect(feedbackIn(share)).toHaveTextContent("Kunne ikke kopiere")
+	expect(tipIn(share)).toBeNull()
+})
+
 test("a native share sheet shows nothing: the sheet is the feedback", async () => {
 	setupTimers()
 	restoreNavigator = installNavigator({ share: vi.fn().mockResolvedValue(undefined) })

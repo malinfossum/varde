@@ -117,6 +117,10 @@ test.each([
 	"a@b",
 	"a@.no",
 	"a@b.no.",
+	"a\\b@c.no",
+	"a#b@c.no",
+	"<a@b.no>",
+	'"a"@b.no',
 	"",
 ])("safeEmail refuses %j", (value) => {
 	expect(safeEmail(value)).toBeNull()
