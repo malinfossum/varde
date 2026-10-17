@@ -57,6 +57,37 @@ test("returnToLink does nothing without a saved href or a visible match", () => 
 	expect(scrollTo).not.toHaveBeenCalled()
 })
 
+// jsdom has no layout: each link gets the box a browser would give it after the scroll.
+const placeAt = (element: Element, top: number) => {
+	element.getBoundingClientRect = () => new DOMRect(0, top, 100, 20)
+}
+
+test("after the scroll, only a match inside the viewport takes focus; an off-screen one is skipped", () => {
+	const scrollTo = scrollSpy()
+	render(
+		<>
+			<a href="/resources/12">I menyen</a>
+			<a href="/resources/12">I listen</a>
+		</>
+	)
+	const offScreen = screen.getByRole("link", { name: "I menyen" })
+	const shown = screen.getByRole("link", { name: "I listen" })
+	placeAt(offScreen, 5000)
+	placeAt(shown, 300)
+	expect(returnToLink({ idx: 0, scrollY: 480, href: "/resources/12" })).toBe(true)
+	expect(scrollTo).toHaveBeenCalledWith({ top: 480, behavior: "instant" })
+	expect(shown).toHaveFocus()
+})
+
+test("a match that is visible but outside the viewport falls back to the heading", () => {
+	scrollSpy()
+	render(<a href="/resources/12">I bunnteksten</a>)
+	const link = screen.getByRole("link")
+	placeAt(link, -400)
+	expect(returnToLink({ idx: 0, scrollY: 480, href: "/resources/12" })).toBe(false)
+	expect(link).not.toHaveFocus()
+})
+
 test("a same-route restore scrolls to the saved spot and leaves focus where it is", () => {
 	const scrollTo = scrollSpy()
 	render(

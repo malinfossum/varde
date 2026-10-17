@@ -26,23 +26,37 @@ function isVisible(element: Element): boolean {
 // closed Meny or picker is not visible and never matches.
 export function findVisibleLink(
 	href: string,
-	root: ParentNode = document
+	root: ParentNode = document,
+	accept: (link: HTMLAnchorElement) => boolean = () => true
 ): HTMLAnchorElement | null {
 	for (const link of root.querySelectorAll<HTMLAnchorElement>("a[href]")) {
-		if (link.getAttribute("href") === href && isVisible(link)) return link
+		if (link.getAttribute("href") === href && isVisible(link) && accept(link)) return link
 	}
 	return null
 }
 
-// Back or Forward to another route. Scroll first, then focus without a second scroll. Returns
-// false when there is no saved link or no visible match, and the caller falls back to the
+// Edges count as inside, so a link that just touches the viewport still qualifies.
+function inViewport(element: Element): boolean {
+	const box = element.getBoundingClientRect()
+	return (
+		box.bottom >= 0 &&
+		box.top <= window.innerHeight &&
+		box.right >= 0 &&
+		box.left <= window.innerWidth
+	)
+}
+
+// Back or Forward to another route. Scroll first, then focus without a second scroll. Only a
+// match inside the viewport after the scroll counts: the same href can also sit in the footer,
+// far below the restored spot, and focus there would leave a screen reader somewhere else.
+// Returns false when there is no saved link or no such match, and the caller falls back to the
 // ordinary arrival: top of the page, focus on the heading.
 export function returnToLink(state: unknown): boolean {
 	const { href, scrollY } = readEntry(state)
-	if (href === undefined) return false
-	const link = findVisibleLink(href)
-	if (!link) return false
+	if (href === undefined || !findVisibleLink(href)) return false
 	window.scrollTo({ top: scrollY ?? 0, behavior: "instant" })
+	const link = findVisibleLink(href, document, inViewport)
+	if (!link) return false
 	link.focus({ preventScroll: true })
 	return true
 }
