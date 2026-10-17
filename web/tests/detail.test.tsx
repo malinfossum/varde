@@ -544,7 +544,8 @@ function renderEnglish(resource: ResourceDto) {
 			</AnnouncerProvider>
 		</LanguageProvider>
 	)
-	return screen.findByRole("heading", { level: 1 })
+	// The loading skeleton has its own h1, so wait for the heading by name like renderDetail does.
+	return screen.findByRole("heading", { level: 1, name: resource.name })
 }
 
 test("on /en a fallback description is marked as Norwegian, and only the description", async () => {
