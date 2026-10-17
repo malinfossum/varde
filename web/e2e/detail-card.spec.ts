@@ -274,6 +274,74 @@ test("at 375 px the copy confirmation lets taps through to what it covers", asyn
 	expect(await bubble.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe("none")
 })
 
+// Labelled mode, top-aligned: "Kopier nummer" wraps to two lines at 375 px, and its icon must not
+// float above the others. Icons share one top and labels share one top, at most 1 px apart.
+test("labelled mode at 375 px: icons and labels start on one line even when a label wraps", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 375, height: 900 })
+	await page.goto("/resources/102")
+	await settle(page)
+	const labels = await boxes(page, ".action-label")
+	const icons = await boxes(page, ".action-btn > svg")
+	expect(labels).toHaveLength(3)
+	expect(icons).toHaveLength(3)
+	// The test only means something while one label wraps.
+	expect(Math.max(...labels.map((l) => l.height))).toBeGreaterThan(
+		Math.min(...labels.map((l) => l.height)) + 5
+	)
+	const spread = (list: Box[]) =>
+		Math.max(...list.map((b) => b.top)) - Math.min(...list.map((b) => b.top))
+	expect(spread(icons)).toBeLessThanOrEqual(1)
+	expect(spread(labels)).toBeLessThanOrEqual(1)
+})
+
+// The confirmation stays on one line, starts at its button's left edge and stays inside the
+// card, for each button that can show one, at normal and at 200 % text. Copy may succeed or fail
+// in headless Chrome; both show a bubble.
+for (const [name, path, index, fontSize] of [
+	["copy number (nb)", "/resources/102", 0, "100%"],
+	["copy number (nb), 200 % text", "/resources/102", 0, "200%"],
+	["copy link (en)", "/en/resources/102", 1, "100%"],
+] as const) {
+	test(`labelled mode at 375 px: the ${name} confirmation is one line inside the card`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 375, height: 900 })
+		await page.goto(path)
+		await settle(page)
+		await page.addStyleTag({ content: `html { font-size: ${fontSize} }` })
+		await page.evaluate(() => document.fonts.ready)
+		await page.locator(".action-btn").nth(index).click()
+		const bubble = page.locator(".action-feedback")
+		await expect(bubble).toBeVisible()
+		const m = await bubble.evaluate((el) => {
+			const cs = getComputedStyle(el)
+			const px = (v: string) => Number.parseFloat(v) || 0
+			return {
+				height: el.getBoundingClientRect().height,
+				chrome:
+					px(cs.paddingTop) +
+					px(cs.paddingBottom) +
+					px(cs.borderTopWidth) +
+					px(cs.borderBottomWidth),
+				lineHeight: px(cs.lineHeight),
+			}
+		})
+		// One line: the height is below one and a half line boxes plus the bubble's own chrome.
+		expect(m.lineHeight).toBeGreaterThan(0)
+		expect(m.height).toBeLessThan(m.lineHeight * 1.5 + m.chrome)
+		const [b] = await boxes(page, `.action-btn >> nth=${index}`)
+		const [f] = await boxes(page, ".action-feedback")
+		const card = await one(page, "article.detail-card")
+		expect(Math.abs((f?.left ?? 0) - (b?.left ?? 1000))).toBeLessThanOrEqual(1)
+		expect(f?.left).toBeGreaterThanOrEqual(card.left)
+		expect(f?.right).toBeLessThanOrEqual(card.right)
+		expect(f?.top).toBeGreaterThanOrEqual(card.top)
+		expect(f?.bottom).toBeLessThanOrEqual(card.bottom)
+	})
+}
+
 // Forced-colors mode drops fills, so each action keeps its edge only through its border.
 test("each action keeps a visible border in forced-colors mode", async ({ page }) => {
 	await page.emulateMedia({ forcedColors: "active" })

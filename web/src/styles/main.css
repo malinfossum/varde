@@ -526,7 +526,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
 		gap: 0.25rem;
 		min-height: 56px;
 		padding: 0.5rem;
@@ -544,15 +544,17 @@
 	.action-feedback {
 		line-height: 1.5;
 	}
-	/* The copy confirmation shows in both modes, below its button. In labelled mode it spans the
-	   button's width and wraps, so a bubble under the left-most button cannot leave the card. It
-	   sits inside the button, so it takes no pointer events: a tap on the tile it covers for those
+	/* The copy confirmation shows in both modes, below its button. In labelled mode it stays on one
+	   line from the button's start edge, so it may be wider than the button. The text is
+	   short, and at 200 % text the buttons stack full width, so it stays in the card. It sits
+	   inside the button, so it takes no pointer events: a tap on the tile it covers for those
 	   4 seconds reaches the tile instead of copying again. */
 	.action-feedback {
 		position: absolute;
 		inset-block-start: calc(100% + 6px);
-		inset-inline: 0;
-		text-align: center;
+		inset-inline: 0 auto;
+		white-space: nowrap;
+		text-align: start;
 		pointer-events: none;
 	}
 	/* Icon mode: room and a mouse or trackpad. Width alone is not enough, since an iPad at 1024 px
