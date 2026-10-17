@@ -12,6 +12,7 @@ node_modules/
 # Build
 dist/
 dist-server/
+*.tsbuildinfo
 public/data/
 
 # Vite cache
