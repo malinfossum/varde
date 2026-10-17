@@ -145,15 +145,19 @@ test("at 375 px the GitHub glyph lines up with the text edge", async ({ page }) 
 })
 
 for (const width of [375, 1280]) {
-	test(`with text at 200 % the footer at ${width} px never scrolls sideways`, async ({ page }) => {
-		await page.setViewportSize({ width, height: 900 })
-		await page.goto("/en/")
-		await settle(page)
-		await page.evaluate(() => {
-			document.documentElement.style.fontSize = "200%"
+	for (const path of paths) {
+		test(`with text at 200 % the footer on ${path} at ${width} px never scrolls sideways`, async ({
+			page,
+		}) => {
+			await page.setViewportSize({ width, height: 900 })
+			await page.goto(path)
+			await settle(page)
+			await page.evaluate(() => {
+				document.documentElement.style.fontSize = "200%"
+			})
+			expect(await noHorizontalScroll(page)).toBe(true)
 		})
-		expect(await noHorizontalScroll(page)).toBe(true)
-	})
+	}
 }
 
 test("forced colours keep the pressed pill button marked", async ({ page }) => {

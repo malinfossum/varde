@@ -421,7 +421,9 @@
 	}
 
 	/* The footer (spec 2026-10-16 footer). The label and the note are small uppercase text, set
-	   apart from the links by size and case; one tracking for both, so they read as one voice. */
+	   apart from the links by size and case; one tracking for both, so they read as one voice.
+	   overflow-wrap: anywhere on the note is what keeps the tracked Norwegian word
+	   "INFORMASJONSKAPSLER." inside a 375 px screen at 200 % text, where it is wider than the screen. */
 	.footer-label,
 	.footer-note {
 		font-size: 0.75rem;
@@ -429,6 +431,9 @@
 		text-transform: uppercase;
 		letter-spacing: 0.14em;
 		color: var(--muted);
+	}
+	.footer-note {
+		overflow-wrap: anywhere;
 	}
 	/* Footer tooltips open above their control, because the footer sits at the bottom of the
 	   screen. The 6 px gap is the tooltip's own transparent padding, so the pointer can move onto
