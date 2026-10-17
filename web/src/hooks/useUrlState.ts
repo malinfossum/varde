@@ -92,6 +92,9 @@ export function useUrlState() {
 			window.history.replaceState(mergeEntry(window.history.state, { idx: 0 }), "")
 		}
 		counter.arrive(loaded.idx ?? 0)
+		// React runs a child's effects before this one, so the buttons have already read the
+		// counter before it knew this entry. After a reload at idx 2, Back must not stay off.
+		historyEvents.notify()
 
 		// A fragment link (the skip link, /om#meld-feil) makes a new entry with no state. It gets
 		// the next idx, as a push would; an entry the router wrote is simply arrived at.

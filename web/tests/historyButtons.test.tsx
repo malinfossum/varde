@@ -188,6 +188,20 @@ test("Escape hides the icon tooltips until focus lands on a button again", () =>
 	expect(nav).not.toHaveAttribute("data-tips")
 })
 
+// React runs the buttons' first read before the router's own mount effect has set the counter,
+// so the router has to tell them once it has.
+test("after a reload at idx 2 without the Navigation API, Back on the landing page is enabled", async () => {
+	vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}))
+	window.history.replaceState({ idx: 2 }, "", "/")
+	render(<App />)
+	const backs = screen.getAllByRole("button", { name: "Tilbake" })
+	expect(backs).toHaveLength(2)
+	for (const back of backs) await waitFor(() => expect(back).toBeEnabled())
+	for (const forward of screen.getAllByRole("button", { name: "Fremover" })) {
+		expect(forward).toBeDisabled()
+	}
+})
+
 // Chromium blurs a focused button to <body> when it becomes disabled. The arrival-focus restore
 // must see the button already disabled, so focus lands on the heading and not on <body>.
 test("Forward onto the last entry disables itself in the same render that restores focus", async () => {
