@@ -9,7 +9,7 @@
    - components/  rendering + event wiring — no business logic
    ====================================================================== */
 
-import { lazy, Suspense } from "react"
+import { lazy, Suspense, useMemo } from "react"
 import { AcuteStrip } from "./components/AcuteStrip.tsx"
 import { Footer } from "./components/Footer.tsx"
 import { Header } from "./components/Header.tsx"
@@ -21,7 +21,7 @@ import { useShiftExit } from "./hooks/useShiftExit.ts"
 import { useThemeChoice } from "./hooks/useThemeChoice.ts"
 import { useUrlState } from "./hooks/useUrlState.ts"
 import { LanguageProvider, useTranslation } from "./i18n/LanguageProvider.tsx"
-import { NavigationContext } from "./navigation.ts"
+import { ArrivalContext, HistoryEventsContext, NavigationContext } from "./navigation.ts"
 import type { Filters, Route } from "./services/urlState.ts"
 
 // ListPage and ResourceDetail pull in react-aria-components (the municipality combobox)
@@ -43,12 +43,18 @@ const AboutPage = lazy(() =>
 )
 
 export function App() {
-	const { lang, route, filters, arrival, navigate } = useUrlState()
+	const { lang, route, filters, arrival, via, restore, navigate, historyEvents } = useUrlState()
+	// A new object only when one of the two changes, so pages don't re-render for nothing.
+	const arrivalContext = useMemo(() => ({ via, restore }), [via, restore])
 	return (
 		<LanguageProvider lang={lang}>
 			<AnnouncerProvider>
 				<NavigationContext.Provider value={navigate}>
-					<Shell route={route} filters={filters} arrival={arrival} />
+					<HistoryEventsContext.Provider value={historyEvents}>
+						<ArrivalContext.Provider value={arrivalContext}>
+							<Shell route={route} filters={filters} arrival={arrival} />
+						</ArrivalContext.Provider>
+					</HistoryEventsContext.Provider>
 				</NavigationContext.Provider>
 			</AnnouncerProvider>
 		</LanguageProvider>
