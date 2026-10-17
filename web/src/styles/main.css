@@ -98,6 +98,17 @@
 		font-weight: 600;
 		text-decoration: none;
 	}
+	/* The secondary look: an outlined button on the surface. The detail page's action buttons share
+	   it (spec: Corner actions) and set their own layout. */
+	.btn-secondary,
+	.action-btn {
+		border: 1px solid var(--border);
+		border-radius: 0.75rem;
+		background: var(--surface);
+		color: var(--text);
+		font-weight: 500;
+		text-decoration: none;
+	}
 	.btn-secondary {
 		display: inline-flex;
 		align-items: center;
@@ -105,12 +116,23 @@
 		gap: 0.5rem;
 		min-height: 44px;
 		padding: 0 1rem;
+	}
+	/* The way back to the results on the detail page: an outlined pill with an arrow and one word. */
+	.back-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		min-height: 44px;
+		padding-inline: 0.75rem 1rem;
 		border: 1px solid var(--border);
-		border-radius: 0.75rem;
+		border-radius: 999px;
+		color: var(--muted);
+		font-size: 0.9375rem;
+		text-decoration: none;
+	}
+	.back-pill:hover {
 		background: var(--surface);
 		color: var(--text);
-		font-weight: 500;
-		text-decoration: none;
 	}
 	.badge {
 		display: inline-block;
@@ -166,7 +188,7 @@
 			);
 	}
 	/* Entrance stagger: each element carries its own delay class rather than a positional
-	   selector like :nth-of-type, which counts per tag name — the lone <div> and the lone <ul>
+	   selector like :nth-of-type, which counts per tag name. The lone <div> and the lone <ul>
 	   both land at 0ms under that scheme, and the "browse" <p> gets bumped to a delay meant for
 	   something else. Explicit classes tie the delay to the element, not to its position among
 	   same-tag siblings. */
@@ -361,6 +383,21 @@
 	.acute-strip {
 		padding-inline: 1rem;
 	}
+	/* The look every tooltip shares: the acute strip's labels, and the detail page's action names
+	   and copy confirmations. Each sets its own position. */
+	.strip-tip,
+	.action-tip,
+	.action-feedback {
+		z-index: 30;
+		padding: 0.25rem 0.5rem;
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: var(--text);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 0.5rem;
+		box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
+	}
 	/* The strip's labels as tooltips (spec: Acute strip, one line). Only where the pointer can
 	   hover, so a tap on a phone dials without a tooltip. The tooltip sits inside the link right
 	   below it, so the pointer can move onto it without it closing (WCAG 1.4.13). */
@@ -370,16 +407,7 @@
 		inset-block-start: 100%;
 		inset-inline-start: 50%;
 		translate: -50% 0;
-		z-index: 30;
-		padding: 0.25rem 0.5rem;
 		white-space: nowrap;
-		font-size: 0.8125rem;
-		font-weight: 500;
-		color: var(--text);
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: 0.5rem;
-		box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
 	}
 	@media (hover: hover) and (pointer: fine) {
 		.strip-link:hover .strip-tip,
@@ -428,9 +456,11 @@
 	.helpline-name:focus-visible {
 		text-decoration: underline;
 	}
-	/* The age-group labels: small, uppercase and muted, so they read as labels beside the bold
-	   names, by size, weight and colour. */
-	.helpline-group {
+	/* The age-group labels on the landing and the section headings on the detail page: small,
+	   uppercase and muted, so they read as labels beside the bold names and body text, by size,
+	   weight and colour. */
+	.helpline-group,
+	.section-label {
 		color: var(--muted);
 		font-size: 0.75rem;
 		font-weight: 400;
@@ -464,5 +494,134 @@
 		border-radius: 0.5rem;
 		background: var(--accent-soft);
 		color: var(--accent);
+	}
+	/* The detail page card (spec: the detail page as one card). Each section after the head starts
+	   with a 1 px line: the card's gap-6 puts 1.5rem above it and this puts 1.5rem below. */
+	.detail-section {
+		border-block-start: 1px solid var(--border);
+		padding-block-start: 1.5rem;
+	}
+	.detail-head {
+		display: grid;
+		gap: 1rem;
+	}
+	/* Praktisk informasjon. On a phone each label sits over its value, 0.25rem apart, with 1rem
+	   between pairs, so it is clear which label belongs to which value. From 768 px it is the C2a
+	   two-column grid. minmax(0, 1fr), not 1fr, so a long URL can shrink the column and wrap. */
+	.detail-facts {
+		display: grid;
+		gap: 1rem;
+	}
+	.detail-facts > div {
+		display: grid;
+		gap: 0.25rem;
+	}
+	.detail-facts dt {
+		color: var(--muted);
+	}
+	@media (min-width: 768px) {
+		.detail-facts {
+			grid-template-columns: max-content minmax(0, 1fr);
+			column-gap: 2rem;
+			row-gap: 0.75rem;
+		}
+		.detail-facts > div {
+			display: contents;
+		}
+	}
+	/* Copy, share and report (spec: Corner actions, option D). Labelled mode by default: phones
+	   and touch tablets have no hover to show a tooltip, so each button shows its short label
+	   under the icon. They share one width and one height and fill the row; at 200 % text they
+	   wrap to one per row. */
+	.detail-actions {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+		gap: 0.5rem;
+	}
+	.action-btn {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 0.25rem;
+		min-height: 56px;
+		padding: 0.5rem;
+		font-size: 0.75rem;
+		line-height: 1.25;
+		text-align: center;
+		overflow-wrap: anywhere;
+	}
+	.action-tip {
+		display: none;
+	}
+	/* The action tips sit inside a 0.75rem button with a tight line-height, so they set their own.
+	   The acute strip's tooltip keeps what it inherits. */
+	.action-tip,
+	.action-feedback {
+		line-height: 1.5;
+	}
+	/* The copy confirmation shows in both modes, below its button. In labelled mode it stays on one
+	   line from the button's start edge, so it may be wider than the button. The text is
+	   short, and at 200 % text the buttons stack full width, so it stays in the card. It sits
+	   inside the button, so it takes no pointer events: a tap on the tile it covers for those
+	   4 seconds reaches the tile instead of copying again. */
+	.action-feedback {
+		position: absolute;
+		inset-block-start: calc(100% + 6px);
+		inset-inline: 0 auto;
+		white-space: nowrap;
+		text-align: start;
+		pointer-events: none;
+	}
+	/* Icon mode: room and a mouse or trackpad. Width alone is not enough, since an iPad at 1024 px
+	   has room but no hover. The head becomes two columns, so the title wraps in its own column and
+	   never runs under the icons. */
+	@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+		.detail-head {
+			grid-template-columns: minmax(0, 1fr) auto;
+			align-items: start;
+		}
+		.detail-actions {
+			display: flex;
+		}
+		.action-btn {
+			width: 44px;
+			height: 44px;
+			min-height: 44px;
+			padding: 0;
+			/* Labelled mode top-aligns; the lone icon goes back to the middle. */
+			justify-content: center;
+		}
+		.action-label {
+			display: none;
+		}
+		/* The full name, 6 px below the button and aligned to its end edge, so it never leaves the
+		   card. The transparent ::before bridges the gap, so the pointer can move onto the tooltip
+		   without it closing (WCAG 1.4.13). */
+		.action-tip,
+		.action-feedback {
+			position: absolute;
+			inset-block-start: calc(100% + 6px);
+			inset-inline: auto 0;
+			white-space: nowrap;
+		}
+		.action-tip::before {
+			content: "";
+			position: absolute;
+			inset-inline: 0;
+			inset-block-end: 100%;
+			height: 6px;
+		}
+		.action-btn:hover .action-tip,
+		.action-btn:focus-visible .action-tip {
+			display: block;
+		}
+		/* A confirmation replaces the name tooltips while it shows (it is in the DOM only then), so
+		   hovering another action never stacks a second bubble over it. */
+		.detail-actions:has(.action-feedback) .action-tip,
+		.detail-actions[data-tips="hidden"] .action-tip {
+			display: none;
+		}
 	}
 }

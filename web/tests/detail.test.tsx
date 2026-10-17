@@ -33,7 +33,7 @@ const detail: ResourceDto = {
 
 // The two ready-branch tests below set window.history state directly (replaceState, and a
 // back() spy) to drive the stateful back link. Reset both after every test in this file so
-// that state can't leak into a later test that never asked for it — a review caught the share
+// that state can't leak into a later test that never asked for it. A review caught the share
 // and copy-phone tests below silently inheriting `{ from: "sok" }` this way.
 afterEach(() => {
 	window.history.replaceState(null, "", "/")
@@ -49,7 +49,7 @@ test("detail shows hours with contact info and no handover banner", async () => 
 	expect(await screen.findByRole("heading", { name: "Krisesenteret i Hamar" })).toBeInTheDocument()
 	expect(screen.getByText(/Åpningstider/)).toBeInTheDocument()
 	expect(screen.queryByText(/legevakt 116 117/i)).not.toBeInTheDocument() // banner is list-only
-	// The card dropped its website link — the detail page is now the only place this rel
+	// The card dropped its website link, so the detail page is now the only place this rel
 	// attribute matters.
 	const website = screen.getByRole("link", { name: /example.test|Nettside/ })
 	expect(website).toHaveAttribute("rel", "noopener noreferrer")
@@ -121,10 +121,41 @@ test("with from=sok in history state the back control goes back", async () => {
 	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
 	await userEvent.setup().click(screen.getByRole("button", { name: "Tilbake til resultater" }))
 	expect(back).toHaveBeenCalledTimes(1)
-	// This is a spy on the real window.history, not a per-test fake — left in place it's a
+	// This is a spy on the real window.history, not a per-test fake. Left in place, it's a
 	// permanent no-op for every test below that runs after this one in the file.
 	back.mockRestore()
 })
+
+test.each([
+	{ lang: "nb", state: null, role: "link", name: "Tilbake til resultater", short: "Resultater" },
+	{
+		lang: "nb",
+		state: { from: "sok" },
+		role: "button",
+		name: "Tilbake til resultater",
+		short: "Resultater",
+	},
+	{ lang: "en", state: null, role: "link", name: "Back to results", short: "Results" },
+	{ lang: "en", state: { from: "sok" }, role: "button", name: "Back to results", short: "Results" },
+] as const)(
+	"the back pill shows an arrow and $short, and keeps the full name for screen readers ($lang, $role)",
+	async ({ lang, state, role, name, short }) => {
+		stubDataFiles({ resources: [detail] })
+		window.history.replaceState(state, "", lang === "en" ? "/en/resources/12" : "/resources/12")
+		render(
+			<LanguageProvider lang={lang}>
+				<AnnouncerProvider>
+					<ResourceDetail id={12} />
+				</AnnouncerProvider>
+			</LanguageProvider>
+		)
+		const back = await screen.findByRole(role, { name })
+		// The visible word is part of the name (WCAG 2.5.3), and the arrow is hidden from screen readers.
+		expect(back).toHaveTextContent(new RegExp(`^${short}$`))
+		expect(name.toLowerCase()).toContain(short.toLowerCase())
+		expect(back.querySelector("svg")).toHaveAttribute("aria-hidden", "true")
+	}
+)
 
 test("cameFromResults recomputes per id, not just on mount", async () => {
 	// App.tsx renders <ResourceDetail id={route.id} /> without a `key`, so a detail-to-detail
@@ -180,7 +211,7 @@ test("badges render on the detail page in the fixed order Akutt, Nasjonal, Døgn
 	)
 	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
 	// ResourceBadges was extracted out of ResourceCard, and ResourceDetail is its second
-	// consumer — a broken import, wrong prop, or reordering here would otherwise go undetected,
+	// consumer. A broken import, wrong prop, or reordering here would otherwise go undetected,
 	// since only list.test.tsx exercised the component before this.
 	const badges = screen
 		.getAllByText(/^(Akutt|Nasjonal|Døgnåpent)$/, { selector: ".badge" })
@@ -216,6 +247,9 @@ async function renderDetail(resource: ResourceDto = detail) {
 		</LanguageProvider>
 	)
 	await screen.findByRole("heading", { name: resource.name })
+	// findByRole resolves on the DOM mutation, before the actions' mount effect has hidden what
+	// this browser cannot do. Let it settle so the tests read the final buttons.
+	await act(async () => {})
 }
 
 test("with a share sheet the Del button shares name, phone and this page", async () => {
@@ -225,7 +259,7 @@ test("with a share sheet the Del button shares name, phone and this page", async
 	await userEvent.click(screen.getByRole("button", { name: "Del" }))
 	expect(share).toHaveBeenCalledWith({
 		title: "Krisesenteret i Hamar",
-		text: "Krisesenteret i Hamar — 62 00 00 00",
+		text: "Krisesenteret i Hamar: 62 00 00 00",
 		url: window.location.href,
 	})
 })
@@ -237,7 +271,9 @@ test("without a share sheet the button copies the link and says so", async () =>
 	expect(screen.queryByRole("button", { name: "Del" })).not.toBeInTheDocument()
 	await userEvent.click(screen.getByRole("button", { name: "Kopier lenke" }))
 	expect(writeText).toHaveBeenCalledWith(window.location.href)
-	expect(await screen.findByText("Lenken er kopiert")).toBeInTheDocument()
+	expect(
+		await screen.findByText("Lenken er kopiert", { selector: "[aria-live]" })
+	).toBeInTheDocument()
 })
 
 test("copy-phone copies the number as shown and announces it", async () => {
@@ -246,7 +282,9 @@ test("copy-phone copies the number as shown and announces it", async () => {
 	await renderDetail()
 	await userEvent.click(screen.getByRole("button", { name: "Kopier nummer" }))
 	expect(writeText).toHaveBeenCalledWith("62 00 00 00")
-	expect(await screen.findByText("Nummeret er kopiert")).toBeInTheDocument()
+	expect(
+		await screen.findByText("Nummeret er kopiert", { selector: "[aria-live]" })
+	).toBeInTheDocument()
 })
 
 test("a refused clipboard write is announced, not swallowed", async () => {
@@ -254,7 +292,9 @@ test("a refused clipboard write is announced, not swallowed", async () => {
 	restoreNavigator = installNavigator({ clipboard: { writeText } })
 	await renderDetail()
 	await userEvent.click(screen.getByRole("button", { name: "Kopier nummer" }))
-	expect(await screen.findByText("Kunne ikke kopiere")).toBeInTheDocument()
+	expect(
+		await screen.findByText("Kunne ikke kopiere", { selector: "[aria-live]" })
+	).toBeInTheDocument()
 })
 
 test("a cancelled share sheet announces nothing", async () => {
@@ -263,7 +303,11 @@ test("a cancelled share sheet announces nothing", async () => {
 	await renderDetail()
 	await userEvent.click(screen.getByRole("button", { name: "Del" }))
 	await act(async () => {})
-	expect(screen.queryByText(/kopiert/)).not.toBeInTheDocument()
+	// Nothing is spoken (the live region is empty) and nothing is shown (no bubble under the button).
+	for (const region of document.querySelectorAll("[aria-live]")) {
+		expect(region).toBeEmptyDOMElement()
+	}
+	expect(document.querySelector(".action-feedback")).toBeNull()
 })
 
 test("no phone means no copy-phone button", async () => {
@@ -396,4 +440,135 @@ test("the chat is a tile now, not a raw address in the facts list", async () => 
 test("a chat address that is not https never becomes a tile", async () => {
 	await renderDetail({ ...detail, chatUrl: "javascript:alert(1)" })
 	expect(screen.queryByRole("link", { name: /Åpne chatten/ })).toBeNull()
+})
+
+test("the email is the last contact tile, named E-post, and not a row in the facts", async () => {
+	await renderDetail({ ...detail, email: "post@krisesenter.example.no" })
+	const block = screen.getByRole("region", { name: "Kontakt" })
+	const tiles = within(block).getAllByRole("link")
+	const email = tiles.at(-1) as HTMLElement
+	expect(email).toHaveAccessibleName("E-post, post@krisesenter.example.no")
+	expect(email).toHaveAttribute("href", "mailto:post@krisesenter.example.no")
+	expect(email).not.toHaveAttribute("rel")
+	expect(email).not.toHaveAttribute("target")
+	expect([...document.querySelectorAll("dt")].map((dt) => dt.textContent)).not.toContain("E-post")
+})
+
+test("an unsafe email gets no tile and no link anywhere", async () => {
+	await renderDetail({ ...detail, email: "a@b.no?bcc=x@y.no" })
+	expect(document.querySelector('a[href^="mailto:a@b.no"]')).toBeNull()
+})
+
+test("in English the email tile is named Email", async () => {
+	stubDataFiles({ resources: [{ ...detail, email: "post@example.no" }] })
+	render(
+		<LanguageProvider lang="en">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	const block = await screen.findByRole("region", { name: "Contact" })
+	expect(within(block).getAllByRole("link").at(-1)).toHaveAccessibleName("Email, post@example.no")
+})
+
+const ringsaker: ResourceDto = {
+	...detail,
+	name: "Psykisk helse- og rustjenester, Ringsaker kommune",
+	description: "Kommunens tilbud til voksne.",
+	openingHours: "Kan kontaktes i tidsrommet 08-15.30",
+	address: "Brugata 3, 2380 Brumunddal",
+	email: "postmottak.psykisk.helse@ringsaker.kommune.no",
+	website: "https://www.ringsaker.kommune.no/",
+}
+
+test("the card has an h1 and three h2 sections in order, each a region named by its heading", async () => {
+	await renderDetail(ringsaker)
+	const card = screen.getByRole("article")
+	expect(within(card).getByRole("heading", { level: 1 })).toHaveTextContent(ringsaker.name)
+	expect(
+		within(card)
+			.getAllByRole("heading", { level: 2 })
+			.map((h) => h.textContent)
+	).toEqual(["Kontakt", "Om tjenesten", "Praktisk informasjon"])
+	for (const name of ["Kontakt", "Om tjenesten", "Praktisk informasjon"]) {
+		expect(within(card).getByRole("region", { name })).toBeInTheDocument()
+	}
+})
+
+test("Praktisk informasjon lists hours, address and website in that order, each label beside its value", async () => {
+	await renderDetail(ringsaker)
+	const facts = screen.getByRole("region", { name: "Praktisk informasjon" })
+	expect([...facts.querySelectorAll("dt")].map((dt) => dt.textContent)).toEqual([
+		"Åpningstider",
+		"Adresse",
+		"Nettside",
+	])
+	for (const pair of facts.querySelectorAll("dl > div")) {
+		expect(pair.querySelectorAll("dt")).toHaveLength(1)
+		expect(pair.querySelectorAll("dd")).toHaveLength(1)
+	}
+})
+
+test("the footer holds last verified, inside the card, with no heading", async () => {
+	await renderDetail(ringsaker)
+	const footer = screen.getByText(/Sist bekreftet/).closest("footer")
+	expect(footer).not.toBeNull()
+	expect(footer).toHaveTextContent("Sist bekreftet 2026-08-13")
+	expect(screen.getByRole("article")).toContainElement(footer)
+	expect(within(footer as HTMLElement).queryByRole("heading")).toBeNull()
+})
+
+test.each(["", "   "])("a blank description (%j) leaves Om tjenesten out", async (description) => {
+	await renderDetail({ ...ringsaker, description })
+	expect(screen.queryByRole("region", { name: "Om tjenesten" })).toBeNull()
+})
+
+test("no hours, address or website leaves Praktisk informasjon out", async () => {
+	await renderDetail({ ...ringsaker, openingHours: null, address: null, website: null })
+	expect(screen.queryByRole("region", { name: "Praktisk informasjon" })).toBeNull()
+})
+
+test("no tiles leaves Kontakt out, and the other sections stay", async () => {
+	await renderDetail({ ...ringsaker, phone: null, email: null, chatUrl: null })
+	expect(screen.queryByRole("region", { name: "Kontakt" })).toBeNull()
+	expect(screen.getByRole("region", { name: "Om tjenesten" })).toBeInTheDocument()
+})
+
+function renderEnglish(resource: ResourceDto) {
+	stubDataFiles({ resources: [resource] })
+	render(
+		<LanguageProvider lang="en">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	return screen.findByRole("heading", { level: 1 })
+}
+
+test("on /en a fallback description is marked as Norwegian, and only the description", async () => {
+	await renderEnglish({ ...ringsaker, isFallbackTranslation: true })
+	expect(screen.getByText("Kommunens tilbud til voksne.")).toHaveAttribute("lang", "nb")
+	expect(screen.getByRole("heading", { level: 1 })).not.toHaveAttribute("lang")
+	expect(screen.getByRole("region", { name: "About the service" })).toBeInTheDocument()
+	expect(screen.getByRole("region", { name: "Practical details" })).toBeInTheDocument()
+})
+
+test("on /en a translated description carries no lang", async () => {
+	await renderEnglish(ringsaker)
+	expect(screen.getByText("Kommunens tilbud til voksne.")).not.toHaveAttribute("lang")
+})
+
+test("a website that is not https shows as text, never as a link", async () => {
+	await renderDetail({ ...ringsaker, website: "javascript:alert(1)" })
+	const facts = screen.getByRole("region", { name: "Praktisk informasjon" })
+	expect(within(facts).queryByRole("link")).toBeNull()
+	expect(facts).toHaveTextContent("javascript:alert(1)")
+})
+
+test("the back link stays outside the card", async () => {
+	await renderDetail(ringsaker)
+	const back = screen.getByRole("link", { name: "Tilbake til resultater" })
+	expect(screen.getByRole("article")).not.toContainElement(back)
 })

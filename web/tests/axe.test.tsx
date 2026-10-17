@@ -16,9 +16,9 @@ const resource: ResourceDto = {
 	isAlwaysOpen: true,
 	municipalityId: 1,
 	municipalityName: "Hamar",
-	address: null,
+	address: "Torggata 1, 2317 Hamar",
 	phone: "62 00 00 00",
-	email: null,
+	email: "post@krisesenter.example.no",
 	website: "https://example.test",
 	chatUrl: null,
 	lastVerified: "2026-08-13",
@@ -76,7 +76,7 @@ describe.each(["light", "dark"])("%s theme", (theme) => {
 		const { container } = render(<App />)
 		// A heading query, not findByText: the live region echoes the same wording (e.g. "1
 		// treff") as the results heading, so a plain text match is ambiguous. Asserting the
-		// heading itself also proves the real page — not an empty container — is mounted.
+		// heading itself also proves the real page is mounted, not an empty container.
 		await screen.findByRole("heading", { name: settled })
 		// axe's page-has-heading-one only checks that at least one h1 exists. Exactly one is the
 		// invariant that has broken three times on this branch, so assert the count directly.

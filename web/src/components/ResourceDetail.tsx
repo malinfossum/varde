@@ -2,26 +2,21 @@ import { useEffect, useState } from "react"
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { usePageData } from "../pageData.ts"
-import {
-	copyText,
-	reportHref,
-	type ShareCapability,
-	shareCapability,
-	shareResource,
-} from "../services/contactActions.ts"
 import { contactTiles } from "../services/contactTiles.ts"
 import { clearIndexCache, loadIndex } from "../services/data.ts"
 import { type Family, familyOf, NO_FAMILY } from "../services/family.ts"
+import { safeChatUrl } from "../services/helplines.ts"
 import { metaDescription } from "../services/site.ts"
 import type { ResourceDto } from "../types/api.ts"
 import { ContactTiles } from "./ContactTiles.tsx"
+import { DetailActions } from "./DetailActions.tsx"
 import { ErrorState } from "./ErrorState.tsx"
+import { ArrowLeftIcon } from "./icons.tsx"
 import { Link } from "./Link.tsx"
 import { LoadingState } from "./LoadingState.tsx"
 import { NotFoundState } from "./NotFoundState.tsx"
 import { PageHead } from "./PageHead.tsx"
 import { ResourceBadges } from "./ResourceBadges.tsx"
-import { useAnnounce } from "./StatusRegion.tsx"
 
 type DetailState =
 	| { kind: "loading" }
@@ -32,7 +27,6 @@ type DetailState =
 export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: number }) {
 	const { lang } = useLanguage()
 	const t = useTranslation()
-	const announce = useAnnounce()
 	const pageData = usePageData()
 	const [state, setState] = useState<DetailState>(() =>
 		pageData.resource?.id === id
@@ -42,26 +36,15 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	const [attempt, setAttempt] = useState(0)
 	const { ref: heading } = useArrivalFocus<HTMLHeadingElement>(arrival, state.kind === "ready")
 
-	// Browser-only facts that must not be read during the first render (prerendering has no
-	// navigator or history.state to read, and reading them synchronously in the browser would
-	// make hydration mismatch the server's markup). The neutral defaults below are what the
-	// prerender emits; an effect fills in the real values right after mount.
-	const [capability, setCapability] = useState<ShareCapability>("none")
-	const [canCopy, setCanCopy] = useState(false)
-	// Share/copy support is a fact about this browser, not this navigation — it never changes
-	// across an id change, so this stays a mount-only effect.
-	useEffect(() => {
-		setCapability(shareCapability(navigator))
-		setCanCopy(Boolean(navigator.clipboard))
-	}, [])
-
 	const [cameFromResults, setCameFromResults] = useState(false)
-	// The site sends no referrer and pushState never sets one, so whether this page was reached
-	// from /sok travels in history state (useUrlState's navigate sets it on the way out). A
-	// direct load — bookmark, shared link, refresh — has no such state. Unlike the capability
-	// checks above, this is a fact about *this navigation*. App.tsx keys ResourceDetail by id, so
-	// a detail-to-detail transition remounts it and this runs again; the `id` dependency keeps
-	// the effect right even for a caller that does not key it.
+	// Browser-only fact that must not be read during the first render (prerendering has no
+	// history.state, and reading it synchronously would make hydration mismatch the server's
+	// markup), so an effect fills it in right after mount. The site sends no referrer and pushState
+	// never sets one, so whether this page was reached from /sok travels in history state
+	// (useUrlState's navigate sets it on the way out). A direct load (bookmark, shared link,
+	// refresh) has no such state. This is a fact about *this navigation*. App.tsx keys
+	// ResourceDetail by id, so a detail-to-detail transition remounts it and this runs again; the
+	// `id` dependency keeps the effect right even for a caller that does not key it.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: id forces the recompute per navigation
 	useEffect(() => {
 		setCameFromResults((window.history.state as { from?: string } | null)?.from === "sok")
@@ -69,7 +52,7 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt only forces a re-fetch
 	useEffect(() => {
-		// The prerendered page already carries this resource in its data block — no fetch needed
+		// The prerendered page already carries this resource in its data block, so no fetch is needed
 		// on a direct load. A later id/lang change (or a retry) still goes to the index.
 		if (pageData.resource?.id === id) return
 		let cancelled = false
@@ -103,138 +86,136 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 				}}
 			/>
 		)
-	// NotFoundState is the sole content of the page in this state — the shell renders nothing
-	// else around it here — so it takes the page's one level-1 heading, same as every other route.
+	// NotFoundState is the sole content of the page in this state (the shell renders nothing
+	// else around it here), so it takes the page's one level-1 heading, same as every other route.
 	if (state.kind === "missing") return <NotFoundState arrival={arrival} />
 
 	const { resource, family } = state
 	const tiles = contactTiles(resource, family.children)
 	const [partOfBefore = "", partOfAfter = ""] = t("detail.partOf").split("{name}")
 
-	const onShare = async () => {
-		const outcome = await shareResource(
-			{ name: resource.name, phone: resource.phone, url: window.location.href },
-			navigator
-		)
-		if (outcome === "copied") announce(t("detail.linkCopied"))
-		if (outcome === "failed") announce(t("detail.copyFailed"))
-	}
-
-	const onCopyPhone = async (phone: string) => {
-		const ok = await copyText(phone, navigator)
-		announce(t(ok ? "detail.phoneCopied" : "detail.copyFailed"))
-	}
-
 	const backLabel = t("detail.back")
+	const backContent = (
+		<>
+			<ArrowLeftIcon className="h-5 w-5" />
+			{t("detail.backShort")}
+		</>
+	)
+	const description = resource.description.trim()
+	// The same https guard as chat links: every website in the data is https, and anything else
+	// (a typo, a javascript: value) shows as text and never becomes a link.
+	const website = safeChatUrl(resource.website)
+	const hasFacts = Boolean(resource.openingHours || resource.address || resource.website)
 
 	return (
-		<article className="grid gap-6">
+		<div className="grid gap-6">
 			<PageHead
 				title={`${resource.name} – Varde`}
 				description={metaDescription(resource.description)}
 				path={`/resources/${resource.id}`}
 			/>
+			{/* The way back stays in the page, since the back and forward buttons exist only in the
+			    installed app. It shows one word and keeps the full name for screen readers. */}
 			{cameFromResults ? (
 				<button
 					type="button"
-					className="justify-self-start text-accent underline"
+					className="back-pill justify-self-start"
+					aria-label={backLabel}
 					onClick={() => window.history.back()}
 				>
-					{backLabel}
+					{backContent}
 				</button>
 			) : (
-				<Link to="/sok" className="justify-self-start text-accent underline">
-					{backLabel}
+				<Link to="/sok" className="back-pill justify-self-start" aria-label={backLabel}>
+					{backContent}
 				</Link>
 			)}
-			<header className="grid gap-3 rounded-xl border border-border bg-surface p-5 md:p-8">
-				<h1 ref={heading} tabIndex={-1} className="text-3xl wrap-anywhere md:text-5xl">
-					{resource.name}
-				</h1>
-				<ResourceBadges resource={resource} />
-				<p className="text-muted">
-					{resource.isNational ? t("detail.nationalService") : resource.municipalityName}
-				</p>
-				{family.parent && (
-					<p className="text-sm text-muted">
-						{partOfBefore}
-						<Link to={`/resources/${family.parent.id}`} className="text-accent underline">
-							{family.parent.name}
-						</Link>
-						{partOfAfter}
-					</p>
-				)}
-				{resource.isFallbackTranslation && (
-					<p className="text-sm text-muted">{t("card.fallback")}</p>
-				)}
-				{/* Every way to reach the service is a tile (spec C2a). Copy-number and share stay
-				    below as buttons: a chat- or web-only service still shares. */}
-				<ContactTiles tiles={tiles} />
-				{((resource.phone && canCopy) || capability !== "none") && (
-					<div className="flex flex-wrap items-center gap-2">
-						{resource.phone && canCopy && (
-							<button
-								type="button"
-								className="btn-secondary"
-								onClick={() => resource.phone && onCopyPhone(resource.phone)}
-							>
-								{t("detail.copyPhone")}
-							</button>
+			{/* Everything about the service sits in this one card (spec: the detail page as one
+			    card). DOM order is the reading and focus order at every width. */}
+			<article className="detail-card grid gap-6 rounded-xl border border-border bg-surface p-5 md:p-8">
+				<header className="detail-head">
+					<div className="detail-title grid min-w-0 gap-3">
+						<h1 ref={heading} tabIndex={-1} className="text-3xl wrap-anywhere md:text-5xl">
+							{resource.name}
+						</h1>
+						<ResourceBadges resource={resource} />
+						<p className="text-muted">
+							{resource.isNational ? t("detail.nationalService") : resource.municipalityName}
+						</p>
+						{family.parent && (
+							<p className="text-sm text-muted">
+								{partOfBefore}
+								<Link to={`/resources/${family.parent.id}`} className="text-accent underline">
+									{family.parent.name}
+								</Link>
+								{partOfAfter}
+							</p>
 						)}
-						{capability !== "none" && (
-							<button type="button" className="btn-secondary" onClick={onShare}>
-								{t(capability === "share" ? "detail.share" : "detail.copyLink")}
-							</button>
+						{resource.isFallbackTranslation && (
+							<p className="text-sm text-muted">{t("card.fallback")}</p>
 						)}
 					</div>
+					<DetailActions id={resource.id} name={resource.name} phone={resource.phone} />
+				</header>
+				<ContactTiles tiles={tiles} />
+				{description && (
+					<section aria-labelledby="service-about" className="detail-section grid gap-3">
+						<h2 id="service-about" className="section-label">
+							{t("detail.aboutHeading")}
+						</h2>
+						{/* A fallback row on /en is Norwegian text, so a screen reader must read it as
+						    Norwegian (WCAG 3.1.2). The title and hours are short, so only this gets lang. */}
+						<p
+							className="max-w-prose"
+							lang={resource.isFallbackTranslation && lang === "en" ? "nb" : undefined}
+						>
+							{description}
+						</p>
+					</section>
 				)}
-				<a href={reportHref(resource.id, resource.name)} className="text-sm text-accent underline">
-					{t("report.link")}
-				</a>
-			</header>
-			<p className="max-w-prose">{resource.description}</p>
-			{/* Hours and the other facts. Phone and chat are tiles above. */}
-			<dl className="grid gap-3 md:grid-cols-[max-content_1fr] md:gap-x-8">
-				{resource.openingHours && (
-					<>
-						<dt className="text-muted">{t("card.hours")}</dt>
-						<dd>{resource.openingHours}</dd>
-					</>
+				{hasFacts && (
+					<section aria-labelledby="service-practical" className="detail-section grid gap-3">
+						<h2 id="service-practical" className="section-label">
+							{t("detail.practicalHeading")}
+						</h2>
+						{/* Each label and value is a div, so on a phone a label sits right above its own
+						    value. From 768 px the divs step aside and the dl is a two-column grid. */}
+						<dl className="detail-facts">
+							{resource.openingHours && (
+								<div>
+									<dt>{t("card.hours")}</dt>
+									<dd>{resource.openingHours}</dd>
+								</div>
+							)}
+							{resource.address && (
+								<div>
+									<dt>{t("detail.address")}</dt>
+									<dd>{resource.address}</dd>
+								</div>
+							)}
+							{resource.website && (
+								<div>
+									<dt>{t("detail.website")}</dt>
+									<dd className="wrap-anywhere">
+										{website ? (
+											<a href={website} rel="noopener noreferrer" className="text-accent underline">
+												{website}
+											</a>
+										) : (
+											resource.website
+										)}
+									</dd>
+								</div>
+							)}
+						</dl>
+					</section>
 				)}
-				{resource.address && (
-					<>
-						<dt className="text-muted">{t("detail.address")}</dt>
-						<dd>{resource.address}</dd>
-					</>
-				)}
-				{resource.website && (
-					<>
-						<dt className="text-muted">{t("detail.website")}</dt>
-						<dd>
-							<a
-								href={resource.website}
-								rel="noopener noreferrer"
-								className="text-accent underline"
-							>
-								{resource.website}
-							</a>
-						</dd>
-					</>
-				)}
-				{resource.email && (
-					<>
-						<dt className="text-muted">{t("detail.email")}</dt>
-						<dd>
-							<a href={`mailto:${resource.email}`} className="text-accent underline">
-								{resource.email}
-							</a>
-						</dd>
-					</>
-				)}
-			</dl>
-			<p className="text-sm text-muted">
-				{t("card.lastVerified")} {resource.lastVerified}
-			</p>
-		</article>
+				{/* A footer inside an article is not a contentinfo landmark, so the site footer stays
+				    the only one. No heading: a heading over one date is noise in the heading list. */}
+				<footer className="detail-section text-sm text-muted">
+					{t("card.lastVerified")} {resource.lastVerified}
+				</footer>
+			</article>
+		</div>
 	)
 }
