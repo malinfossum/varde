@@ -1,6 +1,10 @@
 import { act, fireEvent, renderHook } from "@testing-library/react"
-import { expect, test } from "vitest"
+import { afterEach, expect, test, vi } from "vitest"
 import { useDismissibleTips } from "../src/hooks/useDismissibleTips.ts"
+
+afterEach(() => {
+	vi.restoreAllMocks()
+})
 
 test("Escape hides the tips until show() is called", () => {
 	const { result } = renderHook(() => useDismissibleTips())
@@ -22,8 +26,11 @@ test("other keys leave the tips alone", () => {
 })
 
 test("the listener is removed on unmount", () => {
-	const { result, unmount } = renderHook(() => useDismissibleTips())
+	const add = vi.spyOn(document, "addEventListener")
+	const remove = vi.spyOn(document, "removeEventListener")
+	const { unmount } = renderHook(() => useDismissibleTips())
+	const handler = add.mock.calls.find(([type]) => type === "keydown")?.[1]
+	expect(handler).toBeDefined()
 	unmount()
-	fireEvent.keyDown(document, { key: "Escape" })
-	expect(result.current.hidden).toBe(false)
+	expect(remove).toHaveBeenCalledWith("keydown", handler)
 })
