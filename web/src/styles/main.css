@@ -302,8 +302,8 @@
 		}
 	}
 	/* One sticky row at every width and height (spec: Header). Below 1024 px it holds brand,
-	   Meny and exit; from 1024 px brand, nav, pickers and exit. Only one of the Meny and the
-	   nav with the pickers is displayed, so only one is in the accessibility tree and the tab
+	   Meny and exit; from 1024 px brand, nav, the language picker and exit. Only one of the Meny and the
+	   nav with the language picker is displayed, so only one is in the accessibility tree and the tab
 	   order. The Meny's flex item is its .menu-nav wrapper, so its rules sit there: display: flex
 	   with centred items keeps the nav exactly as tall as its 44 px trigger. */
 	.app-header {
@@ -421,9 +421,7 @@
 	}
 
 	/* The footer (spec 2026-10-16 footer). The label and the note are small uppercase text, set
-	   apart from the links by size and case; one tracking for both, so they read as one voice.
-	   overflow-wrap: anywhere on the note is what keeps the tracked Norwegian word
-	   "INFORMASJONSKAPSLER." inside a 375 px screen at 200 % text, where it is wider than the screen. */
+	   apart from the links by size and case; one tracking for both, so they read as one voice. */
 	.footer-label,
 	.footer-note {
 		font-size: 0.75rem;
@@ -432,6 +430,8 @@
 		letter-spacing: 0.14em;
 		color: var(--muted);
 	}
+	/* overflow-wrap: anywhere on the note is what keeps the tracked Norwegian word
+	   "INFORMASJONSKAPSLER." inside a 375 px screen at 200 % text, where it is wider than the screen. */
 	.footer-note {
 		overflow-wrap: anywhere;
 	}
@@ -489,6 +489,7 @@
 		height: 44px;
 		border-radius: 999px;
 		color: var(--muted);
+		cursor: pointer;
 	}
 	.theme-pill-btn:hover,
 	.theme-pill-btn[aria-pressed="true"] {

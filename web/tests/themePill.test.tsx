@@ -98,9 +98,12 @@ test("pressing the pressed button changes nothing", async () => {
 	render(<App />)
 	const mørkt = pill().getByRole("button", { name: "Mørkt" })
 	expect(mørkt).toHaveAttribute("aria-pressed", "true")
+	const live = document.querySelector('[aria-live="polite"]')
+	expect(live).not.toHaveTextContent("Tema: Mørkt")
 	await userEvent.click(mørkt)
 	expect(localStorage.getItem("theme")).toBe("dark")
 	expect(mørkt).toHaveAttribute("aria-pressed", "true")
+	expect(live).not.toHaveTextContent("Tema: Mørkt")
 })
 
 test("System removes the key and follows the OS live", async () => {

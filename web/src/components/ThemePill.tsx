@@ -33,6 +33,7 @@ export function ThemePill({ theme, onTip }: { theme: ThemeApi; onTip: () => void
 						onPointerEnter={onTip}
 						onFocus={onTip}
 						onClick={() => {
+							if (pressed) return
 							theme.choose(choice)
 							announce(`${t("header.theme")}: ${t(key)}`)
 						}}
