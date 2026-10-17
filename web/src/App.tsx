@@ -18,6 +18,7 @@ import { LoadingState } from "./components/LoadingState.tsx"
 import { NotFoundState } from "./components/NotFoundState.tsx"
 import { AnnouncerProvider } from "./components/StatusRegion.tsx"
 import { useShiftExit } from "./hooks/useShiftExit.ts"
+import { useThemeChoice } from "./hooks/useThemeChoice.ts"
 import { useUrlState } from "./hooks/useUrlState.ts"
 import { LanguageProvider, useTranslation } from "./i18n/LanguageProvider.tsx"
 import { NavigationContext } from "./navigation.ts"
@@ -57,13 +58,16 @@ export function App() {
 function Shell({ route, filters, arrival }: { route: Route; filters: Filters; arrival: number }) {
 	useShiftExit()
 	const t = useTranslation()
+	// One theme state for the Meny's theme rows and the footer pill, so a choice in one shows in
+	// the other at once (a storage event only reaches other tabs).
+	const theme = useThemeChoice()
 	return (
 		<div id="app" className="flex min-h-dvh flex-col">
 			<a href="#main" className="skip-link">
 				{t("app.skipToContent")}
 			</a>
 			<AcuteStrip />
-			<Header />
+			<Header theme={theme} />
 			<main
 				id="main"
 				className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 ${route.kind === "landing" ? "lg:py-3" : ""}`}
@@ -81,7 +85,7 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 					{route.kind === "notFound" && <NotFoundState arrival={arrival} />}
 				</Suspense>
 			</main>
-			<Footer />
+			<Footer theme={theme} />
 		</div>
 	)
 }

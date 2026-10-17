@@ -1,11 +1,11 @@
-import { render, waitFor, within } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test } from "vitest"
 import { axe } from "vitest-axe"
 import { App } from "../src/App.tsx"
 import { render as prerender } from "../src/entry-server.tsx"
 import { HELSENORGE_URL } from "../src/services/externalLinks.ts"
-import { desktopTools, menu } from "./scope.ts"
+import { menu } from "./scope.ts"
 import { stubDataFiles } from "./stubData.ts"
 
 afterEach(() => {
@@ -100,9 +100,9 @@ test("the arrows move through all three groups, skip the group labels and wrap",
 	expect(menu().getByRole("link", { name: "Norsk" })).toHaveFocus()
 })
 
-// One theme state, so the desktop trigger is already right when the window widens. The status
-// line is the confirmation (spec: Below 1024 px: Meny, Behaviour).
-test("a theme row applies the theme, keeps the Meny open on that row, says so, and the desktop picker follows", async () => {
+// One theme state, so the footer pill already shows the choice. The status line is the
+// confirmation (spec: Below 1024 px: Meny, Behaviour).
+test("a theme row applies the theme, keeps the Meny open on that row, says so, and the footer pill follows", async () => {
 	const user = userEvent.setup()
 	stubDataFiles()
 	render(<App />)
@@ -114,10 +114,11 @@ test("a theme row applies the theme, keeps the Meny open on that row, says so, a
 	expect(mørkt).toHaveFocus()
 	expect(mørkt).toHaveAttribute("aria-pressed", "true")
 	expect(document.querySelector('[aria-live="polite"]')).toHaveTextContent("Tema: Mørkt")
-	// Scoped: the status region is visually hidden too and now holds the same words.
-	expect(
-		desktopTools().getByText("Tema: Mørkt", { selector: ".visually-hidden" })
-	).toBeInTheDocument()
+	const footerPill = within(screen.getByRole("contentinfo")).getByRole("group", { name: "Tema" })
+	expect(within(footerPill).getByRole("button", { name: "Mørkt" })).toHaveAttribute(
+		"aria-pressed",
+		"true"
+	)
 })
 
 // The header outlives the route change, so the Meny closes itself.

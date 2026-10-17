@@ -5,6 +5,8 @@ import { emergencyLines, telHref } from "../services/emergency.ts"
 import { pathFor } from "../services/urlState.ts"
 import { GitHubIcon } from "./icons.tsx"
 import { Link } from "./Link.tsx"
+import { ThemePill } from "./ThemePill.tsx"
+import type { ThemeApi } from "./ThemeRows.tsx"
 
 // 113 comes from emergency.ts, which tests/emergency.test.ts checks against the seed.
 const ambulance = emergencyLines.find((line) => line.id === "ambulanse")
@@ -13,7 +15,7 @@ const ambulance = emergencyLines.find((line) => line.id === "ambulanse")
 // DOM order at every width: liability, the links, the note, then the icon controls. Below
 // 1024 px it stacks; from 1280 px it is one 44 px row and stays 69 px tall, which the landing
 // needs to fit one 1920 x 950 screen. Between 1024 and about 1100 px whole groups wrap.
-export function Footer() {
+export function Footer({ theme }: { theme: ThemeApi }) {
 	const t = useTranslation()
 	const { lang } = useLanguage()
 	const tips = useDismissibleTips()
@@ -85,6 +87,7 @@ export function Footer() {
 							<span className="footer-tip-bubble">{t("footer.source")}</span>
 						</span>
 					</a>
+					<ThemePill theme={theme} onTip={tips.show} />
 				</div>
 			</div>
 		</footer>

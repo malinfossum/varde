@@ -469,6 +469,40 @@
 		}
 	}
 
+	/* The theme pill: three 44 px round buttons. The outline is an inset shadow, so it adds no
+	   size and the pill is exactly as tall as the links beside it. */
+	.theme-pill {
+		display: inline-flex;
+		border-radius: 999px;
+		box-shadow: inset 0 0 0 1px var(--border);
+	}
+	.theme-pill-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 999px;
+		color: var(--muted);
+	}
+	.theme-pill-btn:hover,
+	.theme-pill-btn[aria-pressed="true"] {
+		color: var(--text);
+	}
+	.theme-pill-btn[aria-pressed="true"] {
+		box-shadow: inset 0 0 0 1px var(--text);
+	}
+	/* Shadows vanish in forced colours. The pressed mark is a border, not an outline, so it never
+	   replaces the focus ring (an outline) on the pressed button. */
+	@media (forced-colors: active) {
+		.theme-pill {
+			outline: 1px solid CanvasText;
+		}
+		.theme-pill-btn[aria-pressed="true"] {
+			border: 2px solid Highlight;
+		}
+	}
+
 	/* Category chips on the landing page. Nødtjenester is the accent chip on a row of its own;
 	   the other eight share one width in the grid (spec: Chips, item 3). */
 	.chip {

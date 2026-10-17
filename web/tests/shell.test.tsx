@@ -14,7 +14,7 @@ function stubResources() {
 	vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}))
 }
 
-test("shell renders skip link, quick exit, acute strip and theme picker", () => {
+test("shell renders skip link, quick exit, acute strip and the footer theme pill", () => {
 	stubResources()
 	render(<App />)
 	expect(screen.getByRole("link", { name: "Hopp til innhold" })).toBeInTheDocument()
@@ -24,7 +24,7 @@ test("shell renders skip link, quick exit, acute strip and theme picker", () => 
 	)
 	expect(screen.getByRole("region", { name: "Nødnumre" })).toBeInTheDocument()
 	expect(
-		screen.getByText("Tema: System (lyst)", { selector: ".visually-hidden" })
+		within(screen.getByRole("contentinfo")).getByRole("group", { name: "Tema" })
 	).toBeInTheDocument()
 })
 
