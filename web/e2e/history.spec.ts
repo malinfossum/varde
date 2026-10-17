@@ -152,6 +152,37 @@ test("the bar never covers the footer's last line at 375 px", async ({ page }) =
 	expect(footer.y + footer.height).toBeLessThanOrEqual(frame.y + 0.5)
 })
 
+// The room for the bar is part of the page's minimum height, so a page that fits the screen in
+// a browser tab fits it in the installed app too, and a long one still ends above the bar.
+test("installed at 375 x 812 the 404 page has no vertical scroll", async ({ page }) => {
+	await forceInstalled(page)
+	await page.setViewportSize({ width: 375, height: 812 })
+	await page.goto("/finnes-ikke")
+	await settle(page)
+	await hydrated(page)
+	await expect(bar(page)).toBeVisible()
+	const overflow = await page.evaluate(
+		() => document.documentElement.scrollHeight - document.documentElement.clientHeight
+	)
+	expect(overflow).toBe(0)
+})
+
+test("installed at 375 x 812 a long page scrolls and its last footer control ends above the bar", async ({
+	page,
+}) => {
+	await forceInstalled(page)
+	await page.setViewportSize({ width: 375, height: 812 })
+	await page.goto("/om")
+	await settle(page)
+	await hydrated(page)
+	await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+	expect(await scrollY(page)).toBeGreaterThan(0)
+	const last = await page.getByRole("contentinfo").locator("a, button").last().boundingBox()
+	const frame = await bar(page).boundingBox()
+	if (!last || !frame) throw new Error("no box")
+	expect(last.y + last.height).toBeLessThanOrEqual(frame.y + 0.5)
+})
+
 // WCAG 2.4.11: a control focused at the bottom of the page is scrolled clear of the bar
 // (html's scroll-padding-block-end), never left under it.
 test("a focused footer link at 375 px is never under the bar", async ({ page }) => {

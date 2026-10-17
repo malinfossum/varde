@@ -71,8 +71,9 @@ header nav share the header today.
   tooltips.
 - The bar sits after the footer in the DOM, so Tab reaches it last, in the order it is seen.
 - `z-index` above page content and below the open Meny sheet and the open pickers.
-- In installed mode below 1024 px, `body` gets a bottom padding equal to the bar's height, and
-  `html` gets the same `scroll-padding-bottom`. The bar then never covers the footer, a call
+- In installed mode below 1024 px, `#app` gets a bottom padding equal to the bar's height, and
+  `html` gets the same `scroll-padding-bottom`. The padding sits inside `#app`'s `min-h-dvh`, so a
+  page that fits the screen does not scroll by the bar's height. The bar then never covers the footer, a call
   button or a control that Tab has just focused (WCAG 2.4.11). The height is the bar's real
   one: a `ResizeObserver` writes it to `--history-bar-h` on `<html>`, so a bar that grows at
   200 % text grows the padding with it. Until the observer runs, the value is `4.25rem` plus
@@ -155,7 +156,7 @@ quote or bracket in a search URL cannot break the lookup. Scrolling is instant
 
 New navigations (link clicks, the search form) keep today's arrival: top of the page, focus on
 the heading. "Visible" means `checkVisibility()` is true, so a link inside a closed Meny never
-takes focus.
+takes focus. On /sok with no results, "the heading" is the empty state's heading ("Ingen treff").
 
 **Keyboard and screen readers.** Both are real `<button>`s: Enter and Space press them. In both
 layouts the accessible name is the visually hidden text.

@@ -412,8 +412,10 @@
 		cursor: default;
 	}
 	/* Room for the bar under the page's last line, and for focus scrolled to the bottom (WCAG
-	   2.4.11). The value is the bar's real height (useBarHeight), or the default until it runs. */
-	body {
+	   2.4.11). The value is the bar's real height (useBarHeight), or the default until it runs.
+	   The room goes on #app, not body: #app is border-box and min-h-dvh, so the padding sits
+	   inside the screen height and a page that fits the screen does not scroll by the bar. */
+	#app {
 		padding-block-end: var(--history-space, 0);
 	}
 	html {
@@ -426,7 +428,7 @@
 		.history-icons {
 			display: var(--history-icons, none);
 		}
-		body {
+		#app {
 			padding-block-end: 0;
 		}
 		html {

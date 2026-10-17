@@ -50,9 +50,11 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	// token: a page change answered from the already-cached index never flips ready/settled at
 	// all (see useResources), so the pager's requestFocus() needs the freshly computed state
 	// object itself to know a new answer has actually arrived.
+	// An empty answer is ready too: the empty state's heading takes the ref then, so Back or
+	// Forward onto it lands focus on that heading and never leaves it on <body>.
 	const { ref: resultsHeading, requestFocus } = useArrivalFocus<HTMLHeadingElement>(
 		arrival,
-		state.kind === "ready" && state.data.items.length > 0,
+		state.kind === "ready",
 		state.kind !== "loading",
 		state
 	)
@@ -174,6 +176,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 						}
 						suggestions={suggestions}
 						onPick={onPick}
+						headingRef={resultsHeading}
 					/>
 				)}
 				{state.kind === "ready" && state.data.items.length > 0 && (
