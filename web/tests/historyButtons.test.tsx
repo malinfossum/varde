@@ -7,6 +7,7 @@ import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
 import { type HistoryEvents, HistoryEventsContext, NavigationContext } from "../src/navigation.ts"
 import { createHistoryCounter } from "../src/services/historyCounter.ts"
 import type { Lang } from "../src/services/urlState.ts"
+import { makeResource, stubDataFiles } from "./stubData.ts"
 
 afterEach(() => {
 	vi.restoreAllMocks()
@@ -221,5 +222,28 @@ test("Forward onto the last entry disables itself in the same render that restor
 	fireEvent.click(forward)
 	await waitFor(() => expect(forward).toBeDisabled())
 	await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toHaveFocus())
+	expect(document.body).not.toHaveFocus()
+})
+
+// The same blur on /sok when the entry ahead has no results: the empty state's heading is the
+// page heading then, so focus lands there and not on <body>.
+test("Forward onto a /sok entry with zero results moves focus to the empty state's heading", async () => {
+	stubDataFiles({ resources: [makeResource({ id: 1, name: "NAV Hamar", isNational: false })] })
+	window.history.replaceState(null, "", "/sok")
+	render(<App />)
+	await screen.findByRole("heading", { level: 1, name: "1 treff" })
+	const [, forward] = screen.getAllByRole("button", { name: "Fremover" })
+	if (!forward) throw new Error("missing Forward button")
+	// Only national services: a pushed entry on the same route with no results.
+	fireEvent.click(screen.getByRole("button", { name: "Nasjonale tjenester" }))
+	await screen.findByRole("heading", { level: 1, name: "Ingen treff" })
+	act(() => window.history.back())
+	await screen.findByRole("heading", { level: 1, name: "1 treff" })
+	await waitFor(() => expect(forward).toBeEnabled())
+	forward.focus()
+	fireEvent.click(forward)
+	await waitFor(() => expect(forward).toBeDisabled())
+	const heading = await screen.findByRole("heading", { level: 1, name: "Ingen treff" })
+	await waitFor(() => expect(heading).toHaveFocus())
 	expect(document.body).not.toHaveFocus()
 })
