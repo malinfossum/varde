@@ -41,12 +41,10 @@ export async function forceInstalled(page: Page): Promise<void> {
 	})
 }
 
-// The app has hydrated: the theme value in the header fills in after mount.
+// The app has hydrated: the theme state is null until mount, so the footer pill marks a choice
+// pressed only after it.
 export async function hydrated(page: Page): Promise<void> {
-	await page
-		.locator("header .visually-hidden", { hasText: /^(Tema|Theme): / })
-		.first()
-		.waitFor({ state: "attached" })
+	await page.locator('.theme-pill [aria-pressed="true"]').waitFor({ state: "attached" })
 }
 
 export type Box = { label: string; top: number; bottom: number; height: number }
