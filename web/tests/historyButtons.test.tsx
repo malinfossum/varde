@@ -10,7 +10,9 @@ import type { Lang } from "../src/services/urlState.ts"
 
 afterEach(() => {
 	vi.restoreAllMocks()
+	vi.unstubAllGlobals()
 	Reflect.deleteProperty(window, "navigation")
+	window.history.replaceState(null, "", "/")
 	document.documentElement.style.removeProperty("--history-bar-h")
 })
 
@@ -110,10 +112,11 @@ test("with the Navigation API, canGoBack and canGoForward drive disabled", () =>
 	})
 	expect(forward()).toBeEnabled()
 	nav.canGoBack = false
+	nav.canGoForward = false
 	act(() => {
 		window.dispatchEvent(new Event("pageshow"))
 	})
-	expect(forward()).toBeEnabled()
+	expect(forward()).toBeDisabled() // only the pageshow re-read can have changed this
 	expect(back()).toBeEnabled() // not the landing page: Back can still go home
 })
 
@@ -172,7 +175,6 @@ test("the bar writes its real height to --history-bar-h and removes it when it g
 	act(() => report())
 	expect(document.documentElement.style.getPropertyValue("--history-bar-h")).toBe("122px")
 	unmount()
-	vi.unstubAllGlobals()
 	expect(document.documentElement.style.getPropertyValue("--history-bar-h")).toBe("")
 })
 
