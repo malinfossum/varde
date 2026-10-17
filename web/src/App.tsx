@@ -13,6 +13,7 @@ import { lazy, Suspense, useMemo } from "react"
 import { AcuteStrip } from "./components/AcuteStrip.tsx"
 import { Footer } from "./components/Footer.tsx"
 import { Header } from "./components/Header.tsx"
+import { HistoryButtons } from "./components/HistoryButtons.tsx"
 import { LandingPage } from "./components/LandingPage.tsx"
 import { LoadingState } from "./components/LoadingState.tsx"
 import { NotFoundState } from "./components/NotFoundState.tsx"
@@ -73,7 +74,7 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 				{t("app.skipToContent")}
 			</a>
 			<AcuteStrip />
-			<Header theme={theme} />
+			<Header theme={theme} atLanding={route.kind === "landing"} />
 			<main
 				id="main"
 				className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 ${route.kind === "landing" ? "lg:py-3" : ""}`}
@@ -92,6 +93,8 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 				</Suspense>
 			</main>
 			<Footer theme={theme} />
+			{/* After the footer, so Tab reaches the bar last, in the order it is seen. */}
+			<HistoryButtons layout="bar" atLanding={route.kind === "landing"} />
 		</div>
 	)
 }

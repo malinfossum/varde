@@ -203,3 +203,20 @@ export function GitHubIcon({ className }: IconProps) {
 		</svg>
 	)
 }
+
+// The history chevrons, the same paths Rookdex uses (spec: Layout).
+export function BackIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M15 5l-7 7 7 7" />
+		</Svg>
+	)
+}
+
+export function ForwardIcon({ className }: IconProps) {
+	return (
+		<Svg className={className}>
+			<path d="M9 5l7 7-7 7" />
+		</Svg>
+	)
+}

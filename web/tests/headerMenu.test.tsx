@@ -69,7 +69,7 @@ test("the phone layout with the Meny open has no axe violations", async () => {
 	const user = userEvent.setup()
 	stubDataFiles()
 	const { container } = render(<App />)
-	for (const el of container.querySelectorAll(".header-nav, .header-tools")) {
+	for (const el of container.querySelectorAll(".header-nav, .header-tools, .history-icons")) {
 		el.setAttribute("hidden", "")
 	}
 	await openMenu(user)
