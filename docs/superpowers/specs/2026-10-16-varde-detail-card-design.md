@@ -25,8 +25,9 @@ Base: PR #78 had not merged when I wrote this, so `feat/detail-card` is cut from
    with tooltips in the top-right corner from 768 px with a mouse or trackpad, and labelled
    buttons in a row under the title everywhere else (phones, and touch tablets at any width),
    where there is no hover to show a tooltip.
-6. **"Back to results" goes**, because the in-app back and forward buttons replace it. See
-   "Back to results" below for the order this lands in.
+6. **"Back to results" stays, restyled as a pill** (amended 2026-10-17). The in-app back and
+   forward buttons exist only in the installed app, so a browser tab still needs a way back. See
+   "Back to results" below.
 
 ## Card structure
 
@@ -162,11 +163,19 @@ The server and the first client render still match, so hydration stays clean.
 
 ## Back to results
 
-The link and its `cameFromResults` history-state effect are removed in whichever PR lands second:
+Amended 2026-10-17: the link stays, and neither this PR nor the back/forward PR removes it.
+The back and forward buttons exist only in the installed app, so a browser tab (and a phone in
+a tab) still needs a way back in the page.
 
-- If the in-app back and forward buttons have merged to `main` when this PR opens, this PR
-  removes "Back to results".
-- If not, this PR leaves it above the card, unchanged, and the back/forward PR removes it.
+It becomes a pill above the card, with its left edge on the card's left edge:
+
+- An arrow (`ArrowLeftIcon`) and one word: "Resultater" / "Results". The full name stays for
+  screen readers: `aria-label` "Tilbake til resultater" / "Back to results", which contains the
+  visible word (WCAG 2.5.3).
+- At least 44 px tall, fully rounded, a 1 px border, muted text with no underline. On hover the
+  text takes the body colour and the pill takes the surface colour.
+- Behaviour is unchanged: `history.back()` when the user came from /sok (`cameFromResults`),
+  otherwise a link to /sok.
 
 The page must never ship without a way back.
 
