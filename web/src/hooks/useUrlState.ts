@@ -83,7 +83,26 @@ export function useUrlState() {
 	useEffect(() => {
 		// useArrivalFocus restores the scroll when the page is ready; the browser's own restore
 		// would land earlier, on a page that is still loading.
-		window.history.scrollRestoration = "manual"
+		// That holds only while the page runs. A reload or a return from another document is the
+		// browser's again, so a browser tab keeps its place as it did before.
+		const toManual = () => {
+			window.history.scrollRestoration = "manual"
+		}
+		const toAuto = () => {
+			window.history.scrollRestoration = "auto"
+		}
+		toManual()
+		// A same-page fragment link (the skip link, "Meld feil" on /om) makes a new entry without
+		// the router. Saving the spot on the entry it leaves lets Back scroll there again.
+		const onClick = (event: MouseEvent) => {
+			const link = event.target instanceof Element ? event.target.closest("a[href]") : null
+			if (!(link instanceof HTMLAnchorElement)) return
+			const url = new URL(link.href)
+			const here = window.location
+			if (url.hash === "" || url.origin !== here.origin) return
+			if (url.pathname !== here.pathname || url.search !== here.search) return
+			window.history.replaceState(mergeEntry(window.history.state, { scrollY: window.scrollY }), "")
+		}
 		const { counter } = historyEvents
 		// A page load without router state counts as the first entry (spec: Knowing what is behind
 		// and ahead). The merge keeps a `from` an older Varde wrote.
@@ -115,9 +134,15 @@ export function useUrlState() {
 		}
 		window.addEventListener("popstate", onPopState)
 		window.addEventListener("hashchange", onHashChange)
+		window.addEventListener("pagehide", toAuto)
+		window.addEventListener("pageshow", toManual)
+		document.addEventListener("click", onClick, true)
 		return () => {
 			window.removeEventListener("popstate", onPopState)
 			window.removeEventListener("hashchange", onHashChange)
+			window.removeEventListener("pagehide", toAuto)
+			window.removeEventListener("pageshow", toManual)
+			document.removeEventListener("click", onClick, true)
 		}
 	}, [sync, historyEvents])
 

@@ -35,6 +35,37 @@ for (const width of [375, 1024, 1280]) {
 	})
 }
 
+// The router keeps scrollRestoration "manual" only while the page runs. A reload and a return
+// from another document are the browser's again, so a browser tab keeps its place.
+const scrollY = (page: Page) => page.evaluate(() => Math.round(window.scrollY))
+
+test("a reload in a browser tab keeps the scroll position on /om", async ({ page }) => {
+	await page.setViewportSize({ width: 375, height: 800 })
+	await page.goto("/om")
+	await hydrated(page)
+	await page.evaluate(() => window.scrollTo(0, 600))
+	await expect.poll(() => scrollY(page)).toBe(600)
+	await page.reload()
+	await hydrated(page)
+	await expect.poll(() => scrollY(page)).toBe(600)
+	expect(await page.evaluate(() => history.scrollRestoration)).toBe("manual")
+})
+
+test("Back after an in-page jump on /om scrolls back to where it was", async ({ page }) => {
+	await page.setViewportSize({ width: 375, height: 800 })
+	await page.goto("/om")
+	await hydrated(page)
+	await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+	const bottom = await scrollY(page)
+	expect(bottom).toBeGreaterThan(400)
+	await page.locator("footer a[href='/om#meld-feil']").click()
+	await expect(page).toHaveURL(/\/om#meld-feil$/)
+	await expect.poll(() => scrollY(page)).toBeLessThan(bottom - 100)
+	await page.goBack()
+	await expect(page).toHaveURL(/\/om$/)
+	await expect.poll(() => scrollY(page)).toBe(bottom)
+})
+
 for (const [path, label] of [
 	["/resources/1", "Sidehistorikk"],
 	["/en/resources/1", "Page history"],

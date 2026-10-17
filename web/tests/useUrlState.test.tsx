@@ -87,6 +87,36 @@ test("the router restores scroll itself, and a load without router state becomes
 	expect(window.history.state).toEqual({ from: "sok", idx: 0 })
 })
 
+test("scroll restoration is the browser's while the page is hidden, and manual again on return", () => {
+	window.history.replaceState(null, "", "/om")
+	renderHook(() => useUrlState())
+	window.dispatchEvent(new PageTransitionEvent("pagehide"))
+	expect(window.history.scrollRestoration).toBe("auto")
+	window.dispatchEvent(new PageTransitionEvent("pageshow"))
+	expect(window.history.scrollRestoration).toBe("manual")
+})
+
+test("a same-page fragment link saves scrollY on the entry it leaves; other links do not", () => {
+	window.history.replaceState({ from: "sok", idx: 3 }, "", "/om")
+	renderHook(() => useUrlState())
+	setScrollY(900)
+	const replace = vi.spyOn(window.history, "replaceState")
+	const link = (href: string) => {
+		const a = document.createElement("a")
+		a.href = href
+		a.append(Object.assign(document.createElement("span"), { textContent: "Meld feil" }))
+		a.addEventListener("click", (event) => event.preventDefault())
+		document.body.append(a)
+		return a
+	}
+	const other = link("/sok#main")
+	other.querySelector("span")?.click()
+	expect(replace).not.toHaveBeenCalled()
+	link("/om#meld-feil").querySelector("span")?.click()
+	expect(replace).toHaveBeenCalledWith({ from: "sok", idx: 3, scrollY: 900 }, "")
+	document.body.replaceChildren()
+})
+
 test("a push saves scrollY and the followed href on the entry it leaves, then writes idx", () => {
 	window.history.replaceState(null, "", "/sok")
 	const { result } = renderHook(() => useUrlState())

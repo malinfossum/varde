@@ -134,7 +134,10 @@ client render, then take their real state, so the two renders match.
 left (with `replaceState`): `scrollY`, and the `href` of the link that was followed. `Link`
 passes its own `href` to `navigate`; a navigation without a link (the search form, the
 Back-to-home fallback) saves no `href`. `history.scrollRestoration` is set to `"manual"` so the
-browser does not restore at a different moment than the page.
+browser does not restore at a different moment than the page. That holds only while the page
+runs: I set it to `"auto"` on `pagehide` and back to `"manual"` on `pageshow`, so a reload or a
+return from another document keeps its place in a browser tab. Before a same-page `#fragment`
+link jumps, the router saves `scrollY` on the entry it leaves, so Back returns to that spot.
 
 When a traversal (popstate, from these buttons or from the browser's own) arrives:
 
