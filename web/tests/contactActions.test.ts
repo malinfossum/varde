@@ -16,7 +16,7 @@ const entry = {
 describe("shareText", () => {
 	test("joins name and phone", () => {
 		expect(shareText("Krisesenteret i Hamar", "62 00 00 00")).toBe(
-			"Krisesenteret i Hamar — 62 00 00 00"
+			"Krisesenteret i Hamar: 62 00 00 00"
 		)
 	})
 	test("is just the name when there is no phone", () => {
@@ -43,7 +43,7 @@ describe("shareResource", () => {
 		expect(outcome).toBe("shared")
 		expect(share).toHaveBeenCalledWith({
 			title: "Krisesenteret i Hamar",
-			text: "Krisesenteret i Hamar — 62 00 00 00",
+			text: "Krisesenteret i Hamar: 62 00 00 00",
 			url: "https://varde.test/r/12",
 		})
 	})

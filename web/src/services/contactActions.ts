@@ -12,7 +12,7 @@ export type ShareOutcome = "shared" | "copied" | "cancelled" | "failed"
 export type ShareEntry = { name: string; phone: string | null; url: string }
 
 export function shareText(name: string, phone: string | null): string {
-	return phone ? `${name} — ${phone}` : name
+	return phone ? `${name}: ${phone}` : name
 }
 
 export function shareCapability(nav: ShareTarget): ShareCapability {

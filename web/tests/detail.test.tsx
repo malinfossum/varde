@@ -228,7 +228,7 @@ test("with a share sheet the Del button shares name, phone and this page", async
 	await userEvent.click(screen.getByRole("button", { name: "Del" }))
 	expect(share).toHaveBeenCalledWith({
 		title: "Krisesenteret i Hamar",
-		text: "Krisesenteret i Hamar — 62 00 00 00",
+		text: "Krisesenteret i Hamar: 62 00 00 00",
 		url: window.location.href,
 	})
 })
