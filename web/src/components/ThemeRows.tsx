@@ -10,9 +10,9 @@ export const THEME_CHOICES = [
 	{ choice: "system", key: "header.themeSystem", Icon: SystemIcon },
 ] as const
 
-// One source for the theme rows, rendered by the desktop theme picker and by the Meny (spec:
-// One source, two layouts). The desktop picker closes on a choice; the Meny keeps the row
-// focused so a screen reader hears its new pressed state, and announces the label it gets.
+// One source for the theme rows, rendered only in the Meny (the footer pill has its own
+// buttons). The Meny keeps the row focused so a screen reader hears its new pressed state,
+// and announces the label it gets.
 export function ThemeRows({
 	theme,
 	icons,

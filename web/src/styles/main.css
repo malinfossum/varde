@@ -302,8 +302,8 @@
 		}
 	}
 	/* One sticky row at every width and height (spec: Header). Below 1024 px it holds brand,
-	   Meny and exit; from 1024 px brand, nav, pickers and exit. Only one of the Meny and the
-	   nav with the pickers is displayed, so only one is in the accessibility tree and the tab
+	   Meny and exit; from 1024 px brand, nav, the language picker and exit. Only one of the Meny and the
+	   nav with the language picker is displayed, so only one is in the accessibility tree and the tab
 	   order. The Meny's flex item is its .menu-nav wrapper, so its rules sit there: display: flex
 	   with centred items keeps the nav exactly as tall as its 44 px trigger. */
 	.app-header {
@@ -383,11 +383,12 @@
 	.acute-strip {
 		padding-inline: 1rem;
 	}
-	/* The look every tooltip shares: the acute strip's labels, and the detail page's action names
-	   and copy confirmations. Each sets its own position. */
+	/* The look every tooltip shares: the acute strip's labels, the detail page's action names
+	   and copy confirmations, and the footer's control names. Each sets its own position. */
 	.strip-tip,
 	.action-tip,
-	.action-feedback {
+	.action-feedback,
+	.footer-tip-bubble {
 		z-index: 30;
 		padding: 0.25rem 0.5rem;
 		font-size: 0.8125rem;
@@ -416,6 +417,95 @@
 		}
 		.acute-strip[data-tips="hidden"] .strip-tip {
 			display: none;
+		}
+	}
+
+	/* The footer (spec 2026-10-16 footer). The label and the note are small uppercase text, set
+	   apart from the links by size and case; one tracking for both, so they read as one voice. */
+	.footer-label,
+	.footer-note {
+		font-size: 0.75rem;
+		line-height: 1rem;
+		text-transform: uppercase;
+		letter-spacing: 0.14em;
+		color: var(--muted);
+	}
+	/* overflow-wrap: anywhere on the note is what keeps the tracked Norwegian word
+	   "INFORMASJONSKAPSLER." inside a 375 px screen at 200 % text, where it is wider than the screen. */
+	.footer-note {
+		overflow-wrap: anywhere;
+	}
+	/* Footer tooltips open above their control, because the footer sits at the bottom of the
+	   screen. The 6 px gap is the tooltip's own transparent padding, so the pointer can move onto
+	   the bubble without leaving the hover area (WCAG 1.4.13). Start and end alignment keep the
+	   tooltips at the page edges on screen. */
+	.footer-tip-host {
+		position: relative;
+	}
+	.footer-tip {
+		display: none;
+		position: absolute;
+		inset-block-end: 100%;
+		inset-inline-start: 50%;
+		translate: -50% 0;
+		z-index: 30;
+		padding-block-end: 6px;
+	}
+	.footer-tip-start {
+		inset-inline-start: 0;
+		translate: none;
+	}
+	.footer-tip-end {
+		inset-inline-start: auto;
+		inset-inline-end: 0;
+		translate: none;
+	}
+	.footer-tip-bubble {
+		display: block;
+		white-space: nowrap;
+	}
+	@media (hover: hover) and (pointer: fine) {
+		.footer-tip-host:hover .footer-tip,
+		.footer-tip-host:focus-visible .footer-tip {
+			display: block;
+		}
+		.footer-row[data-tips="hidden"] .footer-tip {
+			display: none;
+		}
+	}
+
+	/* The theme pill: three 44 px round buttons. The outline is an inset shadow, so it adds no
+	   size and the pill is exactly as tall as the links beside it. */
+	.theme-pill {
+		display: inline-flex;
+		border-radius: 999px;
+		box-shadow: inset 0 0 0 1px var(--border);
+	}
+	.theme-pill-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 999px;
+		color: var(--muted);
+		cursor: pointer;
+	}
+	.theme-pill-btn:hover,
+	.theme-pill-btn[aria-pressed="true"] {
+		color: var(--text);
+	}
+	.theme-pill-btn[aria-pressed="true"] {
+		box-shadow: inset 0 0 0 1px var(--text);
+	}
+	/* Shadows vanish in forced colours. The pressed mark is a border, not an outline, so it never
+	   replaces the focus ring (an outline) on the pressed button. */
+	@media (forced-colors: active) {
+		.theme-pill {
+			outline: 1px solid CanvasText;
+		}
+		.theme-pill-btn[aria-pressed="true"] {
+			border: 2px solid Highlight;
 		}
 	}
 

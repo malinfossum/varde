@@ -1,4 +1,3 @@
-import { useThemeChoice } from "../hooks/useThemeChoice.ts"
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import { BrandMark } from "./BrandMark.tsx"
 import { HeaderLinks } from "./HeaderLinks.tsx"
@@ -6,17 +5,14 @@ import { HeaderMenu } from "./HeaderMenu.tsx"
 import { LanguagePicker } from "./LanguagePicker.tsx"
 import { Link } from "./Link.tsx"
 import { QuickExit } from "./QuickExit.tsx"
-import { ThemePicker } from "./ThemePicker.tsx"
+import type { ThemeApi } from "./ThemeRows.tsx"
 
-export function Header() {
+export function Header({ theme }: { theme: ThemeApi }) {
 	const t = useTranslation()
-	// One theme state for the desktop picker and the Meny, so a choice made in one is already
-	// shown in the other when the window crosses 1024 px.
-	const theme = useThemeChoice()
 	return (
 		<header className="app-header border-b border-border bg-surface">
-			{/* One row at every width (spec: Header). DOM order is brand, nav, pickers, Meny, exit.
-			    CSS shows the nav and the pickers from 1024 px and the Meny below it, never both, so
+			{/* One row at every width (spec: Header). DOM order is brand, nav, language picker, Meny, exit.
+			    CSS shows the nav and the language picker from 1024 px and the Meny below it, never both, so
 			    the keyboard meets only the one on screen. flex-wrap is a safety net only: the
 			    header check holds it to one row at default text size, and with text at 200 % it
 			    wraps rather than scrolling sideways (spec: The header row rule). */}
@@ -34,7 +30,6 @@ export function Header() {
 				</nav>
 				<div className="header-tools">
 					<LanguagePicker />
-					<ThemePicker theme={theme} />
 				</div>
 				<HeaderMenu theme={theme} />
 				<QuickExit />

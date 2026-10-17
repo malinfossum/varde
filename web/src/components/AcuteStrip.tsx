@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useDismissibleTips } from "../hooks/useDismissibleTips.ts"
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import { type EmergencyLine, emergencyLines, telHref } from "../services/emergency.ts"
 import { AmbulanceIcon, FlameIcon, ShieldIcon, StethoscopeIcon } from "./icons.tsx"
@@ -16,22 +16,14 @@ const icons: Record<EmergencyLine["id"], typeof FlameIcon> = {
 export function AcuteStrip() {
 	const t = useTranslation()
 	// Escape closes the tooltips (WCAG 1.4.13) until the pointer enters or focus lands on a link.
-	const [tipsHidden, setTipsHidden] = useState(false)
-	useEffect(() => {
-		const onKeyDown = (event: KeyboardEvent) => {
-			if (event.key === "Escape") setTipsHidden(true)
-		}
-		document.addEventListener("keydown", onKeyDown)
-		return () => document.removeEventListener("keydown", onKeyDown)
-	}, [])
-	const showTips = () => setTipsHidden(false)
+	const tips = useDismissibleTips()
 	return (
 		<section aria-label={t("strip.label")} className="bg-akutt-soft text-akutt">
 			{/* One line at every width (spec: Acute strip, one line): an icon and the number per
 			    service, with the label in the link's name, so each link reads "Brann 110". At 320 px it
 			    only just fits, so the items wrap instead of overflowing at a larger text size. */}
 			<ul
-				data-tips={tipsHidden ? "hidden" : undefined}
+				data-tips={tips.hidden ? "hidden" : undefined}
 				className="acute-strip mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-1 text-sm md:justify-start md:gap-x-6"
 			>
 				{emergencyLines.map((line) => {
@@ -41,8 +33,8 @@ export function AcuteStrip() {
 							<a
 								href={telHref(line.phone)}
 								aria-label={`${t(`strip.short.${line.id}`)} ${line.phone}`}
-								onPointerEnter={showTips}
-								onFocus={showTips}
+								onPointerEnter={tips.show}
+								onFocus={tips.show}
 								className="strip-link relative inline-flex min-h-11 min-w-11 items-center justify-center gap-1 whitespace-nowrap font-semibold text-akutt"
 							>
 								<Icon className="size-[1.125rem] shrink-0" />
