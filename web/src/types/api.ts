@@ -3,6 +3,8 @@
 export type CategoryDto = { id: number; slug: string; name: string; isFallbackTranslation: boolean }
 export type MunicipalityDto = { id: number; name: string; county: string }
 export type PagedResult<T> = { items: T[]; page: number; pageSize: number; totalCount: number }
+// The API's ResourceCost, as ResourceService spells it on the wire. null is "not stated".
+export type ResourceCost = "free" | "paid" | "partly"
 export type ResourceDto = {
 	id: number
 	name: string
@@ -11,6 +13,9 @@ export type ResourceDto = {
 	openingHours: string | null
 	isNational: boolean
 	isAlwaysOpen: boolean
+	isLowThreshold: boolean
+	cost: ResourceCost | null
+	costNote: string | null
 	municipalityId: number | null
 	municipalityName: string | null
 	address: string | null
