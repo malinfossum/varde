@@ -17,31 +17,36 @@ export function ResourceBadges({ resource }: { resource: ResourceDto }) {
 	if (!hasAny) return null
 	// A list, not a <p>: Chromium drops the paragraph role from a flex container, which left each
 	// badge a loose span in an unnamed generic, and NVDA skipped them in browse mode. As list items
-	// they are read as "list, N items", then each badge, in this order.
+	// they are read as "list, N items", then each badge, in this order. Each <li> is flex, so its
+	// height is the badge's own 26 px and never a line box that can round a fraction taller.
 	return (
-		<ul className="m-0 flex list-none flex-wrap gap-1 p-0">
+		<ul
+			// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+			role="list"
+			className="m-0 flex list-none flex-wrap gap-1 p-0"
+		>
 			{isAkutt && (
-				<li>
+				<li className="flex">
 					<span className="badge badge-akutt">{t("badge.akutt")}</span>
 				</li>
 			)}
 			{resource.isNational && (
-				<li>
+				<li className="flex">
 					<span className="badge text-muted">{t("badge.national")}</span>
 				</li>
 			)}
 			{resource.isAlwaysOpen && (
-				<li>
+				<li className="flex">
 					<span className="badge text-accent">{t("badge.alwaysOpen")}</span>
 				</li>
 			)}
 			{resource.isLowThreshold && (
-				<li>
+				<li className="flex">
 					<span className="badge text-accent">{t("badge.lowThreshold")}</span>
 				</li>
 			)}
 			{resource.cost && (
-				<li>
+				<li className="flex">
 					<span className="badge text-muted">{t(`badge.cost.${resource.cost}`)}</span>
 				</li>
 			)}

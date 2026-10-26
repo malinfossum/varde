@@ -55,7 +55,11 @@ export function LandingPage({ arrival }: { arrival: number }) {
 				</p>
 				<div className="entrance entrance-5 mx-auto mt-3 grid max-w-3xl gap-2 lg:mt-2 lg:max-w-4xl lg:grid-cols-[auto_1fr] lg:items-center">
 					{/* Two featured chips, one list: a screen reader hears "list, 2 items". */}
-					<ul className="chip-featured-row">
+					<ul
+						// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+						role="list"
+						className="chip-featured-row"
+					>
 						{FEATURED_SLUGS.map((slug) => (
 							<li key={slug}>
 								<Link
@@ -67,7 +71,11 @@ export function LandingPage({ arrival }: { arrival: number }) {
 							</li>
 						))}
 					</ul>
-					<ul className="chip-grid grid grid-cols-2 gap-2 md:grid-cols-4">
+					<ul
+						// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+						role="list"
+						className="chip-grid grid grid-cols-2 gap-2 md:grid-cols-4"
+					>
 						{GRID_SLUGS.map((slug) => (
 							<li key={slug}>
 								<Link to={`/sok?category=${slug}`} className="chip h-full w-full">
@@ -98,7 +106,11 @@ export function LandingPage({ arrival }: { arrival: number }) {
 						<p className="mt-2 text-muted lg:mt-1 lg:text-sm">{t("landing.emergencyIntro")}</p>
 						{/* All four buttons share one height (auto-rows-fr). The number and its label sit on
 						    one line when they fit and wrap as two whole pieces when they do not. */}
-						<ul className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 lg:mt-2 lg:grid-cols-1 lg:gap-2 lg:self-start">
+						<ul
+							// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+							role="list"
+							className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 lg:mt-2 lg:grid-cols-1 lg:gap-2 lg:self-start"
+						>
 							{emergencyLines.map((line) => (
 								<li key={line.id}>
 									<a

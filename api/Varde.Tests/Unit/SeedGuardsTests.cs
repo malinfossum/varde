@@ -49,7 +49,7 @@ public class SeedGuardsTests
             Row(5, ResourceCost.Paid),                           // paid needs a note
             Row(6, ResourceCost.Partly, "Kaffe 20 kr"),          // partly needs both
             Row(7, null, "Gratis", "Free"),                      // a note without a cost
-            Row(8, ResourceCost.Free, "Gratis"),                 // Review Focus 2: one language only
+            Row(8, ResourceCost.Free, "Gratis"),                 // a note in one language only
         ];
 
         Assert.Equal(
@@ -72,12 +72,15 @@ public class SeedGuardsTests
             Row(3, ResourceCost.Paid, "Egenandel 50 kr", "Fee NOK 60"),                                // a changed number
             Row(4, ResourceCost.Paid, "Egenandel 1 500 kr", "Fee NOK 1500"),                           // regrouped digits
             Row(5, ResourceCost.Free, "Gratis og døgnåpen", "Free and 24-hour"),                        // døgn is 24
+            Row(6, ResourceCost.Free, "Gratis og døgnåpen", "Free and open all day"),                   // døgn lost its 24
+            Row(7, ResourceCost.Paid, "Egenandel 1 500 kr", "Fee NOK 1,500"),                          // separator not compared
         ];
 
         Assert.Equal(
             [
                 "row 3: en cost note numbers [60] differ from nb [50]",
                 "row 4: en cost note numbers [1500] differ from nb [1, 500]",
+                "row 6: en cost note numbers [] differ from nb [24]",
             ],
             SeedGuards.NumberProblems(rows));
     }

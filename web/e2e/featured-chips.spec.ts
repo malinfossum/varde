@@ -25,9 +25,21 @@ async function featured(page: Page) {
 	)
 }
 
+// The grid's first and fifth chips: the top of its first and second row (the grid is four wide
+// from 768 px).
+async function gridRows(page: Page) {
+	return page.locator(".chip-grid .chip").evaluateAll((els) => {
+		const box = (el: Element) => {
+			const r = el.getBoundingClientRect()
+			return { left: r.left, top: r.top, bottom: r.bottom }
+		}
+		return { first: box(els[0]), fifth: box(els[4]) }
+	})
+}
+
 // Below 1024 px the pair is a row above the grid: side by side, one width, one height, centred
-// on the grid.
-for (const width of [320, 768]) {
+// on the grid. 1023 and 1024 sit on either side of the flip.
+for (const width of [320, 768, 1023]) {
 	for (const path of ["/", "/en/"]) {
 		test(`the two featured chips share one row, width, height and bottom edge, centred, at ${width} px (${path})`, async ({
 			page,
@@ -54,7 +66,7 @@ for (const width of [320, 768]) {
 }
 
 // From 1024 px the pair is a column beside the grid, one chip per grid row.
-for (const width of [1280, 1920]) {
+for (const width of [1024, 1280, 1920]) {
 	for (const path of ["/", "/en/"]) {
 		test(`the two featured chips stand as a column beside the grid, one per grid row, at ${width} px (${path})`, async ({
 			page,
@@ -70,13 +82,7 @@ for (const width of [1280, 1920]) {
 			expect(a.height).toBe(b.height)
 			expect(a.height).toBeGreaterThanOrEqual(44)
 			expect(a.overflows || b.overflows).toBe(false)
-			const grid = await page.locator(".chip-grid .chip").evaluateAll((els) => {
-				const box = (el: Element) => {
-					const r = el.getBoundingClientRect()
-					return { left: r.left, top: r.top, bottom: r.bottom }
-				}
-				return { first: box(els[0]), fifth: box(els[4]) }
-			})
+			const grid = await gridRows(page)
 			const gridLeft = await page
 				.locator(".chip-grid")
 				.evaluate((el) => el.getBoundingClientRect().left)
@@ -97,13 +103,7 @@ test("the featured column follows the grid's rows when they grow, at 1280 px", a
 	await settleLayout(page)
 	await page.addStyleTag({ content: ".chip-grid .chip { min-height: 80px; }" })
 	const [a, b] = await featured(page)
-	const grid = await page.locator(".chip-grid .chip").evaluateAll((els) => {
-		const box = (el: Element) => {
-			const r = el.getBoundingClientRect()
-			return { top: r.top, bottom: r.bottom }
-		}
-		return { first: box(els[0]), fifth: box(els[4]) }
-	})
+	const grid = await gridRows(page)
 	expect(Math.abs(a.top - grid.first.top)).toBeLessThanOrEqual(1)
 	expect(Math.abs(a.bottom - grid.first.bottom)).toBeLessThanOrEqual(1)
 	expect(Math.abs(b.top - grid.fifth.top)).toBeLessThanOrEqual(1)

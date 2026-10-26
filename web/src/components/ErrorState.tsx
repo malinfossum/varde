@@ -23,7 +23,11 @@ export function ErrorState({ onRetry, level = 1 }: { onRetry: () => void; level?
 			{/* The directory being down must never mean "no number to call" — the national lines
 			    are always reachable and live in the bundle, not behind the failed request. */}
 			<p>{t("error.fallbacks")}</p>
-			<ul className="grid gap-1 pl-5">
+			<ul
+				// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+				role="list"
+				className="grid gap-1 pl-5"
+			>
 				{legevakt.map((service) => (
 					<li key={service.id}>
 						<a href={telHref(service.phone)}>

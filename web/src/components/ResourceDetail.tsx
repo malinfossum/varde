@@ -192,7 +192,7 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 							{resource.costNote && (
 								<div>
 									<dt>{t("detail.price")}</dt>
-									<dd>{resource.costNote}</dd>
+									<dd className="wrap-anywhere">{resource.costNote}</dd>
 								</div>
 							)}
 							{resource.address && (

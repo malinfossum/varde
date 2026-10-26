@@ -25,7 +25,11 @@ export function EmptyState({
 				{t("empty.heading")}
 			</h1>
 			<p>{t("empty.help")}</p>
-			<ul className="grid gap-1 pl-5">
+			<ul
+				// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+				role="list"
+				className="grid gap-1 pl-5"
+			>
 				{nationalFallbacks.map((service) => (
 					<li key={service.id}>
 						<a href={telHref(service.phone)}>

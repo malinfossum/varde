@@ -49,7 +49,11 @@ export function FilterBar({
 			{catalog && (
 				<fieldset className="grid gap-2">
 					<legend className="text-sm font-semibold">{t("filter.categories")}</legend>
-					<ul className="flex flex-wrap gap-2">
+					<ul
+						// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+						role="list"
+						className="flex flex-wrap gap-2"
+					>
 						{catalog.categories.map((c) => {
 							const active = filters.categories.includes(c.slug)
 							return (

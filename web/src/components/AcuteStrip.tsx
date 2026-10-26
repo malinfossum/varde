@@ -23,6 +23,8 @@ export function AcuteStrip() {
 			    service, with the label in the link's name, so each link reads "Brann 110". At 320 px it
 			    only just fits, so the items wrap instead of overflowing at a larger text size. */}
 			<ul
+				// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+				role="list"
 				data-tips={tips.hidden ? "hidden" : undefined}
 				className="acute-strip mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-1 text-sm md:justify-start md:gap-x-6"
 			>

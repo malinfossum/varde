@@ -43,7 +43,7 @@ public class SeedDocsTests
     [Fact]
     public void An_escaped_pipe_stays_inside_the_quote()
     {
-        // Review Focus 4: a pipe in a verbatim quote must not shift the columns after it.
+        // A pipe in a verbatim quote must not shift the columns after it.
         const string doc = """
             | # | Referral quote | Cost |
             |---|----------------|------|

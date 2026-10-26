@@ -284,7 +284,7 @@ public class ResourceServiceTests
     [Fact]
     public async Task Cost_note_falls_back_with_the_description()
     {
-        // Review Focus 3: an English request for a Norwegian-only row gets the Norwegian price
+        // An English request for a Norwegian-only row gets the Norwegian price
         // with the Norwegian description, never a mix.
         var resource = NorwegianOnly();
         resource.Cost = ResourceCost.Paid;

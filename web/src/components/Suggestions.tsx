@@ -12,6 +12,8 @@ export function Suggestions({
 	if (suggestions.length === 0) return null
 	return (
 		<ul
+			// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+			role="list"
 			className="m-0 mt-2 list-none rounded-xl border border-border bg-surface p-1"
 			aria-label={t("search.suggestions")}
 		>
