@@ -576,3 +576,80 @@ test("the back link stays outside the card", async () => {
 	const back = screen.getByRole("link", { name: "Tilbake til resultater" })
 	expect(screen.getByRole("article")).not.toContainElement(back)
 })
+
+test("the Pris line shows the cost note next to the hours, label apart from value", async () => {
+	stubDataFiles({
+		resources: [
+			{ ...detail, cost: "partly", costNote: "Kaffe og vafler 20 kr, aktivitetene er gratis" },
+		],
+	})
+	render(
+		<LanguageProvider lang="nb">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
+	const label = screen.getByText("Pris", { selector: "dt" })
+	// The label is set apart from the value by the facts list's own styling (dt is muted in CSS).
+	expect(label.closest("dl")).toHaveClass("detail-facts")
+	expect(label.nextElementSibling).toHaveTextContent(
+		"Kaffe og vafler 20 kr, aktivitetene er gratis"
+	)
+	// "Next to the hours": the Pris pair follows the hours pair directly.
+	expect(label.parentElement?.previousElementSibling).toHaveTextContent("Åpningstider")
+})
+
+test("a row whose only fact is a cost note still shows the Pris pair", async () => {
+	stubDataFiles({
+		resources: [
+			{
+				...detail,
+				openingHours: null,
+				address: null,
+				website: null,
+				cost: "paid",
+				costNote: "Egenandel 50 kr",
+			},
+		],
+	})
+	render(
+		<LanguageProvider lang="nb">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
+	expect(screen.getByText("Pris", { selector: "dt" }).nextElementSibling).toHaveTextContent(
+		"Egenandel 50 kr"
+	)
+})
+
+test("no cost note, no Pris line, even with a cost badge", async () => {
+	stubDataFiles({ resources: [{ ...detail, cost: "free", costNote: null }] })
+	render(
+		<LanguageProvider lang="nb">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
+	expect(screen.getByText("Gratis", { selector: ".badge" })).toBeInTheDocument()
+	expect(screen.queryByText("Pris")).not.toBeInTheDocument()
+})
+
+test("the Pris label reads Price in English", async () => {
+	stubDataFiles({ resources: [{ ...detail, cost: "paid", costNote: "Egenandel 50 kr" }] })
+	render(
+		<LanguageProvider lang="en">
+			<AnnouncerProvider>
+				<ResourceDetail id={12} />
+			</AnnouncerProvider>
+		</LanguageProvider>
+	)
+	await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
+	expect(screen.getByText("Price", { selector: "dt" })).toBeInTheDocument()
+})
