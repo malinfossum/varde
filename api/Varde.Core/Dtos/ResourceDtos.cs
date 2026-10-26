@@ -11,6 +11,9 @@ public record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, int
 /// <param name="IsFallbackTranslation">True when the requested language was unavailable and this is Norwegian.</param>
 /// <param name="OpeningHours">Plain text, in the requested language. Null when not recorded for this service.</param>
 /// <param name="IsAlwaysOpen">True only where the verified source records 24/7 service. False is "not recorded", never "closed".</param>
+/// <param name="IsLowThreshold">True only where the source states no referral is needed (the Lavterskel badge).</param>
+/// <param name="Cost">"free", "paid" or "partly", or null when the source states no price.</param>
+/// <param name="CostNote">The source's price wording in the requested language, falling back with Description. Plain text.</param>
 /// <param name="ServedMunicipalityIds">Other municipalities this service covers, ascending. Never contains MunicipalityId.</param>
 /// <param name="ParentId">The service this one belongs to, or null. One level only.</param>
 /// <param name="PhoneMenuOption">The key to press after the call connects (1 to 9), or null.</param>
@@ -22,6 +25,9 @@ public record ResourceDto(
     string? OpeningHours,
     bool IsNational,
     bool IsAlwaysOpen,
+    bool IsLowThreshold,
+    string? Cost,
+    string? CostNote,
     int? MunicipalityId,
     string? MunicipalityName,
     string? Address,

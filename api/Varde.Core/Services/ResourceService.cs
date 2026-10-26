@@ -43,7 +43,7 @@ public class ResourceService(IResourceRepository repository)
 
     private static ResourceDto ToDto(Resource resource, string language)
     {
-        var (description, openingHours, isFallback) = ResolveTranslation(resource, language);
+        var (description, openingHours, costNote, isFallback) = ResolveTranslation(resource, language);
 
         var categories = resource.ResourceCategories
             .Select(rc => rc.Category)
@@ -70,6 +70,9 @@ public class ResourceService(IResourceRepository repository)
             openingHours,
             resource.IsNational,
             resource.IsAlwaysOpen,
+            resource.IsLowThreshold,
+            CostName(resource.Cost),
+            costNote,
             resource.MunicipalityId,
             resource.Municipality?.Name,
             resource.Address,
@@ -85,18 +88,33 @@ public class ResourceService(IResourceRepository repository)
     }
 
     /// <summary>
-    /// The requested language's translation, or Norwegian flagged as a fallback. Description and
-    /// opening hours are resolved together and always come from the same row — mixing an English
-    /// description with Norwegian hours would be worse than either alone.
+    /// The requested language's translation, or Norwegian flagged as a fallback. Description,
+    /// opening hours and the cost note are resolved together and always come from the same row.
+    /// Mixing an English description with Norwegian hours or a Norwegian price would be worse
+    /// than either alone.
     /// </summary>
-    private static (string Description, string? OpeningHours, bool IsFallback) ResolveTranslation(
+    private static (string Description, string? OpeningHours, string? CostNote, bool IsFallback) ResolveTranslation(
         Resource resource,
         string language)
     {
         var requested = resource.Translations.FirstOrDefault(t => t.LanguageCode == language);
-        if (requested is not null) return (requested.Description, requested.OpeningHours, false);
+        if (requested is not null)
+            return (requested.Description, requested.OpeningHours, requested.CostNote, false);
 
         var fallback = resource.Translations.FirstOrDefault(t => t.LanguageCode == Language.Default);
-        return (fallback?.Description ?? "", fallback?.OpeningHours, true);
+        return (fallback?.Description ?? "", fallback?.OpeningHours, fallback?.CostNote, true);
     }
+
+    /// <summary>
+    /// The wire name for a cost. Spelled out rather than taken from the enum's ToString, so renaming
+    /// an enum member can never change what the web app receives.
+    /// </summary>
+    private static string? CostName(ResourceCost? cost) => cost switch
+    {
+        ResourceCost.Free => "free",
+        ResourceCost.Paid => "paid",
+        ResourceCost.Partly => "partly",
+        null => null,
+        _ => throw new ArgumentOutOfRangeException(nameof(cost), cost, "Unknown cost value."),
+    };
 }

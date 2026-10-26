@@ -175,4 +175,43 @@ public class SchemaTests
             "CK_Resources_PhoneMenuOption",
             Assert.IsType<PostgresException>(error.InnerException).ConstraintName);
     }
+
+    [DbFact]
+    public async Task Badge_cost_and_cost_note_round_trip_and_default_to_not_stated()
+    {
+        using var factory = new VardeApiFactory();
+        factory.Seed(db =>
+        {
+            db.Resources.Add(new Resource
+            {
+                Name = "Værestedet",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Partly,
+                Phone = "62 00 00 00",
+                LastVerified = new DateOnly(2026, 8, 13),
+                Translations =
+                {
+                    new ResourceTranslation { LanguageCode = "nb", Description = "Et møtested.", CostNote = "Kaffe 20 kr" },
+                },
+            });
+            db.Resources.Add(new Resource
+            {
+                Name = "Uten pris",
+                Phone = "62 00 00 01",
+                LastVerified = new DateOnly(2026, 8, 13),
+                Translations = { new ResourceTranslation { LanguageCode = "nb", Description = "Ingen pris." } },
+            });
+        });
+
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+        var saved = await db.Resources.Include(r => r.Translations).OrderBy(r => r.Name).ToListAsync();
+
+        Assert.False(saved[0].IsLowThreshold);
+        Assert.Null(saved[0].Cost);
+        Assert.Null(Assert.Single(saved[0].Translations).CostNote);
+        Assert.True(saved[1].IsLowThreshold);
+        Assert.Equal(ResourceCost.Partly, saved[1].Cost);
+        Assert.Equal("Kaffe 20 kr", Assert.Single(saved[1].Translations).CostNote);
+    }
 }

@@ -370,4 +370,31 @@ public class ResourcesApiTests
         Assert.Contains("\"parentId\":null", parentJson);
         Assert.Contains("\"phoneMenuOption\":null", parentJson);
     }
+
+    [DbFact]
+    public async Task Cost_travels_as_a_lowercase_string_beside_the_badge_and_the_note()
+    {
+        // The web app reads these three names straight from the JSON export, so the wire format
+        // is the contract, not the C# type.
+        using var factory = new VardeApiFactory();
+        factory.Seed(db => db.Resources.Add(new Resource
+        {
+            Name = "Værestedet",
+            IsLowThreshold = true,
+            Cost = ResourceCost.Partly,
+            Phone = "62 00 00 00",
+            LastVerified = Verified,
+            Translations =
+            {
+                new ResourceTranslation { LanguageCode = "nb", Description = "Et møtested.", CostNote = "Kaffe 20 kr" },
+                new ResourceTranslation { LanguageCode = "en", Description = "A meeting place.", CostNote = "Coffee 20 kr" },
+            },
+        }));
+
+        var json = await factory.CreateClient().GetStringAsync("/api/resources?lang=en");
+
+        Assert.Contains("\"isLowThreshold\":true", json);
+        Assert.Contains("\"cost\":\"partly\"", json);
+        Assert.Contains("\"costNote\":\"Coffee 20 kr\"", json);
+    }
 }

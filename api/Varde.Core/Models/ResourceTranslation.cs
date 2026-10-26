@@ -18,4 +18,11 @@ public class ResourceTranslation
     /// than implying availability. Plain text, like Description.
     /// </summary>
     public string? OpeningHours { get; set; }
+
+    /// <summary>
+    /// The source's own price wording in this language: nb copied verbatim, en a translation that
+    /// keeps every number digit for digit. Plain text, like Description. Null when the source states
+    /// no price, and then the UI shows no "Pris" line.
+    /// </summary>
+    public string? CostNote { get; set; }
 }
