@@ -124,7 +124,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 		<div className="grid gap-6 lg:grid-cols-[280px_1fr]">
 			<PageHead title={titles[lang]} description={descriptions[lang]} path="/sok" />
 			{/* min-h reserves room for FilterBar's catalog-gated rows (the municipality combobox and
-			    the nine category chips only render once `catalog` resolves — see FilterBar.tsx).
+			    the category chips only render once `catalog` resolves — see FilterBar.tsx).
 			    Below lg, aside sits stacked above the results, so that mount-time growth is what
 			    was actually pushing the whole page down once data arrived (confirmed by reading the
 			    raw layout-shift trace: the results container's position, not its own size, was

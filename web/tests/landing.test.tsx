@@ -4,7 +4,7 @@ import { afterEach, expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
 import nbStrings from "../src/i18n/nb.json"
 import { PageDataContext } from "../src/pageData.ts"
-import { CATEGORY_SLUGS } from "../src/services/categories.ts"
+import { CATEGORY_SLUGS, FEATURED_SLUGS, GRID_SLUGS } from "../src/services/categories.ts"
 import { bakedHelplines, stubDataFiles } from "./stubData.ts"
 
 const nb = nbStrings as Record<string, string>
@@ -80,7 +80,7 @@ test("a failed catalog still lets Enter navigate", async () => {
 	expect(window.location.pathname).toBe("/sok")
 })
 
-test("nine category chips link to scoped results, each with its real label, and the strip numbers repeat below the fold", () => {
+test("ten category chips link to scoped results, each with its real label, and the strip numbers repeat below the fold", () => {
 	stubCatalog()
 	render(<App />)
 	// Real labels, read from the i18n file rather than retyped here: a renamed or dropped
@@ -90,7 +90,7 @@ test("nine category chips link to scoped results, each with its real label, and 
 		expect(screen.getByRole("link", { name: label })).toBeInTheDocument()
 	}
 	// Scoped to <main>: the acute strip above the header also links to /sok?category=nodtjenester,
-	// and its href would otherwise double-count against the landing's own nine chips.
+	// and its href would otherwise double-count against the landing's own ten chips.
 	const main = screen.getByRole("main")
 	const chips = within(main)
 		.getAllByRole("link")
@@ -99,22 +99,37 @@ test("nine category chips link to scoped results, each with its real label, and 
 	expect(screen.getAllByRole("link", { name: /116 117/ }).length).toBeGreaterThanOrEqual(2) // strip + emergency section
 })
 
-test("Nødtjenester stands apart; the other eight sit in one grid in category order", () => {
+test("Nødtjenester and Lavterskeltilbud lead as a list of two; the other eight sit in one grid in category order", () => {
 	stubCatalog()
 	render(<App />)
 	const main = screen.getByRole("main")
-	const acute = within(main).getByRole("link", { name: "Nødtjenester" })
-	expect(acute).toHaveClass("chip-acute")
-	expect(acute.closest("ul")).toBeNull()
-	const grid = within(main)
-		.getByRole("link", { name: nb["category.bolig"] })
-		.closest("ul") as HTMLElement
-	const names = within(grid)
-		.getAllByRole("link")
-		.map((a) => a.textContent)
-	expect(names).toEqual(
-		CATEGORY_SLUGS.filter((s) => s !== "nodtjenester").map((s) => nb[`category.${s}`])
-	)
+	// Found by href, not by name: the nb label carries a soft hyphen.
+	const byHref = (slug: string) =>
+		within(main)
+			.getAllByRole("link")
+			.find((a) => a.getAttribute("href") === `/sok?category=${slug}`) as HTMLElement
+	const acute = byHref("nodtjenester")
+	const featured = byHref("lavterskeltilbud")
+	expect(acute).toHaveClass("chip", "chip-acute")
+	expect(featured).toHaveClass("chip", "chip-featured")
+	expect(featured).not.toHaveClass("chip-acute")
+	expect(featured).toHaveTextContent(nb["category.lavterskeltilbud"] as string)
+	const row = acute.closest("ul") as HTMLElement
+	expect(row).toHaveClass("chip-featured-row")
+	expect(featured.closest("ul")).toBe(row)
+	expect(within(row).getAllByRole("listitem")).toHaveLength(2)
+	expect(
+		within(row)
+			.getAllByRole("link")
+			.map((a) => a.getAttribute("href"))
+	).toEqual(FEATURED_SLUGS.map((s) => `/sok?category=${s}`))
+	const grid = byHref("bolig").closest("ul") as HTMLElement
+	expect(grid).not.toBe(row)
+	expect(
+		within(grid)
+			.getAllByRole("link")
+			.map((a) => a.textContent)
+	).toEqual(GRID_SLUGS.map((s) => nb[`category.${s}`]))
 })
 
 test("the headline keeps its last three words together, in both languages", () => {

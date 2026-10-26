@@ -605,8 +605,8 @@
 		}
 	}
 
-	/* Category chips on the landing page. Nødtjenester is the accent chip on a row of its own;
-	   the other eight share one width in the grid (spec: Chips, item 3). */
+	/* Category chips on the landing page. Nødtjenester (filled accent) and Lavterskeltilbud
+	   (accent outline) are the featured pair; the other eight share one width in the grid. */
 	.chip {
 		display: inline-flex;
 		align-items: center;
@@ -627,6 +627,38 @@
 		background: var(--accent);
 		color: var(--on-accent);
 		font-weight: 600;
+	}
+	.chip-featured {
+		border-color: var(--accent);
+		color: var(--accent);
+		font-weight: 600;
+	}
+	/* The featured pair. Below 1024 px it is a row above the grid: two chips, each as wide as one
+	   grid column, so the full grid width on phones (two columns) and half of it, centred, from
+	   768 px. 8 rem is the narrowest a chip may be before the pair stacks, which happens at 200 %
+	   text and never at default text from 320 px. From 1024 px it is a column beside the grid, one
+	   chip per grid row (the hero's chip block is two columns there), both as wide as the longer
+	   label. gap matches the grid's gap-2, so the half-width maths holds. */
+	.chip-featured-row {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+		gap: 0.5rem;
+		width: 100%;
+		justify-self: center;
+	}
+	@media (min-width: 768px) {
+		.chip-featured-row {
+			width: calc(50% - 0.25rem);
+		}
+	}
+	@media (min-width: 1024px) {
+		.chip-featured-row {
+			width: auto;
+			grid-template-columns: 1fr;
+			grid-template-rows: repeat(2, 1fr);
+			align-self: stretch;
+			justify-self: end;
+		}
 	}
 	/* Bold names alone in their rows, beside buttons: no underline at rest. They get one on hover
 	   and on focus, so they still show they are links when it matters (spec C2a). */

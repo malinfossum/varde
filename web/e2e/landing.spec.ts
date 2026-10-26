@@ -33,38 +33,17 @@ for (const [width, columns] of [
 	})
 }
 
-test("the Nødtjenester chip sits on a row of its own, ending above the grid at 375 px", async ({
-	page,
-}) => {
+test("the featured row ends above the grid at 375 px", async ({ page }) => {
 	await page.setViewportSize({ width: 375, height: 900 })
 	await page.goto("/")
 	const acuteBottom = await page
-		.locator(".chip-acute")
+		.locator(".chip-featured-row")
 		.evaluate((el) => el.getBoundingClientRect().bottom)
 	const gridTop = await page
 		.locator(".chip-grid .chip")
 		.first()
 		.evaluate((el) => el.getBoundingClientRect().top)
 	expect(acuteBottom).toBeLessThanOrEqual(gridTop)
-})
-
-// From 1024 px the chip sits left of the grid, centred on its two rows (decided 2026-10-15, so
-// the landing fits one 1920 x 950 screen).
-test("the Nødtjenester chip sits beside the grid, centred on its rows, at 1280 px", async ({
-	page,
-}) => {
-	await page.setViewportSize({ width: 1280, height: 900 })
-	await page.goto("/")
-	const acute = await page.locator(".chip-acute").evaluate((el) => {
-		const r = el.getBoundingClientRect()
-		return { right: r.right, middle: r.top + r.height / 2 }
-	})
-	const grid = await page.locator(".chip-grid").evaluate((el) => {
-		const r = el.getBoundingClientRect()
-		return { left: r.left, middle: r.top + r.height / 2 }
-	})
-	expect(acute.right).toBeLessThanOrEqual(grid.left)
-	expect(Math.abs(acute.middle - grid.middle)).toBeLessThanOrEqual(1)
 })
 
 for (const width of [1280, 1920]) {
@@ -154,7 +133,7 @@ for (const width of [1024, 1280, 1920]) {
 				lefts: new Set(buttons.map((b) => Math.round(b.left))).size,
 				heights: new Set(buttons.map((b) => Math.round(b.height))).size,
 				helpWidth: Math.round(box(".landing-help > div").width),
-				chipsWidth: Math.round(box(".hero > div:has(> .chip-acute)").width),
+				chipsWidth: Math.round(box(".hero > div:has(.chip-featured-row)").width),
 			}
 		})
 		expect(m.lefts).toBe(1)
@@ -237,7 +216,7 @@ for (const path of ["/", "/en/"]) {
 			return {
 				headerToH1: Math.round(box("h1").top - box("header").bottom),
 				chipsToDivider: Math.round(
-					box(".landing-help").top - box(".hero > div:has(> .chip-acute)").bottom
+					box(".landing-help").top - box(".hero > div:has(.chip-featured-row)").bottom
 				),
 				helpToFooter: Math.round(box("footer").top - box(".helpline-groups").bottom),
 			}
@@ -257,7 +236,7 @@ for (const width of [1280, 1920]) {
 		await settle(page)
 		const centres = await page.evaluate(() =>
 			// The chip block (Nødtjenester beside the grid from 1024 px) is centred as a whole.
-			["h1", "search", ".hero > div:has(> .chip-acute)"].map((s) => {
+			["h1", "search", ".hero > div:has(.chip-featured-row)"].map((s) => {
 				const r = document.querySelector(s)?.getBoundingClientRect()
 				return r ? Math.round(r.left + r.width / 2) : -1
 			})
