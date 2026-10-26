@@ -73,6 +73,8 @@ export function Helplines({ className }: { className?: string }) {
 								{t(`landing.helplineGroup.${group.key}`)}
 							</h3>
 							<ul
+								// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+								role="list"
 								aria-labelledby={`helplines-${group.key}`}
 								className="grid gap-y-4 lg:@[26rem]:col-span-3 lg:@[26rem]:grid-cols-subgrid lg:@[26rem]:gap-y-2"
 							>

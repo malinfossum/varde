@@ -56,15 +56,6 @@ public static class SeedData
     private static readonly DateTime SeededAt = new(2026, 8, 17, 0, 0, 0, DateTimeKind.Utc);
     private static readonly DateOnly Verified = new(2026, 8, 13);
 
-    // Row 118 (Nok. Hamar) was re-verified 2026-08-17, a source-hierarchy re-check that landed
-    // after the rest of the ring batch — see docs/seed-data-innlandet-ring.md row 118's Notes.
-    private static readonly DateOnly VerifiedRow118 = new(2026, 8, 17);
-
-    // Row 3 (Legevakt) was re-verified 2026-09-07 for opening hours only: helsenorge.no/legevakt
-    // prints "Du kan ringe 116 117 hele døgnet", so the row now carries Døgnåpent + IsAlwaysOpen
-    // — see docs/seed-data.md row 3's Notes. Phone and website unchanged.
-    private static readonly DateOnly VerifiedRow3 = new(2026, 9, 7);
-
     // Rows 23-25 (nødnumre) were added and verified 2026-09-09 — see docs/seed-data.md.
     private static readonly DateOnly VerifiedRows23To25 = new(2026, 9, 9);
 

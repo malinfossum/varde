@@ -33,7 +33,11 @@ export function ContactTiles({ tiles }: { tiles: ContactTile[] }) {
 			</h2>
 			{/* One column below 768 px, each tile as tall as its own content. Side by side from
 			    768 px, where a row shares one height. */}
-			<ul className="grid gap-3 md:auto-rows-fr md:grid-cols-2">
+			<ul
+				// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+				role="list"
+				className="grid gap-3 md:auto-rows-fr md:grid-cols-2"
+			>
 				{tiles.map((tile) => {
 					const Icon = icons[tile.kind]
 					return (

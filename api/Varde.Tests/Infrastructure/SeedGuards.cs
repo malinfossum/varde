@@ -52,7 +52,8 @@ public static partial class SeedGuards
     }
 
     /// <summary>
-    /// The en note keeps every number of the nb note, digit for digit and grouped the same way.
+    /// The en note keeps every number of the nb note, digit for digit and split into the same
+    /// digit groups. The separator between groups is not compared, so "1 500" and "1,500" agree.
     /// Order may change with the sentence. Missing notes are CostProblems' job.
     /// </summary>
     public static List<string> NumberProblems(IEnumerable<Resource> resources)

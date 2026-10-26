@@ -86,7 +86,11 @@ export function KommunePage({ slug, arrival }: { slug: string; arrival: number }
 			<p>{fill(t("kommune.description"), values)}</p>
 			<section aria-labelledby="kommune-local">
 				<h2 id="kommune-local">{fill(t("kommune.local"), values)}</h2>
-				<ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+				<ul
+					// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+					role="list"
+					className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+				>
 					{local.map((r) => (
 						<ResourceCard key={r.id} resource={r} headingLevel={3} />
 					))}
@@ -94,7 +98,11 @@ export function KommunePage({ slug, arrival }: { slug: string; arrival: number }
 			</section>
 			<section aria-labelledby="kommune-national">
 				<h2 id="kommune-national">{t("kommune.national")}</h2>
-				<ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+				<ul
+					// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+					role="list"
+					className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+				>
 					{national.map((r) => (
 						<ResourceCard key={r.id} resource={r} headingLevel={3} />
 					))}

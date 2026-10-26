@@ -13,6 +13,8 @@ const rows = [
 		municipalityId: 9,
 		servedMunicipalityIds: [1],
 		isNational: false,
+		// A badge on a local card: its <li> must not be mistaken for a card below.
+		isAlwaysOpen: true,
 	},
 	{
 		id: 3,
@@ -26,7 +28,6 @@ const rows = [
 	description: "d",
 	isFallbackTranslation: false,
 	openingHours: null,
-	isAlwaysOpen: false,
 	isLowThreshold: false,
 	cost: null,
 	costNote: null,
@@ -40,6 +41,7 @@ const rows = [
 	categories: [],
 	parentId: null,
 	phoneMenuOption: null,
+	isAlwaysOpen: false,
 	...r,
 }))
 
@@ -60,13 +62,13 @@ test("renders own and served resources, then national ones, with one h1", async 
 		await screen.findByRole("heading", { level: 1, name: "Hjelpetjenester i Hamar" })
 	).toBeInTheDocument()
 	const local = screen.getByRole("region", { name: "Tjenester i Hamar" })
+	// Cards are counted by their headings: a card's badges are list items too.
 	expect(
 		within(local)
-			.getAllByRole("listitem")
-			.map((li) => within(li).getByRole("heading", { level: 3 }).textContent)
+			.getAllByRole("heading", { level: 3 })
+			.map((h) => h.textContent)
 	).toEqual(["Krisesenteret", "NAV Hamar"])
 	const national = screen.getByRole("region", { name: "Nasjonale tjenester" })
-	// One card, counted by its heading: a card's badges are list items too.
 	expect(within(national).getAllByRole("heading", { level: 3 })).toHaveLength(1)
 	expect(screen.getByRole("link", { name: "Søk og filtrer i Hamar" })).toHaveAttribute(
 		"href",

@@ -185,7 +185,11 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 						<h1 ref={resultsHeading} tabIndex={-1} className="text-lg leading-snug">
 							{state.data.totalCount} {t("status.results")}
 						</h1>
-						<ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+						<ul
+							// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+							role="list"
+							className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+						>
 							{state.data.items.map((resource) => (
 								<ResourceCard
 									key={resource.id}
