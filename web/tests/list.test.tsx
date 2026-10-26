@@ -1,4 +1,4 @@
-import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, renderHook, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
@@ -358,4 +358,19 @@ test("data from before the new fields shows no new badge and no raw key", () => 
 		screen.queryByText(/^(Lavterskel|Gratis|Delvis gratis|Koster penger)$/)
 	).not.toBeInTheDocument()
 	expect(screen.queryByText(/badge\./)).not.toBeInTheDocument()
+})
+
+test("card badges are the items of a list, so a screen reader reads each one in order", () => {
+	withLang(
+		<ResourceCard
+			resource={{ ...resource, isLowThreshold: true, cost: "paid", costNote: "350 kr" }}
+		/>
+	)
+	// A <p> with display: flex loses its paragraph role in Chromium, and NVDA skipped the badges.
+	const badges = screen.getByRole("list")
+	expect(
+		within(badges)
+			.getAllByRole("listitem")
+			.map((el) => el.textContent)
+	).toEqual(["Akutt", "Døgnåpent", "Lavterskel", "Koster penger"])
 })

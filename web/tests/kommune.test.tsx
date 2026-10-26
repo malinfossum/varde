@@ -66,7 +66,8 @@ test("renders own and served resources, then national ones, with one h1", async 
 			.map((li) => within(li).getByRole("heading", { level: 3 }).textContent)
 	).toEqual(["Krisesenteret", "NAV Hamar"])
 	const national = screen.getByRole("region", { name: "Nasjonale tjenester" })
-	expect(within(national).getAllByRole("listitem")).toHaveLength(1)
+	// One card, counted by its heading: a card's badges are list items too.
+	expect(within(national).getAllByRole("heading", { level: 3 })).toHaveLength(1)
 	expect(screen.getByRole("link", { name: "Søk og filtrer i Hamar" })).toHaveAttribute(
 		"href",
 		"/sok?municipality=1"

@@ -15,17 +15,36 @@ export function ResourceBadges({ resource }: { resource: ResourceDto }) {
 		resource.isLowThreshold ||
 		resource.cost
 	if (!hasAny) return null
+	// A list, not a <p>: Chromium drops the paragraph role from a flex container, which left each
+	// badge a loose span in an unnamed generic, and NVDA skipped them in browse mode. As list items
+	// they are read as "list, N items", then each badge, in this order.
 	return (
-		<p className="flex flex-wrap gap-1">
-			{isAkutt && <span className="badge badge-akutt">{t("badge.akutt")}</span>}
-			{resource.isNational && <span className="badge text-muted">{t("badge.national")}</span>}
-			{resource.isAlwaysOpen && <span className="badge text-accent">{t("badge.alwaysOpen")}</span>}
+		<ul className="m-0 flex list-none flex-wrap gap-1 p-0">
+			{isAkutt && (
+				<li>
+					<span className="badge badge-akutt">{t("badge.akutt")}</span>
+				</li>
+			)}
+			{resource.isNational && (
+				<li>
+					<span className="badge text-muted">{t("badge.national")}</span>
+				</li>
+			)}
+			{resource.isAlwaysOpen && (
+				<li>
+					<span className="badge text-accent">{t("badge.alwaysOpen")}</span>
+				</li>
+			)}
 			{resource.isLowThreshold && (
-				<span className="badge text-accent">{t("badge.lowThreshold")}</span>
+				<li>
+					<span className="badge text-accent">{t("badge.lowThreshold")}</span>
+				</li>
 			)}
 			{resource.cost && (
-				<span className="badge text-muted">{t(`badge.cost.${resource.cost}`)}</span>
+				<li>
+					<span className="badge text-muted">{t(`badge.cost.${resource.cost}`)}</span>
+				</li>
 			)}
-		</p>
+		</ul>
 	)
 }

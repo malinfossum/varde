@@ -222,6 +222,34 @@ test("badges render on the detail page in the fixed order Akutt, Nasjonal, Døgn
 	expect(badges).toEqual(["Akutt", "Nasjonal", "Døgnåpent"])
 })
 
+test("detail badges are the items of a list in both languages, in visual order", async () => {
+	// A <p> with display: flex loses its paragraph role in Chromium, and NVDA skipped the badges.
+	// A real list is read as "list, 2 items", then each badge.
+	for (const [lang, expected] of [
+		["nb", ["Døgnåpent", "Lavterskel", "Koster penger"]],
+		["en", ["Open 24/7", "No referral", "Costs money"]],
+	] as const) {
+		stubDataFiles({
+			resources: [{ ...detail, isLowThreshold: true, cost: "paid", costNote: "350 kr" }],
+		})
+		const { unmount } = render(
+			<LanguageProvider lang={lang}>
+				<AnnouncerProvider>
+					<ResourceDetail id={12} />
+				</AnnouncerProvider>
+			</LanguageProvider>
+		)
+		await screen.findByRole("heading", { level: 1, name: "Krisesenteret i Hamar" })
+		const list = within(screen.getByRole("article")).getAllByRole("list")[0]
+		expect(
+			within(list as HTMLElement)
+				.getAllByRole("listitem")
+				.map((el) => el.textContent)
+		).toEqual(expected)
+		unmount()
+	}
+})
+
 // --- share + copy-phone ---------------------------------------------------------------------
 // jsdom ships neither navigator.share nor navigator.clipboard, so each test installs exactly
 // the capabilities it is about and removes them again.
