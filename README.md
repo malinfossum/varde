@@ -66,7 +66,7 @@ application logs record result counts, never search terms.
 
 ## Web
 
-The landing page is search-first: one box, nine category chips, and no data fetched until
+The landing page is search-first: one box, two featured category chips over a grid of eight, and no data fetched until
 you act on it. Above every page sits an acute strip with the four emergency numbers as
 hardcoded constants, so it renders before any JavaScript or data loads. Unified search across
 name, category and municipality, with suggestions and a national toggle. Details on the

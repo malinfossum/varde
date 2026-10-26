@@ -1,4 +1,4 @@
-import { act, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, renderHook, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, expect, test, vi } from "vitest"
 import { App } from "../src/App.tsx"
@@ -20,6 +20,9 @@ const resource: ResourceDto = {
 	openingHours: "Døgnåpent",
 	isNational: false,
 	isAlwaysOpen: true,
+	isLowThreshold: false,
+	cost: null,
+	costNote: null,
 	municipalityId: 1,
 	municipalityName: "Hamar",
 	address: null,
@@ -291,4 +294,83 @@ test("typing debounces the announced result count instead of announcing every ke
 	} finally {
 		vi.useRealTimers()
 	}
+})
+
+const BADGES = /^(Akutt|Nasjonal|Døgnåpent|Lavterskel|Gratis|Delvis gratis|Koster penger)$/
+
+test("card badges run Akutt, Nasjonal, Døgnåpent, Lavterskel, then the cost badge", () => {
+	withLang(
+		<ResourceCard
+			resource={{
+				...resource,
+				isNational: true,
+				isLowThreshold: true,
+				cost: "partly",
+				costNote: "Kaffe 20 kr",
+			}}
+		/>
+	)
+	const badges = screen.getAllByText(BADGES, { selector: ".badge" }).map((el) => el.textContent)
+	expect(badges).toEqual(["Akutt", "Nasjonal", "Døgnåpent", "Lavterskel", "Delvis gratis"])
+	// The price wording belongs to the detail page; the card shows only the badge.
+	expect(screen.queryByText("Kaffe 20 kr")).not.toBeInTheDocument()
+})
+
+test("each cost has its own badge in nb and en, and no cost shows no cost badge", () => {
+	for (const [cost, nb, en] of [
+		["free", "Gratis", "Free"],
+		["partly", "Delvis gratis", "Partly free"],
+		["paid", "Koster penger", "Costs money"],
+	] as const) {
+		const { unmount } = render(
+			<LanguageProvider lang="nb">
+				<ResourceCard resource={{ ...resource, cost }} />
+			</LanguageProvider>
+		)
+		expect(screen.getByText(nb, { selector: ".badge" })).toBeInTheDocument()
+		unmount()
+		const english = render(
+			<LanguageProvider lang="en">
+				<ResourceCard resource={{ ...resource, cost }} />
+			</LanguageProvider>
+		)
+		expect(screen.getByText(en, { selector: ".badge" })).toBeInTheDocument()
+		english.unmount()
+	}
+	withLang(<ResourceCard resource={{ ...resource, cost: null }} />)
+	expect(screen.queryByText(/^(Gratis|Delvis gratis|Koster penger)$/)).not.toBeInTheDocument()
+})
+
+test("the Lavterskel badge reads No referral in English", () => {
+	render(
+		<LanguageProvider lang="en">
+			<ResourceCard resource={{ ...resource, isLowThreshold: true }} />
+		</LanguageProvider>
+	)
+	expect(screen.getByText("No referral", { selector: ".badge" })).toBeInTheDocument()
+})
+
+test("data from before the new fields shows no new badge and no raw key", () => {
+	// Review Focus 1: a cached export from before the deploy has none of the three fields.
+	const { isLowThreshold: _badge, cost: _cost, costNote: _note, ...old } = resource
+	withLang(<ResourceCard resource={old as ResourceDto} />)
+	expect(
+		screen.queryByText(/^(Lavterskel|Gratis|Delvis gratis|Koster penger)$/)
+	).not.toBeInTheDocument()
+	expect(screen.queryByText(/badge\./)).not.toBeInTheDocument()
+})
+
+test("card badges are the items of a list, so a screen reader reads each one in order", () => {
+	withLang(
+		<ResourceCard
+			resource={{ ...resource, isLowThreshold: true, cost: "paid", costNote: "350 kr" }}
+		/>
+	)
+	// A <p> with display: flex loses its paragraph role in Chromium, and NVDA skipped the badges.
+	const badges = screen.getByRole("list")
+	expect(
+		within(badges)
+			.getAllByRole("listitem")
+			.map((el) => el.textContent)
+	).toEqual(["Akutt", "Døgnåpent", "Lavterskel", "Koster penger"])
 })

@@ -105,7 +105,9 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	// The same https guard as chat links: every website in the data is https, and anything else
 	// (a typo, a javascript: value) shows as text and never becomes a link.
 	const website = safeChatUrl(resource.website)
-	const hasFacts = Boolean(resource.openingHours || resource.address || resource.website)
+	const hasFacts = Boolean(
+		resource.openingHours || resource.address || resource.website || resource.costNote
+	)
 
 	return (
 		<div className="grid gap-6">
@@ -185,6 +187,12 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 								<div>
 									<dt>{t("card.hours")}</dt>
 									<dd>{resource.openingHours}</dd>
+								</div>
+							)}
+							{resource.costNote && (
+								<div>
+									<dt>{t("detail.price")}</dt>
+									<dd>{resource.costNote}</dd>
 								</div>
 							)}
 							{resource.address && (

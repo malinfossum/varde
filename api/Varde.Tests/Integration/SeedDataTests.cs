@@ -120,7 +120,7 @@ public class SeedDataTests
 
         var categories = await db.Categories.Include(c => c.Translations).ToListAsync();
 
-        Assert.Equal(9, categories.Count);
+        Assert.Equal(10, categories.Count);
         Assert.All(categories, c => Assert.Equal(2, c.Translations.Count));
     }
 
@@ -269,5 +269,72 @@ public class SeedDataTests
         Assert.Equal(
             [9],
             await db.Resources.Where(r => r.PhoneMenuOption != null).Select(r => r.Id).ToListAsync());
+    }
+
+    [DbFact]
+    public async Task Every_seeded_website_and_chat_link_is_absolute_https()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+        Assert.Empty(SeedGuards.LinkProblems(await db.Resources.ToListAsync()));
+    }
+
+    [DbFact]
+    public async Task Cost_and_cost_notes_agree_and_keep_their_numbers_across_languages()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+        var resources = await db.Resources.Include(r => r.Translations).ToListAsync();
+
+        Assert.Empty(SeedGuards.CostProblems(resources));
+        Assert.Empty(SeedGuards.NumberProblems(resources));
+    }
+
+    [DbFact]
+    public async Task Every_lavterskel_badge_has_a_referral_quote_in_its_seed_doc_and_back()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+        var root = SeedDocs.RepoRoot();
+        var quotes = new Dictionary<int, string>();
+        foreach (var doc in SeedDocs.WithReferralQuotes)
+            foreach (var (row, quote) in SeedDocs.ReferralQuotes(File.ReadAllText(Path.Combine(root, doc))))
+                Assert.True(quotes.TryAdd(row, quote), $"row {row} appears in two seed docs");
+
+        var seeded = await db.Resources.Select(r => r.Id).ToListAsync();
+        var badged = (await db.Resources.Where(r => r.IsLowThreshold).Select(r => r.Id).ToListAsync()).ToHashSet();
+
+        Assert.Empty(SeedDocs.BadgeProblems(seeded, badged, quotes));
+    }
+
+    [DbFact]
+    public async Task Category_10_is_lavterskeltilbud_with_both_names()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+        var category = await db.Categories.Include(c => c.Translations).SingleAsync(c => c.Id == 10);
+
+        Assert.Equal("lavterskeltilbud", category.Slug);
+        Assert.Equal("Lavterskeltilbud", category.Translations.Single(t => t.LanguageCode == "nb").Name);
+        Assert.Equal("Drop-in and activities", category.Translations.Single(t => t.LanguageCode == "en").Name);
+    }
+
+    [DbFact]
+    public async Task Category_10_rows_sit_in_a_kommune_and_are_never_national()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+        var resources = await db.Resources.Include(r => r.ResourceCategories).ToListAsync();
+
+        Assert.Contains(resources, r => r.ResourceCategories.Any(rc => rc.CategoryId == 10));
+        Assert.Empty(SeedGuards.Category10Problems(resources));
     }
 }

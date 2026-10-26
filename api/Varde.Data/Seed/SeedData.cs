@@ -44,6 +44,12 @@ namespace Varde.Data.Seed;
 ///
 /// IsAlwaysOpen (added plan 2) is true exactly where the nb OpeningHours reads "Døgnåpent" — the
 /// SeedDataTests guard enforces both directions.
+///
+/// Sub-project C1 (2026-10-15 spec) re-read every live row for its referral statement and price
+/// wording: docs/seed-data-lavterskel-retag.md, checked in
+/// docs/verification/seed-data-lavterskel-retag-check.md. IsLowThreshold, Cost and the
+/// CostNote translations come from that doc, as does category 10 membership; rows it changed
+/// carry VerifiedRetag. SeedDataTests checks every badge against the doc's referral quote.
 /// </summary>
 public static class SeedData
 {
@@ -61,6 +67,10 @@ public static class SeedData
 
     // Rows 23-25 (nødnumre) were added and verified 2026-09-09 — see docs/seed-data.md.
     private static readonly DateOnly VerifiedRows23To25 = new(2026, 9, 9);
+
+    // Rows the C1 re-read changed (docs/seed-data-lavterskel-retag.md, gate closed 2026-10-26)
+    // carry the date the page was read. Rows the re-read left alone keep their own date.
+    private static readonly DateOnly VerifiedRetag = new(2026, 10, 26);
 
     // Municipality ids — county = Innlandet for 1-7, Oslo for 8.
     private const int Hamar = 1;
@@ -94,10 +104,11 @@ public static class SeedData
                 Name = "Hjelpetelefonen (Mental Helse)",
                 IsNational = true,
                 IsAlwaysOpen = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = null,
                 Phone = "116 123",
                 Website = "https://mentalhelse.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -107,11 +118,12 @@ public static class SeedData
                 Name = "Kirkens SOS",
                 IsNational = true,
                 IsAlwaysOpen = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = null,
                 Phone = "22 40 00 40",
                 Website = "https://www.kirkens-sos.no",
                 ChatUrl = "https://www.soschat.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -121,10 +133,11 @@ public static class SeedData
                 Name = "Legevakt",
                 IsNational = true,
                 IsAlwaysOpen = true,
+                Cost = ResourceCost.Paid,
                 MunicipalityId = null,
                 Phone = "116 117",
                 Website = "https://www.helsenorge.no/legevakt/",
-                LastVerified = VerifiedRow3,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -134,11 +147,12 @@ public static class SeedData
                 Name = "Alarmtelefonen for barn og unge",
                 IsNational = true,
                 IsAlwaysOpen = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = null,
                 Phone = "116 111",
                 Website = "https://www.116111.no",
                 ChatUrl = "https://www.116111.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -148,11 +162,12 @@ public static class SeedData
                 Name = "VO-linjen",
                 IsNational = true,
                 IsAlwaysOpen = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = null,
                 Phone = "116 006",
                 Website = "https://www.volinjen.no",
                 ChatUrl = "https://www.volinjen.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -161,10 +176,11 @@ public static class SeedData
                 Id = 6,
                 Name = "Navs økonomi- og gjeldsveiledningstelefon",
                 IsNational = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = null,
                 Phone = "55 55 33 39",
                 Website = "https://www.nav.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -173,10 +189,11 @@ public static class SeedData
                 Id = 7,
                 Name = "Jussbuss",
                 IsNational = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = null,
                 Phone = "22 84 29 00",
                 Website = "https://foreninger.uio.no/jussbuss/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -202,7 +219,7 @@ public static class SeedData
                 ParentId = 1,
                 PhoneMenuOption = 3,
                 Website = "https://mentalhelse.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -210,11 +227,13 @@ public static class SeedData
             {
                 Id = 10,
                 Name = "Familievernkontoret Innlandet Øst, avdeling Hamar",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Hamar,
                 Address = "Vangsvegen 121, 2318 Hamar",
                 Phone = "466 17 130",
                 Website = "https://www.bufdir.no/familie/familievernkontorer/oversikt/innlandet-ost/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -235,11 +254,13 @@ public static class SeedData
                 Id = 12,
                 Name = "Hamar interkommunale krisesenter",
                 IsAlwaysOpen = true,
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Hamar,
-                Address = "Kronborgveien 23, 2318 Hamar",
+                Address = "Kronborgvegen 23, 2318 Hamar",
                 Phone = "62 56 18 30",
                 Website = "https://www.hamar.kommune.no/familiehjelp-oversikt-over-tilbud/krisesenter/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -270,10 +291,12 @@ public static class SeedData
             {
                 Id = 15,
                 Name = "Rask psykisk helsehjelp, Lillehammer kommune",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Lillehammer,
                 Phone = "917 13 338",
                 Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -281,11 +304,12 @@ public static class SeedData
             {
                 Id = 16,
                 Name = "Gudbrandsdal Krisesenter IKS",
+                Cost = ResourceCost.Free,
                 MunicipalityId = Lillehammer,
                 Address = "Skoletorget 6 D, 2609 Lillehammer",
                 Phone = "414 81 220",
                 Website = "https://gudbrandsdal-krisesenter.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -293,10 +317,12 @@ public static class SeedData
             {
                 Id = 17,
                 Name = "Housing First, Lillehammer kommune",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Lillehammer,
                 Phone = "451 64 131",
                 Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -304,10 +330,12 @@ public static class SeedData
             {
                 Id = 18,
                 Name = "Oppfølgingsteamet, Lillehammer kommune",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Lillehammer,
                 Phone = "902 43 733",
                 Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -339,13 +367,15 @@ public static class SeedData
                 Id = 21,
                 Name = "Gjøvik Krisesenter IKS",
                 IsAlwaysOpen = true,
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Gjovik,
                 // Address deliberately withheld — the centre gives its visiting address only on
                 // contact, for safety. See docs/seed-data.md row 21's Notes. Not missing data.
                 Address = null,
                 Phone = "61 17 55 60",
                 Website = "https://www.krisesenteret-gjovik.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -422,12 +452,13 @@ public static class SeedData
             {
                 Id = 102,
                 Name = "Psykisk helse- og rustjenester, Ringsaker kommune",
+                IsLowThreshold = true,
                 MunicipalityId = Ringsaker,
                 Address = "Brugata 3, 2380 Brumunddal",
                 Email = "postmottak.psykisk.helse@ringsaker.kommune.no",
                 Phone = "62 33 52 20",
                 Website = "https://www.ringsaker.kommune.no/tjenester/helse-og-omsorg/psykisk-helse-og-rustjenester",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -455,7 +486,7 @@ public static class SeedData
                 Email = "nav.stange@nav.no",
                 Phone = "55 55 33 33",
                 Website = "https://www.nav.no/kontor/nav-stange",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -463,10 +494,12 @@ public static class SeedData
             {
                 Id = 105,
                 Name = "Stangehjelpa (avdeling for psykisk helse og rus), Stange kommune",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Stange,
                 Phone = "62 56 23 00",
                 Website = "https://www.stange.kommune.no/helse-og-mestring/psykisk-helse-og-rus/stangehjelpa/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -474,10 +507,11 @@ public static class SeedData
             {
                 Id = 106,
                 Name = "Psykososial krisehjelp, Stange kommune",
+                Cost = ResourceCost.Free,
                 MunicipalityId = Stange,
                 Phone = "908 05 567",
                 Website = "https://www.stange.kommune.no/helse-og-mestring/psykisk-helse-og-rus/psykososial-krisehjelp/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -488,7 +522,7 @@ public static class SeedData
                 MunicipalityId = Stange,
                 Phone = "905 42 305",
                 Website = "https://www.stange.kommune.no/helse-og-mestring/barn-unge-og-familie/barnevern/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -509,21 +543,23 @@ public static class SeedData
             {
                 Id = 109,
                 Name = "Økonomisk rådgivning, Nav Løten",
+                Cost = ResourceCost.Free,
                 MunicipalityId = Loten,
                 Phone = "55 55 33 33",
                 Website = "https://www.loten.kommune.no/helse-sosial-og-familie/sosiale-tjenester-og-nav/okonomisk-radgivning/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
             new Resource
             {
                 Id = 110,
-                Name = "Psykisk helse og rus-teamet (ROP-team), Løten kommune",
+                Name = "Psykisk helse-team, Løten kommune",
+                Cost = ResourceCost.Free,
                 MunicipalityId = Loten,
                 Phone = "904 74 982",
                 Website = "https://www.loten.kommune.no/helse-sosial-og-familie/psykisk-helse-og-rus/psykisk-helse-og-rus-kategori/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -542,12 +578,14 @@ public static class SeedData
             {
                 Id = 112,
                 Name = "Rask psykisk helsehjelp (RPH), Løten kommune",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Loten,
                 Address = "Kildevegen 1, 2340 Løten",
                 // Phone deliberately empty — the only numbers on the page sit under two
                 // therapists' first names, not a service line. My 2026-08-17 decision.
                 Website = "https://www.loten.kommune.no/helse-sosial-og-familie/psykisk-helse-og-rus/rask-psykisk-helsehjelp-rph/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -561,7 +599,7 @@ public static class SeedData
                 Address = "St. Olavs gate 4, 2414 Elverum",
                 Phone = "55 55 33 33",
                 Website = "https://www.nav.no/kontor/nav-elverum",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -581,10 +619,12 @@ public static class SeedData
             {
                 Id = 115,
                 Name = "Lavterskel rus- og psykisk helsehjelp (Annekset og Grip), Elverum kommune",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Elverum,
                 Phone = "993 72 609",
                 Website = "https://www.elverum.kommune.no/vare-tjenester/helse-omsorg-og-sosiale-tjenester/rus-og-psykisk-helsetjenester/lavterskel-rus-og-psykisk-helsehjelp/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -603,12 +643,14 @@ public static class SeedData
             {
                 Id = 117,
                 Name = "Nok. Elverum Ressurssenter",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Elverum,
                 Address = "Storgata 10, 2408 Elverum",
                 Email = "post@nokelverum.no",
                 Phone = "971 59 810",
-                Website = "https://www.nokelverum.no",
-                LastVerified = Verified,
+                Website = "https://nokelverum.no",
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -616,11 +658,13 @@ public static class SeedData
             {
                 Id = 118,
                 Name = "Nok. Hamar",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Hamar,
                 Email = "post@nokhamar.no",
                 Phone = "916 91 714",
                 Website = "https://www.nokhamar.no",
-                LastVerified = VerifiedRow118,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -645,7 +689,7 @@ public static class SeedData
                 MunicipalityId = null,
                 Phone = "800 80 000",
                 Website = "https://www.skatteetaten.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -654,11 +698,12 @@ public static class SeedData
                 Id = 121,
                 Name = "Kors på halsen (Røde Kors)",
                 IsNational = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = null,
                 Phone = "800 33 321",
                 Website = "https://www.korspahalsen.no",
                 ChatUrl = "https://www.korspahalsen.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -667,11 +712,12 @@ public static class SeedData
                 Id = 122,
                 Name = "Sidetmedord (Mental Helse)",
                 IsNational = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = null,
                 ParentId = 1,
                 Website = "https://sidetmedord.mentalhelse.no/",
                 ChatUrl = "https://mentalhelse.no/hjelpechat/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -782,7 +828,7 @@ public static class SeedData
                 Address = "Thorvald Meyers gate 9, 0555 Oslo",
                 Phone = "55 55 33 33",
                 Website = "https://www.nav.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -806,7 +852,7 @@ public static class SeedData
                 Address = "Stovner Senter 17, 0985 Oslo",
                 Phone = "55 55 33 33",
                 Website = "https://www.nav.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -863,6 +909,8 @@ public static class SeedData
                 Id = 216,
                 Name = "Oslo Krisesenter",
                 IsAlwaysOpen = true,
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 // Address deliberately null — hemmelig adresse for safety. The Postboks in the
                 // doc's Notes is a postal address, not a visiting address, so it is not seeded
@@ -870,7 +918,7 @@ public static class SeedData
                 Address = null,
                 Phone = "22 48 03 80",
                 Website = "https://www.oslokrisesenter.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -879,10 +927,11 @@ public static class SeedData
                 Id = 217,
                 Name = "Unge Relasjoner",
                 IsNational = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = null,
                 Website = "https://www.ungerelasjoner.no",
                 ChatUrl = "https://www.ungerelasjoner.no/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -891,6 +940,8 @@ public static class SeedData
                 Id = 218,
                 Name = "Overgrepsmottaket, Legevakten i Oslo",
                 IsAlwaysOpen = true,
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Trondheimsveien 233 (Aker sykehus), 0587 Oslo",
                 // Number shared with row 221 (Psykososial akuttjeneste) — two real services
@@ -899,7 +950,7 @@ public static class SeedData
                 // not seeded: staff-only / a different service.
                 Phone = "23 04 05 00",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -907,11 +958,13 @@ public static class SeedData
             {
                 Id = 219,
                 Name = "Alternativ til Vold (ATV) Oslo",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Paid,
                 MunicipalityId = Oslo,
                 Address = "Brugata 19, 0186 Oslo",
                 Phone = "22 40 11 10",
                 Website = "https://atv-stiftelsen.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -920,10 +973,10 @@ public static class SeedData
                 Id = 220,
                 Name = "Vake kirkelig ressurssenter mot seksuelle overgrep",
                 MunicipalityId = Oslo,
-                Address = "Lovisenberggata 15 C, 0456 Oslo",
+                Address = "Lovisenberggata 15A, 0456 Oslo",
                 Phone = "23 22 79 30",
-                Website = "https://www.kirkeligressurssenter.no",
-                LastVerified = Verified,
+                Website = "https://www.ressurssenteret.no",
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -932,12 +985,14 @@ public static class SeedData
                 Id = 221,
                 Name = "Psykososial akuttjeneste, Legevakten i Oslo",
                 IsAlwaysOpen = true,
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Trondheimsveien 233 (Aker sykehus), 0587 Oslo",
                 // Same number as row 218 — see that row's note.
                 Phone = "23 04 05 00",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -945,6 +1000,7 @@ public static class SeedData
             {
                 Id = 222,
                 Name = "Legevakten i Oslo",
+                Cost = ResourceCost.Paid,
                 MunicipalityId = Oslo,
                 Address = "Trondheimsveien 233 (Aker sykehus)",
                 // 116 117 shown per the 2026-08-17 no-calls resolution — the number on the
@@ -952,7 +1008,7 @@ public static class SeedData
                 // note-only, not seeded. Overlaps with national row 3 in seed-data.md.
                 Phone = "116 117",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -966,7 +1022,7 @@ public static class SeedData
                 // with their own pages and target groups (2026-08-17 resolution).
                 Phone = "913 03 913",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -974,11 +1030,12 @@ public static class SeedData
             {
                 Id = 224,
                 Name = "Uteseksjonens psykologtjeneste",
+                IsLowThreshold = true,
                 MunicipalityId = Oslo,
                 Address = "Maridalsveien 3, 0178 Oslo",
                 Phone = "913 03 913",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -986,6 +1043,8 @@ public static class SeedData
             {
                 Id = 225,
                 Name = "Prindsen mottakssenter",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Hausmannsgate 11, 0182 Oslo",
                 // A second number (23 04 05 00, the legevakt/psykososial line — rows 218/221)
@@ -994,7 +1053,7 @@ public static class SeedData
                 // never-invent-staff-numbers rule.
                 Phone = "23 42 72 00",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1002,11 +1061,12 @@ public static class SeedData
             {
                 Id = 226,
                 Name = "Feltpleien i Oslo (Frelsesarmeen)",
+                IsLowThreshold = true,
                 MunicipalityId = Oslo,
                 Address = "Urtegata 16 A, 0187 Oslo",
                 Phone = "22 67 43 45",
                 Website = "https://frelsesarmeen.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1014,12 +1074,13 @@ public static class SeedData
             {
                 Id = 227,
                 Name = "Fyrlyset, Oslo (Frelsesarmeen)",
+                IsLowThreshold = true,
                 MunicipalityId = Oslo,
                 Address = "Urtegata 16 A, 0187 Oslo",
                 Email = "fyrlyset.oslo@frelsesarmeen.no",
                 Phone = "23 03 66 80",
                 Website = "https://frelsesarmeen.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1027,11 +1088,12 @@ public static class SeedData
             {
                 Id = 228,
                 Name = "LINK Oslo",
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Lilletorget 1, 5. etasje",
                 Phone = "940 30 488",
                 Website = "https://linkoslo.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1039,11 +1101,13 @@ public static class SeedData
             {
                 Id = 229,
                 Name = "Rask psykisk helsehjelp – Bydel Alna",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Trygve Lies Plass 6, 1051 Oslo",
                 Phone = "22 30 77 12",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1051,11 +1115,13 @@ public static class SeedData
             {
                 Id = 230,
                 Name = "Rask psykisk helsehjelp – Bydel Ullern",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Hoffsveien 48, 0377 Oslo",
                 Phone = "95 29 83 22",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1063,11 +1129,12 @@ public static class SeedData
             {
                 Id = 231,
                 Name = "Rask psykisk helsehjelp – Bydel Vestre Aker",
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Sørkedalsveien 150 A, 0754 Oslo",
                 Phone = "47 78 13 15",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1075,11 +1142,13 @@ public static class SeedData
             {
                 Id = 232,
                 Name = "Ung Arena Oslo sentrum",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Hagegata 32, 0653 Oslo",
                 Phone = "904 15 388",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1092,7 +1161,7 @@ public static class SeedData
                 Email = "frirettshjelp@vel.oslo.kommune.no",
                 Phone = "23 48 79 00",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1100,11 +1169,12 @@ public static class SeedData
             {
                 Id = 234,
                 Name = "JURK – Juridisk rådgivning for kvinner",
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Skippergata 23, 0154 Oslo",
                 Phone = "22 84 29 50",
                 Website = "https://foreninger.uio.no/jurk/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1112,11 +1182,12 @@ public static class SeedData
             {
                 Id = 235,
                 Name = "Gatejuristen",
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 // No phone, address or hours found on the source page — deliberately
                 // contactless, ships website-only. See docs/seed-data-oslo.md row 235's Notes.
                 Website = "https://kirkensbymisjon.no/gatejuristen/",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1136,11 +1207,13 @@ public static class SeedData
             {
                 Id = 237,
                 Name = "Familievernkontoret Christiania",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Dronningens gate 8 A, 0152 Oslo",
                 Phone = "23 28 39 40",
                 Website = "https://www.bufdir.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1148,11 +1221,13 @@ public static class SeedData
             {
                 Id = 238,
                 Name = "Familievernkontoret Enerhaugen",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Grønlandsleiret 25, 0190 Oslo",
                 Phone = "466 17 010",
                 Website = "https://www.bufdir.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1160,11 +1235,13 @@ public static class SeedData
             {
                 Id = 239,
                 Name = "Familievernkontoret Homansbyen",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Oscars gate 20, 0352 Oslo",
                 Phone = "466 16 660",
                 Website = "https://www.bufdir.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1172,26 +1249,30 @@ public static class SeedData
             {
                 Id = 240,
                 Name = "Familievernkontoret Oslo Nord",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 Address = "Kabelgata 2, 0581 Oslo",
                 Phone = "46 61 51 20",
                 Website = "https://www.bufdir.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
             new Resource
             {
                 Id = 241,
-                Name = "Gamle Oslo helsestasjon for ungdom (HFU)",
+                Name = "Sentrum helsestasjon for ungdom (HFU)",
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
-                // Seeded as Gamle Oslo per my 2026-08-17 resolution: page content (title +
+                // Renamed Sentrum 2026-10-26 (docs/seed-data-lavterskel-retag.md row 241). Seeded as
+                // Gamle Oslo per my 2026-08-17 resolution: page content (title +
                 // Hagegata 32, postcode consistent with Gamle Oslo) wins over the URL slug,
                 // which said "grunerlokka". See docs/seed-data-oslo.md's "Verify these first" §1.
                 Address = "Hagegata 32, 0653 Oslo",
-                Phone = "415 65 535",
+                Phone = "23 43 19 04",
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1199,12 +1280,13 @@ public static class SeedData
             {
                 Id = 242,
                 Name = "Helsestasjon for ungdom (HFU) i Oslo",
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 // City-level overview row — no phone number or per-station contact printed on
                 // the central page. Ships website-only, consistent with the Jobbhus/RPH
                 // decisions elsewhere in this batch.
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1212,11 +1294,13 @@ public static class SeedData
             {
                 Id = 243,
                 Name = "Oslohjelpa",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
                 MunicipalityId = Oslo,
                 // No phone number printed — the page only says to contact Oslohjelpa in your
                 // own bydel, without listing per-bydel numbers.
                 Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1266,7 +1350,7 @@ public static class SeedData
                 // (operations manager), not a service address. Never-invent/never-personal rule.
                 Phone = "22 66 67 80",
                 Website = "https://kirkensbymisjon.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             });
@@ -1279,6 +1363,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis og døgnåpen telefontjeneste for alle som trenger noen å snakke med om det som er vanskelig. Du kan være anonym, og de som svarer har taushetsplikt.",
                 OpeningHours = "Døgnåpent",
+                CostNote = "116 123 er en gratis og døgnåpen telefontjeneste for alle som trenger noen å snakke med.",
             },
             new ResourceTranslation
             {
@@ -1287,6 +1372,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A free 24-hour phone line for anyone who needs someone to talk to about what is difficult. You can stay anonymous, and everyone who answers is bound by confidentiality.",
                 OpeningHours = "Open 24 hours",
+                CostNote = "116 123 is a free, 24-hour phone service for anyone who needs someone to talk to.",
             },
             new ResourceTranslation
             {
@@ -1295,6 +1381,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Døgnåpen krisetelefon for deg som har det vanskelig eller tenker på selvmord. Tjenesten er anonym, og du trenger ikke ha en bestemt grunn for å ringe.",
                 OpeningHours = "Døgnåpent",
+                CostNote = "Kirkens SOS tar seg ikke betalt for tjenesten og tjener ingenting på tellerskrittene.",
             },
             new ResourceTranslation
             {
@@ -1303,6 +1390,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A 24-hour crisis line for anyone in distress or having thoughts of suicide. The service is anonymous, and you do not need a particular reason to call.",
                 OpeningHours = "Open 24 hours",
+                CostNote = "Kirkens SOS does not charge for the service and earns nothing from the call charges.",
             },
             new ResourceTranslation
             {
@@ -1311,6 +1399,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Nasjonalt nummer som setter deg over til legevaktsentralen der du befinner deg, når fastlegen er stengt og du trenger hjelp raskt. Ved akutt livsfare skal du ringe 113.",
                 OpeningHours = "Døgnåpent",
+                CostNote = "Når du bruker tjenester fra legevakt må du betale en egenandel hvis du ikke har frikort.",
             },
             new ResourceTranslation
             {
@@ -1319,6 +1408,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A national number that connects you to the out-of-hours medical service where you are, when your regular doctor is closed and you need help quickly. In a life-threatening emergency, call 113 instead.",
                 OpeningHours = "Open 24 hours",
+                CostNote = "When you use out-of-hours medical services you must pay a co-payment if you do not have an exemption card.",
             },
             new ResourceTranslation
             {
@@ -1327,6 +1417,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis døgnåpen telefon for barn og unge som opplever vold, overgrep eller omsorgssvikt. Voksne som er bekymret for et barn kan også ringe.",
                 OpeningHours = "Døgnåpent",
+                CostNote = "Alarmtelefonen er en gratis tjeneste der du kan henvende deg anonymt.",
             },
             new ResourceTranslation
             {
@@ -1335,6 +1426,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A free 24-hour phone line for children and young people experiencing violence, abuse or neglect. Adults who are worried about a child can call too.",
                 OpeningHours = "Open 24 hours",
+                CostNote = "The Alarm Phone is a free service where you can get in touch anonymously.",
             },
             new ResourceTranslation
             {
@@ -1343,6 +1435,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Hjelpelinje for deg som opplever vold eller overgrep i nære relasjoner. Også for pårørende og hjelpere, og du kan være helt anonym.",
                 OpeningHours = "Døgnåpent",
+                CostNote = "Helt gratis og anonymt.",
             },
             new ResourceTranslation
             {
@@ -1351,6 +1444,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A helpline for anyone experiencing violence or abuse in a close relationship. It is also for relatives and professionals, and you can remain completely anonymous.",
                 OpeningHours = "Open 24 hours",
+                CostNote = "Completely free and anonymous.",
             },
             new ResourceTranslation
             {
@@ -1359,6 +1453,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis veiledning for deg som har økonomiske problemer eller gjeld du ikke klarer å betjene. Du kan få hjelp til å få oversikt over økonomien og sette opp et realistisk budsjett.",
                 OpeningHours = "Hverdager 09:00–15:00",
+                CostNote = "Tjenesten er gratis, og du bør søke hjelp så tidlig som mulig.",
             },
             new ResourceTranslation
             {
@@ -1367,6 +1462,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "Free guidance for anyone with money problems or debt they cannot manage. You can get help mapping out your finances and building a budget you can actually live with.",
                 OpeningHours = "Weekdays 09:00–15:00",
+                CostNote = "The service is free, and you should seek help as early as possible.",
             },
             new ResourceTranslation
             {
@@ -1375,6 +1471,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis rettshjelp fra jusstudenter i saker om blant annet husleie, gjeld, trygd, arbeid, utlendingsrett og fengsel. Du trenger ikke advokat for å ta kontakt.",
                 OpeningHours = "Mandag 17:00–20:00 og tirsdag 10:00–15:00",
+                CostNote = "Jussbuss gir gratis rettshjelp i enkeltsaker, og er drevet av jusstudenter.",
             },
             new ResourceTranslation
             {
@@ -1383,6 +1480,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "Free legal aid from law students in areas such as rent, debt, benefits, employment, immigration and prison law. You do not need a lawyer to get in touch.",
                 OpeningHours = "Monday 17:00–20:00 and Tuesday 10:00–15:00",
+                CostNote = "Jussbuss gives free legal aid in individual cases, and is run by law students.",
             },
             new ResourceTranslation
             {
@@ -1406,6 +1504,7 @@ public static class SeedData
                 ResourceId = 9,
                 LanguageCode = "nb",
                 Description = "Rådgivning om vanskelige forhold på jobben, som konflikt, mobbing, sykefravær eller oppsigelse. Åpen for arbeidstakere, ledere, tillitsvalgte og arbeidssøkere.",
+                OpeningHours = "Mandag, tirsdag, onsdag og fredag 08:30–16:00, torsdag 08:30–18:00",
             },
             new ResourceTranslation
             {
@@ -1413,6 +1512,7 @@ public static class SeedData
                 ResourceId = 9,
                 LanguageCode = "en",
                 Description = "Advice about difficult situations at work, such as conflict, bullying, sick leave or dismissal. Open to employees, managers, union representatives and jobseekers.",
+                OpeningHours = "Monday, Tuesday, Wednesday and Friday 08:30–16:00, Thursday 08:30–18:00",
             },
             new ResourceTranslation
             {
@@ -1421,6 +1521,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis tilbud om samtale, parterapi og mekling for familier, par og enkeltpersoner. Du trenger ingen henvisning for å bestille time.",
                 OpeningHours = "08:30–15:00, redusert om sommeren",
+                CostNote = "Tilbudet er gratis.",
             },
             new ResourceTranslation
             {
@@ -1429,6 +1530,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A free service offering counselling, couples therapy and mediation for families, couples and individuals. No referral is needed to book an appointment.",
                 OpeningHours = "08:30–15:00, reduced in summer",
+                CostNote = "The service is free.",
             },
             new ResourceTranslation
             {
@@ -1453,6 +1555,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis døgnåpent tilbud til kvinner, menn, barn og eldre som er utsatt for vold i nære relasjoner. Senteret tilbyr både beskyttet botilbud og samtaler for dem som ikke trenger å bo der.",
                 OpeningHours = "Døgnåpent",
+                CostNote = "Hamar interkommunale krisesenter er et gratis døgnåpent akuttsenter.",
             },
             new ResourceTranslation
             {
@@ -1461,6 +1564,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A free 24-hour service for women, men, children and older people affected by violence in close relationships. The centre offers both protected accommodation and counselling for those who do not need to stay.",
                 OpeningHours = "Open 24 hours",
+                CostNote = "Hamar interkommunale krisesenter is a free 24-hour emergency centre.",
             },
             new ResourceTranslation
             {
@@ -1501,6 +1605,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Korttidsbehandling for deg fra 16 år med lettere angst, depresjon, søvnvansker eller begynnende rusproblemer. Tilbudet er gratis, og du trenger ikke henvisning fra fastlegen.",
                 OpeningHours = "Mandag og onsdag 11:30–13:00",
+                CostNote = "Rask psykisk helsehjelp er et gratis og tidsavgrenset tilbud til deg fra 16 år som ønsker hjelp med begynnende og/eller lettere former for angst, depresjon, søvnvansker og alkohol-/rusproblemer.",
             },
             new ResourceTranslation
             {
@@ -1509,6 +1614,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "Short-term treatment for people aged 16 and over with mild anxiety, depression, sleep problems or early substance use difficulties. The service is free and needs no referral from your doctor.",
                 OpeningHours = "Monday and Wednesday 11:30–13:00",
+                CostNote = "Rask psykisk helsehjelp (rapid mental health help) is a free, time-limited service for you from age 16 who want help with early and/or milder forms of anxiety, depression, sleep problems and alcohol or drug problems.",
             },
             new ResourceTranslation
             {
@@ -1531,6 +1637,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Tilbud til bostedsløse med rus- eller psykiske helseutfordringer, der du først får en varig bolig og deretter oppfølging der du bor. Målet er en stabil bosituasjon uten krav om rusfrihet på forhånd.",
                 OpeningHours = "Hverdager 09:00–15:00",
+                CostNote = "Våre tjenester er gratis.",
             },
             new ResourceTranslation
             {
@@ -1539,6 +1646,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A service for homeless people with substance use or mental health difficulties, where you first get permanent housing and then receive support where you live. The aim is a stable home without requiring sobriety first.",
                 OpeningHours = "Weekdays 09:00–15:00",
+                CostNote = "Our services are free.",
             },
             new ResourceTranslation
             {
@@ -1547,6 +1655,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Team som gir tett oppfølging til voksne med rusproblemer eller psykiske helseutfordringer i hverdagen. Teamet har lang åpningstid, også i helgene.",
                 OpeningHours = "Hver dag 09:00–21:00",
+                CostNote = "Våre tjenester er gratis.",
             },
             new ResourceTranslation
             {
@@ -1555,6 +1664,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A team providing close everyday follow-up for adults with substance use or mental health difficulties. The team has long opening hours, including weekends.",
                 OpeningHours = "Every day 09:00–21:00",
+                CostNote = "Our services are free.",
             },
             new ResourceTranslation
             {
@@ -1593,6 +1703,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis døgnåpent tilbud til kvinner, menn og barn som er utsatt for vold i nære relasjoner, voldtekt eller tvangsekteskap. Adressen oppgis først når du tar kontakt, av hensyn til sikkerheten.",
                 OpeningHours = "Døgnåpent",
+                CostNote = "Tilbudet er gratis.",
             },
             new ResourceTranslation
             {
@@ -1601,6 +1712,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A free 24-hour service for women, men and children affected by violence in close relationships, rape or forced marriage. The address is only given when you make contact, for safety reasons.",
                 OpeningHours = "Open 24 hours",
+                CostNote = "The service is free.",
             },
             new ResourceTranslation
             {
@@ -1669,16 +1781,16 @@ public static class SeedData
                 Id = 51,
                 ResourceId = 104,
                 LanguageCode = "nb",
-                Description = "Nav-kontoret for innbyggere i Stange, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Veiledningssenteret er åpent for selvbetjening, og du kan komme innom i drop-in-tiden.",
-                OpeningHours = "Drop-in mandag, onsdag og fredag 10.00-12.00; selvbetjening hverdager 09.00-14.30",
+                Description = "Nav-kontoret for innbyggere i Stange, med hjelp til økonomisk sosialhjelp, arbeid, bolig og andre sosiale tjenester. Veiledningssenteret er åpent for selvbetjening.",
+                OpeningHours = "Selvbetjent mottak mandag, tirsdag, torsdag og fredag 09.00-14.30 og onsdag 12.00-14.30; betjent mottak onsdag 09.00-12.00",
             },
             new ResourceTranslation
             {
                 Id = 52,
                 ResourceId = 104,
                 LanguageCode = "en",
-                Description = "The Nav office for people living in Stange, offering help with financial assistance, work, housing and other social services. The guidance centre is open for self-service, and you can come by during drop-in hours.",
-                OpeningHours = "Drop-in Monday, Wednesday and Friday 10.00-12.00; self-service weekdays 09.00-14.30",
+                Description = "The Nav office for people living in Stange, offering help with financial assistance, work, housing and other social services. The guidance centre is open for self-service.",
+                OpeningHours = "Self-service reception Monday, Tuesday, Thursday and Friday 09.00-14.30 and Wednesday 12.00-14.30; staffed reception Wednesday 09.00-12.00",
             },
             new ResourceTranslation
             {
@@ -1687,6 +1799,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Stange kommunes samlede lavterskeltilbud innen psykisk helse og rus, for både barn, unge og voksne. Du trenger ingen henvisning, og kan ta kontakt selv i telefontiden.",
                 OpeningHours = "Telefontid hverdager 09.00-15.00 (stengt 11.00-11.45)",
+                CostNote = "Det er gratis å motta hjelp hos oss.",
             },
             new ResourceTranslation
             {
@@ -1695,6 +1808,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "Stange municipality's combined low-threshold service for mental health and substance use, for children, young people and adults alike. No referral is needed, and you can get in touch yourself during phone hours.",
                 OpeningHours = "Phone hours weekdays 09.00-15.00 (closed 11.00-11.45)",
+                CostNote = "It is free to receive help from us.",
             },
             new ResourceTranslation
             {
@@ -1703,6 +1817,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Kommunens telefon for deg som står i en akutt psykisk krise og trenger noen å snakke med nå. På dagtid settes du over til Stangehjelpa, og i helgene til det interkommunale kriseteamet.",
                 OpeningHours = "Hverdager til 15.30 (16.00 fredag) settes over til Stangehjelpa",
+                CostNote = "Kriseteam tilbyr gratis hjelp og støtte etter spesielt vanskelige hendelser.",
             },
             new ResourceTranslation
             {
@@ -1711,6 +1826,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "The municipality's line for anyone in an acute mental health crisis who needs to talk to someone now. During the day you are put through to Stangehjelpa, and at weekends to the intermunicipal crisis team.",
                 OpeningHours = "Weekdays until 15.30 (16.00 on Fridays) the call goes through to Stangehjelpa",
+                CostNote = "The crisis team offers free help and support after especially difficult events.",
             },
             new ResourceTranslation
             {
@@ -1718,7 +1834,7 @@ public static class SeedData
                 ResourceId = 107,
                 LanguageCode = "nb",
                 Description = "Kommunens barneverntjeneste, som tar imot bekymringsmeldinger og følger opp barn, unge og familier. Vakttelefonen er bemannet på dagtid i ukedagene.",
-                OpeningHours = "Vakttelefon mandag–fredag 08.30–15.30",
+                OpeningHours = "Vakttelefon mandag–fredag 08.30–15.00",
             },
             new ResourceTranslation
             {
@@ -1726,7 +1842,7 @@ public static class SeedData
                 ResourceId = 107,
                 LanguageCode = "en",
                 Description = "The municipal child welfare service, which receives reports of concern and follows up children, young people and families. The duty phone is staffed during weekday daytime hours.",
-                OpeningHours = "Duty phone Monday–Friday 08.30–15.30",
+                OpeningHours = "Duty phone Monday–Friday 08.30–15.00",
             },
             new ResourceTranslation
             {
@@ -1754,6 +1870,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis økonomisk rådgivning for deg som sliter med gjeld eller ikke får budsjettet til å gå opp. Rådgiveren hjelper deg med å få oversikt og ser på muligheter som refinansiering eller gjeldsordning.",
                 OpeningHours = "Mandag, onsdag og fredag 09.00 – 15.00; tirsdag og torsdag 09.00 – 13.00",
+                CostNote = "Dette er en gratis tjeneste vi tilbyr personer som oppholder seg i Løten kommune, som har behov for det.",
             },
             new ResourceTranslation
             {
@@ -1762,6 +1879,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "Free financial counselling for anyone struggling with debt or unable to make the budget add up. The adviser helps you get an overview and looks at options such as refinancing or a debt settlement.",
                 OpeningHours = "Monday, Wednesday and Friday 09.00 – 15.00; Tuesday and Thursday 09.00 – 13.00",
+                CostNote = "This is a free service we offer to people who are staying in Løten kommune and who need it.",
             },
             new ResourceTranslation
             {
@@ -1770,6 +1888,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Kommunens team for voksne med psykiske vansker, rusproblemer eller begge deler. Krisetelefonen er åpen på dagtid i ukedagene, og bemannes av teamet selv.",
                 OpeningHours = "Krisetelefon mandag – fredag kl. 08.00-15.00",
+                CostNote = "Tjenesten er gratis.",
             },
             new ResourceTranslation
             {
@@ -1778,6 +1897,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "The municipality's team for adults with mental health difficulties, substance use problems or both. The crisis line is open during weekday daytime hours and is staffed by the team itself.",
                 OpeningHours = "Crisis line Monday – Friday 08.00-15.00",
+                CostNote = "The service is free.",
             },
             new ResourceTranslation
             {
@@ -1802,6 +1922,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis korttidsbehandling for deg fra 16 år med lettere angst, nedstemthet, stress eller søvnvansker. Hjelpen gis ofte over telefon, med veiledet selvhjelp, og du trenger ingen henvisning.",
                 OpeningHours = "kl. 08.00-15.30",
+                CostNote = "Rask psykisk helsehjelp er gratis hjelp for deg over 16 år med milde til moderate psykiske plager.",
             },
             new ResourceTranslation
             {
@@ -1810,13 +1931,14 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "Free short-term treatment for people aged 16 and over with mild anxiety, low mood, stress or sleep problems. Help is often given by phone, using guided self-help, and no referral is needed.",
                 OpeningHours = "08.00-15.30",
+                CostNote = "Rask psykisk helsehjelp is free help for you over 16 years with mild to moderate mental health problems.",
             },
             new ResourceTranslation
             {
                 Id = 69,
                 ResourceId = 113,
                 LanguageCode = "nb",
-                Description = "Nav-kontoret for innbyggere i Elverum, med hjelp til arbeid, økonomisk sosialhjelp, bolig og sosiale tjenester. Er du i en krisesituasjon uten penger til mat, medisin eller strøm, skal du ta kontakt med en gang. Merk: mottaket er midlertidig stengt for ombygging (ca. 12 uker fra 3. august 2026) — ring eller bruk nav.no i denne perioden.",
+                Description = "Nav-kontoret for innbyggere i Elverum, med hjelp til arbeid, økonomisk sosialhjelp, bolig og sosiale tjenester. Er du i en krisesituasjon uten penger til mat, medisin eller strøm, skal du ta kontakt med en gang.",
                 OpeningHours = "Telefontid hverdager kl. 09 - 15",
             },
             new ResourceTranslation
@@ -1824,7 +1946,7 @@ public static class SeedData
                 Id = 70,
                 ResourceId = 113,
                 LanguageCode = "en",
-                Description = "The Nav office for people living in Elverum, offering help with work, financial assistance, housing and social services. If you are in a crisis with no money for food, medicine or electricity, get in touch straight away. Note: the reception is temporarily closed for renovation (about 12 weeks from 3 August 2026) — call or use nav.no during this period.",
+                Description = "The Nav office for people living in Elverum, offering help with work, financial assistance, housing and social services. If you are in a crisis with no money for food, medicine or electricity, get in touch straight away.",
                 OpeningHours = "Phone hours weekdays 09.00 - 15.00",
             },
             new ResourceTranslation
@@ -1849,6 +1971,7 @@ public static class SeedData
                 ResourceId = 115,
                 LanguageCode = "nb",
                 Description = "Kommunens lavterskeltilbud til voksne med rusproblemer eller psykiske helseutfordringer, med samtaler og oppfølging. Tilbudet er gratis, og du kan ta kontakt selv.",
+                CostNote = "Våre tjenester er gratis.",
             },
             new ResourceTranslation
             {
@@ -1856,6 +1979,7 @@ public static class SeedData
                 ResourceId = 115,
                 LanguageCode = "en",
                 Description = "The municipality's low-threshold service for adults with substance use or mental health difficulties, offering conversations and follow-up. The service is free and you can make contact yourself.",
+                CostNote = "Our services are free.",
             },
             new ResourceTranslation
             {
@@ -1879,6 +2003,7 @@ public static class SeedData
                 ResourceId = 117,
                 LanguageCode = "nb",
                 Description = "Ressurssenter for deg som har opplevd seksuelle overgrep, og for pårørende. Du kan få samtaler og støtte gratis, uten henvisning og uten å ha anmeldt forholdet.",
+                CostNote = "Tilbudet er gratis for innbyggerne på grunn av kommunens samarbeidsavtale med senteret, og det er kort ventetid.",
             },
             new ResourceTranslation
             {
@@ -1886,6 +2011,7 @@ public static class SeedData
                 ResourceId = 117,
                 LanguageCode = "en",
                 Description = "A resource centre for people who have experienced sexual abuse, and for their relatives. You can get conversations and support free of charge, without a referral and without having reported it.",
+                CostNote = "The service is free for residents because of the municipality's cooperation agreement with the centre, and the waiting time is short.",
             },
             new ResourceTranslation
             {
@@ -1893,6 +2019,7 @@ public static class SeedData
                 ResourceId = 118,
                 LanguageCode = "nb",
                 Description = "Ressurssenter for deg som har opplevd seksuelle overgrep eller incest, og for pårørende. Tilbudet er gratis, og du trenger ingen henvisning.",
+                CostNote = "Vi er et tverrfaglig, gratis og lavterskel hjelpetilbud og støttesenter for utsatte av seksuelle overgrep og deres pårørende.",
             },
             new ResourceTranslation
             {
@@ -1900,6 +2027,7 @@ public static class SeedData
                 ResourceId = 118,
                 LanguageCode = "en",
                 Description = "A resource centre for people who have experienced sexual abuse or incest, and for their relatives. The service is free and no referral is needed.",
+                CostNote = "We are a multidisciplinary, free and low-threshold help service and support centre for people subjected to sexual abuse and their relatives.",
             },
             new ResourceTranslation
             {
@@ -1923,7 +2051,7 @@ public static class SeedData
                 ResourceId = 120,
                 LanguageCode = "nb",
                 Description = "Statlig etat med ansvar for skatt, skattemelding og Folkeregisteret. Hit henvender du deg om skattekort, restskatt, flytting, navneendring og attester fra folkeregisteret.",
-                OpeningHours = "Åpningstiden vår er 09:00–14:30 alle hverdager",
+                OpeningHours = "Åpningstiden vår er 09:00–15:00 alle hverdager",
             },
             new ResourceTranslation
             {
@@ -1931,7 +2059,7 @@ public static class SeedData
                 ResourceId = 120,
                 LanguageCode = "en",
                 Description = "The national tax administration, responsible for tax, tax returns and the National Population Register. Contact them about tax cards, underpaid tax, changes of address, name changes and registry certificates.",
-                OpeningHours = "Open 09:00–14:30 every weekday",
+                OpeningHours = "Open 09:00–15:00 every weekday",
             },
             new ResourceTranslation
             {
@@ -1940,6 +2068,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis og anonymt samtaletilbud for barn og unge under 18 år, på telefon, chat og e-post. Du kan snakke med en voksen om akkurat det du har på hjertet, uansett hvor stort eller lite det er.",
                 OpeningHours = "Åpent alle dager, hele året, kl. 14-22 (jule- og sommerferie 16-22)",
+                CostNote = "Tilbudet er gratis og du kan være anonym.",
             },
             new ResourceTranslation
             {
@@ -1948,6 +2077,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A free and anonymous talking service for children and young people under 18, by phone, chat and email. You can talk to an adult about whatever is on your mind, however big or small.",
                 OpeningHours = "Open every day, all year, 14.00-22.00 (16.00-22.00 during the Christmas and summer holidays)",
+                CostNote = "The service is free and you can be anonymous.",
             },
             new ResourceTranslation
             {
@@ -1955,6 +2085,7 @@ public static class SeedData
                 ResourceId = 122,
                 LanguageCode = "nb",
                 Description = "Mental Helses nettsted der du kan skrive anonymt om det som er vanskelig, i chat eller i forum. Du kan lese om temaer som ensomhet, angst, depresjon og økonomi, og få svar fra andre.",
+                CostNote = "Ta kontakt med våre gratis og anonyme svartjenester: Hjelpetelefonen, Arbeidslivstelefonen, Sidetmedord.no eller Foreldresupport.",
             },
             new ResourceTranslation
             {
@@ -1962,6 +2093,7 @@ public static class SeedData
                 ResourceId = 122,
                 LanguageCode = "en",
                 Description = "Mental Helse's website where you can write anonymously about what is difficult, in chat or on the forum. You can read about topics such as loneliness, anxiety, depression and money, and get replies from others.",
+                CostNote = "Get in touch with our free and anonymous answer services: Hjelpetelefonen, Arbeidslivstelefonen, Sidetmedord.no or Foreldresupport.",
             },
             new ResourceTranslation
             {
@@ -2210,6 +2342,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis døgnåpent tilbud til deg som er utsatt for vold i nære relasjoner. Du kan ringe for råd og veiledning, og senteret har også botilbud. Adressen er hemmelig av hensyn til sikkerheten.",
                 OpeningHours = "Døgnåpent",
+                CostNote = "Det koster ingenting å bo på eller få hjelp av krisesenteret.",
             },
             new ResourceTranslation
             {
@@ -2218,6 +2351,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A free 24-hour service for anyone affected by violence in a close relationship. You can call for advice and guidance, and the centre also offers a place to stay. The address is kept secret for safety reasons.",
                 OpeningHours = "Open 24 hours",
+                CostNote = "It costs nothing to stay at or get help from the crisis centre.",
             },
             new ResourceTranslation
             {
@@ -2226,6 +2360,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Anonym chat for deg mellom 16 og 25 år som er i en usunn relasjon. Du chatter med fagpersoner som har lang erfaring med vold i nære relasjoner.",
                 OpeningHours = "Chat tirsdag 12–20 og fredag 12–15",
+                CostNote = "Tjenesten vår er helt gratis å bruke, og du kan ta kontakt så mange ganger du vil.",
             },
             new ResourceTranslation
             {
@@ -2234,6 +2369,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "An anonymous chat for people aged 16 to 25 who are in an unhealthy relationship. You chat with professionals who have long experience with violence in close relationships.",
                 OpeningHours = "Chat Tuesday 12–20 and Friday 12–15",
+                CostNote = "Our service is completely free to use, and you can get in touch as many times as you like.",
             },
             new ResourceTranslation
             {
@@ -2242,6 +2378,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Gratis døgnåpent helsetilbud for deg fra 14 år som har vært utsatt for voldtekt, voldtektsforsøk eller andre seksuelle overgrep. Du kan komme uten å ha anmeldt forholdet til politiet. Gjelder det et barn under 14 år, skal henvendelsen gå til barnemottaket.",
                 OpeningHours = "Døgnåpent",
+                CostNote = "Mottaket tilbyr gratis medisinsk og psykososial akuttbehandling, krisehjelp og rettsmedisinske undersøkelser.",
             },
             new ResourceTranslation
             {
@@ -2250,6 +2387,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A free 24-hour health service for people aged 14 and over who have experienced rape, attempted rape or other sexual assault. You can come without having reported it to the police. For a child under 14, the enquiry goes to the children's unit instead.",
                 OpeningHours = "Open 24 hours",
+                CostNote = "The reception offers free medical and psychosocial emergency treatment, crisis help and forensic examinations.",
             },
             new ResourceTranslation
             {
@@ -2258,6 +2396,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Behandlingstilbud til deg over 18 år som bruker vold eller har problemer med sinne og aggresjon. Både kvinner og menn kan få behandling, individuelt eller i gruppe.",
                 OpeningHours = "Telefontid mandag–fredag 09.00–15.00",
+                CostNote = "ATV har en egenandel på kr 350,- for voksne utøverklienter i individualterapi. For gruppebehandling vil egenandelen variere uavhengig hva slags gruppe det dreier seg om. Mange av tilbudene på ATV har en egenandelsbetaling, mens enkelte kontorer og tilbud er gratis.",
             },
             new ResourceTranslation
             {
@@ -2266,6 +2405,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "A treatment service for people over 18 who use violence or struggle with anger and aggression. Both women and men can receive treatment, individually or in a group.",
                 OpeningHours = "Phone hours Monday–Friday 09.00–15.00",
+                CostNote = "ATV has a co-payment of kr 350,- for adult perpetrator clients in individual therapy. For group treatment the co-payment will vary regardless of what kind of group it is. Many of ATV's services have a co-payment, while some offices and services are free.",
             },
             new ResourceTranslation
             {
@@ -2288,6 +2428,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Kommunens døgnåpne tjeneste ved akutt oppståtte kriser. Du kan få samtale på legevakten, på telefon eller video, og tjenesten kan også komme hjem til deg. Du trenger ikke henvisning, og tilbudet er gratis.",
                 OpeningHours = "Døgnåpent",
+                CostNote = "Tjenesten er gratis, krever ikke henvisning og de ansatte har taushetsplikt etter helsepersonelloven.",
             },
             new ResourceTranslation
             {
@@ -2296,6 +2437,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "The city's 24-hour service for people in an acute crisis. You can talk at the emergency clinic, by phone or by video, and the service can also come to your home. No referral is needed and it is free.",
                 OpeningHours = "Open 24 hours",
+                CostNote = "The service is free, requires no referral, and the staff are bound by confidentiality under the Health Personnel Act.",
             },
             new ResourceTranslation
             {
@@ -2304,6 +2446,7 @@ public static class SeedData
                 LanguageCode = "nb",
                 Description = "Legevakten i Oslo er åpen hele døgnet for deg som trenger rask helsehjelp når fastlegen er stengt. Ved fare for liv og helse skal du ringe 113.",
                 OpeningHours = "Åpent 00–24",
+                CostNote = "Du må som hovedregel betale egenandel for behandling på legevakten. Det er ulike priser for behandling på allmennlegevakten, skadelegevakten og psykiatrisk legevakt.",
             },
             new ResourceTranslation
             {
@@ -2312,6 +2455,7 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "The Oslo emergency clinic is open around the clock for anyone needing urgent medical help when their regular doctor is closed. If there is danger to life, call 113 instead.",
                 OpeningHours = "Open 24 hours",
+                CostNote = "As a rule you must pay a co-payment for treatment at the emergency clinic. There are different prices for treatment at the general emergency clinic, the injury emergency clinic and the psychiatric emergency clinic.",
             },
             new ResourceTranslation
             {
@@ -2581,7 +2725,7 @@ public static class SeedData
                 ResourceId = 240,
                 LanguageCode = "nb",
                 Description = "Gratis tilbud om samtale, parterapi, foreldreveiledning og mekling. Du trenger ingen henvisning for å bestille time. Kontoret samarbeider med bydelene Bjerke, Grorud og Stovner.",
-                OpeningHours = "08.30–15.30",
+                OpeningHours = "08.30–15.30. Telefontider 08.30–14.00",
             },
             new ResourceTranslation
             {
@@ -2589,7 +2733,7 @@ public static class SeedData
                 ResourceId = 240,
                 LanguageCode = "en",
                 Description = "A free service offering counselling, couples therapy, parenting guidance and mediation. No referral is needed to book. The office works with the Bjerke, Grorud and Stovner districts.",
-                OpeningHours = "08.30–15.30",
+                OpeningHours = "08.30–15.30. Phone hours 08.30–14.00",
             },
             new ResourceTranslation
             {
@@ -2927,7 +3071,12 @@ public static class SeedData
             new ResourceCategory { ResourceId = 245, CategoryId = Categories.Bolig },
             new ResourceCategory { ResourceId = 246, CategoryId = Categories.Okonomi },
             new ResourceCategory { ResourceId = 247, CategoryId = Categories.PsykiskHelse },
-            new ResourceCategory { ResourceId = 247, CategoryId = Categories.Rus });
+            new ResourceCategory { ResourceId = 247, CategoryId = Categories.Rus },
+            // Category 10 members from docs/seed-data-lavterskel-retag.md's "Category 10" section.
+            new ResourceCategory { ResourceId = 115, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 227, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 228, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 247, CategoryId = Categories.Lavterskeltilbud });
 
         // Coverage joins from docs/seed-data-innlandet-ring.md's "## Coverage map" section, for
         // non-national resources only. National resources (rows 1, 2, 3, 4, 5, 6, 8, 9, 119, 120,

@@ -1,13 +1,17 @@
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
-import { CATEGORY_SLUGS } from "../services/categories.ts"
+import { FEATURED_SLUGS, type FeaturedSlug, GRID_SLUGS } from "../services/categories.ts"
 import { emergencyLines, telHref } from "../services/emergency.ts"
 import { Helplines } from "./Helplines.tsx"
 import { LandingSearch } from "./LandingSearch.tsx"
 import { Link } from "./Link.tsx"
 import { PageHead } from "./PageHead.tsx"
 
-const GRID_SLUGS = CATEGORY_SLUGS.filter((s) => s !== "nodtjenester")
+// Nødtjenester keeps its filled acute chip; Lavterskeltilbud gets an accent outline, never red.
+const FEATURED_CLASS: Record<FeaturedSlug, string> = {
+	nodtjenester: "chip-acute",
+	lavterskeltilbud: "chip-featured",
+}
 
 const titles = {
 	nb: "Varde – finn riktig hjelpetjeneste",
@@ -25,9 +29,10 @@ export function LandingPage({ arrival }: { arrival: number }) {
 			    hero is centred at every width. Below it, calling for help and someone to talk to stack
 			    under 1024 px and sit side by side from 1024 px, split by a divider either way, since
 			    the helplines are not emergency services. From 1024 px the page fits one 1920 x 950
-			    screen (decided 2026-10-15): one-line heading, no eyebrow, Nødtjenester beside the grid
-			    and tighter spacing. Every gap grows with the window height (--air in main.css, 2026-10-16)
-			    and the help sections are a step smaller, so the search and the chips lead the page. */}
+			    screen (decided 2026-10-15): one-line heading, no eyebrow, the two featured chips as a
+			    column beside the grid and tighter spacing. Every gap grows with the window height
+			    (--air in main.css, 2026-10-16) and the help sections are a step smaller, so the search
+			    and the chips lead the page. */}
 			<section className="hero relative py-6 text-center lg:pt-[calc(0.25rem+var(--air)*4)] lg:pb-0">
 				<p className="entrance text-xs uppercase tracking-[0.24em] text-muted lg:hidden">
 					{t("landing.eyebrow")}
@@ -49,12 +54,19 @@ export function LandingPage({ arrival }: { arrival: number }) {
 					{t("landing.browse")}
 				</p>
 				<div className="entrance entrance-5 mx-auto mt-3 grid max-w-3xl gap-2 lg:mt-2 lg:max-w-4xl lg:grid-cols-[auto_1fr] lg:items-center">
-					<Link
-						to="/sok?category=nodtjenester"
-						className="chip chip-acute justify-self-center lg:justify-self-end"
-					>
-						{t("category.nodtjenester")}
-					</Link>
+					{/* Two featured chips, one list: a screen reader hears "list, 2 items". */}
+					<ul className="chip-featured-row">
+						{FEATURED_SLUGS.map((slug) => (
+							<li key={slug}>
+								<Link
+									to={`/sok?category=${slug}`}
+									className={`chip ${FEATURED_CLASS[slug]} h-full w-full`}
+								>
+									{t(`category.${slug}`)}
+								</Link>
+							</li>
+						))}
+					</ul>
 					<ul className="chip-grid grid grid-cols-2 gap-2 md:grid-cols-4">
 						{GRID_SLUGS.map((slug) => (
 							<li key={slug}>

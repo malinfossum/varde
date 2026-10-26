@@ -17,6 +17,17 @@ public class Resource
     /// </summary>
     public bool IsAlwaysOpen { get; set; }
 
+    /// <summary>
+    /// The Lavterskel badge. True only where the cited source states "uten henvisning", "ingen
+    /// henvisning" or "trenger ikke henvisning", or calls the service "lavterskel" or a
+    /// "lavterskeltilbud". That sentence is the row's referral quote in its seed doc: no quote, no
+    /// badge. Cost and whether you must book a time do not matter.
+    /// </summary>
+    public bool IsLowThreshold { get; set; }
+
+    /// <summary>What using the service costs, per its source. Null means not stated, never free.</summary>
+    public ResourceCost? Cost { get; set; }
+
     public int? MunicipalityId { get; set; }
     public Municipality? Municipality { get; set; }
 

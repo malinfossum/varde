@@ -87,6 +87,9 @@ test("parent links and menu options reach both languages' files untouched", asyn
 	const api = fakeApi(MIN_RESOURCES, (id) => ({
 		parentId: id === 9 ? 1 : null,
 		phoneMenuOption: id === 9 ? 3 : null,
+		isLowThreshold: false,
+		cost: null,
+		costNote: null,
 	}))
 	await exportData({
 		baseUrl: "http://api",
