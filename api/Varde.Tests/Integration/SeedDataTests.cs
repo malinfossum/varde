@@ -270,4 +270,45 @@ public class SeedDataTests
             [9],
             await db.Resources.Where(r => r.PhoneMenuOption != null).Select(r => r.Id).ToListAsync());
     }
+
+    [DbFact]
+    public async Task Every_seeded_website_and_chat_link_is_absolute_https()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+        Assert.Empty(SeedGuards.LinkProblems(await db.Resources.ToListAsync()));
+    }
+
+    [DbFact]
+    public async Task Cost_and_cost_notes_agree_and_keep_their_numbers_across_languages()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+        var resources = await db.Resources.Include(r => r.Translations).ToListAsync();
+
+        Assert.Empty(SeedGuards.CostProblems(resources));
+        Assert.Empty(SeedGuards.NumberProblems(resources));
+    }
+
+    [DbFact]
+    public async Task Every_lavterskel_badge_has_a_referral_quote_in_its_seed_doc_and_back()
+    {
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+        var root = SeedDocs.RepoRoot();
+        var quotes = new Dictionary<int, string>();
+        foreach (var doc in SeedDocs.WithReferralQuotes)
+            foreach (var (row, quote) in SeedDocs.ReferralQuotes(File.ReadAllText(Path.Combine(root, doc))))
+                Assert.True(quotes.TryAdd(row, quote), $"row {row} appears in two seed docs");
+
+        var seeded = await db.Resources.Select(r => r.Id).ToListAsync();
+        var badged = (await db.Resources.Where(r => r.IsLowThreshold).Select(r => r.Id).ToListAsync()).ToHashSet();
+
+        Assert.Empty(SeedDocs.BadgeProblems(seeded, badged, quotes));
+    }
 }
