@@ -31,7 +31,8 @@ export function LandingPage({ arrival }: { arrival: number }) {
 			    the helplines are not emergency services. From 1024 px the page fits one 1920 x 950
 			    screen (decided 2026-10-15): one-line heading, no eyebrow, the two featured chips as a
 			    column beside the grid and tighter spacing. Every gap grows with the window height
-			    (--air in main.css, 2026-10-16) and the help sections are a step smaller, so the search and the chips lead the page. */}
+			    (--air in main.css, 2026-10-16) and the help sections are a step smaller, so the search
+			    and the chips lead the page. */}
 			<section className="hero relative py-6 text-center lg:pt-[calc(0.25rem+var(--air)*4)] lg:pb-0">
 				<p className="entrance text-xs uppercase tracking-[0.24em] text-muted lg:hidden">
 					{t("landing.eyebrow")}
