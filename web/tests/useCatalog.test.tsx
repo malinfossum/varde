@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react"
 import { afterEach, expect, test, vi } from "vitest"
 import { useCatalog } from "../src/hooks/useCatalog.ts"
+import { loadIndex } from "../src/services/data.ts"
 import { stubDataFiles } from "./stubData.ts"
 
 afterEach(() => vi.restoreAllMocks())
@@ -21,6 +22,22 @@ test("derives municipalities and categories from loadIndex", async () => {
 		expect(result.current.state.catalog.categories).toEqual([
 			{ id: 4, slug: "rus", name: "Rus", isFallbackTranslation: false },
 		])
+	}
+})
+
+// Back to /sok mounts the list page again. Its scroll is restored in that first commit, so a
+// filter column still waiting for its chips would grow under the restored spot a moment later.
+test("is ready on its first render when the index has already settled", async () => {
+	stubDataFiles({
+		categories: [{ id: 4, slug: "rus", name: "Rus", isFallbackTranslation: false }],
+	})
+	await loadIndex("nb")
+
+	const { result } = renderHook(() => useCatalog("nb"))
+
+	expect(result.current.state.kind).toBe("ready")
+	if (result.current.state.kind === "ready") {
+		expect(result.current.state.catalog.categories).toHaveLength(1)
 	}
 })
 
