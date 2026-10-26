@@ -1,6 +1,13 @@
 import { expect, type Page, test } from "@playwright/test"
 import { settle } from "./helpers.ts"
 
+// The chip block rises in with an entrance animation; boxes read mid-animation come from different
+// frames, so wait for every running animation to finish before measuring.
+async function settleLayout(page: Page) {
+	await settle(page)
+	await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)))
+}
+
 async function featured(page: Page) {
 	return page.locator(".chip-featured-row .chip").evaluateAll((els) =>
 		els.map((el) => {
@@ -27,7 +34,7 @@ for (const width of [320, 768]) {
 		}) => {
 			await page.setViewportSize({ width, height: 900 })
 			await page.goto(path)
-			await settle(page)
+			await settleLayout(page)
 			const boxes = await featured(page)
 			expect(boxes).toHaveLength(2)
 			const [a, b] = boxes
@@ -54,7 +61,7 @@ for (const width of [1280, 1920]) {
 		}) => {
 			await page.setViewportSize({ width, height: 950 })
 			await page.goto(path)
-			await settle(page)
+			await settleLayout(page)
 			const boxes = await featured(page)
 			expect(boxes).toHaveLength(2)
 			const [a, b] = boxes
@@ -87,7 +94,7 @@ for (const width of [1280, 1920]) {
 test("the featured column follows the grid's rows when they grow, at 1280 px", async ({ page }) => {
 	await page.setViewportSize({ width: 1280, height: 950 })
 	await page.goto("/")
-	await settle(page)
+	await settleLayout(page)
 	await page.addStyleTag({ content: ".chip-grid .chip { min-height: 80px; }" })
 	const [a, b] = await featured(page)
 	const grid = await page.locator(".chip-grid .chip").evaluateAll((els) => {
@@ -109,7 +116,7 @@ for (const path of ["/", "/en/"]) {
 	}) => {
 		await page.setViewportSize({ width: 320, height: 900 })
 		await page.goto(path)
-		await settle(page)
+		await settleLayout(page)
 		await page.evaluate(() => {
 			document.documentElement.style.fontSize = "200%"
 		})
