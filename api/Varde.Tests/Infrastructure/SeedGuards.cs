@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Varde.Core;
 using Varde.Core.Models;
+using Varde.Data.Seed;
 
 namespace Varde.Tests.Infrastructure;
 
@@ -74,9 +75,26 @@ public static partial class SeedGuards
     private static bool IsHttps(string url) =>
         Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps;
 
+    // "døgn" is a number in disguise: nb "døgnåpen" and en "24-hour" say the same thing, so each
+    // "døgn" counts as a 24.
     private static List<string> Numbers(string note) =>
-        Digits().Matches(note).Select(m => m.Value).Order(StringComparer.Ordinal).ToList();
+        Digits().Matches(note).Select(m => m.Value)
+            .Concat(Enumerable.Repeat("24", Regex.Count(note, "døgn", RegexOptions.IgnoreCase)))
+            .Order(StringComparer.Ordinal).ToList();
 
     [GeneratedRegex(@"\d+")]
     private static partial Regex Digits();
+
+    /// <summary>Category 10 lists places in a kommune, so a member is never national and always has one.</summary>
+    public static List<string> Category10Problems(IEnumerable<Resource> resources)
+    {
+        var problems = new List<string>();
+        foreach (var r in resources.Where(r => r.ResourceCategories.Any(rc => rc.CategoryId == Categories.Lavterskeltilbud)))
+        {
+            if (r.MunicipalityId is null) problems.Add($"row {r.Id}: category 10 without a kommune");
+            if (r.IsNational) problems.Add($"row {r.Id}: category 10 on a national service");
+        }
+
+        return problems;
+    }
 }

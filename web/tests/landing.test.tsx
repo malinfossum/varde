@@ -95,7 +95,7 @@ test("nine category chips link to scoped results, each with its real label, and 
 	const chips = within(main)
 		.getAllByRole("link")
 		.filter((a) => a.getAttribute("href")?.startsWith("/sok?category="))
-	expect(chips).toHaveLength(9)
+	expect(chips).toHaveLength(10)
 	expect(screen.getAllByRole("link", { name: /116 117/ }).length).toBeGreaterThanOrEqual(2) // strip + emergency section
 })
 

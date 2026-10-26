@@ -47,7 +47,7 @@ test("CATEGORY_SLUGS matches Categories.cs, same slugs in the same order", () =>
 	const end = categoriesCs.indexOf("Translations =", start)
 	const block = categoriesCs.slice(start, end === -1 ? undefined : end)
 	const slugs = [...block.matchAll(/Slug = "([^"]+)"/g)].map((m) => m[1])
-	expect(slugs).toHaveLength(9)
+	expect(slugs).toHaveLength(10)
 	expect([...CATEGORY_SLUGS]).toEqual(slugs)
 })
 
@@ -57,4 +57,28 @@ test("every landing helpline label is part of its seed row's name", () => {
 			expect(seededResource(row.id).name, `helpline ${row.id}`).toContain(row.name)
 		}
 	}
+})
+
+test("the landing's category labels match Categories.cs, soft hyphens aside", async () => {
+	// The chip labels live in i18n so the landing renders without a request; the API names live
+	// in Categories.cs. The nb Lavterskeltilbud label carries a soft hyphen for narrow chips,
+	// which the API name does not need.
+	const nb = (await import("../src/i18n/nb.json")).default as Record<string, string>
+	const en = (await import("../src/i18n/en.json")).default as Record<string, string>
+	const start = categoriesCs.indexOf("Translations =")
+	const names = [
+		...categoriesCs
+			.slice(start)
+			.matchAll(/CategoryId = (\w+), LanguageCode = "(nb|en)", Name = "([^"]+)"/g),
+	]
+	expect(names).toHaveLength(20)
+	const slugByConst = Object.fromEntries(
+		[...categoriesCs.matchAll(/Id = (\w+), Slug = "([^"]+)"/g)].map((m) => [m[1], m[2]])
+	)
+	for (const [, constName = "", lang, name] of names) {
+		const strings = lang === "nb" ? nb : en
+		const label = strings[`category.${slugByConst[constName]}`]
+		expect(label?.replaceAll("\u00AD", ""), `${lang} ${constName}`).toBe(name)
+	}
+	expect(nb["category.lavterskeltilbud"]).toBe("Lavterskel\u00ADtilbud")
 })

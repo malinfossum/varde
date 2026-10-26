@@ -14,7 +14,10 @@ public static partial class SeedDocs
     /// this list in the task that seeds its rows, never earlier: a researched but unseeded doc
     /// would fail the "quote without a badge" direction for every row it quotes.
     /// </summary>
-    public static readonly string[] WithReferralQuotes = [];
+    public static readonly string[] WithReferralQuotes =
+    [
+        "docs/seed-data-lavterskel-retag.md",
+    ];
 
     /// <summary>
     /// The spec's badge rule: a referral quote must name one of these (case-insensitive). The last

@@ -33,3 +33,17 @@ test("suggest finds kommuner and categories, ignores short queries", () => {
 		{ kind: "category", slug: "rus", name: "Rus" },
 	])
 })
+
+test("typing lavterskel suggests the category by its API name", () => {
+	const lavCatalog = {
+		...catalog,
+		categories: [
+			{ id: 10, slug: "lavterskeltilbud", name: "Lavterskeltilbud", isFallbackTranslation: false },
+		],
+	}
+	expect(suggest("lavterskel", lavCatalog)).toContainEqual({
+		kind: "category",
+		slug: "lavterskeltilbud",
+		name: "Lavterskeltilbud",
+	})
+})

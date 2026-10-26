@@ -3,7 +3,7 @@ using Varde.Core.Models;
 namespace Varde.Data.Seed;
 
 /// <summary>
-/// The nine phase-1 categories. Slugs are stable — they appear in shareable URLs, so renaming
+/// The ten categories. Slugs are stable — they appear in shareable URLs, so renaming
 /// one breaks every link a caseworker has already sent.
 ///
 /// Nodtjenester was added 2026-08-17, on top of the plan's original eight, and is deliberately
@@ -11,6 +11,11 @@ namespace Varde.Data.Seed;
 /// Alarmtelefonen, VO-linjen, overgrepsmottak, psykososial akuttjeneste). Døgnåpne support lines
 /// like Hjelpetelefonen and Kirkens SOS stay under psykisk-helse — support, not emergency
 /// response. See docs/seed-data.md's "## Categories" section.
+///
+/// Lavterskeltilbud was added 2026-10-15 (sub-project C1): meeting places and activity providers,
+/// where you go to be with others or do something without becoming a case. Treatment, case work
+/// and outreach never qualify, even without a referral; they get the Lavterskel badge instead.
+/// Every row in it sits in a kommune. See the C1 spec's "What qualifies".
 /// </summary>
 public static class Categories
 {
@@ -23,6 +28,7 @@ public static class Categories
     public const int Arbeid = 7;
     public const int JuridiskHjelp = 8;
     public const int Nodtjenester = 9;
+    public const int Lavterskeltilbud = 10;
 
     public static readonly Category[] All =
     [
@@ -35,6 +41,7 @@ public static class Categories
         new() { Id = Arbeid, Slug = "arbeid" },
         new() { Id = JuridiskHjelp, Slug = "juridisk-hjelp" },
         new() { Id = Nodtjenester, Slug = "nodtjenester" },
+        new() { Id = Lavterskeltilbud, Slug = "lavterskeltilbud" },
     ];
 
     public static readonly CategoryTranslation[] Translations =
@@ -57,5 +64,7 @@ public static class Categories
         new() { Id = 16, CategoryId = JuridiskHjelp, LanguageCode = "en", Name = "Legal help" },
         new() { Id = 17, CategoryId = Nodtjenester, LanguageCode = "nb", Name = "Nødtjenester" },
         new() { Id = 18, CategoryId = Nodtjenester, LanguageCode = "en", Name = "Emergency services" },
+        new() { Id = 19, CategoryId = Lavterskeltilbud, LanguageCode = "nb", Name = "Lavterskeltilbud" },
+        new() { Id = 20, CategoryId = Lavterskeltilbud, LanguageCode = "en", Name = "Drop-in and activities" },
     ];
 }

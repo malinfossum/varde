@@ -71,6 +71,7 @@ public class SeedGuardsTests
             Row(2, ResourceCost.Paid, "Egenandel 1 500 kr", "Fee NOK 1 500"),                          // grouping kept
             Row(3, ResourceCost.Paid, "Egenandel 50 kr", "Fee NOK 60"),                                // a changed number
             Row(4, ResourceCost.Paid, "Egenandel 1 500 kr", "Fee NOK 1500"),                           // regrouped digits
+            Row(5, ResourceCost.Free, "Gratis og døgnåpen", "Free and 24-hour"),                        // døgn is 24
         ];
 
         Assert.Equal(
@@ -79,5 +80,24 @@ public class SeedGuardsTests
                 "row 4: en cost note numbers [1500] differ from nb [1, 500]",
             ],
             SeedGuards.NumberProblems(rows));
+    }
+
+    [Fact]
+    public void Category_10_rows_must_sit_in_a_kommune_and_not_be_national()
+    {
+        static Resource Member(int id, int? municipalityId, bool national) => new()
+        {
+            Id = id,
+            Name = $"Row {id}",
+            MunicipalityId = municipalityId,
+            IsNational = national,
+            ResourceCategories = [new ResourceCategory { ResourceId = id, CategoryId = 10 }],
+        };
+
+        Resource[] rows = [Member(1, 1, false), Member(2, null, false), Member(3, 8, true)];
+
+        Assert.Equal(
+            ["row 2: category 10 without a kommune", "row 3: category 10 on a national service"],
+            SeedGuards.Category10Problems(rows));
     }
 }
