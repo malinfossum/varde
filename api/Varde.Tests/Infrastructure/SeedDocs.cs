@@ -16,9 +16,16 @@ public static partial class SeedDocs
     /// </summary>
     public static readonly string[] WithReferralQuotes = [];
 
-    /// <summary>The spec's badge rule: a referral quote must name one of these (case-insensitive).</summary>
+    /// <summary>
+    /// The spec's badge rule: a referral quote must name one of these (case-insensitive). The last
+    /// four were accepted at gate 1 (2026-10-26) because the cited pages say the same thing in
+    /// other words. "lav terskel" only matches a source's own spelling; Varde writes "lavterskel".
+    /// </summary>
     public static readonly string[] BadgePhrases =
-        ["uten henvisning", "ingen henvisning", "trenger ikke henvisning", "lavterskel"];
+    [
+        "uten henvisning", "ingen henvisning", "trenger ikke henvisning", "lavterskel",
+        "trengs ikke henvisning", "trenger heller ikke henvisning", "krever ikke henvisning", "lav terskel",
+    ];
 
     /// <summary>The checkout's root: the first directory above the test binaries holding docs/seed-data.md.</summary>
     public static string RepoRoot()
