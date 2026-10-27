@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url"
 import { kommunerWithPages } from "./slug.mjs"
 
 // If the export sees fewer rows than this, the API is half-broken and the build must fail
-// rather than publish an empty site. The live seed has 94 rows; lower this deliberately.
+// rather than publish an empty site. The live seed has 138 rows; lower this deliberately.
 export const MIN_RESOURCES = 90
 const LANGS = ["nb", "en"]
 const PAGE_SIZE = 100

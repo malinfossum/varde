@@ -17,6 +17,7 @@ public static partial class SeedDocs
     public static readonly string[] WithReferralQuotes =
     [
         "docs/seed-data-lavterskel-retag.md",
+        "docs/seed-data-lavterskel-innlandet.md",
     ];
 
     /// <summary>
