@@ -19,7 +19,7 @@ dials it. Varde treats contact data as safety-critical.
 
 ## Status
 
-Phase 1, the API, is complete: 94 services across 8 municipalities (Innlandet and Oslo)
+Phase 1, the API, is complete: 138 services across 8 municipalities (Innlandet and Oslo)
 plus national services, described in Norwegian and English. Phase 2, the web frontend,
 is complete. Phase 3, deployment, went live 2026-09-04. The current design (light-first,
 self-hosted type, a search-first landing page) shipped 2026-09-09, and the site went static on

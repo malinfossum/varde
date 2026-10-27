@@ -50,6 +50,10 @@ namespace Varde.Data.Seed;
 /// docs/verification/seed-data-lavterskel-retag-check.md. IsLowThreshold, Cost and the
 /// CostNote translations come from that doc, as does category 10 membership; rows it changed
 /// carry VerifiedRetag. SeedDataTests checks every badge against the doc's referral quote.
+///
+/// C1 batch 1 adds rows 301 and up from docs/seed-data-lavterskel-innlandet.md (checked in
+/// docs/verification/seed-data-lavterskel-innlandet-check.md): meeting places and activity
+/// providers in the seven Innlandet kommuner.
 /// </summary>
 public static class SeedData
 {
@@ -62,6 +66,10 @@ public static class SeedData
     // Rows the C1 re-read changed (docs/seed-data-lavterskel-retag.md, gate closed 2026-10-26)
     // carry the date the page was read. Rows the re-read left alone keep their own date.
     private static readonly DateOnly VerifiedRetag = new(2026, 10, 26);
+
+    // C1 batch 1 (docs/seed-data-lavterskel-innlandet.md, gate closed 2026-10-27).
+    private static readonly DateTime SeededAtLavterskelInnlandet = new(2026, 10, 27, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateOnly VerifiedLavterskelInnlandet = new(2026, 10, 27);
 
     // Municipality ids — county = Innlandet for 1-7, Oslo for 8.
     private const int Hamar = 1;
@@ -1344,6 +1352,584 @@ public static class SeedData
                 LastVerified = VerifiedRetag,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
+            },
+            new Resource
+            {
+                Id = 301,
+                Name = "Sagatun Brukerstyrt Senter",
+                IsLowThreshold = true,
+                MunicipalityId = Hamar,
+                Address = "Sagatunvegen 47A, 2317 Hamar",
+                Phone = "62 50 97 55",
+                Email = "post@sagatun.no",
+                Website = "https://sagatun.no/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 302,
+                Name = "Hamar Frivilligsentral",
+                MunicipalityId = Hamar,
+                Address = "Torggata 73, 2317 Hamar",
+                Phone = "62 51 00 96",
+                Email = "hamar@frivillighet.no",
+                Website = "https://hamar.frivilligsentral.no/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 303,
+                Name = "Høbben, et sted for ungdom",
+                MunicipalityId = Hamar,
+                Address = "Torggata 83, 2317 Hamar",
+                Phone = "477 86 203",
+                Email = "postmottak@hamar.kommune.no",
+                Website = "https://www.hamar.kommune.no/hobben/hobben-et-sted-for-ungdom",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 304,
+                Name = "CRUX Arbeideren",
+                MunicipalityId = Hamar,
+                Address = "Grønnegt. 51, inngang Håkons gate, 2317 Hamar",
+                Email = "hamartiltakene@stiftelsencrux.no",
+                Website = "https://stiftelsencrux.no/vare-virksomheter/hamartiltakene/crux-arbeideren",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 305,
+                Name = "Evangeliesenteret kontaktsenter Hamar",
+                IsLowThreshold = true,
+                MunicipalityId = Hamar,
+                Address = "Torggata 71, Hamar",
+                Phone = "21 00 49 00",
+                Email = "post@evangeliesenteret.no",
+                Website = "https://www.evangeliesenteret.no/kontaktsenter/hamar",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 306,
+                Name = "Blå Kors barnas stasjon Hamar",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
+                MunicipalityId = Hamar,
+                Address = "Grønnegata 134, 2317 Hamar",
+                Phone = "990 93 994",
+                Email = "barnasstasjonhamar@bks.no",
+                Website = "https://www.blakors.no/barnas-stasjon/hamar/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 307,
+                Name = "Støttesenter for pårørende, Hospice Sangen",
+                IsLowThreshold = true,
+                MunicipalityId = Hamar,
+                Address = "Høyensalgata 74, 2317 Hamar",
+                Phone = "62 54 20 90",
+                Email = "hei@sangen.no",
+                Website = "https://www.haraldsplass.org/hospice-sangen/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 308,
+                Name = "Hamar Røde Kors",
+                MunicipalityId = Hamar,
+                Address = "Stormyrveien 9, 2315 HAMAR",
+                Phone = "918 21 211",
+                Email = "hamar@redcross.no",
+                Website = "https://www.rodekors.no/lokalforeninger/hedmark/hamar/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 309,
+                Name = "BUA Hamar",
+                Cost = ResourceCost.Free,
+                MunicipalityId = Hamar,
+                Address = "Torggata 83, på Torghjørnet ved Stortorget, Hamar",
+                Phone = "477 76 977",
+                Email = "buahamar101@gmail.com",
+                Website = "https://stiftelsencrux.no/vare-virksomheter/hamartiltakene/bua-hamar",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 310,
+                Name = "Åpen barnehage (Ankerløkken barnehage)",
+                Cost = ResourceCost.Paid,
+                MunicipalityId = Hamar,
+                Address = "Frivilligsentralens lokaler, Torggata 73, 2317 Hamar",
+                Phone = "909 98 617",
+                Website = "https://www.hamar.kommune.no/category1034.html",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 311,
+                Name = "Prestrud ungdomsklubb",
+                MunicipalityId = Hamar,
+                Address = "Møtested for ungdommer på iskroa i CC amfi/hockeyhallen",
+                Phone = "950 39 833",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 312,
+                Name = "Fritidsklubb Wiik",
+                Cost = ResourceCost.Paid,
+                MunicipalityId = Hamar,
+                Address = "Øvre Vang samfunnshus",
+                Phone = "950 39 833",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 313,
+                Name = "Terningkast 7",
+                Cost = ResourceCost.Free,
+                MunicipalityId = Hamar,
+                Address = "Foajeen, Hamar Kulturhus, Torggata 100, 2317 Hamar",
+                Email = "post@terningkast7.org",
+                Website = "https://www.terningkast7.no/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 314,
+                Name = "Parkrun Ankerskogen",
+                Cost = ResourceCost.Free,
+                MunicipalityId = Hamar,
+                Address = "Ankerskogen",
+                Website = "https://www.parkrun.no/ankerskogen/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 315,
+                Name = "Lavterskeltilbud Storgata 9B",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
+                MunicipalityId = Lillehammer,
+                Address = "Storgata 9B",
+                Phone = "949 74 618",
+                Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/arbeid-og-aktivitetstilbud/lavterskeltilbud-storgata-9b/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 316,
+                Name = "Lavterskeltilbud Gamlevegen 101",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
+                MunicipalityId = Lillehammer,
+                Address = "Gamlevegen 101",
+                Phone = "902 43 733",
+                Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/lavterskeltilbud-for-personer-med-rusutfordringer/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 317,
+                Name = "Lillehammer Frivilligsentral",
+                Cost = ResourceCost.Partly,
+                MunicipalityId = Lillehammer,
+                Address = "Brubakken 14, 2615 Lillehammer",
+                Phone = "992 69 600",
+                Email = "post@lillehammer.frivilligsentral.no",
+                Website = "https://lillehammer.frivilligsentral.no/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 318,
+                Name = "Lillehammer Røde Kors",
+                MunicipalityId = Lillehammer,
+                Address = "Anne Mouruds veg 10 G, 2615 Lillehammer",
+                Phone = "415 80 011",
+                Email = "lillehammer@rodekors.org",
+                Website = "https://www.rodekors.no/lokalforeninger/oppland/lillehammer/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 320,
+                Name = "Blå Kors gatenært Gjøvik (Kafe Kampen)",
+                IsLowThreshold = true,
+                MunicipalityId = Gjovik,
+                Address = "Øvre Torvgate 8, 2815 Gjøvik",
+                Phone = "61 17 04 80",
+                Website = "https://www.blakors.no/gatenaert/kampen/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 321,
+                Name = "Fontenehuset Gjøvik",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
+                MunicipalityId = Gjovik,
+                Address = "Strandgata 38, 2821 Gjøvik",
+                Phone = "977 30 330",
+                Email = "post@fontenehusetgjovik.no",
+                Website = "https://www.fontenehusetgjovik.no/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 322,
+                Name = "Gjøvik frivilligsentral avd. Sentrum",
+                MunicipalityId = Gjovik,
+                Address = "Øvre Torvgate 2, Gjøvik",
+                Phone = "61 15 85 55",
+                Email = "frivilligsentral@gjovik.kommune.no",
+                Website = "https://gjovik.frivilligsentral.no/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 323,
+                Name = "Gjøvik frivilligsentral avd. Øverby (Øverbykafeen og Torsdagstreff)",
+                MunicipalityId = Gjovik,
+                Address = "Øverbyvegen 95, Gjøvik",
+                Phone = "61 15 85 55",
+                Email = "frivilligsentral@gjovik.kommune.no",
+                Website = "https://gjovik.frivilligsentral.no/overby",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 324,
+                Name = "PULS - ditt værested (Frelsesarmeen Gjøvik og Toten)",
+                MunicipalityId = Gjovik,
+                Address = "Bakkegata 14, 2821 Gjøvik",
+                Phone = "409 12 050",
+                Email = "puls@frelsesarmeen.no",
+                Website = "https://frelsesarmeen.no/korps/puls-ditt-vaerested",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 326,
+                Name = "Ung i Gjøvik (Ungdommens hus)",
+                MunicipalityId = Gjovik,
+                Address = "Trondhjemsvegen 8, 2821 Gjøvik",
+                Website = "https://www.gjovik.kommune.no/tjenester/barn-ungdom-og-familie/ung-i-gjovik/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 327,
+                Name = "Hverdag - Mat & Mening",
+                MunicipalityId = Gjovik,
+                Address = "Mimes veg 3, 2817 Gjøvik",
+                Phone = "929 29 994",
+                Email = "post@ashverdag.no",
+                Website = "https://www.ashverdag.no/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 328,
+                Name = "Norsktrening (Gjøvik Røde Kors)",
+                IsLowThreshold = true,
+                MunicipalityId = Gjovik,
+                Address = "Gjøvik Læringssenter, Teknologiveien 8, Kallerud, Gjøvik",
+                Email = "gjovik.rode.kors@gmail.com",
+                Website = "https://www.rodekors.no/lokalforeninger/oppland/gjovik/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 329,
+                Name = "Solsia aktivitetshus",
+                Cost = ResourceCost.Free,
+                MunicipalityId = Ringsaker,
+                Address = "Nordåsveien 6, 2380 Brumunddal",
+                Phone = "907 78 510",
+                Website = "https://www.ringsaker.kommune.no/tjenester/helse-og-omsorg/psykisk-helse-og-rustjenester/kortvarig-psykisk-helsehjelp",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 330,
+                Name = "Mental Helse Ringsaker",
+                MunicipalityId = Ringsaker,
+                Address = "Sjurstuvegen 2B, 2383 Brumunddal",
+                Email = "ringsaker@mentalhelse.no",
+                Website = "https://mentalhelse.no/ringsaker/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 331,
+                Name = "Brumunddal frivilligsentral",
+                Cost = ResourceCost.Free,
+                MunicipalityId = Ringsaker,
+                Address = "Sjurstuvegen 2B, 2383 Brumunddal",
+                Phone = "973 47 717",
+                Email = "brumunddal@frivillighet.no",
+                Website = "https://brumunddal.frivilligsentral.no/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 332,
+                Name = "Moelv frivilligsentral",
+                MunicipalityId = Ringsaker,
+                Address = "Storgata 119, 2390 Moelv",
+                Phone = "974 34 918",
+                Email = "post@moelvfrivilligsentral.no",
+                Website = "https://moelvfrivilligsentral.no",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 333,
+                Name = "Ringsaker Røde Kors: Norsktrening",
+                IsLowThreshold = true,
+                MunicipalityId = Ringsaker,
+                Address = "Kilde Skole, Storgate 31, 2390 Moelv",
+                Email = "ringsaker@rodekors.org",
+                Website = "https://www.rodekors.no/lokalforeninger/hedmark/ringsaker/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 334,
+                Name = "LHL Ringsaker: lavterskeltrim i Brumunddal",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
+                MunicipalityId = Ringsaker,
+                Address = "Buttekvern Aktivitetssenter, Buttekvernveien 1, Brumunddal",
+                Phone = "22 79 90 00",
+                Website = "https://www.lhl.no/lokallag/lhl-innlandet/lhl-ringsaker/fysisk-aktivitet-brumunddal77/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 335,
+                Name = "Stangehjelpa aktivitetshus",
+                IsLowThreshold = true,
+                MunicipalityId = Stange,
+                Address = "Skolegata 13, 2335 Stange",
+                Phone = "911 65 956",
+                Website = "https://www.stange.kommune.no/helse-og-mestring/psykisk-helse-og-rus/stangehjelpa/voksne/stangehjelpa-aktivitetshus/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 336,
+                Name = "Ottestad frivilligsentral",
+                MunicipalityId = Stange,
+                Address = "Kjonerudvegen 9, 2312 Ottestad (2. etasje Amtmannsbygget)",
+                Phone = "940 93 665",
+                Email = "ST-frivilligsentralen@stange.kommune.no",
+                Website = "https://www.stange.kommune.no/kultur-og-frivillighet/frivillighet/ottestad-frivilligsentral/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 337,
+                Name = "Ungdomshuset i Ottestad",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
+                MunicipalityId = Stange,
+                Address = "Statsminister Otto Blehrs 2, 2312 Ottestad",
+                Website = "https://www.stange.kommune.no/kultur-og-frivillighet/aktiviteter-for-ungdom/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 338,
+                Name = "Stange musikkverksted",
+                IsLowThreshold = true,
+                Cost = ResourceCost.Free,
+                MunicipalityId = Stange,
+                Address = "Skolegata 13, 2335 Stange",
+                Website = "https://www.stange.kommune.no/kultur-og-frivillighet/aktiviteter-for-ungdom/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 339,
+                Name = "Løten Frivilligsentral",
+                MunicipalityId = Loten,
+                Address = "Stasjonsvegen 23, Bøndernes Hus, 2340 Løten",
+                Phone = "481 41 769",
+                Email = "post@loten.frivilligsentral.no",
+                Website = "https://loten.frivilligsentral.no/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 340,
+                Name = "Ungdommens hus",
+                MunicipalityId = Loten,
+                Address = "Venslivegen 13, 2340 Løten",
+                Phone = "62 56 40 00",
+                Email = "post@loten.kommune.no",
+                Website = "https://www.loten.kommune.no/helse-sosial-og-familie/barn-unge-og-familie/ungdom/ungdommens-hus/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 341,
+                Name = "Felles aktivitet i Løtenhallen",
+                MunicipalityId = Loten,
+                Address = "Løtenhallen",
+                Phone = "62 56 40 00",
+                Email = "post@loten.kommune.no",
+                Website = "https://www.loten.kommune.no/helse-sosial-og-familie/psykisk-helse-og-rustjenesten/aktiviteter-og-kurs/felles-aktivitet-i-lotenhallen/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 342,
+                Name = "BUA Løten",
+                Cost = ResourceCost.Free,
+                MunicipalityId = Loten,
+                Address = "Skolevegen 6, 2340 Løten",
+                Phone = "990 80 167",
+                Email = "post@loten.kommune.no",
+                Website = "https://www.loten.kommune.no/kultur-og-aktivitet/fritidstilbud/bua-loten/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 343,
+                Name = "Elverum frivilligsentral",
+                MunicipalityId = Elverum,
+                Address = "Lærerskolealleen 1, 2408 Elverum",
+                Phone = "62 43 64 55",
+                Email = "post@elverumfrivilligsentral.no",
+                Website = "https://elverum.frivilligsentral.no/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 344,
+                Name = "Møteplassen Elverum",
+                MunicipalityId = Elverum,
+                Address = "Lærerskolealléen 1, 2408 Elverum",
+                Phone = "911 84 893",
+                Email = "post@moteplassen.elverum.no",
+                Website = "https://moteplassen.elverum.no/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 345,
+                Name = "Treffpunktet (Møteplassen Elverum)",
+                IsLowThreshold = true,
+                MunicipalityId = Elverum,
+                Address = "Lærerskolealléen 1, 2408 Elverum",
+                Phone = "942 02 575",
+                Website = "https://moteplassen.elverum.no/index.php/treffpunkt",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
+            },
+            new Resource
+            {
+                Id = 346,
+                Name = "Ungdommens hus",
+                Cost = ResourceCost.Free,
+                MunicipalityId = Elverum,
+                Address = "St. Olavsgate 6, 2414 Elverum",
+                Phone = "489 57 545",
+                Website = "https://www.elverum.kommune.no/vare-tjenester/barn-og-familie/ungdommens-hus/",
+                LastVerified = VerifiedLavterskelInnlandet,
+                CreatedAt = SeededAtLavterskelInnlandet,
+                UpdatedAt = SeededAtLavterskelInnlandet,
             });
 
         modelBuilder.Entity<ResourceTranslation>().HasData(
@@ -2873,6 +3459,730 @@ public static class SeedData
                 LanguageCode = "en",
                 Description = "Call 113 when the situation is critical and life or health is at risk.",
                 OpeningHours = "Open 24 hours",
+            },
+            new ResourceTranslation
+            {
+                Id = 189,
+                ResourceId = 301,
+                LanguageCode = "nb",
+                Description = "Brukerstyrt senter i Hamar med kafé, kreative og musikalske verksteder, friluftsliv og arbeidstrening. Alle aktiviteter er rusfrie, og du kan ta kontakt selv.",
+                OpeningHours = "Mandag til fredag, 08:00–15:30 (kontor). Mandag til torsdag, 11:30–13:00 (kafé).",
+            },
+            new ResourceTranslation
+            {
+                Id = 190,
+                ResourceId = 301,
+                LanguageCode = "en",
+                Description = "A user-run centre in Hamar with a café, creative and music workshops, outdoor activities and work training. All activities are drug-free, and you can get in touch yourself.",
+                OpeningHours = "Monday to Friday, 08:00–15:30 (office). Monday to Thursday, 11:30–13:00 (café).",
+            },
+            new ResourceTranslation
+            {
+                Id = 191,
+                ResourceId = 302,
+                LanguageCode = "nb",
+                Description = "Møteplass i Hamar sentrum som kobler folk i nærmiljøet, med grupper, kafeer og tjenester. Her holder blant annet Skeiv kafé ungdom (onsdager 18:00-21:00) til, for 13 til 19 år.",
+                OpeningHours = "Man-tor kl 10.00-15.00; Fre kl 10.00-13.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 192,
+                ResourceId = 302,
+                LanguageCode = "en",
+                Description = "A meeting place in central Hamar that connects people locally, with groups, cafés and services. Skeiv kafé for young people (Wednesdays 18:00-21:00) is held here, for ages 13 to 19.",
+                OpeningHours = "Monday to Thursday 10:00-15:00; Friday 10:00-13:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 193,
+                ResourceId = 303,
+                LanguageCode = "nb",
+                Description = "Ungdomshus på Torghjørnet for ungdom på ungdomsskolen og videregående. Du kan komme innom for å møte trygge voksne, delta på aktiviteter eller bare være sammen med andre, og tilbudet er rusfritt.",
+                OpeningHours = "Mandag og onsdag klokka 14:30-21:30. Fredag klokka 14:30-22:00. Lørdag klokka 16:00-22:00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 194,
+                ResourceId = 303,
+                LanguageCode = "en",
+                Description = "A youth house at Torghjørnet for pupils at lower and upper secondary school. You can drop in to meet safe adults, join activities or just spend time with others, and it is drug-free.",
+                OpeningHours = "Monday and Wednesday 14:30-21:30. Friday 14:30-22:00. Saturday 16:00-22:00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 195,
+                ResourceId = 304,
+                LanguageCode = "nb",
+                Description = "Tilbud i Hamar sentrum for aktive rusmiddelavhengige over 18 år fra Hamar og Stange. Du kan få mat, sprøytebytte, sårstell og prevensjon, og juridisk hjelp.",
+                OpeningHours = "Tirsdag og torsdag: kl. 10-14.30. Onsdag: stengt. Mandag og fredag: kl. 9-15 (brukerutstyr).",
+            },
+            new ResourceTranslation
+            {
+                Id = 196,
+                ResourceId = 304,
+                LanguageCode = "en",
+                Description = "A service in central Hamar for active drug users over 18 from Hamar and Stange. You can get food, syringe exchange, wound care and contraception, and legal help.",
+                OpeningHours = "Tuesday and Thursday: 10:00-14:30. Wednesday: closed. Monday and Friday: 9:00-15:00 (user equipment).",
+            },
+            new ResourceTranslation
+            {
+                Id = 197,
+                ResourceId = 305,
+                LanguageCode = "nb",
+                Description = "Kontaktsenter i Torggata for mennesker som sliter med rus. Det deles ut mat hver onsdag, det serveres middag i kontaktkafeen, og du kan få samtale med sosionom.",
+                OpeningHours = "hver onsdag kl. 12:00 – 16:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 198,
+                ResourceId = 305,
+                LanguageCode = "en",
+                Description = "A contact centre in Torggata for people struggling with drug use. Food is handed out every Wednesday, dinner is served in the contact café, and you can talk to a social worker.",
+                OpeningHours = "every Wednesday 12:00-16:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 199,
+                ResourceId = 306,
+                LanguageCode = "nb",
+                Description = "Møtested for familier med barn mellom 0 og 16 år og gravide, med lek, felles kjøkken, aktiviteter og samtaler. Du kan ta kontakt selv uten henvisning.",
+                OpeningHours = "Mandag til fredag: 08.00 til 16.00",
+                CostNote = "Gratis lavterskeltilbud",
+            },
+            new ResourceTranslation
+            {
+                Id = 200,
+                ResourceId = 306,
+                LanguageCode = "en",
+                Description = "A meeting place for families with children aged 0 to 16 and pregnant women, with play rooms, a shared kitchen, activities and conversations. You can get in touch yourself without a referral.",
+                OpeningHours = "Monday to Friday: 08:00 to 16:00",
+                CostNote = "Free low-threshold service",
+            },
+            new ResourceTranslation
+            {
+                Id = 201,
+                ResourceId = 307,
+                LanguageCode = "nb",
+                Description = "Nytt støttesenter for pårørende og etterlatte til mennesker med uhelbredelig sykdom, åpnet 28. september 2026. Det skal være en åpen møteplass i Høyensalgata 74.",
+            },
+            new ResourceTranslation
+            {
+                Id = 202,
+                ResourceId = 307,
+                LanguageCode = "en",
+                Description = "A new support centre for relatives and bereaved of people with an incurable illness, opened on 28 September 2026. It is meant to be an open meeting place at Høyensalgata 74.",
+            },
+            new ResourceTranslation
+            {
+                Id = 203,
+                ResourceId = 308,
+                LanguageCode = "nb",
+                Description = "Lokalforening med faste ukentlige tilbud som Onsdagsgjengen for voksne mot sosial isolasjon, leksehjelp og Barnas Røde Kors for barn i 1. til 7. trinn, og besøkstjeneste.",
+            },
+            new ResourceTranslation
+            {
+                Id = 204,
+                ResourceId = 308,
+                LanguageCode = "en",
+                Description = "A local association with weekly offers such as Onsdagsgjengen for adults against social isolation, homework help and Barnas Røde Kors for children in grades 1 to 7, and a visiting service.",
+            },
+            new ResourceTranslation
+            {
+                Id = 205,
+                ResourceId = 309,
+                LanguageCode = "nb",
+                Description = "Gratis utlån av sports- og friluftsutstyr for sommer og vinter, åpent for alle. Utlånet er på Torghjørnet ved Stortorget.",
+                OpeningHours = "Man., tors. og fred.: kl. 13.00-18.00.",
+                CostNote = "helt gratis",
+            },
+            new ResourceTranslation
+            {
+                Id = 206,
+                ResourceId = 309,
+                LanguageCode = "en",
+                Description = "Free lending of sports and outdoor equipment for summer and winter, open to everyone. The lending point is at Torghjørnet by Stortorget.",
+                OpeningHours = "Monday, Thursday and Friday: 13:00-18:00.",
+                CostNote = "completely free",
+            },
+            new ResourceTranslation
+            {
+                Id = 207,
+                ResourceId = 310,
+                LanguageCode = "nb",
+                Description = "Åpen barnehage for barn under skolealder sammen med en voksen, med fast sangstund og frilek i Frivilligsentralens lokaler. Ta med mat og drikke selv.",
+                OpeningHours = "Onsdager og torsdager kl. 10:00-14:00",
+                CostNote = "Pris kr 10 pr barn pr dag, ha med mat og drikke selv, kaffe / te kan kjøpes.",
+            },
+            new ResourceTranslation
+            {
+                Id = 208,
+                ResourceId = 310,
+                LanguageCode = "en",
+                Description = "An open kindergarten for children under school age together with an adult, with a set song time and free play at the volunteer centre's premises. Bring your own food and drink.",
+                OpeningHours = "Wednesdays and Thursdays 10:00-14:00",
+                CostNote = "Price kr 10 per child per day, bring your own food and drink, coffee / tea can be bought.",
+            },
+            new ResourceTranslation
+            {
+                Id = 209,
+                ResourceId = 311,
+                LanguageCode = "nb",
+                Description = "Ungdomsklubb for 13 til 18 år på iskroa i CC amfi/hockeyhallen, med biljard, bordtennis, airhockey, matlaging, gaming og diskotek.",
+                OpeningHours = "Mandag og onsdag klokka 17.30-21.00, fredag klokka 18.00-23.00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 210,
+                ResourceId = 311,
+                LanguageCode = "en",
+                Description = "A youth club for ages 13 to 18 at iskroa in CC amfi/the hockey hall, with pool, table tennis, air hockey, cooking, gaming and discos.",
+                OpeningHours = "Monday and Wednesday 17:30-21:00, Friday 18:00-23:00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 211,
+                ResourceId = 312,
+                LanguageCode = "nb",
+                Description = "Ungdomsklubb for 13 til 18 år i Øvre Vang samfunnshus, med biljard, bordtennis, kortspill, dansematte, TV-spill og diskotek.",
+                OpeningHours = "Åpen mandag, tirsdag og torsdag klokka 18.00 - 22.00.",
+                CostNote = "Medlemskap kr 120,- pr skoleår.",
+            },
+            new ResourceTranslation
+            {
+                Id = 212,
+                ResourceId = 312,
+                LanguageCode = "en",
+                Description = "A youth club for ages 13 to 18 at Øvre Vang samfunnshus, with pool, table tennis, card games, a dance mat, video games and discos.",
+                OpeningHours = "Open Monday, Tuesday and Thursday 18:00 - 22:00.",
+                CostNote = "Membership kr 120,- per school year.",
+            },
+            new ResourceTranslation
+            {
+                Id = 213,
+                ResourceId = 313,
+                LanguageCode = "nb",
+                Description = "Spillforening i Hamar for brettspill, rollespill, kortspill og miniatyrspill. Hver onsdag er det sosial brettspilling i Foajeen på Hamar Kulturhus, og alle er velkomne, også nybegynnere.",
+                OpeningHours = "hver onsdag kl 16:00",
+                CostNote = "Spillkveldene våre på onsdager er helt gratis å delta på.",
+            },
+            new ResourceTranslation
+            {
+                Id = 214,
+                ResourceId = 313,
+                LanguageCode = "en",
+                Description = "A gaming club in Hamar for board games, role-playing, card games and miniature games. Every Wednesday there is social board gaming in the foyer at Hamar Kulturhus, and everyone is welcome, beginners too.",
+                OpeningHours = "every Wednesday at 16:00",
+                CostNote = "Our game nights on Wednesdays are completely free to join.",
+            },
+            new ResourceTranslation
+            {
+                Id = 215,
+                ResourceId = 314,
+                LanguageCode = "nb",
+                Description = "Gratis ukentlig gå-, jogge- eller løpetilbud i Ankerskogen. Barn under 11 år kan løpe sammen med en voksen.",
+                OpeningHours = "Hver lørdag kl 09.30",
+                CostNote = "Gratis tilbud.",
+            },
+            new ResourceTranslation
+            {
+                Id = 216,
+                ResourceId = 314,
+                LanguageCode = "en",
+                Description = "A free weekly walk, jog or run in Ankerskogen. Children under 11 can run together with an adult.",
+                OpeningHours = "Every Saturday at 09:30",
+                CostNote = "Free of charge.",
+            },
+            new ResourceTranslation
+            {
+                Id = 217,
+                ResourceId = 315,
+                LanguageCode = "nb",
+                Description = "Kommunalt møtested i Storgata 9B for deg over 18 år som har erfaring med psykiske helseutfordringer og vil være med i et fellesskap med aktivitet og struktur. Du kan komme som du er, uten påmelding.",
+                OpeningHours = "Mandag og fredag: klokken 09.30 til 15.00; Onsdager: klokken 09:30 - 15:00 denne dagen er det tur fra 11.30 - 15.00",
+                CostNote = "Tilbudet er gratis, og du trenger ikke melde deg på.",
+            },
+            new ResourceTranslation
+            {
+                Id = 218,
+                ResourceId = 315,
+                LanguageCode = "en",
+                Description = "A municipal meeting place at Storgata 9B for people over 18 who have experience with mental health challenges and want to take part in a community with activity and structure. You can come as you are, without signing up.",
+                OpeningHours = "Monday and Friday: 09:30 to 15:00; Wednesday: 09:30 - 15:00, on this day there is a trip from 11:30 - 15:00",
+                CostNote = "The service is free, and you do not need to sign up.",
+            },
+            new ResourceTranslation
+            {
+                Id = 219,
+                ResourceId = 316,
+                LanguageCode = "nb",
+                Description = "Drop-in-tilbud i Gamlevegen 101 for deg som har rusutfordringer eller er pårørende. Du kan komme innom for lunsj og en prat, få veiledning og hjelp med praktiske ting, og hente brukerutstyr. Det kreves ikke rusfrihet.",
+                OpeningHours = "Mandager og torsdager fra 11.00 til 13.00 hele året",
+                CostNote = "Tilbudet er gratis",
+            },
+            new ResourceTranslation
+            {
+                Id = 220,
+                ResourceId = 316,
+                LanguageCode = "en",
+                Description = "A drop-in service at Gamlevegen 101 for people with substance use challenges and their relatives. You can come by for lunch and a chat, get guidance and help with practical things, and collect user equipment. You do not need to be drug-free.",
+                OpeningHours = "Mondays and Thursdays from 11:00 to 13:00 all year",
+                CostNote = "The service is free",
+            },
+            new ResourceTranslation
+            {
+                Id = 221,
+                ResourceId = 317,
+                LanguageCode = "nb",
+                Description = "Møteplass i Lillehammer sentrum der du kan komme innom for kaffe og prat, kortspill, håndarbeid, språkkafé og andre fellesskap. Frivillige kan også hjelpe med besøksvenn, følge til lege, data og mobil, og skjemaer og brev fra det offentlige.",
+                OpeningHours = "Vår kjernetid er fra mandag til torsdag 10.00 til 14.00. Fredag fra 10.00 til 13.00.",
+                CostNote = "Alle våre aktiviteter er gratis og krever ingen påmelding. Vi tar 5 kroner for A4, 10 kr for A3, laminering/fotopapir 15 kroner.",
+            },
+            new ResourceTranslation
+            {
+                Id = 222,
+                ResourceId = 317,
+                LanguageCode = "en",
+                Description = "A meeting place in central Lillehammer where you can drop in for coffee and a chat, card games, handicrafts, a language café and other social groups. Volunteers can also help with a visiting friend, accompaniment to the doctor, computers and phones, and forms and letters from public bodies.",
+                OpeningHours = "Our core hours are Monday to Thursday 10:00 to 14:00. Friday from 10:00 to 13:00.",
+                CostNote = "All our activities are free and need no sign-up. We charge 5 kroner for A4, 10 kr for A3, 15 kroner for laminating/photo paper.",
+            },
+            new ResourceTranslation
+            {
+                Id = 223,
+                ResourceId = 318,
+                LanguageCode = "nb",
+                Description = "Lokalforeningen har faste møteplasser: Onsdagstreffen for seniorer med trim, kaffe og vafler, Barnas Røde Kors for barn i 1. til 7. klasse, og Norsktrening for deg som vil øve norsk. Besøksvenn-tilbudet er for deg som kjenner deg ensom.",
+                OpeningHours = "Onsdagstreffen: Onsdager (kl.10:30 for trim) kl.11:00-13:00; Barnas Røde Kors: Onsdager 18:00-19:30; Norsktrening: Tirsdager 17:00-19:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 224,
+                ResourceId = 318,
+                LanguageCode = "en",
+                Description = "The local branch runs regular meeting places: Onsdagstreffen for seniors with light exercise, coffee and waffles, Barnas Røde Kors for children in grades 1 to 7, and Norsktrening for people who want to practise Norwegian. The Besøksvenn visiting service is for people who feel lonely.",
+                OpeningHours = "Onsdagstreffen: Wednesdays (10:30 for exercise) 11:00-13:00; Barnas Røde Kors: Wednesdays 18:00-19:30; Norsktrening: Tuesdays 17:00-19:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 225,
+                ResourceId = 320,
+                LanguageCode = "nb",
+                Description = "Kafé og møtested i Gjøvik sentrum for rusavhengige og bostedsløse, med frokost, middag, kaffe og gratis aktiviteter som brettspill, quiz og kino. Du kan også snakke med en sosionom om livssituasjonen din.",
+                OpeningHours = "Mandag til fredag 12.00 – 15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 226,
+                ResourceId = 320,
+                LanguageCode = "en",
+                Description = "A café and meeting place in central Gjøvik for people with substance dependence and people without housing, with breakfast, dinner, coffee and free activities such as board games, quiz and cinema. You can also talk to a social worker about your situation.",
+                OpeningHours = "Monday to Friday 12.00 – 15.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 227,
+                ResourceId = 321,
+                LanguageCode = "nb",
+                Description = "Arbeidsfellesskap for deg som er 16 år eller eldre og har eller har hatt en psykisk helseutfordring. Du blir medlem gratis, uten henvisning, og kan bruke huset til arbeid, studier og sosialt fellesskap.",
+                OpeningHours = "Mandag – fredag kl 08:00-15:30",
+                CostNote = "Å være medlem på Fontenehuset koster ingenting.",
+            },
+            new ResourceTranslation
+            {
+                Id = 228,
+                ResourceId = 321,
+                LanguageCode = "en",
+                Description = "A work community for people aged 16 or older who have or have had a mental health challenge. Membership is free and needs no referral, and you can use the house for work, studies and social community.",
+                OpeningHours = "Monday – Friday 08:00-15:30",
+                CostNote = "Being a member of Fontenehuset costs nothing.",
+            },
+            new ResourceTranslation
+            {
+                Id = 229,
+                ResourceId = 322,
+                LanguageCode = "nb",
+                Description = "Frivilligsentralen i Gjøvik sentrum er en møteplass som formidler kontakt mellom folk i lokalmiljøet. Faste tilbud er blant annet Globus kafé (mandag, tirsdag, onsdag og fredag kl. 11.00-15.00 og torsdager kl. 11.00-13.00), Kaffetreff på Sørbyen omsorgssenter (torsdager kl. 11.00-13.00, kaffe og vaffel 30 kr, ingen påmelding), Strikkekafé (mandager på like uker kl. 11:00-14:00, servering 20 kr), Turgruppa (tirsdager fra kl. 11.00), Kom og spis (onsdager, 120 kr, krever påmelding) og gratis advokathjelp annenhver onsdag kl. 18.00-20.00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 230,
+                ResourceId = 322,
+                LanguageCode = "en",
+                Description = "The volunteer centre in central Gjøvik is a meeting place that connects people in the local community. Regular offers include Globus café (Monday, Tuesday, Wednesday and Friday 11.00-15.00 and Thursdays 11.00-13.00), a coffee meeting at Sørbyen care centre (Thursdays 11.00-13.00, coffee and waffle 30 kr, no sign-up), a knitting café (Mondays in even weeks 11:00-14:00, refreshments 20 kr), a walking group (Tuesdays from 11.00), Kom og spis (Wednesdays, 120 kr, sign-up required) and free legal advice every other Wednesday 18.00-20.00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 231,
+                ResourceId = 323,
+                LanguageCode = "nb",
+                Description = "Avdeling Øverby av frivilligsentralen driver Øverbykafeen og Torsdagstreff i Øverbyvegen 95, drevet av frivillige. Du kan komme innom i åpningstiden.",
+                OpeningHours = "Mandager: 11.00-13.30 Torsdager: 10.00-13.00 Søndager: 11.00-14.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 232,
+                ResourceId = 323,
+                LanguageCode = "en",
+                Description = "The Øverby branch of the volunteer centre runs the Øverby café and a Thursday meeting at Øverbyvegen 95, run by volunteers. You can drop in during opening hours.",
+                OpeningHours = "Mondays: 11.00-13.30 Thursdays: 10.00-13.00 Sundays: 11.00-14.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 233,
+                ResourceId = 324,
+                LanguageCode = "nb",
+                Description = "Værested og kafé for alle, særlig for deg som er ensom, innvandrer eller har en åndelig lengsel. Det er blant annet kreativ kafé og baby- og småbarnskafé på torsdager, kulturkafé annenhver torsdag og FredagsPULS annenhver fredag. På samme adresse holder Frelsesarmeen også Åpent Hus Velferd annenhver mandag kl. 10-12, et treffpunkt uten krav og forventninger for folk bosatt i Gjøvik, Vestre Toten og Østre Toten. Der kan du bli med på dagsturer, sang og musikk og kurs i selvhjelp, få hjelp med jobbsøknader og bruke PC, og det finnes en gratis samtale- og veiledningstjeneste.",
+                OpeningHours = "Onsdag og fredag kl. 11.00-15.00. Torsdag kl. 11.00-18.00 de torsdagene det er Kulturkafé. Ellers til kl. 15.00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 234,
+                ResourceId = 324,
+                LanguageCode = "en",
+                Description = "A drop-in place and café open to everyone, especially people who are lonely, immigrants or have a spiritual longing. It has a creative café and a baby and toddler café on Thursdays, a culture café every other Thursday and FredagsPULS every other Friday. At the same address Frelsesarmeen also runs Åpent Hus Velferd every other Monday 10-12, a meeting point without demands or expectations for people living in Gjøvik, Vestre Toten and Østre Toten. You can join day trips, singing and music and self-help courses, get help with job applications and use a PC, and there is a free conversation and guidance service.",
+                OpeningHours = "Wednesday and Friday 11.00-15.00. Thursday 11.00-18.00 on the Thursdays with a culture café, otherwise until 15.00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 235,
+                ResourceId = 326,
+                LanguageCode = "nb",
+                Description = "Ungdommens hus er et samlingspunkt for ungdom i Gjøvik med møteplasser, aktiviteter, turer og arrangementer, alltid med en trygg voksen til stede. Huset er åpent for deg som går på ungdomsskolen eller videregående.",
+                OpeningHours = "Mandag Stengt, Tirsdag 14:00-18:00, Onsdag 14:00-18:00, Torsdag 14:00-21:00, Fredag Stengt, Lørdag-søndag Stengt",
+            },
+            new ResourceTranslation
+            {
+                Id = 236,
+                ResourceId = 326,
+                LanguageCode = "en",
+                Description = "The youth house is a gathering place for young people in Gjøvik with meeting places, activities, trips and events, always with a trusted adult present. It is open to pupils at lower and upper secondary school.",
+                OpeningHours = "Monday closed, Tuesday 14:00-18:00, Wednesday 14:00-18:00, Thursday 14:00-21:00, Friday closed, Saturday-Sunday closed",
+            },
+            new ResourceTranslation
+            {
+                Id = 237,
+                ResourceId = 327,
+                LanguageCode = "nb",
+                Description = "Kafé, catering og utleie i Sørbyen, drevet av frivillige og folk på arbeidstrening. Hver onsdag er det langåpent med familievennlig middag og kulturelle opplevelser på kvelden.",
+                OpeningHours = "Onsdag: 11:00 - 18:00 Kjøkkenet stenger kl. 17:30 Torsdag: 11:00 - 16:00 Kjøkkenet stenger kl. 15:30 Fredag: 11:00 - 16:00 Kjøkkenet stenger kl. 15:30",
+            },
+            new ResourceTranslation
+            {
+                Id = 238,
+                ResourceId = 327,
+                LanguageCode = "en",
+                Description = "A café, catering and venue hire in Sørbyen, run by volunteers and people in work training. Every Wednesday it stays open late with a family-friendly dinner and cultural events in the evening.",
+                OpeningHours = "Wednesday: 11:00 - 18:00 the kitchen closes at 17:30 Thursday: 11:00 - 16:00 the kitchen closes at 15:30 Friday: 11:00 - 16:00 the kitchen closes at 15:30",
+            },
+            new ResourceTranslation
+            {
+                Id = 239,
+                ResourceId = 328,
+                LanguageCode = "nb",
+                Description = "Ukentlig møte der du kan øve på norsk i trygge og uformelle rammer sammen med frivillige fra lokalmiljøet, som et tillegg til norskundervisningen. Du trenger ikke melde deg på, det er bare å møte opp.",
+                OpeningHours = "hver tirsdag etter skoletid mellom 14.30 og 16.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 240,
+                ResourceId = 328,
+                LanguageCode = "en",
+                Description = "A weekly meeting where you can practise Norwegian in safe, informal settings with volunteers from the local community, as a supplement to formal Norwegian classes. You do not need to sign up, you just turn up.",
+                OpeningHours = "every Tuesday after school between 14.30 and 16.30",
+            },
+            new ResourceTranslation
+            {
+                Id = 241,
+                ResourceId = 329,
+                LanguageCode = "nb",
+                Description = "Aktivitetshus i Brumunddal for deg over 18 år som har utfordringer med psykisk helse og/eller rus og vil ha et sted å møte andre. Du velger selv hvilke aktiviteter du vil delta på, blant annet friluftsgruppe, trening og fredagsgruppe for unge voksne. Mandag og onsdag er åpent for alle, og torsdag er for deg med rusutfordringer. Én tirsdagskveld i måneden er det kveldsåpent for deg med rusutfordringer.",
+                OpeningHours = "Tidspunkt: 10:00-14:00 (unntatt tirsdag 17:00-19:00)",
+                CostNote = "Solsia aktivitetshus er gratis tilbud for deg over 18 år",
+            },
+            new ResourceTranslation
+            {
+                Id = 242,
+                ResourceId = 329,
+                LanguageCode = "en",
+                Description = "An activity house in Brumunddal for people over 18 who face mental health and/or substance use challenges and want a place to meet others. You choose which activities to join, including an outdoor group, exercise and a Friday group for young adults. Monday and Wednesday are open to everyone, and Thursday is for people with substance use challenges. One Tuesday evening a month is open to people with substance use challenges.",
+                OpeningHours = "Time: 10:00-14:00 (except Tuesday 17:00-19:00)",
+                CostNote = "Solsia activity house is a free offer for you over 18 years old",
+            },
+            new ResourceTranslation
+            {
+                Id = 243,
+                ResourceId = 330,
+                LanguageCode = "nb",
+                Description = "Den lokale foreningen Mental Helse har en fast, åpen møteplass i lokalene til Brumunddal frivilligsentral hver tirsdag. Du kan komme for å treffe andre, spise lunsj og ta en kaffe.",
+                OpeningHours = "Tirsdag kl. 10.00 – 14.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 244,
+                ResourceId = 330,
+                LanguageCode = "en",
+                Description = "The local Mental Helse association runs a regular open meeting place every Tuesday in the premises of Brumunddal volunteer centre. You can come to meet others, have lunch and a coffee.",
+                OpeningHours = "Tuesday 10.00 – 14.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 245,
+                ResourceId = 331,
+                LanguageCode = "nb",
+                Description = "Frivilligsentral i Brumunddal som skal være en møteplass på tvers av generasjoner. Gruppene er åpne for alle, blant annet en turgruppe på onsdager og strikkekafé annenhver torsdag.",
+                CostNote = "Alle gruppearrangement er åpne for alle og gratis å delta på.",
+            },
+            new ResourceTranslation
+            {
+                Id = 246,
+                ResourceId = 331,
+                LanguageCode = "en",
+                Description = "A volunteer centre in Brumunddal meant to be a meeting place across generations. The groups are open to everyone, including a walking group on Wednesdays and a knitting café every other Thursday.",
+                CostNote = "All group events are open to everyone and free to take part in.",
+            },
+            new ResourceTranslation
+            {
+                Id = 247,
+                ResourceId = 332,
+                LanguageCode = "nb",
+                Description = "Frivilligsentral i Moelv med faste møter som Tirsdagskafé hver tirsdag kl. 11.00 – 13.00 og Strikkekafé og Hobbytreff hver torsdag kl. 11.00 - 13.00. Alle er velkommen, og kaffe, vafler og rundstykker selges i kafeen.",
+                OpeningHours = "Mandag til fredag er vår kjernetiden kl. 10.00 - 14.00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 248,
+                ResourceId = 332,
+                LanguageCode = "en",
+                Description = "A volunteer centre in Moelv with regular meetings such as the Tuesday café every Tuesday 11.00 – 13.00 and a knitting café and hobby meeting every Thursday 11.00 - 13.00. Everyone is welcome, and coffee, waffles and rolls are sold at the café.",
+                OpeningHours = "Monday to Friday is our core time, 10.00 - 14.00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 249,
+                ResourceId = 333,
+                LanguageCode = "nb",
+                Description = "Åpen møteplass i Moelv der du kan øve muntlig norsk og bli kjent med andre, uansett hvor mye norsk du kan fra før. Du trenger ikke melde deg på, du møter bare opp på Kilde Skole.",
+                OpeningHours = "Tirsdager fra kl. 18:00 – 20:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 250,
+                ResourceId = 333,
+                LanguageCode = "en",
+                Description = "An open meeting place in Moelv where you can practise spoken Norwegian and get to know others, whatever your level of Norwegian. You do not need to sign up, you just turn up at Kilde Skole.",
+                OpeningHours = "Tuesdays from 18:00 – 20:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 251,
+                ResourceId = 334,
+                LanguageCode = "nb",
+                Description = "Ukentlig treningstime på Buttekvern Aktivitetssenter i Brumunddal som skal få opp pulsen og få kroppen i bevegelse. Trimmen er gratis og åpen for alle.",
+                OpeningHours = "Ukentlig kl. 11.00–13.00",
+                CostNote = "Trimmen er gratis og åpen for alle.",
+            },
+            new ResourceTranslation
+            {
+                Id = 252,
+                ResourceId = 334,
+                LanguageCode = "en",
+                Description = "A weekly exercise hour at Buttekvern activity centre in Brumunddal to raise your pulse and get your body moving. The session is free and open to everyone.",
+                OpeningHours = "Weekly 11.00–13.00",
+                CostNote = "The exercise session is free and open to everyone.",
+            },
+            new ResourceTranslation
+            {
+                Id = 253,
+                ResourceId = 335,
+                LanguageCode = "nb",
+                Description = "Aktivitetshuset i Stange er et sted for mennesker med ulike livsutfordringer, med sosialt samvær, lunsj, kreative aktiviteter, kurs, hyggekvelder, sykkelverksted og bruktbutikken Loppa. Du kan ta direkte kontakt selv, og det finnes gratis transport for deg som trenger det.",
+                OpeningHours = "Allaktivitetshuset: mandag-fredag 09.00-15.00, Kjernetid (10.00-14.00). Loppa: mandag, onsdag, fredag 10.00-14.00. Sykkelverkstedet: mandag, onsdag, torsdag 10.00-14.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 254,
+                ResourceId = 335,
+                LanguageCode = "en",
+                Description = "The activity house in Stange is a place for people with different life challenges, with social time, lunch, creative activities, courses, evening get-togethers, a bike workshop and the second-hand shop Loppa. You can contact them yourself, and free transport is available if you need it.",
+                OpeningHours = "Activity house: Monday to Friday 09.00-15.00, core hours 10.00-14.00. The second-hand shop Loppa: Monday, Wednesday, Friday 10.00-14.00. The bike workshop: Monday, Wednesday, Thursday 10.00-14.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 255,
+                ResourceId = 336,
+                LanguageCode = "nb",
+                Description = "Frivilligsentralen i Ottestad er en åpen møteplass i Fløibygningen på Kjonerudtunet, drevet av kommunen. Den arrangerer aktiviteter og sammenkomster gjennom året, noen for bestemte grupper og andre for alle, og tar imot dem som vil bidra som frivillige.",
+                OpeningHours = "Mandag - torsdag kl. 10:00-14:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 256,
+                ResourceId = 336,
+                LanguageCode = "en",
+                Description = "The volunteer centre in Ottestad is an open meeting place in the Fløi building at Kjonerudtunet, run by the kommune. It holds activities and gatherings through the year, some for set groups and others for everyone, and welcomes people who want to volunteer.",
+                OpeningHours = "Monday to Thursday 10:00-14:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 257,
+                ResourceId = 337,
+                LanguageCode = "nb",
+                Description = "Ungdomshuset i Ottestad er et kommunalt tilbud om aktivitet og sosialt samvær for ungdom mellom 13 og 18 år. Der finnes biljard, bordtennis og et musikkverksted, og ungdommene kan være med på å påvirke aktivitetene.",
+                OpeningHours = "Mandag 15.00-21.00, Torsdag 15.00-21.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 258,
+                ResourceId = 337,
+                LanguageCode = "en",
+                Description = "The youth house in Ottestad is a municipal offer of activities and social time for young people aged 13 to 18. It has a pool table, table tennis and a music workshop, and the young people can help shape the activities.",
+                OpeningHours = "Monday 15.00-21.00, Thursday 15.00-21.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 259,
+                ResourceId = 338,
+                LanguageCode = "nb",
+                Description = "Musikkverkstedet i Stange er et tilbud for unge som holder på med musikk, med fullt utstyrt øvingslokale, studio for innspilling og veiledning. Det vil også være en møteplass for unge musikere.",
+                OpeningHours = "Mandag 14.00-21.00, Tirsdag 14.00-21.00, Onsdag 17.00-20.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 260,
+                ResourceId = 338,
+                LanguageCode = "en",
+                Description = "The music workshop in Stange is an offer for young people who play music, with a fully equipped rehearsal room, a recording studio and guidance. It also aims to be a meeting place for young musicians.",
+                OpeningHours = "Monday 14.00-21.00, Tuesday 14.00-21.00, Wednesday 17.00-20.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 261,
+                ResourceId = 339,
+                LanguageCode = "nb",
+                Description = "Frivilligsentralen er en sosial møteplass i Løten med faste tilbud som allværskafé på mandager, gågruppe på tirsdager, eldretreff på onsdager og nett-treff på fredager. Du kan også få en frivillig som følger deg til timer, eller selv melde deg som frivillig.",
+                OpeningHours = "mandag til fredag kl.10.00 – kl.14.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 262,
+                ResourceId = 339,
+                LanguageCode = "en",
+                Description = "The volunteer centre is a social meeting place in Løten with regular offers such as a café on Mondays, a walking group on Tuesdays, a meeting for older people on Wednesdays and a mobile and computer help hour on Fridays. You can also get a volunteer to accompany you to appointments, or sign up as a volunteer yourself.",
+                OpeningHours = "Monday to Friday 10.00 – 14.00",
+            },
+            new ResourceTranslation
+            {
+                Id = 263,
+                ResourceId = 340,
+                LanguageCode = "nb",
+                Description = "Ungdomsklubb i Løten for barn og unge fra 5. klasse til 18 år, delt i juniorklubb og ungdomsklubb. Der kan du spille bordtennis, biljard og spill, høre på musikk og være ute ved bålpanner og diskgolfmål, med voksne til stede.",
+                OpeningHours = "Det er åpent mandag, tirsdag og torsdag.",
+            },
+            new ResourceTranslation
+            {
+                Id = 264,
+                ResourceId = 340,
+                LanguageCode = "en",
+                Description = "A youth club in Løten for children and young people from 5th grade up to age 18, split into a junior club and a youth club. You can play table tennis, billiards and games, listen to music and be outdoors at the fire pits and disc golf target, with adults present.",
+                OpeningHours = "Open Monday, Tuesday and Thursday.",
+            },
+            new ResourceTranslation
+            {
+                Id = 265,
+                ResourceId = 341,
+                LanguageCode = "nb",
+                Description = "Fysisk aktivitet i Løtenhallen med lekbetonte aktiviteter som lagleker, stafetter og lett styrketrening, drevet av psykisk helse- og rustjenesten. Aktivitetene tilpasses slik at alle kan delta.",
+                OpeningHours = "Hver onsdag er det tilbud om fysisk aktivitet i Løtenhallen fra kl. 14.00-15.00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 266,
+                ResourceId = 341,
+                LanguageCode = "en",
+                Description = "Physical activity in Løtenhallen with playful activities such as team games, relay races and light strength training, run by the mental health and substance use service. The activities are adapted so that everyone can take part.",
+                OpeningHours = "Every Wednesday there is physical activity in Løtenhallen from 14.00-15.00.",
+            },
+            new ResourceTranslation
+            {
+                Id = 267,
+                ResourceId = 342,
+                LanguageCode = "nb",
+                Description = "Utlån av sports- og friluftsutstyr i Løten, som sykler, kajakker og telt om våren og sommeren og ski, skøyter og alpinutstyr om høsten og vinteren. Du må registrere en profil først.",
+                CostNote = "helt gratis!",
+            },
+            new ResourceTranslation
+            {
+                Id = 268,
+                ResourceId = 342,
+                LanguageCode = "en",
+                Description = "Lending of sports and outdoor equipment in Løten, such as bikes, kayaks and tents in spring and summer and skis, skates and alpine gear in autumn and winter. You have to register a profile first.",
+                CostNote = "completely free!",
+            },
+            new ResourceTranslation
+            {
+                Id = 269,
+                ResourceId = 343,
+                LanguageCode = "nb",
+                Description = "Frivilligsentral med åpen frivilligkafé alle hverdager og grupper som hobbyklubb, trimgruppe og språkkafé. Du kan komme innom for en kaffe, en prat eller for å delta i aktivitetene.",
+                OpeningHours = "Frivilligkaféen: Åpningstiden er mellom kl 10:00 og 14:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 270,
+                ResourceId = 343,
+                LanguageCode = "en",
+                Description = "A volunteer centre with an open café every weekday and groups such as the hobby club, exercise group and language café. You can drop in for a coffee, a chat or to join the activities.",
+                OpeningHours = "The volunteer café: opening hours are between 10:00 and 14:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 271,
+                ResourceId = 344,
+                LanguageCode = "nb",
+                Description = "Åpent møtested for småbarn, seniorer og alle som er midt imellom, med kafé på hverdager, hobbygrupper, boccia, sangkafé, kurs og turer. Stedet drives av en frivillig organisasjon og holder til i kommunehuset Folkvang.",
+                OpeningHours = "Mandag-fredag 09:00-15:00. Kafé: mandag - fredag 09:00-15:00, torsdag til 15:30.",
+            },
+            new ResourceTranslation
+            {
+                Id = 272,
+                ResourceId = 344,
+                LanguageCode = "en",
+                Description = "An open meeting place for toddlers, seniors and everyone in between, with a café on weekdays, hobby groups, boccia, a singing café, courses and outings. It is run by a voluntary organisation and is based in the Folkvang municipal building.",
+                OpeningHours = "Monday to Friday 09:00-15:00. Café: Monday to Friday 09:00-15:00, Thursday until 15:30.",
+            },
+            new ResourceTranslation
+            {
+                Id = 273,
+                ResourceId = 345,
+                LanguageCode = "nb",
+                Description = "Dagtilbud for deg som har eller har hatt psykiske utfordringer og trenger hjelp til å komme i aktivitet og gjenoppta et sosialt liv. Det er et sosialt fellesskap, ikke behandling, og det anbefales å ringe først.",
+                OpeningHours = "Mandag, onsdag, torsdag og fredag kl. 10:00 - 14:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 274,
+                ResourceId = 345,
+                LanguageCode = "en",
+                Description = "A day offer for people who have or have had psychological challenges and need help to get into activity and take up a social life again. It is a social community, not treatment, and the page recommends calling first.",
+                OpeningHours = "Monday, Wednesday, Thursday and Friday 10:00 - 14:00",
+            },
+            new ResourceTranslation
+            {
+                Id = 275,
+                ResourceId = 346,
+                LanguageCode = "nb",
+                Description = "Gratis ungdomsklubb i sentrum for ungdom mellom 10 og 18 år, med blant annet spill, brettspill, musikk, dans, leksehjelp og skating. Tirsdag er det juniorklubb for 5. til 7. trinn.",
+                OpeningHours = "Mandag kl. 14.00 - 20.45; Tirsdag kl. 14.00 - 20.00 (Juniorklubben 5. - 7. trinn); Onsdag kl. 14.00 - 20.45; Torsdag kl. 14.00 - 20.45; Fredag kl. 14.00 - 20.45",
+                CostNote = "Her kan du være med på en hel haug med aktiviteter, og det er gratis.",
+            },
+            new ResourceTranslation
+            {
+                Id = 276,
+                ResourceId = 346,
+                LanguageCode = "en",
+                Description = "A free youth club in the town centre for young people aged 10 to 18, with gaming, board games, music, dance, homework help and skating. On Tuesdays there is a junior club for grades 5 to 7.",
+                OpeningHours = "Monday 14.00 - 20.45; Tuesday 14.00 - 20.00 (junior club for grades 5 - 7); Wednesday 14.00 - 20.45; Thursday 14.00 - 20.45; Friday 14.00 - 20.45",
+                CostNote = "You can join a whole bunch of activities here, and it is free.",
             });
 
         modelBuilder.Entity<ResourceCategory>().HasData(
@@ -3067,7 +4377,66 @@ public static class SeedData
             new ResourceCategory { ResourceId = 115, CategoryId = Categories.Lavterskeltilbud },
             new ResourceCategory { ResourceId = 227, CategoryId = Categories.Lavterskeltilbud },
             new ResourceCategory { ResourceId = 228, CategoryId = Categories.Lavterskeltilbud },
-            new ResourceCategory { ResourceId = 247, CategoryId = Categories.Lavterskeltilbud });
+            new ResourceCategory { ResourceId = 247, CategoryId = Categories.Lavterskeltilbud },
+            // Rows 301 and up: categories from docs/seed-data-lavterskel-innlandet.md.
+            new ResourceCategory { ResourceId = 301, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 301, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 302, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 303, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 304, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 304, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 305, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 305, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 306, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 306, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 307, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 308, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 309, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 310, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 310, CategoryId = Categories.FamilieOgBarn },
+            new ResourceCategory { ResourceId = 311, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 312, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 313, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 314, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 315, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 315, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 316, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 316, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 317, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 318, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 320, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 320, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 321, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 321, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 322, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 323, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 324, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 326, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 327, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 328, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 329, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 329, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 329, CategoryId = Categories.Rus },
+            new ResourceCategory { ResourceId = 330, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 330, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 331, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 332, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 333, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 334, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 335, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 336, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 337, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 338, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 339, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 340, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 341, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 341, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 342, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 343, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 344, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 345, CategoryId = Categories.Lavterskeltilbud },
+            new ResourceCategory { ResourceId = 345, CategoryId = Categories.PsykiskHelse },
+            new ResourceCategory { ResourceId = 346, CategoryId = Categories.Lavterskeltilbud });
 
         // Coverage joins from docs/seed-data-innlandet-ring.md's "## Coverage map" section, for
         // non-national resources only. National resources (rows 1, 2, 3, 4, 5, 6, 8, 9, 119, 120,
@@ -3088,6 +4457,15 @@ public static class SeedData
             new ResourceMunicipality { ResourceId = 14, MunicipalityId = Elverum },
             // Row 118 — Nok. Hamar, per its own Serves cell (Løten kommune's kriseberedskap
             // page is the sole source for this coverage claim).
-            new ResourceMunicipality { ResourceId = 118, MunicipalityId = Loten });
+            new ResourceMunicipality { ResourceId = 118, MunicipalityId = Loten },
+            // Row 304, CRUX Arbeideren: its Serves cell in docs/seed-data-lavterskel-innlandet.md.
+            new ResourceMunicipality { ResourceId = 304, MunicipalityId = Stange },
+            // Row 321, Fontenehuset Gjøvik: its Serves cell in docs/seed-data-lavterskel-innlandet.md.
+            new ResourceMunicipality { ResourceId = 321, MunicipalityId = Hamar },
+            new ResourceMunicipality { ResourceId = 321, MunicipalityId = Lillehammer },
+            new ResourceMunicipality { ResourceId = 321, MunicipalityId = Ringsaker },
+            new ResourceMunicipality { ResourceId = 321, MunicipalityId = Stange },
+            new ResourceMunicipality { ResourceId = 321, MunicipalityId = Loten },
+            new ResourceMunicipality { ResourceId = 321, MunicipalityId = Elverum });
     }
 }
