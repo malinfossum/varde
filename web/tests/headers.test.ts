@@ -15,7 +15,7 @@ const PRESSABLE_STYLE_HASH = "'sha256-38RhXrc7EdReTKsOm23ZPOCUgniTUUcjky8QOOrQx6
 // The theme/redirect init script is inline in index.html so first paint does not wait on a
 // second request; script-src carries its hash for the same reason style-src carries the one
 // above. Both hashes are rebuilt from source by the drift tests below.
-const THEME_INIT_HASH = "'sha256-YzBzTWuXMzOIkk/qQdaDv8mn8TPOsUq2jVt1Yw6kEWI='"
+const THEME_INIT_HASH = "'sha256-HOjMaEcrQazchR/e2yFZF94+mLX/RuqDGTPMhBPzKfk='"
 
 // favicon.svg switches to the dark accent with a <style> media query, and Cloudflare sends the
 // site CSP on the SVG too, so style-src carries that block's hash like the react-aria one.

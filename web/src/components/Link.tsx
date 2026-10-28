@@ -19,7 +19,7 @@ export function Link({
 	// Runs before navigating; returning false keeps the link a link but cancels the navigation.
 	onNavigate?: () => undefined | false
 	"aria-label"?: string
-	"aria-current"?: "page"
+	"aria-current"?: "page" | "true"
 }) {
 	const navigate = useNavigate()
 	const { lang: current } = useLanguage()

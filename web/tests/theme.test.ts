@@ -74,7 +74,12 @@ test("the inline init script agrees with resolveTheme", () => {
 
 test("the inline init script redirects exactly like legacyRedirect", () => {
 	const script = inlineInitScript()
-	const run = (pathname: string, search: string, storedLang: string | null) => {
+	const run = (
+		pathname: string,
+		search: string,
+		storedLang: string | null,
+		languages: string[] = []
+	) => {
 		const store = new Map<string, string>([["theme", "light"]])
 		if (storedLang) store.set("varde.lang", storedLang)
 		const replace = vi.fn()
@@ -82,11 +87,12 @@ test("the inline init script redirects exactly like legacyRedirect", () => {
 			localStorage: { getItem: (k: string) => store.get(k) ?? null },
 			matchMedia: () => ({ matches: false }),
 			location: { pathname, search, replace },
+			navigator: { languages },
 		}
 		new Function("window", "document", script)(fakeWindow, document)
 		return replace.mock.calls[0]?.[0] ?? null
 	}
-	const cases: [string, string, string | null][] = [
+	const cases: [string, string, string | null, string[]?][] = [
 		["/", "?lang=en", null],
 		["/sok", "?lang=en&search=nav", null],
 		["/resources/5", "?lang=nb", "en"],
@@ -99,10 +105,21 @@ test("the inline init script redirects exactly like legacyRedirect", () => {
 		["/", "", null],
 		["/en/", "", "en"],
 		["/sok", "?search=nav", null],
+		// System (#80): the browser's languages decide, on bare / only.
+		["/", "", "system", ["nb-NO"]],
+		["/", "", "system", ["nn"]],
+		["/", "", "system", ["no"]],
+		["/", "", "system", ["en-GB"]],
+		["/", "", "system", ["pl", "nb"]],
+		["/", "", "system", ["pl"]],
+		["/", "", "system", []],
+		["/resources/2", "", "system", ["en-GB"]],
+		["/", "", null, ["en-GB"]],
 	]
-	for (const [pathname, search, stored] of cases) {
-		expect(run(pathname, search, stored), `${pathname}${search} stored=${stored}`).toBe(
-			legacyRedirect(pathname, search, stored)
-		)
+	for (const [pathname, search, stored, languages = []] of cases) {
+		expect(
+			run(pathname, search, stored, languages),
+			`${pathname}${search} stored=${stored} languages=${languages}`
+		).toBe(legacyRedirect(pathname, search, stored, languages))
 	}
 })

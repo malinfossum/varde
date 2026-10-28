@@ -10,6 +10,7 @@ import {
 	pathFor,
 	routePath,
 	switchLangPath,
+	systemLang,
 } from "../src/services/urlState.ts"
 
 // "/" is the landing now that results live at /sok — see the dedicated route test below for
@@ -130,6 +131,28 @@ describe("legacyRedirect", () => {
 	test("nothing to do returns null", () => {
 		expect(legacyRedirect("/sok", "?search=nav", null)).toBeNull()
 	})
+	test("a stored System choice follows the browser, and only on bare /", () => {
+		expect(legacyRedirect("/", "", "system", ["en-GB"])).toBe("/en/")
+		expect(legacyRedirect("/", "", "system", ["nb-NO", "en"])).toBeNull()
+		expect(legacyRedirect("/resources/2", "", "system", ["en-GB"])).toBeNull()
+		expect(legacyRedirect("/en/", "", "system", ["nb-NO"])).toBeNull()
+		expect(legacyRedirect("/", "?lang=nb", "system", ["en-GB"])).toBeNull()
+	})
+})
+
+// System (#80): the first Norwegian or English entry in navigator.languages decides; a browser
+// that lists neither gets English, the language most readers of a non-Norwegian browser share.
+test.each([
+	[["nb-NO"], "nb"],
+	[["nn"], "nb"],
+	[["no"], "nb"],
+	[["en-GB"], "en"],
+	[["pl", "nb"], "nb"],
+	[["pl", "EN-us", "nb"], "en"],
+	[["pl"], "en"],
+	[[], "en"],
+] as [string[], string][])("systemLang(%j) is %s", (languages, lang) => {
+	expect(systemLang(languages)).toBe(lang)
 })
 
 // /sok is prerendered once, as the no-query page. A results URL like /sok?search=nav must not
