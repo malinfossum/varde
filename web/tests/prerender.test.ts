@@ -339,9 +339,11 @@ test("the landing pages bake their helplines, in their own language", async () =
 		log: () => {},
 	})
 	expect(readFileSync(join(distDir, "index.html"), "utf8")).toContain(
-		'"helplines":{"lang":"nb","entries":[{"id":1'
+		'{"lang":"nb","helplines":[{"id":1'
 	)
-	expect(readFileSync(join(distDir, "en/index.html"), "utf8")).toContain('"helplines":{"lang":"en"')
+	expect(readFileSync(join(distDir, "en/index.html"), "utf8")).toContain(
+		'{"lang":"en","helplines":['
+	)
 	expect(readFileSync(join(distDir, "sok.html"), "utf8")).not.toContain("helplines")
 })
 

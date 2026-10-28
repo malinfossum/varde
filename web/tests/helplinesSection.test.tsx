@@ -93,7 +93,7 @@ test("a row whose only chat is not https shows its phone button and no chat link
 	const groups = pickHelplines(
 		helplineRows.map((r) => (r.id === 122 ? { ...r, chatUrl: "javascript:alert(1)" } : r))
 	)
-	renderLanding({ helplines: { lang: "nb", entries: groups } })
+	renderLanding({ lang: "nb", helplines: groups })
 	const section = screen.getByRole("region", { name: "Noen å snakke med" })
 	const mentalHelse = within(section).getAllByRole("listitem")[0] as HTMLElement
 	expect(

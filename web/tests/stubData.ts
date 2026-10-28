@@ -11,11 +11,12 @@ const empty: Index = { resources: [], municipalities: [], categories: [], kommun
 // script writes, 404s everything else. Replaces the per-test API stubs from the API era.
 // A plain vi.fn() (not vi.stubGlobal's own closure) so tests can assert on call counts, e.g.
 // the useCatalog retry test asserting the fetch call count grows.
-export function stubDataFiles(fixture: Partial<Index> = {}): void {
+// Both languages get the same rows unless a test passes its own English rows.
+export function stubDataFiles(fixture: Partial<Index> = {}, enResources?: ResourceDto[]): void {
 	const index = { ...empty, ...fixture }
 	const files: Record<string, unknown> = {
 		"/data/resources.nb.json": index.resources,
-		"/data/resources.en.json": index.resources,
+		"/data/resources.en.json": enResources ?? index.resources,
 		"/data/municipalities.json": index.municipalities,
 		"/data/categories.nb.json": index.categories,
 		"/data/categories.en.json": index.categories,
@@ -114,5 +115,5 @@ export function visibleText(element: HTMLElement): string {
 
 // The page data the prerender bakes into a landing page, for tests that render or hydrate it.
 export function bakedHelplines(lang: Lang): PageData {
-	return { helplines: { lang, entries: pickHelplines(helplineRows) } }
+	return { lang, helplines: pickHelplines(helplineRows) }
 }

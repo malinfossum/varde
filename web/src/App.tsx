@@ -21,7 +21,7 @@ import { AnnouncerProvider } from "./components/StatusRegion.tsx"
 import { useShiftExit } from "./hooks/useShiftExit.ts"
 import { useThemeChoice } from "./hooks/useThemeChoice.ts"
 import { useUrlState } from "./hooks/useUrlState.ts"
-import { LanguageProvider, useTranslation } from "./i18n/LanguageProvider.tsx"
+import { LanguageProvider, useLanguage, useTranslation } from "./i18n/LanguageProvider.tsx"
 import { ArrivalContext, HistoryEventsContext, NavigationContext } from "./navigation.ts"
 import type { Filters, Route } from "./services/urlState.ts"
 
@@ -65,6 +65,7 @@ export function App() {
 function Shell({ route, filters, arrival }: { route: Route; filters: Filters; arrival: number }) {
 	useShiftExit()
 	const t = useTranslation()
+	const { lang } = useLanguage()
 	// One theme state for the Meny's theme rows and the footer pill, so a choice in one shows in
 	// the other at once (a storage event only reaches other tabs).
 	const theme = useThemeChoice()
@@ -83,12 +84,16 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 					{route.kind === "landing" && <LandingPage arrival={arrival} />}
 					{route.kind === "list" && <ListPage filters={filters} arrival={arrival} />}
 					{route.kind === "about" && <AboutPage arrival={arrival} />}
-					{/* Keyed by id: a detail page owns its resource, so another id is a new page. Without
-					    the key, Back from a parent to a directly loaded child kept showing the parent. */}
+					{/* Keyed by language and id: a detail page owns its resource, so another id or the
+					    other language is a new page. Without the id, Back from a parent to a directly
+					    loaded child kept showing the parent; without the language, a switch back to the
+					    loaded language kept the other language's rows (issue #79). */}
 					{route.kind === "detail" && (
-						<ResourceDetail key={route.id} id={route.id} arrival={arrival} />
+						<ResourceDetail key={`${lang}-${route.id}`} id={route.id} arrival={arrival} />
 					)}
-					{route.kind === "kommune" && <KommunePage slug={route.slug} arrival={arrival} />}
+					{route.kind === "kommune" && (
+						<KommunePage key={`${lang}-${route.slug}`} slug={route.slug} arrival={arrival} />
+					)}
 					{route.kind === "notFound" && <NotFoundState arrival={arrival} />}
 				</Suspense>
 			</main>

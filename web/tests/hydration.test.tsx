@@ -113,7 +113,7 @@ test.each([
 })
 
 test("the resource page bakes the resource into the HTML", async () => {
-	const { html, head } = await render("/resources/12", { resource })
+	const { html, head } = await render("/resources/12", { lang: "nb", resource })
 	expect(html).toContain("NAV Hamar")
 	expect(html).toContain('href="tel:12345678"')
 	assertNoOutlinedBoundary(html)
@@ -126,7 +126,7 @@ test("the resource page bakes the resource into the HTML", async () => {
 })
 
 test("the prerendered resource page works before JavaScript", async () => {
-	const { html } = await render("/resources/12", { resource })
+	const { html } = await render("/resources/12", { lang: "nb", resource })
 	expect(html).toContain('href="tel:12345678"')
 	expect(html).toMatch(/<a[^>]+href="https:\/\/www\.google\.com"[^>]*>Forlat siden<\/a>/)
 	expect(html).toContain('href="/en/resources/12"')
@@ -135,7 +135,7 @@ test("the prerendered resource page works before JavaScript", async () => {
 // Spec: Hydration. The prerender shows all three actions, with share labelled Del, so the row
 // does not jump from one button to three on load.
 test("the prerendered detail page holds all three actions", async () => {
-	const { html } = await render("/resources/12", { resource })
+	const { html } = await render("/resources/12", { lang: "nb", resource })
 	expect(html).toContain('aria-label="Kopier nummer"')
 	expect(html).toContain('aria-label="Del"')
 	expect(html).toContain('aria-label="Meld feil i oppføringen"')
@@ -149,7 +149,9 @@ test("Back from a parent to a directly loaded child page shows the child again",
 	window.history.pushState(null, "", "/resources/9")
 	const { unmount } = renderApp(
 		<UrlContext.Provider value={{ pathname: "/resources/9", search: "" }}>
-			<PageDataContext.Provider value={{ resource: child, family: familyOf(child, helplineRows) }}>
+			<PageDataContext.Provider
+				value={{ lang: "nb", resource: child, family: familyOf(child, helplineRows) }}
+			>
 				<App />
 			</PageDataContext.Provider>
 		</UrlContext.Provider>
