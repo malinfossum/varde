@@ -9,7 +9,7 @@
    - components/  rendering + event wiring — no business logic
    ====================================================================== */
 
-import { lazy, Suspense, useMemo } from "react"
+import { lazy, memo, Suspense, useMemo } from "react"
 import { AcuteStrip } from "./components/AcuteStrip.tsx"
 import { Footer } from "./components/Footer.tsx"
 import { Header } from "./components/Header.tsx"
@@ -65,7 +65,6 @@ export function App() {
 function Shell({ route, filters, arrival }: { route: Route; filters: Filters; arrival: number }) {
 	useShiftExit()
 	const t = useTranslation()
-	const { lang } = useLanguage()
 	// One theme state for the Meny's theme rows and the footer pill, so a choice in one shows in
 	// the other at once (a storage event only reaches other tabs).
 	const theme = useThemeChoice()
@@ -80,22 +79,7 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 				id="main"
 				className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 ${route.kind === "landing" ? "lg:py-3" : ""}`}
 			>
-				<Suspense fallback={<LoadingState />}>
-					{route.kind === "landing" && <LandingPage arrival={arrival} />}
-					{route.kind === "list" && <ListPage filters={filters} arrival={arrival} />}
-					{route.kind === "about" && <AboutPage arrival={arrival} />}
-					{/* Keyed by language and id: a detail page owns its resource, so another id or the
-					    other language is a new page. Without the id, Back from a parent to a directly
-					    loaded child kept showing the parent; without the language, a switch back to the
-					    loaded language kept the other language's rows (issue #79). */}
-					{route.kind === "detail" && (
-						<ResourceDetail key={`${lang}-${route.id}`} id={route.id} arrival={arrival} />
-					)}
-					{route.kind === "kommune" && (
-						<KommunePage key={`${lang}-${route.slug}`} slug={route.slug} arrival={arrival} />
-					)}
-					{route.kind === "notFound" && <NotFoundState arrival={arrival} />}
-				</Suspense>
+				<Page route={route} filters={filters} arrival={arrival} />
 			</main>
 			<Footer theme={theme} />
 			{/* After the footer, so Tab reaches the bar last, in the order it is seen. */}
@@ -103,3 +87,37 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 		</div>
 	)
 }
+
+// Memoised so the shell's own state (the theme, set in an effect right after hydration) does not
+// re-render the Suspense boundary. A dehydrated boundary that gets new children while its lazy
+// chunk is still loading is thrown away and client-rendered, so a directly loaded page flashed
+// "Laster …" over its prerendered HTML.
+const Page = memo(function Page({
+	route,
+	filters,
+	arrival,
+}: {
+	route: Route
+	filters: Filters
+	arrival: number
+}) {
+	const { lang } = useLanguage()
+	return (
+		<Suspense fallback={<LoadingState />}>
+			{route.kind === "landing" && <LandingPage arrival={arrival} />}
+			{route.kind === "list" && <ListPage filters={filters} arrival={arrival} />}
+			{route.kind === "about" && <AboutPage arrival={arrival} />}
+			{/* Keyed by language and id: a detail page owns its resource, so another id or the
+			    other language is a new page. Without the id, Back from a parent to a directly
+			    loaded child kept showing the parent; without the language, a switch back to the
+			    loaded language kept the other language's rows (issue #79). */}
+			{route.kind === "detail" && (
+				<ResourceDetail key={`${lang}-${route.id}`} id={route.id} arrival={arrival} />
+			)}
+			{route.kind === "kommune" && (
+				<KommunePage key={`${lang}-${route.slug}`} slug={route.slug} arrival={arrival} />
+			)}
+			{route.kind === "notFound" && <NotFoundState arrival={arrival} />}
+		</Suspense>
+	)
+})
