@@ -1,4 +1,5 @@
 import { act, render, screen, within } from "@testing-library/react"
+import { useEffect, useRef } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { afterEach, expect, test, vi } from "vitest"
 import { HandoverBanner } from "../src/components/HandoverBanner.tsx"
@@ -38,7 +39,7 @@ test("evening banner leads with legevakt as a tel link", () => {
 	expect(screen.getByRole("link", { name: /116 117/ })).toHaveAttribute("href", "tel:116117")
 })
 
-test("first render is the neutral legevakt line; the fastlege paragraph arrives in an effect", () => {
+test("the prerender is the neutral legevakt line; the browser adds the fastlege paragraph", () => {
 	vi.useFakeTimers()
 	vi.setSystemTime(new Date(2026, 7, 19, 10, 0)) // Wed 10:00 -> "fastlege" per hoursRule
 
@@ -60,7 +61,7 @@ test("first render is the neutral legevakt line; the fastlege paragraph arrives 
 		"tel:116117"
 	)
 
-	// After mount, the effect reads the real clock and adds the fastlege paragraph.
+	// In the browser the real clock is read and adds the fastlege paragraph.
 	const { container } = render(
 		<LanguageProvider lang="nb">
 			<HandoverBanner />
@@ -70,4 +71,31 @@ test("first render is the neutral legevakt line; the fastlege paragraph arrives 
 	expect(container.querySelectorAll("p")).toHaveLength(2)
 
 	vi.useRealTimers()
+})
+
+// Back to /sok remounts the list on the client, and ListPage restores the scroll in its own
+// effect, which runs after this child's effects. A fastlege line that only arrived in a later
+// render pushed the list 48 px down after the restore. Only hydration may start neutral.
+test("a client-side mount shows the fastlege paragraph before the parent's effects run", () => {
+	vi.useFakeTimers()
+	vi.setSystemTime(new Date(2026, 7, 19, 10, 0)) // Wed 10:00 -> "fastlege"
+
+	let seen = -1
+	function Parent() {
+		const ref = useRef<HTMLDivElement>(null)
+		useEffect(() => {
+			seen = ref.current?.querySelectorAll("p").length ?? -1
+		}, [])
+		return (
+			<div ref={ref}>
+				<HandoverBanner />
+			</div>
+		)
+	}
+	render(
+		<LanguageProvider lang="nb">
+			<Parent />
+		</LanguageProvider>
+	)
+	expect(seen).toBe(2)
 })

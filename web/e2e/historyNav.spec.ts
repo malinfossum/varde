@@ -53,6 +53,10 @@ for (const lang of ["nb", "en"] as const) {
 
 // Spec: Focus and scroll. The misclick this feature exists to fix.
 async function openResultFarDown(page: Page) {
+	// A weekday morning, so the handover banner on /sok carries its taller fastlege line. That
+	// line once arrived a render after the scroll restore and pushed the list 48 px down; with the
+	// real clock, only runs during fastlege hours could catch it.
+	await page.clock.setFixedTime(new Date(2026, 9, 28, 10, 0))
 	await page.goto("/sok")
 	await settle(page)
 	await hydrated(page)
