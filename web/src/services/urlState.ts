@@ -98,12 +98,25 @@ export function buildSearch(filters: Filters): string {
 	return query ? `?${query}` : ""
 }
 
+// The language a stored System choice resolves to (#80): the first Norwegian or English entry in
+// navigator.languages decides. A browser that lists neither gets English. Mirrored in the inline
+// init script in index.html.
+export function systemLang(languages: readonly string[]): Lang {
+	for (const tag of languages) {
+		const primary = tag.toLowerCase().split("-")[0]
+		if (primary === "nb" || primary === "nn" || primary === "no") return "nb"
+		if (primary === "en") return "en"
+	}
+	return "en"
+}
+
 // Mirrored in the inline init script in index.html, which cannot import. tests/theme.test.ts runs both
 // against the same cases. Returns the URL to location.replace() to, or null.
 export function legacyRedirect(
 	pathname: string,
 	search: string,
-	storedLang: string | null
+	storedLang: string | null,
+	browserLanguages: readonly string[] = []
 ): string | null {
 	const params = new URLSearchParams(search)
 	const lang = params.get("lang")
@@ -125,7 +138,8 @@ export function legacyRedirect(
 		return target
 	}
 	if (legacyList) return `/sok${search}`
-	if (pathname === "/" && search === "" && storedLang === "en") return "/en/"
+	const remembered = storedLang === "system" ? systemLang(browserLanguages) : storedLang
+	if (pathname === "/" && search === "" && remembered === "en") return "/en/"
 	return null
 }
 

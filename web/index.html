@@ -59,6 +59,9 @@
 			var path
 			var query
 			var candidate
+			var languages
+			var primary
+			var i
 			if (lang !== null) {
 				params.delete("lang")
 				path = legacyList ? "/sok" : pathname
@@ -71,8 +74,21 @@
 				if (candidate !== "/") target = candidate
 			} else if (legacyList) {
 				target = `/sok${search}`
-			} else if (pathname === "/" && search === "" && stored === "en") {
-				target = "/en/"
+			} else if (pathname === "/" && search === "") {
+				// Mirrors systemLang(): a stored System choice follows the browser's languages.
+				if (stored === "system") {
+					stored = "en"
+					languages = window.navigator?.languages || []
+					for (i = 0; i < languages.length; i++) {
+						primary = languages[i].toLowerCase().split("-")[0]
+						if (primary === "nb" || primary === "nn" || primary === "no") {
+							stored = "nb"
+							break
+						}
+						if (primary === "en") break
+					}
+				}
+				if (stored === "en") target = "/en/"
 			}
 			if (target !== null) window.location.replace(target)
 		})()
