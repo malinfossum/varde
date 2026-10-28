@@ -28,8 +28,7 @@ function knownHelplines(baked: HelplineGroup[] | null, lang: Lang): HelplineGrou
 export function Helplines({ className }: { className?: string }) {
 	const { lang } = useLanguage()
 	const t = useTranslation()
-	const page = usePageData().helplines
-	const known = knownHelplines(page?.lang === lang ? page.entries : null, lang)
+	const known = knownHelplines(usePageData().helplines ?? null, lang)
 	const [fetched, setFetched] = useState<{ lang: Lang; entries: HelplineGroup[] } | null>(null)
 	const needsFetch = known === null
 	// A direct load has the rows baked in. Coming back by client-side navigation with a cold

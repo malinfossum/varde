@@ -35,7 +35,7 @@ afterEach(() => {
 // The prerendered path: the resource is baked in, so the page renders without a fetch.
 function tree(resource: ResourceDto, lang: Lang) {
 	return (
-		<PageDataContext.Provider value={{ resource, family: NO_FAMILY }}>
+		<PageDataContext.Provider value={{ lang, resource, family: NO_FAMILY }}>
 			<LanguageProvider lang={lang}>
 				<AnnouncerProvider>
 					<ResourceDetail id={resource.id} />

@@ -439,7 +439,9 @@ test("a prerendered Mental Helse page shows its child tiles without a request", 
 	const fetchSpy = vi.spyOn(globalThis, "fetch")
 	const resource = helplineRows.find((r) => r.id === 1) as ResourceDto
 	render(
-		<PageDataContext.Provider value={{ resource, family: familyOf(resource, helplineRows) }}>
+		<PageDataContext.Provider
+			value={{ lang: "nb", resource, family: familyOf(resource, helplineRows) }}
+		>
 			<LanguageProvider lang="nb">
 				<AnnouncerProvider>
 					<ResourceDetail id={1} />

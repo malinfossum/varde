@@ -209,13 +209,16 @@ export async function prerenderSite({
 	}
 	const pages = urlList(kommuner, resourcesByLang)
 	for (const page of pages) {
-		const data = page.kommune
+		const content = page.kommune
 			? { kommune: split(page.kommune, resourcesByLang[page.lang]) }
 			: page.landing
-				? { helplines: { lang: page.lang, entries: pickHelplines(resourcesByLang[page.lang]) } }
+				? { helplines: pickHelplines(resourcesByLang[page.lang]) }
 				: page.data.resource
 					? { ...page.data, family: family(page.data.resource, resourcesByLang[page.lang]) }
 					: page.data
+		// Tagged with the page's language so the browser drops it after a switch (issue #79). A
+		// page with nothing baked stays empty, so it writes no data block at all.
+		const data = Object.keys(content).length ? { lang: page.lang, ...content } : content
 		const { html, head } = await render(page.url, data)
 		assertNoOutlinedBoundary(html, page.url)
 		assertNoStyleAttribute(html, page.url)
