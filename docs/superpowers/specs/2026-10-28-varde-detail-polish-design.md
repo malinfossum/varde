@@ -212,4 +212,4 @@ Each PR runs `npm test` and the full `npm run e2e` before it opens.
 regenerates its migration. A data batch that lands after PR 2 writes its hours in the new format
 from the start, and the guard tells it if it does not.
 
-> Stress-tested 2026-10-28 (skill 1b85fca): 6 applied, 1 adapted, 0 decided by me.
+> Stress-tested 2026-10-28 (skill 1b85fca): 7 applied, 1 adapted, 0 decided by me.
