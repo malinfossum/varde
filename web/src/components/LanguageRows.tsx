@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react"
+import { useEffect, useState } from "react"
 import { LANG_STORAGE_KEY, translate, useLanguage } from "../i18n/LanguageProvider.tsx"
 import { LANGUAGES } from "../i18n/languages.ts"
 import { useCurrentUrl } from "../navigation.ts"
@@ -8,8 +8,7 @@ import { Link } from "./Link.tsx"
 import { useAnnounce } from "./StatusRegion.tsx"
 
 // The stored choice and the browser's language, shared by both copies of the rows (desktop picker
-// and Meny) so a choice in one moves the mark in the other. The server snapshots are null: the
-// prerendered HTML cannot know either, so hydration matches and the real values arrive after it.
+// and Meny) so a choice in one moves the mark in the other.
 const listeners = new Set<() => void>()
 
 function subscribe(listener: () => void) {
@@ -38,8 +37,25 @@ function store(choice: Lang | "system") {
 	for (const listener of listeners) listener()
 }
 
-const readBrowserLang = () => systemLang(window.navigator.languages ?? [])
-const serverSnapshot = () => null
+type LangChoice = { followsBrowser: boolean; browserLang: Lang }
+
+// null until mount: the prerendered HTML cannot know either value, so the first render matches
+// it and the real values arrive in the effect. Not useSyncExternalStore: its re-render after a
+// server snapshot runs at sync priority, and React then drops the prerendered HTML of any lazy
+// page still loading (a detail page flashed "Laster …").
+function useLangChoice(): LangChoice | null {
+	const [choice, setChoice] = useState<LangChoice | null>(null)
+	useEffect(() => {
+		const sync = () =>
+			setChoice({
+				followsBrowser: readStored() === "system",
+				browserLang: systemLang(window.navigator.languages ?? []),
+			})
+		sync()
+		return subscribe(sync)
+	}, [])
+	return choice
+}
 
 // One source for the language rows, rendered by the desktop language picker and by the Meny
 // (spec: One source, two layouts). onDone closes whichever list holds them and returns focus to
@@ -48,9 +64,10 @@ export function LanguageRows({ onDone }: { onDone: () => void }) {
 	const { lang } = useLanguage()
 	const announce = useAnnounce()
 	const { pathname, search } = useCurrentUrl()
-	const followsBrowser = useSyncExternalStore(subscribe, readStored, serverSnapshot) === "system"
+	const choice = useLangChoice()
+	const followsBrowser = choice?.followsBrowser ?? false
 	// Before hydration the browser's language is unknown, so System links to this page as it is.
-	const browserLang = useSyncExternalStore(subscribe, readBrowserLang, serverSnapshot) ?? lang
+	const browserLang = choice?.browserLang ?? lang
 	// A different language can change the result set entirely, so a switch resets paging the
 	// same way a search or filter change does (spec).
 	const params = new URLSearchParams(search)
