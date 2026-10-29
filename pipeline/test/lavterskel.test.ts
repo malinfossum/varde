@@ -72,3 +72,41 @@ describe("lavterskel rule", () => {
 		expect(lavterskel(["Drop-in, uten henvisning."], "partly").outcome).toBe("yes")
 	})
 })
+
+describe("fix round 1: false yes outcomes go to review", () => {
+	it("1. a wider negation does not cancel the referral", () => {
+		const a = ["Gratis. Vi tar ikke imot pasienter uten henvisning."]
+		const b = ["Gratis. Ingen behandling uten henvisning."]
+		expect(readReferral(a)).toBe("unclear")
+		expect(readReferral(b)).toBe("unclear")
+		expect(lavterskel(a, undefined).outcome).toBe("review")
+		expect(lavterskel(b, undefined).outcome).toBe("review")
+	})
+
+	it("2. a negated lavterskel or drop-in word is not a no-referral reading", () => {
+		const a = ["Gratis. Dette er ikke et lavterskeltilbud."]
+		const b = ["Gratis. Ingen drop-in, kun time etter avtale."]
+		expect(readReferral(a)).toBe("unclear")
+		expect(readReferral(b)).toBe("unclear")
+		expect(lavterskel(a, undefined).outcome).toBe("review")
+		expect(lavterskel(b, undefined).outcome).toBe("review")
+	})
+
+	it("3. a negator does not reach across a clause to a second referral word", () => {
+		const quotes = ["Gratis. Krever ikke henvisning, men vedtak fra NAV."]
+		expect(readReferral(quotes)).toBe("unclear")
+		expect(lavterskel(quotes, undefined).outcome).toBe("review")
+	})
+
+	it("4. inflected referral words count", () => {
+		const quotes = ["Gratis. Lavterskeltilbud. Du må være henvist fra fastlege."]
+		expect(readReferral(quotes)).toBe("unclear")
+		expect(lavterskel(quotes, undefined).outcome).toBe("review")
+		expect(readReferral(["Tilbudet henvises via fastlege."])).toBe("needed")
+	})
+
+	it("5. the unit's free cost does not silence a fee in the quotes", () => {
+		const quotes = ["Uten henvisning. Egenandel kr 350 per time."]
+		expect(lavterskel(quotes, "free").outcome).toBe("review")
+	})
+})

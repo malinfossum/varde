@@ -69,25 +69,47 @@ export function saysAlwaysOpen(quote: string): boolean {
 
 export type ReferralReading = "noneNeeded" | "needed" | "unclear" | "silent"
 
-const REFERRAL_WORD = /^(?:henvisning|henvisningen|vedtak|vedtaket)$/
+// Matches by prefix, so henvist, henvises, henvisninger and vedtaket all count.
+const REFERRAL_WORD = /^(?:henvis|vedtak)/
 
-// A referral word with a negator up to three words before it means none is needed. With
-// no negator in the sentence it is needed. A negator elsewhere in the sentence, or quotes
-// that read both ways, is unclear. Any word starting "lavterskel", and drop-in, means none.
+// "Lavterskel..." (any word starting so) and drop-in. The index of each one in the sentence.
+function markerIndexes(ws: readonly string[]): number[] {
+	const found: number[] = []
+	for (const [i, w] of ws.entries()) {
+		if (
+			w.startsWith("lavterskel") ||
+			w.startsWith("drop-in") ||
+			(w === "drop" && ws[i + 1] === "in")
+		) {
+			found.push(i)
+		}
+	}
+	return found
+}
+
+// Per sentence:
+// - A lavterskel or drop-in word means none is needed, unless a negator stands up to three
+//   words before it ("ikke et lavterskeltilbud"), which makes the sentence unclear.
+// - A lone referral word reads noneNeeded only when the sentence holds exactly one negator
+//   and it stands up to three words before that word. With no negator it reads needed.
+// - Two negators, a negator out of reach, or several referral words next to any negator
+//   ("Krever ikke henvisning, men vedtak") are unclear.
+// Quotes that read more than one way are unclear too.
 export function readReferral(quotes: readonly string[]): ReferralReading {
 	const readings = new Set<Exclude<ReferralReading, "silent">>()
 	for (const quote of quotes) {
 		for (const sentence of sentences(quote)) {
 			const ws = words(sentence)
-			if (ws.some((w) => w.startsWith("lavterskel")) || /\bdrop[- ]in\b/.test(sentence)) {
+			for (const i of markerIndexes(ws)) {
+				readings.add(negatedWithin(ws, i) ? "unclear" : "noneNeeded")
+			}
+			const referralAt = ws.flatMap((w, i) => (REFERRAL_WORD.test(w) ? [i] : []))
+			if (referralAt.length === 0) continue
+			const negators = ws.filter((w) => NEGATORS.has(w)).length
+			if (negators === 0) readings.add("needed")
+			else if (negators === 1 && referralAt.length === 1 && negatedWithin(ws, referralAt[0] ?? 0)) {
 				readings.add("noneNeeded")
-			}
-			for (const [i, w] of ws.entries()) {
-				if (!REFERRAL_WORD.test(w)) continue
-				if (negatedWithin(ws, i)) readings.add("noneNeeded")
-				else if (ws.some((x) => NEGATORS.has(x))) readings.add("unclear")
-				else readings.add("needed")
-			}
+			} else readings.add("unclear")
 		}
 	}
 	if (readings.size === 0) return "silent"

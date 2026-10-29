@@ -10,6 +10,13 @@ export function lavterskel(quotes: readonly string[], cost: Cost | undefined): L
 	const referral = readReferral(quotes)
 	const effectiveCost = cost ?? classifyCost(quotes)
 	if (referral === "needed") return { outcome: "no", reason: "needs a vedtak or a referral" }
+	// The unit's own "free" never silences a fee the quotes mention.
+	if (cost === "free") {
+		const fromQuotes = classifyCost(quotes)
+		if (fromQuotes === "paid" || fromQuotes === "partly") {
+			return { outcome: "review", reason: "the cost value and a fee in the quotes disagree" }
+		}
+	}
 	if (effectiveCost === "paid") return { outcome: "no", reason: "the service itself costs money" }
 	if (effectiveCost === "partly" && cost === undefined) {
 		return { outcome: "review", reason: "free and paid quotes together need my eye" }

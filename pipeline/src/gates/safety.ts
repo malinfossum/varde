@@ -36,7 +36,8 @@ const SERVICE_WORDS = [
 
 export function emailNamesAService(email: string): boolean {
 	const local = email.toLowerCase().split("@")[0] ?? ""
-	return local.split(/[.\-_+]/).some((token) => SERVICE_WORDS.some((w) => token.includes(w)))
+	const tokens = local.split(/[.\-_+]/)
+	return tokens.every((token) => SERVICE_WORDS.some((w) => token.includes(w)))
 }
 
 export const ACCOUNT_NUMBER = /\b\d{4}[ .]?\d{2}[ .]?\d{5}\b/
@@ -70,7 +71,8 @@ export const safetyGate: Gate = (c, ctx) => {
 			// A centre may keep its address off its own site on purpose; brreg still lists it.
 			// So only the centre's own page decides whether Varde shows it.
 			if (!ctx.unit.isKrisesenter) return pass("safety")
-			return c.origin === "unitContact" || c.origin === "unitPage"
+			// And only from a quote: a register record is not the centre's own page.
+			return c.evidence.kind === "quote" && (c.origin === "unitContact" || c.origin === "unitPage")
 				? pass("safety", "a krisesenter address the centre publishes itself")
 				: drop("safety", "a krisesenter address not from the centre's own page")
 		case "lowThreshold": {
