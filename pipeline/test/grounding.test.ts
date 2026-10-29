@@ -74,13 +74,19 @@ describe("grounding gate", () => {
 		expect(groundingGate(paid, context())).toMatchObject({ pass: false, onFail: "review" })
 	})
 
+	// These quotes classify as partly, so only the dedicated partly line can send them to review.
 	it("always sends partly free to review", () => {
+		const quotes = ["Gratis å delta.", "Kaffe koster 20 kr."]
 		const c = candidate({
 			field: "cost",
 			value: "partly",
-			evidence: { kind: "quote", quotes: ["Tilbudet er gratis"] },
+			evidence: { kind: "quote", quotes },
 		})
-		expect(groundingGate(c, context())).toMatchObject({ pass: false, onFail: "review" })
+		const page = quotes.join(" ")
+		expect(groundingGate(c, context({ pageText: () => page }))).toMatchObject({
+			pass: false,
+			onFail: "review",
+		})
 	})
 
 	it("drops a quote over 400 characters, which would ground anything", () => {
@@ -93,12 +99,35 @@ describe("grounding gate", () => {
 		})
 	})
 
+	// The quote really says døgnåpen, so only the value check can drop a false.
 	it("stores only an always-open claim, never its absence", () => {
+		const quote = "Legevakten er døgnåpen."
 		const c = candidate({
 			field: "alwaysOpen",
 			value: false,
-			evidence: { kind: "quote", quotes: ["Rusteamet Hamar"] },
+			evidence: { kind: "quote", quotes: [quote] },
 		})
-		expect(groundingGate(c, context())).toMatchObject({ pass: false, onFail: "drop" })
+		expect(groundingGate(c, context({ pageText: () => quote }))).toMatchObject({
+			pass: false,
+			onFail: "drop",
+		})
+	})
+
+	it("drops an address that is only the start of a longer house number", () => {
+		const page = "Besøksadresse: Storgata 12, 2317 Hamar"
+		const quotes = ["Besøksadresse: Storgata 12, 2317 Hamar"]
+		const ctx = context({ pageText: () => page })
+		const short = candidate({
+			field: "address",
+			value: "Storgata 1",
+			evidence: { kind: "quote", quotes },
+		})
+		expect(groundingGate(short, ctx)).toMatchObject({ pass: false, onFail: "drop" })
+		const whole = candidate({
+			field: "address",
+			value: "Storgata 12",
+			evidence: { kind: "quote", quotes },
+		})
+		expect(groundingGate(whole, ctx).pass).toBe(true)
 	})
 })

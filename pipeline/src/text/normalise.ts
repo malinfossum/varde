@@ -75,7 +75,19 @@ export function quoteHasUrl(quote: string, url: string): boolean {
 	return false
 }
 
+const LETTER_OR_DIGIT = /[\p{L}\p{N}]/u
+
+// The value must stand as a whole in the quote: the character before and after a match may
+// not be a letter or digit, so "Storgata 1" is not found inside "Storgata 12". Every
+// occurrence is tried, not just the first.
 export function quoteHasText(quote: string, value: string): boolean {
 	const wanted = normaliseText(value)
-	return wanted.length > 0 && normaliseText(quote).includes(wanted)
+	if (wanted.length === 0) return false
+	const text = normaliseText(quote)
+	for (let at = text.indexOf(wanted); at !== -1; at = text.indexOf(wanted, at + 1)) {
+		const before = text.charAt(at - 1)
+		const after = text.charAt(at + wanted.length)
+		if (!LETTER_OR_DIGIT.test(before) && !LETTER_OR_DIGIT.test(after)) return true
+	}
+	return false
 }

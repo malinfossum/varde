@@ -87,4 +87,15 @@ describe("quoteHasText", () => {
 	it("refuses a blank value", () => {
 		expect(quoteHasText("Storgata 1", "  ")).toBe(false)
 	})
+
+	it("refuses a value that is only the start or end of a longer word or number", () => {
+		expect(quoteHasText("Storgata 12, 2317 Hamar", "Storgata 1")).toBe(false)
+		expect(quoteHasText("Storgata 12, 2317 Hamar", "Storgata 12")).toBe(true)
+		expect(quoteHasText("Rusteamet Hamar", "Ha")).toBe(false)
+		expect(quoteHasText("Rusteamet Hamar", "teamet Hamar")).toBe(false)
+	})
+
+	it("tries every occurrence, not only the first", () => {
+		expect(quoteHasText("Storgata 12 og Storgata 1.", "Storgata 1")).toBe(true)
+	})
 })
