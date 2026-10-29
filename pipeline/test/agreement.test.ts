@@ -66,5 +66,8 @@ describe("agreement gate", () => {
 			pass: false,
 			onFail: "review",
 		})
+		// Written differently, same Kartverket id: only the id branch makes this pass.
+		const padded = brreg("Storgata 01, 2317 Hamar", { field: "address" })
+		expect(agreementGate(page, context({ peers: [padded], findAddress: split })).pass).toBe(true)
 	})
 })
