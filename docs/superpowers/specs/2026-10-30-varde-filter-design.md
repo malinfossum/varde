@@ -55,8 +55,14 @@ Place numbers are strings everywhere (`"0301"`, `"03"`), because the leading zer
   today's `matchesMunicipality`, so a shared krisesenter shows in every kommune it covers. A
   picked fylke expands to its kommuner before matching.
 - **Nasjonale tjenester.** Ta med: national rows are added to whatever Sted matches. Skjul:
-  national rows are dropped. Bare nasjonale: only national rows, and Sted is ignored. With no
-  Sted picked, Ta med and Skjul both start from every row.
+  national rows are dropped. Bare nasjonale: only national rows. With no Sted picked, Ta med
+  and Skjul both start from every row.
+- **Bare nasjonale and Sted exclude each other**, as the national toggle and the kommune do in
+  today's `applyPatch`. Choosing Bare nasjonale clears the Sted picks. Picking a place while
+  Bare nasjonale is on switches the radio back to Ta med. So a Sted chip is never shown while
+  it is being ignored.
+- **Redundant picks are allowed.** Innlandet plus Hamar gives the same rows as Innlandet. Both
+  stay as chips, so removing one never removes the other.
 - **Egenskaper.** Akutt is a row with category `nodtjenester` (as `ResourceBadges` derives it
   today). Lavterskel is `isLowThreshold`. Døgnåpent is `isAlwaysOpen`.
 - **Pris.** Matches `cost`. A row with no stated cost drops out once any Pris box is ticked.
@@ -78,12 +84,14 @@ Parsing stays lenient, so no shared link breaks:
   4 Ringsaker 3411, 5 Stange 3413, 6 Løten 3412, 7 Elverum 3420, 8 Oslo 0301 (SSB KLASS,
   classification 131, codesAt 30.10.2026).
 - `national=true` means `only`.
-- Unknown values in any param are dropped, not errors.
+- Unknown values in any param are dropped, not errors. Repeated values are deduplicated.
 - A kommunenummer that changed in a reform maps through KLASS's correspondence tables. That
   table lives with the place data (spec B), and the parser takes it as input.
 
-The URL is rewritten to the new form with `history.replaceState` once parsed, so a copied link
-is always in the current form.
+`buildSearch` writes params in one fixed order (the table's order) and values in catalog order,
+so one filter state always gives one URL. When the parsed URL differs from that canonical form,
+it is rewritten with `history.replaceState(history.state, "", url)`. Passing the existing
+`history.state` keeps the scroll key that Back and Forward restore from.
 
 ## UI
 
@@ -94,9 +102,14 @@ is always in the current form.
 1. **PlaceBar.** Søk and Sted side by side from 768 px, stacked below. Both controls are 44 px
    tall and share one bottom edge, and their labels sit on one baseline.
    - Sted is a react-aria `ComboBox` with `selectionMode="multiple"`. Picks show as removable
-     `TagGroup` chips inside the field. The list stays open after a pick.
+     `TagGroup` chips inside the field. The chips wrap onto new lines and the field grows, so
+     there is no horizontal scroll at 320 px. The list stays open after a pick.
+   - Removing a chip inside the field moves focus to the next chip, or to the text input when
+     none are left. Focus never falls to `<body>`.
    - Options are grouped: Fylker, then Kommuner, each sorted with the `nb` collator. Only places
-     with at least one row (located or served) are listed.
+     with at least one row (located or served) are listed. Alias options appear only once the
+     typed text is 2 characters or more, so an empty field lists at most 15 fylker and 357
+     kommuner and never the full tettsted list.
    - A duplicate kommune name carries its fylke: "Våler (Innlandet)". A fylke with exactly one
      kommune of the same name (Oslo) is listed once, as the kommune.
    - An alias option reads "Ringsaker (Brumunddal)" and picks the kommune.
@@ -114,11 +127,26 @@ is always in the current form.
    counts ticked facet options. The dialog has a sticky footer button "Vis N treff" that closes
    it. Focus returns to the "Flere filtre" button on close. Escape closes too. Changes apply
    live, so the count in the footer is always the real one.
+   - The page's one status region must stay audible while the dialog is open. react-aria's
+     `Modal` hides everything outside it from screen readers (`ariaHideOutside`). The build
+     confirms in react-aria's source which attribute that function leaves visible and puts it on
+     the status region. The count announcement is not duplicated inside the dialog.
+   - The dialog's scroll area has `scroll-padding-bottom` equal to the footer's height, so the
+     sticky footer never covers the focused checkbox.
 4. **ActiveFilters.** A `TagGroup` labelled "Valgte filtre" above the results. One chip per
    active value, Sted picks and the national choice included (Ta med has no chip). Removing a
    chip moves focus to the next chip, or to the results heading when none are left. The search
    text gets no chip, because it is visible in its own field. "Nullstill alt" clears every
    filter and the search text, as the reset does today. It shows whenever anything is set.
+
+### Loading and failure
+
+- **While rows load,** counts are not rendered at all. A "0" before the data arrives would read
+  as "nothing here". The reserved height (below) holds the layout still.
+- **If the catalog fails,** the filter shows Søk only, as FilterBar does today, and the results
+  area shows the existing error state with its retry (`error.heading`, both languages). Sted,
+  the national radio and the facets need the catalog, so they stay hidden instead of showing
+  empty. URL filters that need the catalog (old ids, fylker) wait for a successful retry.
 
 ### Behaviour kept from today
 
@@ -159,6 +187,8 @@ use two words for one thing.
 - Group legends and option labels are set apart from counts by weight and colour. Counts are
   muted and tabular.
 - Every control is at least 44 px. Controls side by side share one height and one bottom edge.
+- Under `forced-colors: active`, checkbox and radio states, chip borders and focus rings stay
+  visible through system colours, never through `box-shadow` alone.
 - Both themes, 200 % text and 320 px reflow are checked. At 200 % text the sidebar stays a
   sidebar only while the results column keeps at least 20rem; below that it falls back to the
   dialog.
@@ -176,7 +206,13 @@ Lavterskel, Døgnåpent and Pris use fields every row already has.
 - **`counties.json`**: each fylke with data, `number` and `name`. Today: 34 Innlandet,
   03 Oslo.
 - **`aliases.json`**: rows of `{ alias, number, source }`. It ships empty. The national data
-  pipeline fills it from SSB tettsteder or Kartverket stedsnavn, never from memory.
+  pipeline fills it from SSB tettsteder or Kartverket stedsnavn, never from memory. Whichever
+  source fills it gets a credit line in the "Kilder og lisenser" list the national data spec
+  adds, under that source's licence (confirm the licence when the source is picked). The KLASS
+  numbers in `places.json` and `counties.json` get the same SSB credit.
+- **A guard on the place files.** A test checks that every kommunenummer is 4 digits, every
+  fylkesnummer is 2, each kommune's first two digits equal its `countyNumber`, and every
+  `countyNumber` exists in `counties.json`. A fixture with Hamar under fylke `03` must fail it.
 - **A `loadRows(places)` seam.** Filtering and facet counts call this one function for their
   rows. Today it returns every row. Spec B can make it fetch only the picked places' files
   without touching the filter code.
@@ -191,12 +227,20 @@ Spec B (storage) takes over ownership of these three files.
 
 - **Unit (vitest), PR 1:** table-driven tests for every group alone and for groups combined.
   Disjunctive counts, including a 0 count. Every old link form. The fylke expansion, served
-  kommuner and the three national modes. URL round trip: parse then build gives the same URL.
+  kommuner and the three national modes. Bare nasjonale clearing Sted, and a place pick
+  resetting the radio. URL round trip: parse then build gives the same URL, and two orders of
+  the same params build one URL. The place-file guard, with its failing fixture.
 - **Components (vitest with axe), PR 2:** each of the four components, both languages.
 - **e2e (Playwright), PR 2:** at 375, 1024 and 1920 px in both themes. The keyboard path through
   Sted and the dialog, with focus back on its button. The count announcement. 200 % text. An
-  old `?municipality=1` link lands on Hamar. A measuring test asserts that Søk and Sted have
-  the same height and bottom edge.
+  old `?municipality=1` link lands on Hamar, and Back from there restores the scroll position.
+  A measuring test asserts that Søk and Sted have the same height and bottom edge. With the
+  dialog open, the status region is outside every `aria-hidden` subtree. Tabbing to the last
+  checkbox in the dialog leaves it above the footer's top edge. Five Sted picks at 375 px
+  cause no horizontal scroll. A forced-colors run (Playwright `forcedColors: "active"`) shows
+  a visible focus ring on a checkbox. A failed catalog shows Søk and the error state only.
+- **Manual, by me after PR 2 deploys:** an NVDA pass through Sted, the dialog and the chips
+  row, listening for the count announcement while the dialog is open.
 - `npm test` and the full `npm run e2e` pass before each PR opens.
 
 ## Delivery
@@ -217,3 +261,19 @@ The Tilbyder group ships with the national data spec's UI follow-up, when rows c
 - Filling `aliases.json`, and the reform correspondence table. Both are pipeline data.
 - Time-of-day "open now". Opening hours are still free text.
 - Where the data lives and how the site loads it (spec B).
+
+## Considered and rejected
+
+- **A kommune number with no data in a shared link.** It is dropped like any unknown value,
+  so the link widens to all of Norway. Data only grows, and renumbering goes through the KLASS
+  table, so this is rare. Showing an unnamed chip would need names for places without rows.
+- **Precomputed facet counts.** One pass over every row per filter change is about 25 checks
+  per row. Even at 20,000 rows that is half a million cheap comparisons, well under a frame.
+  An index adds code for no felt gain. Revisit only if a profile says otherwise.
+- **A cap on how many places can be picked.** Picks come from a fixed list, values are
+  deduplicated, and the union cannot grow past the full row set.
+- **Remembering the last filter in `localStorage`.** It is not strictly necessary for the
+  search, so ekomloven § 3-15 would require consent. It would also leave "rus i Hamar" on a
+  shared device. The URL already restores state on Back and through shared links.
+
+> Stress-tested 2026-10-30 (skill 1b85fca): 14 applied, 0 adapted, 0 decided by me.
