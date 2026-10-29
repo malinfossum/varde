@@ -66,3 +66,31 @@ export function saysAlwaysOpen(quote: string): boolean {
 	}
 	return false
 }
+
+export type ReferralReading = "noneNeeded" | "needed" | "unclear" | "silent"
+
+const REFERRAL_WORD = /^(?:henvisning|henvisningen|vedtak|vedtaket)$/
+
+// A referral word with a negator up to three words before it means none is needed. With
+// no negator in the sentence it is needed. A negator elsewhere in the sentence, or quotes
+// that read both ways, is unclear. Any word starting "lavterskel", and drop-in, means none.
+export function readReferral(quotes: readonly string[]): ReferralReading {
+	const readings = new Set<Exclude<ReferralReading, "silent">>()
+	for (const quote of quotes) {
+		for (const sentence of sentences(quote)) {
+			const ws = words(sentence)
+			if (ws.some((w) => w.startsWith("lavterskel")) || /\bdrop[- ]in\b/.test(sentence)) {
+				readings.add("noneNeeded")
+			}
+			for (const [i, w] of ws.entries()) {
+				if (!REFERRAL_WORD.test(w)) continue
+				if (negatedWithin(ws, i)) readings.add("noneNeeded")
+				else if (ws.some((x) => NEGATORS.has(x))) readings.add("unclear")
+				else readings.add("needed")
+			}
+		}
+	}
+	if (readings.size === 0) return "silent"
+	if (readings.size > 1) return "unclear"
+	return [...readings][0] ?? "silent"
+}

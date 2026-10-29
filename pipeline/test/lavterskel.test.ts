@@ -1,0 +1,74 @@
+import { describe, expect, it } from "vitest"
+import { lavterskel } from "../src/gates/lavterskel.ts"
+import { readReferral } from "../src/gates/phrases.ts"
+
+describe("readReferral", () => {
+	it("reads the no-referral phrases", () => {
+		expect(readReferral(["Du kan komme uten henvisning."])).toBe("noneNeeded")
+		expect(readReferral(["Du trenger ikke vedtak."])).toBe("noneNeeded")
+		expect(readReferral(["Åpen drop-in hver onsdag."])).toBe("noneNeeded")
+		expect(readReferral(["Et lavterskeltilbud for voksne."])).toBe("noneNeeded")
+	})
+
+	it("tells 'krever ikke henvisning' from 'krever henvisning'", () => {
+		expect(readReferral(["Tilbudet krever ikke henvisning."])).toBe("noneNeeded")
+		expect(readReferral(["Tilbudet krever henvisning fra lege."])).toBe("needed")
+	})
+
+	it("calls a negator elsewhere in the sentence unclear", () => {
+		expect(readReferral(["Du trenger henvisning fra fastlege, men ikke for samtale."])).toBe(
+			"unclear"
+		)
+	})
+
+	it("calls quotes that say both unclear", () => {
+		expect(readReferral(["Gratis drop-in. Krever henvisning for behandling."])).toBe("unclear")
+	})
+
+	it("is silent when no quote speaks of referral", () => {
+		expect(readReferral(["Åpent tirsdager."])).toBe("silent")
+	})
+})
+
+describe("lavterskel rule", () => {
+	it("says yes to free with no referral", () => {
+		expect(lavterskel(["Gratis, og du trenger ikke henvisning."], undefined).outcome).toBe("yes")
+	})
+
+	it("says yes to free entry with paid coffee once the unit's cost is partly", () => {
+		const quotes = ["Gratis å delta, uten henvisning.", "Kaffe koster 20 kr."]
+		expect(lavterskel(quotes, "partly").outcome).toBe("yes")
+	})
+
+	it("never infers partly from quotes alone", () => {
+		const coffee = ["Gratis å delta, uten henvisning.", "Kaffe koster 20 kr."]
+		expect(lavterskel(coffee, undefined).outcome).toBe("review")
+		const parking = ["Uten henvisning. Egenandel kr 350. Gratis parkering."]
+		expect(lavterskel(parking, undefined).outcome).toBe("review")
+	})
+
+	it("says no to a lavterskel service with a fee", () => {
+		const quotes = ["Lavterskeltilbud, ingen henvisning.", "Egenandel kr 350 per time."]
+		expect(lavterskel(quotes, undefined).outcome).toBe("no")
+		expect(lavterskel(["Lavterskeltilbud, ingen henvisning."], "paid").outcome).toBe("no")
+	})
+
+	it("says no when a referral is needed", () => {
+		expect(lavterskel(["Gratis, men krever henvisning fra lege."], undefined).outcome).toBe("no")
+	})
+
+	it("sends silence on cost or referral to review", () => {
+		expect(lavterskel(["Drop-in hver onsdag."], undefined).outcome).toBe("review")
+		expect(lavterskel(["Tilbudet er gratis."], undefined).outcome).toBe("review")
+	})
+
+	it("sends an unclear negation to review, never to yes", () => {
+		const quotes = ["Gratis. Du trenger henvisning fra fastlege, men ikke for samtale."]
+		expect(lavterskel(quotes, undefined).outcome).toBe("review")
+	})
+
+	it("takes the unit's own cost value over the quotes", () => {
+		expect(lavterskel(["Drop-in, uten henvisning."], "free").outcome).toBe("yes")
+		expect(lavterskel(["Drop-in, uten henvisning."], "partly").outcome).toBe("yes")
+	})
+})
