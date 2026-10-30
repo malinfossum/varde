@@ -22,8 +22,9 @@ const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&
 const stripMarks = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "")
 
 // Norwegian letters a page may write plainly: "Øvrebø" as "Ovrebo", "æ" as "ae". "å" folds
-// to "a" through stripMarks already. Applied to name and text alike; no definite forms are
-// added, so "Berg" never redacts "Bergen".
+// to "a" through stripMarks already. The name is folded, and its pattern (letters) matches
+// both spellings, so the text needs no fold of its own. No definite forms are added, so
+// "Berg" never redacts "Bergen".
 const fold = (text: string) =>
 	stripMarks(text).replace(/ø/g, "o").replace(/Ø/g, "O").replace(/æ/g, "ae").replace(/Æ/g, "AE")
 
@@ -112,7 +113,7 @@ export function redact(quotes: readonly string[], personName: string | undefined
 function nameSurvives(texts: readonly string[], personName: string | undefined): boolean {
 	if (personName === undefined) return false
 	const tokens = nameTokens(personName).map((t) => tokenPattern(normaliseText(t), "iu"))
-	return texts.some((text) => tokens.some((token) => token.test(fold(normaliseText(text)))))
+	return texts.some((text) => tokens.some((token) => token.test(stripMarks(normaliseText(text)))))
 }
 
 function stored(evidence: Evidence, personName: string | undefined): Evidence {
