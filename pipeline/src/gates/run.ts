@@ -34,8 +34,21 @@ function nameParts(personName: string): string[] {
 		.filter((t) => t.length > 0)
 }
 
+// A hyphen- or dash-joined word of the name also goes in with its parts glued together, so a
+// page that writes "Anne-Marie" as "ANNEMARIE" is caught too. These go first, before the parts.
+function joinedParts(personName: string): string[] {
+	return personName
+		.trim()
+		.split(/[\s\u00A0]+/u)
+		.map((word) => word.split(/[\u2010-\u2015-]+/u).filter((t) => t.length > 0))
+		.filter((parts) => parts.length > 1)
+		.map((parts) => parts.join(""))
+}
+
 function nameTokens(personName: string): string[] {
-	return nameParts(personName).filter((t) => (t.match(/\p{L}/gu) ?? []).length >= 2)
+	return [...joinedParts(personName), ...nameParts(personName)].filter(
+		(t) => (t.match(/\p{L}/gu) ?? []).length >= 2
+	)
 }
 
 // The full name goes first, with any spacing, hyphen or case, so a whole name becomes one

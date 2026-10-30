@@ -249,6 +249,51 @@ ${quote}`,
 	})
 })
 
+describe("final fixes 2 R5: a hyphenated given name written as one word", () => {
+	const joined = (quote: string, personName = "Anne-Marie Nordmann") =>
+		runGates(
+			candidate({
+				value: "900 00 000",
+				evidence: { kind: "quote", quotes: [quote] },
+				role: "Avdelingsleder",
+				personName,
+			}),
+			context({
+				pageText: () => `${PAGE}
+${quote}`,
+			}),
+			T
+		)
+
+	it("redacts the given name with its parts joined, in any case", () => {
+		const field = joined("Kontakt ANNEMARIE på 900 00 000")
+		expect(field).toMatchObject({ status: "accepted" })
+		expect(field.evidence).toEqual({ kind: "quote", quotes: ["Kontakt [navn] på 900 00 000"] })
+		expect(JSON.stringify(field)).not.toMatch(/annemarie/i)
+		expect(redact(["Ring Annemarie nå"], "Anne\u2011Marie Nordmann")).toEqual(["Ring [navn] nå"])
+	})
+
+	// Redact cannot see through the soft hyphen inside "MA\u00ADRIE", so only nameSurvives,
+	// with the joined token, can catch it.
+	it("drops the field when a soft hyphen hides the joined given name", () => {
+		const field = joined("Kontakt ANNEMA\u00ADRIE på 900 00 000")
+		expect(field.status).toBe("dropped")
+		expect(field.reason).toBe("person name left after redaction")
+		expect(JSON.stringify(field)).not.toContain("900")
+	})
+
+	it("still redacts the wave 1 spellings", () => {
+		expect(joined("Kontakt Anne Marie Nordmann på 900 00 000").evidence).toEqual({
+			kind: "quote",
+			quotes: ["Kontakt [navn] på 900 00 000"],
+		})
+		expect(joined("Ring Anne på 900 00 000").evidence).toEqual({
+			kind: "quote",
+			quotes: ["Ring [navn] på 900 00 000"],
+		})
+	})
+})
+
 describe("redact", () => {
 	it("replaces every spelling of the name", () => {
 		expect(redact(["KARI NORDMANN og Kari\u00A0Nordmann"], "Kari Nordmann")).toEqual([
