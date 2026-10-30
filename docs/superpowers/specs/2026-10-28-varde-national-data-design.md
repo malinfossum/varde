@@ -161,7 +161,10 @@ Every field passes all five. They are automatic.
    - Person data is dropped: a name next to a mobile number from anywhere other than the unit's
      own contact field (staff lists, articles), sole proprietorships (ENK), personal email
      addresses, account numbers, and JSON-LD `author` persons.
-   - A krisesenter street address is never accepted automatically.
+   - A krisesenter street address is accepted only from a quote on the centre's own page
+     (amended 2026-10-29, my call). From a register or catalogue it is dropped and never
+     stored, because a centre must register a business address in brreg even when it keeps
+     it off its own site on purpose.
    - The Lavterskel badge follows "The Lavterskel rule" below.
 
 ### Phone order
