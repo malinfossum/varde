@@ -1,5 +1,5 @@
 import type { Cost } from "../schema/common.ts"
-import { normaliseText, phoneDigits } from "../text/normalise.ts"
+import { normaliseText } from "../text/normalise.ts"
 
 // Phrase readings shared by the grounding, safety and Lavterskel rules. Text is normalised
 // first, so case, soft hyphens and odd spaces never decide a reading.
@@ -568,12 +568,13 @@ function blocksYes(sentence: string, ws: readonly string[], numbersAllowed: bool
 	)
 }
 
-// A quote that is only a phone number, with at most a label: "Telefon: 62 00 00 00". Only an
-// 8-digit number counts, so "350", "35 000" or "Ring 350" stay numbers that limit a claim.
+// A quote that is only a phone number, with at most a label: "Telefon: 62 00 00 00". Only a
+// Norwegian 8-digit shape counts: unbroken, "dd dd dd dd" or "ddd dd ddd". So "350",
+// "Ring 350" and "Ring 10 000 000" stay numbers that limit a claim.
 const PHONE_LABEL = /^(?:telefonnummer|telefon|tlf|mobil|ring|sms)\.?:?\s*/
+const PHONE_SHAPE = /^(?:\d{8}|\d{2} \d{2} \d{2} \d{2}|\d{3} \d{2} \d{3})$/
 function phoneOnly(quote: string): boolean {
-	const rest = normaliseText(quote).replace(/\.$/, "").replace(PHONE_LABEL, "")
-	return /^\+?[\d ]+$/.test(rest) && phoneDigits(rest).length === 8
+	return PHONE_SHAPE.test(normaliseText(quote).replace(/\.$/, "").replace(PHONE_LABEL, ""))
 }
 
 // A neighbour sentence is plain only when its quote is only a phone number, or the sentence

@@ -604,3 +604,29 @@ describe("final fixes 3 H1: an address quote is never plain", () => {
 		}
 	})
 })
+
+describe("final fixes 3 H2: a phone-only quote has a Norwegian 8-digit shape", () => {
+	const ground = (quotes: string[]) =>
+		groundingGate(
+			candidate({ field: "cost", value: "free", evidence: { kind: "quote", quotes } }),
+			context({ pageText: () => quotes.join(" ") })
+		)
+
+	it("reads 8 digits in another grouping as a number that limits the claim", () => {
+		// "+47" is not one of the three shapes either (final fixes 3 H2 ruling).
+		for (const other of ["Ring 10 000 000", "SMS 20 000 000", "+47 62 00 00 00"]) {
+			expect(ground(["Gratis.", other]), other).toMatchObject({ pass: false, onFail: "review" })
+		}
+	})
+
+	it("still grounds a free claim beside dd dd dd dd, ddd dd ddd or 8 digits unbroken", () => {
+		for (const phone of [
+			"Telefon: 62 00 00 00",
+			"Ring 62 00 00 00.",
+			"90000000",
+			"Tlf. 900 00 000",
+		]) {
+			expect(ground(["Gratis.", phone]).pass, phone).toBe(true)
+		}
+	})
+})
