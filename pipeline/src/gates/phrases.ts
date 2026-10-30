@@ -581,6 +581,18 @@ function addressOnly(quote: string): boolean {
 	return match[2] !== undefined || STREET.test(match[1]?.split(" ").at(-1) ?? "")
 }
 
+// A neighbour sentence is plain only when its quote is only a phone number or only an
+// address, or the sentence passes one of the three claim vocabularies (free, always-open,
+// Lavterskel). Anything else, "Ta kontakt med legen din." included, blocks a yes. The word
+// list in blocksYes stays behind this as a second net.
+function plainNeighbour(sentence: string, ws: readonly string[], exempt: boolean): boolean {
+	if (exempt) return true
+	if (plain(sentence, ws, (i) => freeWord(ws, i))) return true
+	if (plainAlwaysOpenWords(sentence, ws)) return true
+	const hasMarker = markerIndexes(ws).length > 0
+	return plain(sentence, ws, (i) => lavterskelWord(ws, i, hasMarker))
+}
+
 // Cost "free" reads yes only when every sentence that speaks of it is a plain free claim, and
 // every other sentence is clean. A quote that is only a phone number or an address may hold
 // its number. Grounding still runs the denylist behind this.
@@ -593,7 +605,10 @@ export function plainlyFree(quotes: readonly string[]): boolean {
 			if (mentionsFree(ws)) {
 				if (!plain(sentence, ws, (i) => freeWord(ws, i))) return false
 				claims++
-			} else if (blocksYes(sentence, ws, numbersAllowed)) {
+			} else if (
+				!plainNeighbour(sentence, ws, numbersAllowed) ||
+				blocksYes(sentence, ws, numbersAllowed)
+			) {
 				return false
 			}
 		}
@@ -619,7 +634,13 @@ function mentionsAlwaysOpen(sentence: string, ws: readonly string[]): boolean {
 // A plain always-open claim: "24/7" and "24 timer i døgnet" are its only numbers, and no
 // negator, limit or group gets in.
 function plainAlwaysOpenClaim(sentence: string, ws: readonly string[]): boolean {
-	if (!claimsAlwaysOpen(sentence, ws) || ws.length > MAX_CLAIM_WORDS) return false
+	return claimsAlwaysOpen(sentence, ws) && plainAlwaysOpenWords(sentence, ws)
+}
+
+// The vocabulary half of a plain always-open claim, with "24/7" and "24 timer i døgnet" taken
+// out first.
+function plainAlwaysOpenWords(sentence: string, ws: readonly string[]): boolean {
+	if (ws.length > MAX_CLAIM_WORDS) return false
 	const rest = words(sentence.replace(/24\/7|24 timer i døgnet/g, " "))
 	return plain(sentence, rest, (i) => {
 		const w = rest[i] ?? ""
@@ -637,7 +658,7 @@ export function plainlyAlwaysOpen(quotes: readonly string[]): boolean {
 			if (mentionsAlwaysOpen(sentence, ws)) {
 				if (!plainAlwaysOpenClaim(sentence, ws)) return false
 				claims++
-			} else if (blocksYes(sentence, ws, false)) {
+			} else if (!plainNeighbour(sentence, ws, false) || blocksYes(sentence, ws, false)) {
 				return false
 			}
 		}
@@ -708,7 +729,10 @@ function plainLavterskel(quotes: readonly string[]): boolean {
 			if (mentionsLavterskel(ws)) {
 				const hasMarker = markerIndexes(ws).length > 0
 				if (!plain(sentence, ws, (i) => lavterskelWord(ws, i, hasMarker))) return false
-			} else if (blocksYes(sentence, ws, numbersAllowed)) {
+			} else if (
+				!plainNeighbour(sentence, ws, numbersAllowed) ||
+				blocksYes(sentence, ws, numbersAllowed)
+			) {
 				return false
 			}
 		}

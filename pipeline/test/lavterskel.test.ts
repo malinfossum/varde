@@ -415,3 +415,26 @@ describe("final fixes 3 A2: the reviewer probes O3 to O5 never give Lavterskel y
 		}
 	})
 })
+
+describe("final fixes 3 F1: a neighbour quote must itself be plain", () => {
+	it("never gives yes beside a neighbour that is not plain", () => {
+		for (const quotes of [
+			["Drop-in hver tirsdag.", "Gratis.", "Ta kontakt med legen din."],
+			["Drop-in hver tirsdag.", "Gratis.", "Ta med matpakke."],
+			["Drop-in hver tirsdag. Ta med matpakke.", "Gratis."],
+		]) {
+			expect(readReferral(quotes), quotes.join(" | ")).toBe("unclear")
+			expect(lavterskel(quotes, undefined).outcome, quotes.join(" | ")).toBe("review")
+		}
+	})
+
+	it("still gives yes beside a plain neighbour", () => {
+		for (const quotes of [
+			["Drop-in hver tirsdag.", "Gratis."],
+			["Drop-in hver tirsdag.", "Gratis.", "Døgnåpent."],
+			["Drop-in hver tirsdag.", "Gratis.", "Telefon: 62 00 00 00"],
+		]) {
+			expect(lavterskel(quotes, undefined).outcome, quotes.join(" | ")).toBe("yes")
+		}
+	})
+})

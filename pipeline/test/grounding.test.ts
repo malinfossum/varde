@@ -431,3 +431,35 @@ describe("final fixes 3 A2: the reviewer probes O1 to O3 never ground a yes", ()
 		}
 	})
 })
+
+describe("final fixes 3 F1: a neighbour quote must itself be plain", () => {
+	const ground = (field: "cost" | "alwaysOpen", value: string | boolean, quotes: string[]) =>
+		groundingGate(
+			candidate({ field, value, evidence: { kind: "quote", quotes } }),
+			context({ pageText: () => quotes.join(" ") })
+		)
+	const toReview = { pass: false, onFail: "review" }
+
+	it("sends a free claim beside a neighbour that is not plain to review", () => {
+		for (const quotes of [
+			["Gratis.", "Materiell kjøper du selv."],
+			["Gratis.", "Tilbudet ligger ved sykehuset."],
+			["Gratis.", "Ta med matpakke."],
+		]) {
+			expect(ground("cost", "free", quotes), quotes.join(" | ")).toMatchObject(toReview)
+		}
+	})
+
+	it("sends an always-open claim beside a neighbour that is not plain to review", () => {
+		expect(ground("alwaysOpen", true, ["Døgnåpent.", "Ta med matpakke."])).toMatchObject(toReview)
+	})
+
+	it("still grounds a claim whose neighbour passes one of the claim vocabularies", () => {
+		// The neighbour passes the always-open vocabulary.
+		expect(ground("cost", "free", ["Gratis.", "Døgnåpent."]).pass).toBe(true)
+		// The neighbour passes the Lavterskel vocabulary only.
+		expect(ground("cost", "free", ["Gratis.", "Tilbudet er henvisningsfritt."]).pass).toBe(true)
+		// The neighbour passes the free vocabulary.
+		expect(ground("alwaysOpen", true, ["Døgnåpent.", "Gratis."]).pass).toBe(true)
+	})
+})
