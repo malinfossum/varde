@@ -490,3 +490,16 @@ describe("final fixes 3 H1: an address quote is never plain", () => {
 		}
 	})
 })
+
+describe("final fixes 3 H3: a claim or a neighbour holds only plain characters", () => {
+	it("never gives yes when a claim or a neighbour holds a symbol", () => {
+		for (const quotes of [
+			["Drop-in uten henvisning \u2020", "Gratis."],
+			["Drop-in uten henvisning.", "Gratis \u2020"],
+			["Drop-in uten henvisning.", "Gratis.", "Døgnåpent \u2731"],
+		]) {
+			expect(readReferral(quotes), quotes.join(" | ")).toBe("unclear")
+			expect(lavterskel(quotes, undefined).outcome, quotes.join(" | ")).toBe("review")
+		}
+	})
+})

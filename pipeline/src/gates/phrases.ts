@@ -453,10 +453,15 @@ function closingForAlle(ws: readonly string[], i: number): boolean {
 	return ws[i] === "for" && ws[i + 1] === "alle" && i + 2 === ws.length
 }
 
-// A question ("Er tilbudet gratis?") is never a plain claim, and nor is a claim with an
-// asterisk ("Gratis*"), which points to a footnote that qualifies it.
+// The only characters a plain sentence may hold: letters, digits, spaces and . , ! ? : ; / ( )
+// and hyphens. Any other mark, an asterisk or a dagger in any of its forms included, points
+// to a footnote or some other qualifier ("Gratis*", "Døgnåpent \u2020").
+const PLAIN_CHARS = /^[\p{L}\p{N}\s.,!?:;/()-]*$/u
+
+// A question ("Er tilbudet gratis?") is never a plain claim, and nor is a sentence with any
+// character outside PLAIN_CHARS.
 function plain(sentence: string, ws: readonly string[], allowed: (i: number) => boolean): boolean {
-	if (sentence.endsWith("?") || sentence.includes("*")) return false
+	if (sentence.endsWith("?") || !PLAIN_CHARS.test(sentence)) return false
 	return ws.length > 0 && ws.length <= MAX_CLAIM_WORDS && ws.every((_, i) => allowed(i))
 }
 

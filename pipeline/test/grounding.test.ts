@@ -630,3 +630,33 @@ describe("final fixes 3 H2: a phone-only quote has a Norwegian 8-digit shape", (
 		}
 	})
 })
+
+describe("final fixes 3 H3: a claim or a neighbour holds only plain characters", () => {
+	const ground = (field: "cost" | "alwaysOpen", value: string | boolean, quotes: string[]) =>
+		groundingGate(
+			candidate({ field, value, evidence: { kind: "quote", quotes } }),
+			context({ pageText: () => quotes.join(" ") })
+		)
+	const toReview = { pass: false, onFail: "review" }
+
+	it("sends a claim with a footnote mark or another symbol to review", () => {
+		// An asterisk operator, a full-width asterisk, a heavy asterisk, a dagger, a double
+		// dagger and a reference mark.
+		for (const mark of ["\u2217", "\uFF0A", "\u2731", "\u2020", "\u2021", "\u203B"]) {
+			expect(ground("cost", "free", [`Gratis ${mark}`]), mark).toMatchObject(toReview)
+		}
+		for (const mark of ["\u2020", "\u2731"]) {
+			expect(ground("alwaysOpen", true, [`Døgnåpent ${mark}`]), mark).toMatchObject(toReview)
+		}
+	})
+
+	it("sends a claim beside a neighbour with a symbol to review", () => {
+		expect(ground("cost", "free", ["Gratis.", "Døgnåpent \u2020"])).toMatchObject(toReview)
+		expect(ground("alwaysOpen", true, ["Døgnåpent.", "Gratis \u2020"])).toMatchObject(toReview)
+	})
+
+	it("still grounds 24/7 and a claim with plain punctuation", () => {
+		expect(ground("alwaysOpen", true, ["Vi svarer 24/7."]).pass).toBe(true)
+		expect(ground("cost", "free", ["Gratis: tilbudet er gratis!"]).pass).toBe(true)
+	})
+})
