@@ -1,6 +1,6 @@
 # Varde filter redesign
 
-Date: 30.10.2026. Status: reviewed 30.10.2026 (Akutt and Lavterskel folded in), awaiting approval.
+Date: 30.10.2026. Status: approved 30.10.2026.
 
 ## Goal
 
@@ -75,18 +75,20 @@ Place numbers are strings everywhere (`"0301"`, `"03"`), because the leading zer
 ### Facet counts
 
 Every checkbox and radio option shows how many results the list would have if I ticked it,
-with every other group kept as it is. How an option's own group counts depends on its rule:
+with every other tick kept. One rule covers every group, because each group's own logic decides
+what ticking adds:
 
-- **Any-of groups** (Kategorier, Pris, Tilbyder) and the national radio count each option
-  without the group's other ticks (disjunctive). Ticking one more Kategori can only widen the
-  list, so its count is never below the current total.
-- **All-of groups** (Egenskaper) count each option with the group's other ticks kept. With
-  Døgnåpent ticked, the count next to Lavterskel is the rows that are both.
-- **A ticked option** shows the count of the list as it is now, in both kinds of group.
+- **Any-of groups** (Kategorier, Pris, Tilbyder) widen. With Rus ticked, the count next to
+  Bolig is the rows that are rus or bolig, so it is never below the current total.
+- **All-of groups** (Egenskaper) narrow. With Døgnåpent ticked, the count next to Lavterskel
+  is the rows that are both.
+- **The national radio** counts the list with that option chosen. Bare nasjonale clears Sted,
+  so its count ignores the Sted picks.
+- **A ticked option** shows the count of the list as it is now.
 
-An option with 0 stays visible and
-enabled, so the layout never jumps and nothing is hidden from a screen reader. One pure function,
-`facetCounts(rows, filters)`, computes all counts in one pass over the rows.
+An option with 0 stays visible and enabled, so the layout never jumps and nothing is hidden
+from a screen reader. One pure function, `facetCounts(rows, filters, municipalities)`, computes
+all counts in one pass over the rows. It takes the kommune list to expand a picked fylke.
 
 ### Old links
 
@@ -251,9 +253,9 @@ Spec B (storage) takes over ownership of these three files.
 ## Testing
 
 - **Unit (vitest), PR 1:** table-driven tests for every group alone and for groups combined.
-  Disjunctive counts in an any-of group, kept-tick counts in Egenskaper, a ticked option's
-  count, and a 0 count. Every old link form, `category=lavterskeltilbud` included. The fylke expansion, served
-  kommuner and the three national modes. Bare nasjonale clearing Sted, and a place pick
+  Facet counts in an any-of group, in Egenskaper and in the radio, a ticked option's count, and
+  a 0 count. Every old link form, `category=lavterskeltilbud` included. The fylke expansion,
+  served kommuner and the three national modes. Bare nasjonale clearing Sted, and a place pick
   resetting the radio. URL round trip: parse then build gives the same URL, and two orders of
   the same params build one URL. The place-file guard, with its failing fixture.
 - **Components (vitest with axe), PR 2:** each of the four components, both languages.
