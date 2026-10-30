@@ -167,11 +167,11 @@ function priceSignal(ws: readonly string[]): boolean {
 // Grounding of cost "free" reads every quote together: a price, a limit or a closure in any
 // sentence of any quote means the value goes to me.
 // A price with a number is caught by the digit rule in freeLimited. That rule skips a quote
-// that is only a phone number or only an address (final fixes 3 F2), whose number limits
-// nothing.
+// that is only a phone number (final fixes 3 F2), whose number limits nothing. An address is
+// not exempt (H1): "Månedsplass 500" looks like one.
 export function freeQualifiedIn(quotes: readonly string[]): boolean {
 	return quotes.some((q) => {
-		const numbersAllowed = phoneOnly(q) || addressOnly(q)
+		const numbersAllowed = phoneOnly(q)
 		return sentences(q).some((sentence) => {
 			const ws = words(sentence)
 			const limited = numbersAllowed ? freeLimitWords(ws) : freeLimited(sentence, ws)
@@ -557,7 +557,7 @@ function qualifies(ws: readonly string[]): boolean {
 }
 
 // A neighbouring sentence blocks a yes when it holds a negator, a qualifier, a price, a
-// closure or, unless its quote is only a phone number or an address, a number.
+// closure or, unless its quote is only a phone number, a number.
 function blocksYes(sentence: string, ws: readonly string[], numbersAllowed: boolean): boolean {
 	return (
 		ws.some((w) => OTHER_NEGATORS.has(w)) ||
@@ -576,38 +576,9 @@ function phoneOnly(quote: string): boolean {
 	return /^\+?[\d ]+$/.test(rest) && phoneDigits(rest).length === 8
 }
 
-// A quote that is only an address, and nothing else: an optional label (Adresse,
-// Besøksadresse, Postadresse, Oppmøte), a street name of one to three words that ends in a
-// street word, a house number with an optional letter, then an optional postal code and a
-// place name. Read with its capitals kept, so prose before the street ("Forbeholdt beboere på
-// Storgata 5", "Dessverre utilgjengelig Storgata 5") and prose after the place never pass.
-// A street is a compound with a street ending ("Storgata", "Øvre Storgate"), or one or two
-// capitalised words and a separate street word ("Kongens gate"). "plass" stands alone too
-// often ("Ledig plass 20") to count on its own.
-const STREET_ENDING =
-	"(?:gata|gate|gaten|veien|vegen|vei|veg|plassen|plass|torget|torg|bakken|stien|svingen|tunet|ringen|brygge|brygga|kaia|kaien)"
-const STREET_WORD = "(?:gate|gata|gaten|vei|veien|veg|vegen|allé)"
-const STREET_PREFIX = "(?:Øvre|Nedre|Store|Lille|Nordre|Søndre|Vestre|Østre|Gamle|Nye|Indre|Ytre)"
-const NAME_WORD = "\\p{Lu}[\\p{L}'.-]*"
-const STREET = `(?:(?:${STREET_PREFIX} )?\\p{Lu}[\\p{L}-]*?${STREET_ENDING}|(?:${NAME_WORD} ){1,2}${STREET_WORD})`
-const PLACE = "\\p{Lu}[\\p{L}-]*(?: \\p{Lu}[\\p{L}-]*){0,2}"
-const ADDRESS = new RegExp(
-	`^(?:(?:[Aa]dresse|[Bb]esøksadresse|[Pp]ostadresse|[Oo]ppmøte(?:sted)?) ?:? ?)?${STREET} \\d{1,4} ?[A-Za-z]?(?:,? \\d{4} ${PLACE})?$`,
-	"u"
-)
-function addressOnly(quote: string): boolean {
-	const text = quote
-		.normalize("NFC")
-		.replace(/\u00AD/g, "")
-		.replace(/\s+/g, " ")
-		.trim()
-		.replace(/\.$/, "")
-	return ADDRESS.test(text)
-}
-
-// A neighbour sentence is plain only when its quote is only a phone number or only an
-// address, or the sentence passes one of the three claim vocabularies (free, always-open,
-// Lavterskel). The Lavterskel vocabulary holds every free word, so checking it covers free
+// A neighbour sentence is plain only when its quote is only a phone number, or the sentence
+// passes one of the three claim vocabularies (free, always-open, Lavterskel). An address is
+// never plain (final fixes 3 H1). The Lavterskel vocabulary holds every free word, so checking it covers free
 // too. Anything else, "Ta kontakt med legen din." included, blocks a yes. The word list in
 // blocksYes stays behind this as a second net.
 function plainNeighbour(sentence: string, ws: readonly string[], exempt: boolean): boolean {
@@ -618,12 +589,12 @@ function plainNeighbour(sentence: string, ws: readonly string[], exempt: boolean
 }
 
 // Cost "free" reads yes only when every sentence that speaks of it is a plain free claim, and
-// every other sentence is clean. A quote that is only a phone number or an address may hold
-// its number. Grounding still runs the denylist behind this.
+// every other sentence is clean. A quote that is only a phone number may hold its number.
+// Grounding still runs the denylist behind this.
 export function plainlyFree(quotes: readonly string[]): boolean {
 	let claims = 0
 	for (const quote of quotes) {
-		const numbersAllowed = phoneOnly(quote) || addressOnly(quote)
+		const numbersAllowed = phoneOnly(quote)
 		for (const sentence of sentences(quote)) {
 			const ws = words(sentence)
 			if (mentionsFree(ws)) {
@@ -744,10 +715,10 @@ function lavterskelWord(ws: readonly string[], i: number, hasMarker: boolean): b
 
 // A noneNeeded reading holds only when every sentence that speaks of referral, a marker or a
 // free cost is a plain claim, and every other sentence is clean. A quote that is only a phone
-// number or an address may hold its number.
+// number may hold its number.
 function plainLavterskel(quotes: readonly string[]): boolean {
 	for (const quote of quotes) {
-		const numbersAllowed = phoneOnly(quote) || addressOnly(quote)
+		const numbersAllowed = phoneOnly(quote)
 		for (const sentence of sentences(quote)) {
 			const ws = words(sentence)
 			if (mentionsLavterskel(ws)) {

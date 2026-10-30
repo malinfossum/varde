@@ -365,15 +365,16 @@ describe("final fixes 3 A1: Lavterskel reads yes only from plain claims and clea
 		}
 	})
 
-	it("lets a quote that is only a phone number or an address stand beside the claims", () => {
-		for (const other of [
-			"Telefon: 62 00 00 00",
-			"Ring 62 00 00 00.",
-			"900 00 000",
-			"Besøksadresse: Storgata 1, 2317 Hamar",
-			"Storgata 1",
-		]) {
+	it("lets a quote that is only a phone number stand beside the claims", () => {
+		for (const other of ["Telefon: 62 00 00 00", "Ring 62 00 00 00.", "900 00 000"]) {
 			yes(["Drop-in hver tirsdag.", "Gratis.", other])
+		}
+	})
+
+	// Final fixes 3 H1 ruling: an address is no longer exempt, so it blocks the yes.
+	it("reads an address beside the claims as unclear", () => {
+		for (const other of ["Besøksadresse: Storgata 1, 2317 Hamar", "Storgata 1"]) {
+			notYes(["Drop-in hver tirsdag.", "Gratis.", other])
 		}
 	})
 })
@@ -439,7 +440,7 @@ describe("final fixes 3 F1: a neighbour quote must itself be plain", () => {
 	})
 })
 
-describe("final fixes 3 G1: only a plain address is exempt from the neighbour check", () => {
+describe("final fixes 3 G1: prose that ends in a street and a number is never exempt", () => {
 	it("never gives yes beside prose that ends in a street and a number", () => {
 		for (const quotes of [
 			["Drop-in hver tirsdag.", "Gratis.", "Ta kontakt med legen din i Storgata 5."],
@@ -471,5 +472,21 @@ describe("final fixes 3 G4: a neighbour that says a referral is needed", () => {
 		)
 		expect(readReferral(["Du trenger ikke henvisning."])).toBe("noneNeeded")
 		expect(lavterskel(["Du trenger ikke henvisning.", "Gratis."], undefined).outcome).toBe("yes")
+	})
+})
+
+describe("final fixes 3 H1: an address quote is never plain", () => {
+	it("never gives yes beside any address-like quote", () => {
+		for (const other of [
+			"Månedsplass 500",
+			"Storgata 5 1500 Euro",
+			"Kontantgata 250",
+			"Storgata 5, 2815 Gjøvik",
+			"Besøksadresse: Storgata 5",
+		]) {
+			const quotes = ["Drop-in uten henvisning.", "Gratis.", other]
+			expect(readReferral(quotes), other).toBe("unclear")
+			expect(lavterskel(quotes, undefined).outcome, other).toBe("review")
+		}
 	})
 })

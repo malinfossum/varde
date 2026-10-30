@@ -317,12 +317,13 @@ describe("final fixes 3 A1: free and always-open read yes only from a plain clai
 		}
 	})
 
-	// Final fixes 3 F2: the second net's digit rule skips a phone-only or address-only quote too.
-	it("grounds a free claim beside a phone-only or an address-only quote", () => {
+	// Final fixes 3 F2: the second net's digit rule skips a phone-only quote too. An address is
+	// no longer exempt (final fixes 3 H1 ruling), so it sends the free claim to review.
+	it("grounds a free claim beside a phone-only quote, never beside an address", () => {
 		expect(ground("cost", "free", ["Gratis.", "Telefon: 62 00 00 00"]).pass).toBe(true)
-		expect(ground("cost", "free", ["Gratis.", "Besøksadresse: Storgata 1, 2317 Hamar"]).pass).toBe(
-			true
-		)
+		expect(
+			ground("cost", "free", ["Gratis.", "Besøksadresse: Storgata 1, 2317 Hamar"])
+		).toMatchObject(toReview)
 	})
 
 	it("still grounds the plain always-open claims", () => {
@@ -468,10 +469,11 @@ describe("final fixes 3 F1: a neighbour quote must itself be plain", () => {
 	})
 })
 
-describe("final fixes 3 F2: the free digit rule skips a phone-only or address-only quote", () => {
+describe("final fixes 3 F2: the free digit rule skips a phone-only quote", () => {
 	it("keeps the digit rule for every other quote", () => {
 		expect(freeQualifiedIn(["Telefon: 62 00 00 00"])).toBe(false)
-		expect(freeQualifiedIn(["Storgata 1, 2317 Hamar"])).toBe(false)
+		// Final fixes 3 H1 ruling: an address holds a number like any other quote.
+		expect(freeQualifiedIn(["Storgata 1, 2317 Hamar"])).toBe(true)
 		expect(freeQualifiedIn(["Ring 62 00 00 00 før du kommer."])).toBe(true)
 		expect(freeQualifiedIn(["Egenandel kr 350 per time."])).toBe(true)
 		const quotes = ["Gratis.", "Egenandel kr 350 per time."]
@@ -483,7 +485,7 @@ describe("final fixes 3 F2: the free digit rule skips a phone-only or address-on
 	})
 })
 
-describe("final fixes 3 G1: only a plain address is exempt from the neighbour check", () => {
+describe("final fixes 3 G1: prose that ends in a street and a number is never exempt", () => {
 	const ground = (quotes: string[]) =>
 		groundingGate(
 			candidate({ field: "cost", value: "free", evidence: { kind: "quote", quotes } }),
@@ -509,14 +511,15 @@ describe("final fixes 3 G1: only a plain address is exempt from the neighbour ch
 		}
 	})
 
-	it("still grounds a free claim beside a plain address", () => {
+	// Final fixes 3 H1 ruling: no address is exempt any more, so these go to review too.
+	it("sends a free claim beside a plain address to review", () => {
 		for (const address of [
 			"Storgata 5, 2815 Gjøvik",
 			"Besøksadresse: Storgata 5",
 			"Kongens gate 5",
 			"Øvre Storgate 12B, 2317 Hamar",
 		]) {
-			expect(ground(["Gratis.", address]).pass, address).toBe(true)
+			expect(ground(["Gratis.", address]), address).toMatchObject({ pass: false, onFail: "review" })
 		}
 	})
 })
@@ -576,6 +579,28 @@ describe("final fixes 3 G4: a neighbour that says a referral is needed is not pl
 					other
 				).toMatchObject({ pass: false, onFail: "review" })
 			}
+		}
+	})
+})
+
+describe("final fixes 3 H1: an address quote is never plain", () => {
+	const probes = [
+		"Månedsplass 500",
+		"Storgata 5 1500 Euro",
+		"Kontantgata 250",
+		"Storgata 5, 2815 Gjøvik",
+		"Besøksadresse: Storgata 5",
+	]
+
+	it("sends a free claim beside any address-like quote to review", () => {
+		for (const other of probes) {
+			const quotes = ["Gratis.", other]
+			const c = candidate({ field: "cost", value: "free", evidence: { kind: "quote", quotes } })
+			expect(groundingGate(c, context({ pageText: () => quotes.join(" ") })), other).toMatchObject({
+				pass: false,
+				onFail: "review",
+			})
+			expect(freeQualifiedIn([other]), other).toBe(true)
 		}
 	})
 })
