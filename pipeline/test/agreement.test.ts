@@ -36,7 +36,7 @@ describe("agreement gate", () => {
 	})
 
 	it("sends a disagreement to review", () => {
-		const peers = [brreg("62 11 11 11")]
+		const peers = [brreg("900 00 000")]
 		expect(agreementGate(candidate(), context({ peers }))).toMatchObject({
 			pass: false,
 			onFail: "review",
@@ -67,7 +67,7 @@ describe("agreement gate", () => {
 	})
 
 	it("never compares with another unit", () => {
-		const otherUnit = brreg("900 00 000", { unitId: "org:999999998" })
+		const otherUnit = brreg("900 00 000", { unitId: "org:000000001" })
 		expect(agreementGate(candidate(), context({ peers: [otherUnit] }))).toMatchObject({
 			pass: true,
 			reason: "single source",
@@ -83,7 +83,7 @@ describe("agreement gate", () => {
 	})
 
 	it("never compares a switchboard with a direct line", () => {
-		const peers = [brreg("62 11 11 11", { role: "Sentralbord" })]
+		const peers = [brreg("900 00 000", { role: "Sentralbord" })]
 		expect(agreementGate(candidate(), context({ peers })).pass).toBe(true)
 	})
 

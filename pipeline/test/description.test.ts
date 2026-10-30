@@ -35,7 +35,7 @@ describe("description gate", () => {
 	})
 
 	it("rejects a phone number that is not in the lock file", () => {
-		const nb = NB.replace("62 00 00 00", "62 99 99 99")
+		const nb = NB.replace("62 00 00 00", "900 00 000")
 		expect(descriptionGate({ nb, en: EN }, VALUES).pass).toBe(false)
 	})
 

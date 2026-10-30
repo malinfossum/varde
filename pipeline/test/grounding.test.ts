@@ -27,14 +27,14 @@ describe("grounding gate", () => {
 
 	it("drops an invented value whose quote is not on the page", () => {
 		const c = candidate({
-			value: "62 99 99 99",
-			evidence: { kind: "quote", quotes: ["Telefon: 62 99 99 99"] },
+			value: "900 00 000",
+			evidence: { kind: "quote", quotes: ["Telefon: 900 00 000"] },
 		})
 		expect(groundingGate(c, context())).toMatchObject({ pass: false, onFail: "drop" })
 	})
 
 	it("drops a value the quote does not hold", () => {
-		const c = candidate({ value: "62 99 99 99" })
+		const c = candidate({ value: "900 00 000" })
 		expect(groundingGate(c, context())).toMatchObject({ pass: false, onFail: "drop" })
 	})
 
@@ -42,7 +42,7 @@ describe("grounding gate", () => {
 	// drop this candidate.
 	it("drops a blank quote, which every page would contain", () => {
 		const c = candidate({
-			evidence: { kind: "quote", quotes: ["Telefon: 62 00 00 00", "    "] },
+			evidence: { kind: "quote", quotes: ["Telefon: 62 00 00 00", "  \u00A0 "] },
 		})
 		expect(groundingGate(c, context())).toMatchObject({ pass: false, onFail: "drop" })
 	})

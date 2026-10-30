@@ -59,7 +59,7 @@ describe("score", () => {
 
 	it("fails on one wrong value", () => {
 		const units = names.map((n, i) => unit(i, n))
-		units[3] = unit(3, names[3] ?? "", { phone: acceptedField({ value: "62 00 00 01" }) })
+		units[3] = unit(3, names[3] ?? "", { phone: acceptedField({ value: "900 00 000" }) })
 		const result = run(units)
 		expect(result.wrong).toEqual([{ keyId: 4, unitId: "org:000000003", field: "phone" }])
 		expect(result.pass).toBe(false)

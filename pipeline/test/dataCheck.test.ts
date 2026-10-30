@@ -54,10 +54,10 @@ describe("checkData", () => {
 	})
 
 	it("flags an accepted value its quote does not hold, without printing the value", () => {
-		const bad = lockUnit({ fields: { phone: acceptedField({ value: "62 11 11 11" }) } })
+		const bad = lockUnit({ fields: { phone: acceptedField({ value: "900 00 000" }) } })
 		const problems = checkData(repo({ "lock/3403.json": { kommune: "3403", units: [bad] } }))
 		expect(problems).toHaveLength(1)
-		expect(problems[0]).not.toContain("62 11 11 11")
+		expect(problems[0]).not.toContain("900 00 000")
 	})
 
 	it("flags an accepted phone outside the number plan and hours over 200", () => {

@@ -145,7 +145,7 @@ describe("safety gate: krisesenter, injection, Lavterskel", () => {
 
 	it("recognises a mobile", () => {
 		expect(isMobile("900 00 000")).toBe(true)
-		expect(isMobile("+47 412 34 567")).toBe(true)
+		expect(isMobile("+47 900 00 000")).toBe(true)
 		expect(isMobile("62 00 00 00")).toBe(false)
 	})
 })
