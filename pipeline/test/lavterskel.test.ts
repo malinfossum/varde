@@ -451,3 +451,15 @@ describe("final fixes 3 G1: only a plain address is exempt from the neighbour ch
 		}
 	})
 })
+
+describe("final fixes 3 G3: an asterisk marks a footnote, so the claim is qualified", () => {
+	it("never gives yes when a claim holds an asterisk", () => {
+		for (const quotes of [
+			["Drop-in hver tirsdag.", "Gratis*"],
+			["Drop-in hver tirsdag.", "*Gratis"],
+			["Drop-in*", "Gratis."],
+		]) {
+			expect(readReferral(quotes), quotes.join(" | ")).toBe("unclear")
+		}
+	})
+})

@@ -537,3 +537,24 @@ describe("final fixes 3 G2: only an 8-digit number is a phone-only quote", () =>
 		}
 	})
 })
+
+describe("final fixes 3 G3: an asterisk marks a footnote, so the claim is qualified", () => {
+	const ground = (field: "cost" | "alwaysOpen", value: string | boolean, quotes: string[]) =>
+		groundingGate(
+			candidate({ field, value, evidence: { kind: "quote", quotes } }),
+			context({ pageText: () => quotes.join(" ") })
+		)
+
+	it("sends a claim with an asterisk to review", () => {
+		for (const quote of ["Gratis*", "*Gratis", "Tilbudet er gratis*."]) {
+			expect(ground("cost", "free", [quote]), quote).toMatchObject({
+				pass: false,
+				onFail: "review",
+			})
+		}
+		expect(ground("alwaysOpen", true, ["Døgnåpent*"])).toMatchObject({
+			pass: false,
+			onFail: "review",
+		})
+	})
+})

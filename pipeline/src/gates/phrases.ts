@@ -453,9 +453,10 @@ function closingForAlle(ws: readonly string[], i: number): boolean {
 	return ws[i] === "for" && ws[i + 1] === "alle" && i + 2 === ws.length
 }
 
-// A question ("Er tilbudet gratis?") is never a plain claim.
+// A question ("Er tilbudet gratis?") is never a plain claim, and nor is a claim with an
+// asterisk ("Gratis*"), which points to a footnote that qualifies it.
 function plain(sentence: string, ws: readonly string[], allowed: (i: number) => boolean): boolean {
-	if (sentence.endsWith("?")) return false
+	if (sentence.endsWith("?") || sentence.includes("*")) return false
 	return ws.length > 0 && ws.length <= MAX_CLAIM_WORDS && ws.every((_, i) => allowed(i))
 }
 
