@@ -1,12 +1,15 @@
 import { describe, expect, test } from "vitest"
 import {
+	applyFilters,
 	applyQuery,
 	compareResources,
 	matchesMunicipality,
 	matchesSearch,
 	PAGE_SIZE,
+	pickedIds,
 } from "../src/services/query.ts"
 import type { ResourceDto } from "../src/types/api.ts"
+import { f, hamarRus, places, rows } from "./filterFixture.ts"
 
 const row = (over: Partial<ResourceDto>): ResourceDto => ({
 	id: 1,
@@ -113,5 +116,65 @@ describe("query mirrors ResourceRepository.SearchAsync", () => {
 		})
 		expect(result.totalCount).toBe(2)
 		expect(result.items.map((r) => r.name)).toEqual(["Hamar Krisesenter", "Mental Helse"])
+	})
+})
+
+describe("applyFilters", () => {
+	const ids = (over: Parameters<typeof f>[0]) =>
+		applyFilters(rows, f(over), places).items.map((r) => r.id)
+
+	test.each([
+		["no filter: every row, local first", {}, [1, 2, 3, 4, 5]],
+		["a kommune: located there, serving it, or national", { municipalities: ["3403"] }, [1, 4, 5]],
+		["a fylke expands to its kommuner", { counties: ["34"] }, [1, 2, 4, 5]],
+		["two kommuner are a union", { municipalities: ["0301", "3411"] }, [2, 3, 4, 5]],
+		["Skjul drops national rows", { municipalities: ["3403"], national: "exclude" }, [1, 4]],
+		["Skjul with no place starts from every row", { national: "exclude" }, [1, 2, 3, 4]],
+		["Bare nasjonale", { national: "only" }, [5]],
+		["Kategorier are any-of", { categories: ["bolig", "rus"] }, [1, 2, 3, 5]],
+		["one Egenskap", { features: ["lavterskel"] }, [3]],
+		["Egenskaper are all-of", { features: ["lavterskel", "dognapent"] }, []],
+		["Pris drops rows with no stated cost", { costs: ["free"] }, [5]],
+		["search narrows", { search: "c" }, [3]],
+		[
+			"groups AND together",
+			{ municipalities: ["0301"], categories: ["rus"], features: ["lavterskel"] },
+			[3],
+		],
+	] as const)("%s", (_, over, expected) => {
+		expect(ids(over as Parameters<typeof f>[0])).toEqual(expected)
+	})
+
+	test("a local row with no kommune and no served kommuner drops out under any Sted pick", () => {
+		const orphan = {
+			...hamarRus,
+			id: 9,
+			name: "F",
+			municipalityId: null,
+			servedMunicipalityIds: [],
+		}
+		expect(applyFilters([orphan], f(), places).totalCount).toBe(1)
+		expect(applyFilters([orphan], f({ counties: ["34"] }), places).totalCount).toBe(0)
+		expect(applyFilters([orphan], f({ municipalities: ["3403"] }), places).totalCount).toBe(0)
+	})
+
+	test("pages through the sorted rows", () => {
+		const many = Array.from({ length: 25 }, (_, i) => ({
+			...hamarRus,
+			id: i + 1,
+			name: `R${String(i + 1).padStart(2, "0")}`,
+		}))
+		const page2 = applyFilters(many, f({ page: 2 }), places)
+		expect(page2.totalCount).toBe(25)
+		expect(page2.items.map((r) => r.id)).toEqual([21, 22, 23, 24, 25])
+	})
+})
+
+describe("pickedIds", () => {
+	test("no pick is null, a fylke and a kommune add up", () => {
+		expect(pickedIds(f(), places)).toBeNull()
+		expect(
+			[...(pickedIds(f({ counties: ["03"], municipalities: ["3411"] }), places) ?? [])].sort()
+		).toEqual([4, 8])
 	})
 })
