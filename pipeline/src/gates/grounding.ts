@@ -1,6 +1,13 @@
 import { type FieldName, type FieldValue, MAX_QUOTE } from "../schema/common.ts"
 import { normaliseText, quoteHasPhone, quoteHasText, quoteHasUrl } from "../text/normalise.ts"
-import { alwaysOpenQualifiedIn, classifyCost, freeQualifiedIn, readAlwaysOpen } from "./phrases.ts"
+import {
+	alwaysOpenQualifiedIn,
+	classifyCost,
+	freeQualifiedIn,
+	plainlyAlwaysOpen,
+	plainlyFree,
+	readAlwaysOpen,
+} from "./phrases.ts"
 import { drop, type Gate, pass, review } from "./types.ts"
 
 // Does this quote hold this value? Cost and the two booleans are judged by phrase rules
@@ -34,7 +41,12 @@ export const groundingGate: Gate = (c, ctx) => {
 		case "cost":
 			// "Egenandel kr 350. Gratis parkering." reads as free plus fee, so partly is mine to call.
 			if (c.value === "partly") return review("grounding", "partly free always needs my eye")
-			// "Gratis." beside "Egenandel gjelder." or "Tilbudet er lagt ned." is not plainly free.
+			// Yes only from a plain free claim with clean neighbours (the allowlist).
+			if (c.value === "free" && !plainlyFree(quotes)) {
+				return review("grounding", "the free quotes are not a plain claim with clean neighbours")
+			}
+			// The denylist stays as a second net. "Gratis." beside "Egenandel gjelder." or
+			// "Tilbudet er lagt ned." is not plainly free.
 			if (c.value === "free" && freeQualifiedIn(quotes)) {
 				return review("grounding", "a free quote holds a price, a limit or a closure")
 			}
@@ -47,6 +59,14 @@ export const groundingGate: Gate = (c, ctx) => {
 			if (readings.every((r) => r === "no")) {
 				return drop("grounding", "no quote says the service is always open")
 			}
+			// Yes only from a plain always-open claim with clean neighbours (the allowlist).
+			if (!plainlyAlwaysOpen(quotes)) {
+				return review(
+					"grounding",
+					"the always-open quotes are not a plain claim with clean neighbours"
+				)
+			}
+			// The denylist stays as a second net.
 			// "Døgnåpent fra fredag til mandag" is a claim, but not one I store without a look.
 			// Nor is "Døgnåpent." beside "Stengt 24. desember.": every quote is read together.
 			if (readings.includes("qualified") || alwaysOpenQualifiedIn(quotes)) {

@@ -1,5 +1,5 @@
 import type { Cost } from "../schema/common.ts"
-import { normaliseText } from "../text/normalise.ts"
+import { normaliseText, phoneDigits } from "../text/normalise.ts"
 
 // Phrase readings shared by the grounding, safety and Lavterskel rules. Text is normalised
 // first, so case, soft hyphens and odd spaces never decide a reading.
@@ -101,7 +101,11 @@ const FREE_LIMIT_PREFIXES = ["prøve", "maks", "medlem"]
 // A sentence whose free phrase is limited: a digit, a limit word, a limiting word, "til og
 // med" or "så lenge". Such a sentence is no free evidence and goes to me.
 export function freeLimited(sentence: string, ws: readonly string[]): boolean {
-	if (/\d/.test(sentence)) return true
+	return /\d/.test(sentence) || freeLimitWords(ws)
+}
+
+// The word part of freeLimited, without the digit rule.
+function freeLimitWords(ws: readonly string[]): boolean {
 	if (limiting(ws)) return true
 	if (ws.some((w) => FREE_LIMIT_WORDS.has(w) || FREE_LIMIT_PREFIXES.some((p) => w.startsWith(p)))) {
 		return true
@@ -205,7 +209,11 @@ function closedOrSeasonal(ws: readonly string[]): boolean {
 // Only within the claim's own sentence: days, months, "fra", "til" and any number other than
 // the 24 in "24/7" or "24 timer", since a quote often carries the phone number or the hours.
 function limitedInTime(sentence: string, ws: readonly string[]): boolean {
-	if (/\d/.test(sentence.replace(/24\/7|24 timer/g, " "))) return true
+	return /\d/.test(sentence.replace(/24\/7|24 timer/g, " ")) || timeWords(ws)
+}
+
+// The word part of limitedInTime, without the digit rule.
+function timeWords(ws: readonly string[]): boolean {
 	return ws.some(
 		(w) =>
 			w === "fra" ||
@@ -398,5 +406,303 @@ export function readReferral(quotes: readonly string[]): ReferralReading {
 	}
 	if (readings.size === 0) return "silent"
 	if (readings.size > 1 || closedIn(quotes)) return "unclear"
-	return [...readings][0] ?? "silent"
+	const reading = [...readings][0] ?? "silent"
+	// The allowlist (below): noneNeeded only from plain claims with clean neighbours.
+	return reading === "noneNeeded" && !plainLavterskel(quotes) ? "unclear" : reading
+}
+
+// The allowlist (final fixes 3). Two denylist waves kept finding new ways to a false yes, so a
+// yes reading now needs plain text. Every sentence that speaks of the claim must be plain: at
+// most eight words, each from that reading's short vocabulary. Every other sentence of every
+// quote must hold no negator, qualifier, price, number or closure. The denylist readings above
+// stay as a second net behind this. A false review is cheap; a false yes is a defect.
+
+const MAX_CLAIM_WORDS = 8
+
+// Words any plain claim may hold beside its claim words.
+const NEUTRAL: ReadonlySet<string> = new Set([
+	"er",
+	"det",
+	"vi",
+	"du",
+	"tilbudet",
+	"telefonen",
+	"chatten",
+	"og",
+	"alle",
+	"hele",
+	"kan",
+	"komme",
+])
+
+// "for" only as a closing "for alle" ("Gratis for alle."). "For alle deltakere" names a group.
+function closingForAlle(ws: readonly string[], i: number): boolean {
+	return ws[i] === "for" && ws[i + 1] === "alle" && i + 2 === ws.length
+}
+
+// A question ("Er tilbudet gratis?") is never a plain claim.
+function plain(sentence: string, ws: readonly string[], allowed: (i: number) => boolean): boolean {
+	if (sentence.endsWith("?")) return false
+	return ws.length > 0 && ws.length <= MAX_CLAIM_WORDS && ws.every((_, i) => allowed(i))
+}
+
+const FREE_WORDS: ReadonlySet<string> = new Set(["gratis", "samtalene", "å", "delta"])
+
+// A word of a plain free claim. "koster" only in "koster ingenting", "uten" only in "uten
+// egenandel", so no price and no negator gets in.
+function freeWord(ws: readonly string[], i: number): boolean {
+	const w = ws[i] ?? ""
+	return (
+		NEUTRAL.has(w) ||
+		FREE_WORDS.has(w) ||
+		closingForAlle(ws, i) ||
+		(w === "koster" && ws[i + 1] === "ingenting") ||
+		(w === "ingenting" && ws[i - 1] === "koster") ||
+		(w === "uten" && ws[i + 1] === "egenandel") ||
+		(w === "egenandel" && ws[i - 1] === "uten")
+	)
+}
+
+// A sentence that speaks of cost being free, plainly or not: "Delvis gratis." and "Ikke
+// gratis" speak of it too, so they must be plain as well.
+function mentionsFree(ws: readonly string[]): boolean {
+	return ws.some(
+		(w) =>
+			w.startsWith("gratis") ||
+			w.startsWith("kostnadsfri") ||
+			w === "ingenting" ||
+			w.startsWith("egenandel")
+	)
+}
+
+const OTHER_NEGATORS: ReadonlySet<string> = new Set([
+	...NEGATORS,
+	"aldri",
+	"verken",
+	"ingenting",
+	"intet",
+	"nei",
+	"ikkje",
+	"utan",
+	"inga",
+])
+// Words that qualify a claim from a neighbouring sentence, on top of the denylist's own.
+const QUALIFIER_WORDS: ReadonlySet<string> = new Set([
+	"delvis",
+	"etter",
+	"ved",
+	"utenom",
+	"bortsett",
+	"mindre",
+	"gjelder",
+	"frem",
+	"under",
+	"over",
+	"mellom",
+	"kl",
+	"år",
+	"uka",
+	"berre",
+	"må",
+	"først",
+	"kreves",
+	"krever",
+	"påkrevd",
+])
+const QUALIFIER_PREFIXES = [
+	"avtale",
+	"begrens",
+	"redus",
+	"natt",
+	"kveld",
+	"midlertid",
+	"periode",
+	"alder",
+	"uke",
+	"dag",
+	"lukk",
+	"romjul",
+	"åpningstid",
+	"varier",
+	"søk",
+	"krav",
+	"nødvendig",
+	"tildel",
+	"fastleg",
+]
+
+function qualifies(ws: readonly string[]): boolean {
+	return (
+		freeLimitWords(ws) ||
+		closedOrSeasonal(ws) ||
+		timeWords(ws) ||
+		ws.some((w, i) => w === "for" && forAGroup(ws, i)) ||
+		ws.some((w) => QUALIFIER_WORDS.has(w) || QUALIFIER_PREFIXES.some((p) => w.startsWith(p)))
+	)
+}
+
+// A neighbouring sentence blocks a yes when it holds a negator, a qualifier, a price, a
+// closure or, unless its quote is only a phone number or an address, a number.
+function blocksYes(sentence: string, ws: readonly string[], numbersAllowed: boolean): boolean {
+	return (
+		ws.some((w) => OTHER_NEGATORS.has(w)) ||
+		qualifies(ws) ||
+		priceSignal(ws) ||
+		saysClosed(ws) ||
+		(!numbersAllowed && /\d/.test(sentence))
+	)
+}
+
+// A quote that is only a phone number, with at most a label: "Telefon: 62 00 00 00".
+const PHONE_LABEL = /^(?:telefonnummer|telefon|tlf|mobil|ring|sms)\.?:?\s*/
+function phoneOnly(quote: string): boolean {
+	const rest = normaliseText(quote).replace(/\.$/, "").replace(PHONE_LABEL, "")
+	return /^\+?[\d ]+$/.test(rest) && [3, 5, 6, 8].includes(phoneDigits(rest).length)
+}
+
+// A quote that is only an address, with at most a label: a street and a number, then a postal
+// code and a place, or a street name with a street ending.
+const ADDRESS =
+	/^(?:(?:besøksadresse|postadresse|adresse)\s*:?\s*)?((?:[\p{L}.'-]+ )*[\p{L}.'-]+) \d{1,4} ?[a-z]?(, ?\d{4} [\p{L}][\p{L} -]*)?$/u
+const STREET =
+	/(?:gata|gate|gaten|veien|vegen|vei|veg|plass|plassen|torg|torget|bakken|stien|svingen|tunet|ringen|brygge|brygga|kaia|kaien)$/
+function addressOnly(quote: string): boolean {
+	const match = ADDRESS.exec(normaliseText(quote).replace(/\.$/, ""))
+	if (match === null) return false
+	return match[2] !== undefined || STREET.test(match[1]?.split(" ").at(-1) ?? "")
+}
+
+// Cost "free" reads yes only when every sentence that speaks of it is a plain free claim, and
+// every other sentence is clean. A quote that is only a phone number or an address may hold
+// its number. Grounding still runs the denylist behind this.
+export function plainlyFree(quotes: readonly string[]): boolean {
+	let claims = 0
+	for (const quote of quotes) {
+		const numbersAllowed = phoneOnly(quote) || addressOnly(quote)
+		for (const sentence of sentences(quote)) {
+			const ws = words(sentence)
+			if (mentionsFree(ws)) {
+				if (!plain(sentence, ws, (i) => freeWord(ws, i))) return false
+				claims++
+			} else if (blocksYes(sentence, ws, numbersAllowed)) {
+				return false
+			}
+		}
+	}
+	return claims > 0
+}
+
+const ALWAYS_OPEN_WORDS: ReadonlySet<string> = new Set([
+	"døgnåpen",
+	"døgnåpent",
+	"døgnåpne",
+	"åpent",
+	"åpen",
+	"døgnet",
+	"svarer",
+	"legevakten",
+])
+
+function mentionsAlwaysOpen(sentence: string, ws: readonly string[]): boolean {
+	return ws.some((w) => w.startsWith("døgn")) || /24\/7/.test(sentence)
+}
+
+// A plain always-open claim: "24/7" and "24 timer i døgnet" are its only numbers, and no
+// negator, limit or group gets in.
+function plainAlwaysOpenClaim(sentence: string, ws: readonly string[]): boolean {
+	if (!claimsAlwaysOpen(sentence, ws) || ws.length > MAX_CLAIM_WORDS) return false
+	const rest = words(sentence.replace(/24\/7|24 timer i døgnet/g, " "))
+	return plain(sentence, rest, (i) => {
+		const w = rest[i] ?? ""
+		return NEUTRAL.has(w) || ALWAYS_OPEN_WORDS.has(w) || closingForAlle(rest, i)
+	})
+}
+
+// alwaysOpen reads yes only when every sentence that speaks of it is a plain claim, and every
+// other sentence is clean. A number anywhere blocks it, a phone number included (ruling 35).
+export function plainlyAlwaysOpen(quotes: readonly string[]): boolean {
+	let claims = 0
+	for (const quote of quotes) {
+		for (const sentence of sentences(quote)) {
+			const ws = words(sentence)
+			if (mentionsAlwaysOpen(sentence, ws)) {
+				if (!plainAlwaysOpenClaim(sentence, ws)) return false
+				claims++
+			} else if (blocksYes(sentence, ws, false)) {
+				return false
+			}
+		}
+	}
+	return claims > 0
+}
+
+const LAVTERSKEL_WORDS: ReadonlySet<string> = new Set([
+	"trenger",
+	"krever",
+	"deg",
+	"selv",
+	"åpen",
+	"hver",
+	"tar",
+	"imot",
+	"et",
+	"tilbud",
+])
+
+function mentionsLavterskel(ws: readonly string[]): boolean {
+	return (
+		markerIndexes(ws).length > 0 ||
+		ws.some((w) => REFERRAL_WORD.test(w) || NO_REFERRAL_WORD.test(w)) ||
+		mentionsFree(ws)
+	)
+}
+
+// A negator in a plain Lavterskel claim stands right before a referral word that is no marker:
+// "uten henvisning", "trenger ikke vedtak".
+function negatesReferral(ws: readonly string[], i: number): boolean {
+	const next = ws[i + 1] ?? ""
+	return (
+		NEGATORS.has(ws[i] ?? "") &&
+		REFERRAL_WORD.test(next) &&
+		!NO_REFERRAL_WORD.test(next) &&
+		!noReferralMarker(ws, i + 1)
+	)
+}
+
+// A word of a plain Lavterskel claim: the free words, the markers, the referral words, a
+// negator right before a referral word, and a weekday only beside a marker ("Drop-in hver
+// tirsdag.").
+function lavterskelWord(ws: readonly string[], i: number, hasMarker: boolean): boolean {
+	const w = ws[i] ?? ""
+	return (
+		freeWord(ws, i) ||
+		LAVTERSKEL_WORDS.has(w) ||
+		w.startsWith("lavterskel") ||
+		w.startsWith("drop-in") ||
+		(w === "drop" && ws[i + 1] === "in") ||
+		(w === "in" && ws[i - 1] === "drop") ||
+		NO_REFERRAL_WORD.test(w) ||
+		REFERRAL_WORD.test(w) ||
+		negatesReferral(ws, i) ||
+		(hasMarker && WEEKDAYS.includes(w))
+	)
+}
+
+// A noneNeeded reading holds only when every sentence that speaks of referral, a marker or a
+// free cost is a plain claim, and every other sentence is clean. A quote that is only a phone
+// number or an address may hold its number.
+function plainLavterskel(quotes: readonly string[]): boolean {
+	for (const quote of quotes) {
+		const numbersAllowed = phoneOnly(quote) || addressOnly(quote)
+		for (const sentence of sentences(quote)) {
+			const ws = words(sentence)
+			if (mentionsLavterskel(ws)) {
+				const hasMarker = markerIndexes(ws).length > 0
+				if (!plain(sentence, ws, (i) => lavterskelWord(ws, i, hasMarker))) return false
+			} else if (blocksYes(sentence, ws, numbersAllowed)) {
+				return false
+			}
+		}
+	}
+	return true
 }

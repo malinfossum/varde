@@ -266,3 +266,100 @@ describe("final fixes 2 R1, R2, R4: grounding reads every quote together", () =>
 		}
 	})
 })
+
+describe("final fixes 3 A1: free and always-open read yes only from a plain claim", () => {
+	const ground = (field: "cost" | "alwaysOpen", value: string | boolean, quotes: string[]) =>
+		groundingGate(
+			candidate({ field, value, evidence: { kind: "quote", quotes } }),
+			context({ pageText: () => quotes.join(" ") })
+		)
+	const toReview = { pass: false, onFail: "review" }
+
+	it("still grounds the plain free claims", () => {
+		for (const quotes of [
+			["Gratis."],
+			["Tilbudet er gratis."],
+			["Det koster ingenting."],
+			["Gratis for alle."],
+			["Samtalene er uten egenandel."],
+			["Tilbudet er gratis.", "Det koster ingenting."],
+		]) {
+			expect(ground("cost", "free", quotes).pass, quotes.join(" | ")).toBe(true)
+		}
+	})
+
+	it("sends a free claim sentence that is not plain to review", () => {
+		for (const quotes of [
+			// A word outside the free vocabulary.
+			["Gratis etter avtale."],
+			// "for alle" that is not the end of the sentence.
+			["Tilbudet er gratis for alle deltakere."],
+			// Nine words, each in the vocabulary.
+			["Det er gratis, og det er gratis for alle."],
+			// A negator after the free word, which saysFree does not see.
+			["Gratis er det ikke."],
+		]) {
+			expect(ground("cost", "free", quotes), quotes.join(" | ")).toMatchObject(toReview)
+		}
+	})
+
+	it("sends a free claim to review when another quote holds a negator or a qualifier", () => {
+		for (const quotes of [
+			["Gratis.", "Ikke for alle."],
+			["Gratis.", "Gjelder etter avtale."],
+			["Gratis.", "Gratis parkering."],
+		]) {
+			expect(ground("cost", "free", quotes), quotes.join(" | ")).toMatchObject(toReview)
+		}
+	})
+
+	// The phone-only exemption is the allowlist's; the digit rule of the second net still sends
+	// a free claim beside a number to review.
+	it("still sends a free claim beside a phone-only quote to review through the digit rule", () => {
+		expect(ground("cost", "free", ["Gratis.", "Telefon: 62 00 00 00"])).toMatchObject(toReview)
+	})
+
+	it("still grounds the plain always-open claims", () => {
+		for (const quotes of [
+			["Åpent hele døgnet."],
+			["Døgnåpent."],
+			["Vi svarer 24/7."],
+			["Åpent hele døgnet for alle."],
+			["Åpent 24 timer i døgnet."],
+			["Legevakten er døgnåpen."],
+			["Døgnåpent.", "Legevakten er døgnåpen."],
+		]) {
+			expect(ground("alwaysOpen", true, quotes).pass, quotes.join(" | ")).toBe(true)
+		}
+	})
+
+	it("sends an always-open claim sentence that is not plain to review", () => {
+		for (const quotes of [
+			["Døgnåpent ved akutt behov."],
+			["Telefonen er døgnåpen for alle innbyggere."],
+			["Det er døgnåpent, og det er åpent hele døgnet."],
+		]) {
+			expect(ground("alwaysOpen", true, quotes), quotes.join(" | ")).toMatchObject(toReview)
+		}
+	})
+
+	it("sends an always-open claim to review when another quote holds a negator", () => {
+		expect(ground("alwaysOpen", true, ["Døgnåpent.", "Ikke åpent om natten."])).toMatchObject(
+			toReview
+		)
+	})
+
+	it("sends a question or a neighbour that closes or varies the hours to review", () => {
+		expect(ground("cost", "free", ["Er tilbudet gratis?"])).toMatchObject(toReview)
+		expect(ground("cost", "free", ["Gratis?", "Nei."])).toMatchObject(toReview)
+		expect(ground("cost", "free", ["Gratis.", "Nei."])).toMatchObject(toReview)
+		expect(ground("alwaysOpen", true, ["Er det døgnåpent?"])).toMatchObject(toReview)
+		for (const other of [
+			"Lukket i romjulen.",
+			"Åpningstidene varierer.",
+			"Telefonen er betjent på dagtid.",
+		]) {
+			expect(ground("alwaysOpen", true, ["Døgnåpent.", other]), other).toMatchObject(toReview)
+		}
+	})
+})

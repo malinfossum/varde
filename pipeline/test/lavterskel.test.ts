@@ -7,7 +7,8 @@ describe("readReferral", () => {
 		expect(readReferral(["Du kan komme uten henvisning."])).toBe("noneNeeded")
 		expect(readReferral(["Du trenger ikke vedtak."])).toBe("noneNeeded")
 		expect(readReferral(["Åpen drop-in hver onsdag."])).toBe("noneNeeded")
-		expect(readReferral(["Et lavterskeltilbud for voksne."])).toBe("noneNeeded")
+		// Final fixes 3 ruling: "for voksne" names a group, so the allowlist reads it as unclear.
+		expect(readReferral(["Et lavterskeltilbud for voksne."])).toBe("unclear")
 	})
 
 	it("tells 'krever ikke henvisning' from 'krever henvisning'", () => {
@@ -35,9 +36,11 @@ describe("lavterskel rule", () => {
 		expect(lavterskel(["Gratis, og du trenger ikke henvisning."], undefined).outcome).toBe("yes")
 	})
 
-	it("says yes to free entry with paid coffee once the unit's cost is partly", () => {
+	// Final fixes 3 ruling: the coffee quote holds a price and a number, so the allowlist sends
+	// the badge to review even when the unit's own cost is partly.
+	it("sends free entry with paid coffee to review, even once the unit's cost is partly", () => {
 		const quotes = ["Gratis å delta, uten henvisning.", "Kaffe koster 20 kr."]
-		expect(lavterskel(quotes, "partly").outcome).toBe("yes")
+		expect(lavterskel(quotes, "partly").outcome).toBe("review")
 	})
 
 	it("never infers partly from quotes alone", () => {
@@ -259,7 +262,8 @@ describe("final fixes 2 concern 1: a negator or a limit anywhere in a lavterskel
 
 	it("still gives yes to a plain marker sentence", () => {
 		expect(lavterskel(["Drop-in hver tirsdag.", "Gratis."], undefined).outcome).toBe("yes")
-		expect(readReferral(["Et lavterskeltilbud for voksne."])).toBe("noneNeeded")
+		// Final fixes 3 ruling: "for voksne" names a group, so the allowlist reads it as unclear.
+		expect(readReferral(["Et lavterskeltilbud for voksne."])).toBe("unclear")
 	})
 })
 
@@ -292,5 +296,82 @@ describe("final fixes 2 referral window: the negator stands right before the ref
 			expect(readReferral([quote]), quote).toBe("noneNeeded")
 		}
 		expect(lavterskel(["Drop-in, uten henvisning."], "free").outcome).toBe("yes")
+	})
+})
+
+describe("final fixes 3 A1: Lavterskel reads yes only from plain claims and clean neighbours", () => {
+	const yes = (quotes: string[], cost?: "free" | "partly") =>
+		expect(lavterskel(quotes, cost).outcome, quotes.join(" | ")).toBe("yes")
+	const notYes = (quotes: string[], cost?: "free" | "partly") => {
+		expect(readReferral(quotes), quotes.join(" | ")).toBe("unclear")
+		expect(lavterskel(quotes, cost).outcome, quotes.join(" | ")).toBe("review")
+	}
+
+	it("still gives yes to the plain claims", () => {
+		yes(["Drop-in hver tirsdag.", "Gratis."])
+		yes(["Gratis, og du trenger ikke henvisning."])
+		yes(["Tilbudet er gratis, og du trenger ikke henvisning."])
+		yes(["Tilbudet er gratis og henvisningsfritt."])
+		yes(["Drop-in, uten henvisning."], "free")
+		yes(["Du kan henvise deg selv.", "Gratis."])
+		yes(["Du trenger ikke henvisning.", "Det koster ingenting."])
+	})
+
+	it("reads a claim sentence that is not plain as unclear", () => {
+		// A word outside the vocabulary.
+		notYes(["Drop-in for ungdom.", "Gratis."])
+		// Nine words, each in the vocabulary.
+		notYes(["Du kan komme uten henvisning, og det er gratis."])
+		// A weekday outside a marker sentence.
+		notYes(["Uten henvisning hver tirsdag.", "Gratis."])
+	})
+
+	it("reads a free sentence that is not plain as unclear", () => {
+		// The negator stands after "gratis", where saysFree does not look.
+		notYes(["Gratis er det ikke.", "Drop-in hver tirsdag."])
+		notYes(["Drop-in hver tirsdag.", "Gratis etter avtale."])
+	})
+
+	it("reads a neighbour with a negator, a qualifier, a time, a number or a price as unclear", () => {
+		for (const other of [
+			"Ikke for alle.",
+			"Gjelder etter avtale.",
+			"Åpent fra klokken ti.",
+			"Kapasitet 12 plasser.",
+			"Det tas betalt for materiell.",
+			"Kun Storgata 1, 2317 Hamar",
+			// One signal each: a first session, a season, a group, a bare number.
+			"Første samtale.",
+			"Lavere bemanning i julen.",
+			"Tilbudet passer for ungdom.",
+			"Gruppe 12",
+		]) {
+			notYes(["Drop-in hver tirsdag.", "Gratis.", other])
+		}
+	})
+
+	it("reads a question, a bare no or a requirement beside the claims as unclear", () => {
+		notYes(["Er tilbudet gratis?", "Drop-in hver tirsdag."])
+		notYes(["Lavterskeltilbud? Nei.", "Gratis."])
+		for (const other of [
+			"Ikkje for alle.",
+			"Må søkes via NAV.",
+			"Kontakt fastlegen først.",
+			"Tildeles av kommunen.",
+		]) {
+			notYes(["Drop-in hver tirsdag.", "Gratis.", other])
+		}
+	})
+
+	it("lets a quote that is only a phone number or an address stand beside the claims", () => {
+		for (const other of [
+			"Telefon: 62 00 00 00",
+			"Ring 62 00 00 00.",
+			"900 00 000",
+			"Besøksadresse: Storgata 1, 2317 Hamar",
+			"Storgata 1",
+		]) {
+			yes(["Drop-in hver tirsdag.", "Gratis.", other])
+		}
 	})
 })
