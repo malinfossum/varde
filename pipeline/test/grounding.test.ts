@@ -294,6 +294,8 @@ describe("final fixes 3 A1: free and always-open read yes only from a plain clai
 			["Gratis etter avtale."],
 			// "for alle" that is not the end of the sentence.
 			["Tilbudet er gratis for alle deltakere."],
+			// "for alle" in mid-sentence, with only vocabulary words around it.
+			["Gratis for alle, og du kan komme."],
 			// Nine words, each in the vocabulary.
 			["Det er gratis, og det er gratis for alle."],
 			// A negator after the free word, which saysFree does not see.

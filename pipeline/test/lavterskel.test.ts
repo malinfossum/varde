@@ -345,6 +345,8 @@ describe("final fixes 3 A1: Lavterskel reads yes only from plain claims and clea
 			"Lavere bemanning i julen.",
 			"Tilbudet passer for ungdom.",
 			"Gruppe 12",
+			// A price word alone, with no group after it.
+			"Vi tar betalt.",
 		]) {
 			notYes(["Drop-in hver tirsdag.", "Gratis.", other])
 		}
