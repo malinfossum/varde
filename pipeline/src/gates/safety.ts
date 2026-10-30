@@ -6,8 +6,9 @@ export function isMobile(phone: string): boolean {
 	return /^[49]\d{7}$/.test(phoneDigits(phone))
 }
 
-// An email is kept only when its local part names a service. Anything else may be a
-// person's own address.
+// An email is kept only when every token of its local part is, or starts with, a service
+// word. Anything else may be a person's own address: "karipost" ends with "post" and
+// "kari.postmyr" holds a token that is not one.
 const SERVICE_WORDS = [
 	"post",
 	"kontakt",
@@ -37,7 +38,7 @@ const SERVICE_WORDS = [
 export function emailNamesAService(email: string): boolean {
 	const local = email.toLowerCase().split("@")[0] ?? ""
 	const tokens = local.split(/[.\-_+]/)
-	return tokens.every((token) => SERVICE_WORDS.some((w) => token.includes(w)))
+	return tokens.every((token) => SERVICE_WORDS.some((w) => token.startsWith(w)))
 }
 
 export const ACCOUNT_NUMBER = /\b\d{4}[ .]?\d{2}[ .]?\d{5}\b/
