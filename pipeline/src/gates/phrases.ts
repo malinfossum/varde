@@ -66,19 +66,57 @@ const NARROWING: ReadonlySet<string> = new Set([
 	"i",
 ])
 
+// "for" at position i names a group, unless it is a plain "for alle" ("for alle under 25 år"
+// is a group again).
+function forAGroup(ws: readonly string[], i: number): boolean {
+	return !(ws[i + 1] === "alle" && !NARROWING.has(ws[i + 2] ?? ""))
+}
+
 // A free phrase that spans ws[start..end] is about the service itself only when no extra stands
 // within two words on either side, and it is not followed by "for" and a group ("for barn",
 // "for medlemmer"). "For alle" on its own is no group.
 function freeForEveryone(ws: readonly string[], start: number, end: number): boolean {
 	const near = [...ws.slice(Math.max(0, start - 2), start), ...ws.slice(end + 1, end + 3)]
 	if (near.some(isExtra)) return false
-	if (ws[end + 1] !== "for") return true
-	return ws[end + 2] === "alle" && !NARROWING.has(ws[end + 3] ?? "")
+	return ws[end + 1] !== "for" || !forAGroup(ws, end + 1)
+}
+
+// Words that make "gratis" a trial, a first session, a limit or a condition: "Gratis første
+// time", "Gratis hvis du er student", "Gratis inntil 5 timer".
+const FREE_LIMIT_WORDS: ReadonlySet<string> = new Set([
+	"første",
+	"time",
+	"timer",
+	"timen",
+	"gang",
+	"ganger",
+	"hvis",
+	"dersom",
+	"når",
+	"inntil",
+	"opptil",
+])
+const FREE_LIMIT_PREFIXES = ["prøve", "maks", "medlem"]
+
+// A sentence whose free phrase is limited: a digit, a limit word, a limiting word, "til og
+// med" or "så lenge". Such a sentence is no free evidence and goes to me.
+export function freeLimited(sentence: string, ws: readonly string[]): boolean {
+	if (/\d/.test(sentence)) return true
+	if (limiting(ws)) return true
+	if (ws.some((w) => FREE_LIMIT_WORDS.has(w) || FREE_LIMIT_PREFIXES.some((p) => w.startsWith(p)))) {
+		return true
+	}
+	return ws.some(
+		(w, i) =>
+			(w === "til" && ws[i + 1] === "og" && ws[i + 2] === "med") ||
+			(w === "så" && ws[i + 1] === "lenge")
+	)
 }
 
 export function saysFree(quote: string): boolean {
 	for (const sentence of sentences(quote)) {
 		const ws = words(sentence)
+		if (freeLimited(sentence, ws)) continue
 		for (const [i, w] of ws.entries()) {
 			const next = ws[i + 1]
 			if (w === "gratis" && !negatedWithin(ws, i) && freeForEveryone(ws, i, i)) return true
@@ -152,6 +190,12 @@ function limitedInTime(sentence: string, ws: readonly string[]): boolean {
 	)
 }
 
+// Only within the claim's own sentence: a limiting word, or "for" and a group ("Døgnåpent
+// for kvinner"). A plain "for alle" limits nothing.
+function limitedToSome(ws: readonly string[]): boolean {
+	return limiting(ws) || ws.some((w, i) => w === "for" && forAGroup(ws, i))
+}
+
 function claimsAlwaysOpen(sentence: string, ws: readonly string[]): boolean {
 	for (const [i, w] of ws.entries()) {
 		if (w.startsWith("døgnåpen") && !negatedWithin(ws, i, 2)) return true
@@ -160,13 +204,15 @@ function claimsAlwaysOpen(sentence: string, ws: readonly string[]): boolean {
 }
 
 // Yes only for a plain claim ("Døgnåpent.", "Vi svarer 24/7."). A claim with a closure, a
-// season, a day, a month, "fra", "til" or a number next to it is qualified and goes to me.
+// season, a day, a month, "fra", "til", a number, a limiting word or a group next to it is
+// qualified and goes to me.
 export function readAlwaysOpen(quote: string): AlwaysOpenReading {
 	const all = sentences(quote).map((sentence) => ({ sentence, ws: words(sentence) }))
 	const claims = all.filter(({ sentence, ws }) => claimsAlwaysOpen(sentence, ws))
 	if (claims.length === 0) return "no"
 	if (all.some(({ ws }) => closedOrSeasonal(ws))) return "qualified"
 	if (claims.some(({ sentence, ws }) => limitedInTime(sentence, ws))) return "qualified"
+	if (claims.some(({ ws }) => limitedToSome(ws))) return "qualified"
 	return "yes"
 }
 

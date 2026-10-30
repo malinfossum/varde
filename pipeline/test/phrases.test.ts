@@ -117,3 +117,80 @@ describe("final fixes F1: qualified free and always-open text is not a yes", () 
 		expect(readAlwaysOpen("Kontoret er ikke døgnåpent.")).toBe("no")
 	})
 })
+
+describe("final fixes 2 R2: a limited free phrase is not free evidence", () => {
+	const limited = [
+		"Gratis første time.",
+		"Gratis prøvetime.",
+		"Gratis hvis du er student.",
+		"Gratis inntil 5 timer.",
+		"Gratis å delta, men bare for medlemmer.",
+	]
+
+	it("does not read a free phrase with a limit in its sentence as free", () => {
+		for (const text of limited) {
+			expect(saysFree(text), text).toBe(false)
+			expect(classifyCost([text]), text).not.toBe("free")
+		}
+	})
+
+	it("reads each limiting signal on its own", () => {
+		for (const text of [
+			"Gratis den første gangen.",
+			"Gratis to ganger.",
+			"Gratis dersom du bor i kommunen.",
+			"Gratis når du er under utredning.",
+			"Gratis opptil tre samtaler.",
+			"Gratis, maks tre samtaler.",
+			"Gratis til og med desember.",
+			"Gratis så lenge tilbudet varer.",
+			"Gratis, kun for innbyggere.",
+			"Gratis unntatt kursmateriell.",
+			"Gratis, med unntak av kurs.",
+			"Gratis for medlemmer og andre.",
+			"Gratis time hos rådgiver.",
+			"Timen er gratis.",
+			"Medlemskap er gratis.",
+		]) {
+			expect(saysFree(text), text).toBe(false)
+		}
+	})
+
+	it("still reads the plain free phrases as free", () => {
+		for (const text of [
+			"Gratis.",
+			"Tilbudet er gratis.",
+			"Det koster ingenting.",
+			"Gratis for alle.",
+		]) {
+			expect(saysFree(text), text).toBe(true)
+			expect(classifyCost([text]), text).toBe("free")
+		}
+	})
+})
+
+describe("final fixes 2 R3: a limited always-open claim is qualified", () => {
+	it("reads a claim limited to some people as qualified", () => {
+		for (const text of [
+			"Åpent hele døgnet, men kun for innlagte.",
+			"Døgnåpent for kvinner.",
+			"Vi svarer 24/7 for ansatte.",
+			"Døgnåpent, bare ved akutt behov.",
+			"Åpent hele døgnet for alle over 18 år.",
+		]) {
+			expect(readAlwaysOpen(text), text).toBe("qualified")
+			expect(saysAlwaysOpen(text), text).toBe(false)
+		}
+	})
+
+	it("still reads a plain or an everyone claim as yes", () => {
+		for (const text of [
+			"Åpent hele døgnet.",
+			"Døgnåpent.",
+			"Vi svarer 24/7.",
+			"Åpent hele døgnet for alle.",
+		]) {
+			expect(readAlwaysOpen(text), text).toBe("yes")
+		}
+	})
+})
