@@ -368,6 +368,46 @@ ${quote}`,
 	})
 })
 
+describe("final fixes 3 G5: ø, æ and å fold to o, ae and a before name matching", () => {
+	const name = "Kari Øvrebø"
+	const named = (quote: string) =>
+		runGates(
+			candidate({
+				value: "900 00 000",
+				evidence: { kind: "quote", quotes: [quote] },
+				role: "Avdelingsleder",
+				personName: name,
+			}),
+			context({
+				pageText: () => `${PAGE}
+${quote}`,
+			}),
+			T
+		)
+
+	it("redacts a name written without ø", () => {
+		expect(redact(["Kontakt Kari Ovrebo på 900 00 000"], name)).toEqual([
+			"Kontakt [navn] på 900 00 000",
+		])
+		expect(redact(["Ring OVREBO nå"], name)).toEqual(["Ring [navn] nå"])
+		expect(redact(["Kontakt Kari Øvrebø"], name)).toEqual(["Kontakt [navn]"])
+		const field = named("Kontakt Ovrebo på 900 00 000")
+		expect(field.status).toBe("accepted")
+		expect(JSON.stringify(field)).not.toMatch(/ovrebo/i)
+	})
+
+	// Redact cannot see through the soft hyphen, so only nameSurvives can catch this one.
+	it("drops the field when a soft hyphen hides the folded name", () => {
+		const field = named("Kontakt Ovre\u00ADbo på 900 00 000")
+		expect(field.status).toBe("dropped")
+		expect(field.reason).toBe("person name left after redaction")
+	})
+
+	it("adds no definite forms", () => {
+		expect(redact(["Ring Kari ved Ovreboen"], name)).toEqual(["Ring [navn] ved Ovreboen"])
+	})
+})
+
 describe("redact", () => {
 	it("replaces every spelling of the name", () => {
 		expect(redact(["KARI NORDMANN og Kari\u00A0Nordmann"], "Kari Nordmann")).toEqual([

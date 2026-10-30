@@ -21,9 +21,29 @@ const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&
 // each accent is a combining mark after its letter.
 const stripMarks = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "")
 
-// The letters of a name part, each allowed any accents after it.
+// Norwegian letters a page may write plainly: "Øvrebø" as "Ovrebo", "æ" as "ae". "å" folds
+// to "a" through stripMarks already. Applied to name and text alike; no definite forms are
+// added, so "Berg" never redacts "Bergen".
+const fold = (text: string) =>
+	stripMarks(text).replace(/ø/g, "o").replace(/Ø/g, "O").replace(/æ/g, "ae").replace(/Æ/g, "AE")
+
+// The letters of a name part, each allowed any accents after it. A folded "o" also matches
+// "ø", and a folded "ae" also matches "æ".
 function letters(token: string): string {
-	return [...stripMarks(token)].map((ch) => `${escapeRegExp(ch)}\\p{M}*`).join("")
+	const folded = fold(token)
+	let out = ""
+	for (let i = 0; i < folded.length; i++) {
+		const ch = folded[i] ?? ""
+		if (folded.slice(i, i + 2).toLowerCase() === "ae") {
+			out += "(?:ae|æ)\\p{M}*"
+			i++
+		} else if (ch.toLowerCase() === "o") {
+			out += "(?:o|ø)\\p{M}*"
+		} else {
+			out += `${escapeRegExp(ch)}\\p{M}*`
+		}
+	}
+	return out
 }
 
 // A genitive "s" after a name is still the name: "Karis kontor", "ANNEMARIES".
@@ -92,7 +112,7 @@ export function redact(quotes: readonly string[], personName: string | undefined
 function nameSurvives(texts: readonly string[], personName: string | undefined): boolean {
 	if (personName === undefined) return false
 	const tokens = nameTokens(personName).map((t) => tokenPattern(normaliseText(t), "iu"))
-	return texts.some((text) => tokens.some((token) => token.test(stripMarks(normaliseText(text)))))
+	return texts.some((text) => tokens.some((token) => token.test(fold(normaliseText(text)))))
 }
 
 function stored(evidence: Evidence, personName: string | undefined): Evidence {
