@@ -482,3 +482,38 @@ describe("final fixes 3 F2: the free digit rule skips a phone-only or address-on
 		})
 	})
 })
+
+describe("final fixes 3 G1: only a plain address is exempt from the neighbour check", () => {
+	const ground = (quotes: string[]) =>
+		groundingGate(
+			candidate({ field: "cost", value: "free", evidence: { kind: "quote", quotes } }),
+			context({ pageText: () => quotes.join(" ") })
+		)
+
+	it("does not take prose before a street and a number as an address", () => {
+		for (const other of [
+			"Forbeholdt beboere på Storgata 5",
+			"Dessverre utilgjengelig Storgata 5",
+			"Billett kjøpes på Storgata 5",
+			"Abonnement tegnes Storgata 5",
+			"Ledig plass 20",
+			"Ta med penger på Storgata 5",
+			// Capitals do not make prose a street name, and a place name takes no prose after it.
+			"Forbeholdt Beboere Storgata 5",
+			"Storgata 5, 2815 Gjøvik forbeholdt beboere",
+		]) {
+			expect(ground(["Gratis.", other]), other).toMatchObject({ pass: false, onFail: "review" })
+		}
+	})
+
+	it("still grounds a free claim beside a plain address", () => {
+		for (const address of [
+			"Storgata 5, 2815 Gjøvik",
+			"Besøksadresse: Storgata 5",
+			"Kongens gate 5",
+			"Øvre Storgate 12B, 2317 Hamar",
+		]) {
+			expect(ground(["Gratis.", address]).pass, address).toBe(true)
+		}
+	})
+})

@@ -438,3 +438,16 @@ describe("final fixes 3 F1: a neighbour quote must itself be plain", () => {
 		}
 	})
 })
+
+describe("final fixes 3 G1: only a plain address is exempt from the neighbour check", () => {
+	it("never gives yes beside prose that ends in a street and a number", () => {
+		for (const quotes of [
+			["Drop-in hver tirsdag.", "Gratis.", "Ta kontakt med legen din i Storgata 5."],
+			["Drop-in.", "Gratis.", "Forbeholdt beboere på Storgata 5"],
+			["Drop-in.", "Gratis.", "Dessverre utilgjengelig Storgata 5"],
+			["Drop-in.", "Gratis.", "Timebestilling hos Storgata 5"],
+		]) {
+			expect(lavterskel(quotes, undefined).outcome, quotes[2]).toBe("review")
+		}
+	})
+})

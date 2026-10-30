@@ -573,16 +573,33 @@ function phoneOnly(quote: string): boolean {
 	return /^\+?[\d ]+$/.test(rest) && [3, 5, 6, 8].includes(phoneDigits(rest).length)
 }
 
-// A quote that is only an address, with at most a label: a street and a number, then a postal
-// code and a place, or a street name with a street ending.
-const ADDRESS =
-	/^(?:(?:besøksadresse|postadresse|adresse)\s*:?\s*)?((?:[\p{L}.'-]+ )*[\p{L}.'-]+) \d{1,4} ?[a-z]?(, ?\d{4} [\p{L}][\p{L} -]*)?$/u
-const STREET =
-	/(?:gata|gate|gaten|veien|vegen|vei|veg|plass|plassen|torg|torget|bakken|stien|svingen|tunet|ringen|brygge|brygga|kaia|kaien)$/
+// A quote that is only an address, and nothing else: an optional label (Adresse,
+// Besøksadresse, Postadresse, Oppmøte), a street name of one to three words that ends in a
+// street word, a house number with an optional letter, then an optional postal code and a
+// place name. Read with its capitals kept, so prose before the street ("Forbeholdt beboere på
+// Storgata 5", "Dessverre utilgjengelig Storgata 5") and prose after the place never pass.
+// A street is a compound with a street ending ("Storgata", "Øvre Storgate"), or one or two
+// capitalised words and a separate street word ("Kongens gate"). "plass" stands alone too
+// often ("Ledig plass 20") to count on its own.
+const STREET_ENDING =
+	"(?:gata|gate|gaten|veien|vegen|vei|veg|plassen|plass|torget|torg|bakken|stien|svingen|tunet|ringen|brygge|brygga|kaia|kaien)"
+const STREET_WORD = "(?:gate|gata|gaten|vei|veien|veg|vegen|allé)"
+const STREET_PREFIX = "(?:Øvre|Nedre|Store|Lille|Nordre|Søndre|Vestre|Østre|Gamle|Nye|Indre|Ytre)"
+const NAME_WORD = "\\p{Lu}[\\p{L}'.-]*"
+const STREET = `(?:(?:${STREET_PREFIX} )?\\p{Lu}[\\p{L}-]*?${STREET_ENDING}|(?:${NAME_WORD} ){1,2}${STREET_WORD})`
+const PLACE = "\\p{Lu}[\\p{L}-]*(?: \\p{Lu}[\\p{L}-]*){0,2}"
+const ADDRESS = new RegExp(
+	`^(?:(?:[Aa]dresse|[Bb]esøksadresse|[Pp]ostadresse|[Oo]ppmøte(?:sted)?) ?:? ?)?${STREET} \\d{1,4} ?[A-Za-z]?(?:,? \\d{4} ${PLACE})?$`,
+	"u"
+)
 function addressOnly(quote: string): boolean {
-	const match = ADDRESS.exec(normaliseText(quote).replace(/\.$/, ""))
-	if (match === null) return false
-	return match[2] !== undefined || STREET.test(match[1]?.split(" ").at(-1) ?? "")
+	const text = quote
+		.normalize("NFC")
+		.replace(/\u00AD/g, "")
+		.replace(/\s+/g, " ")
+		.trim()
+		.replace(/\.$/, "")
+	return ADDRESS.test(text)
 }
 
 // A neighbour sentence is plain only when its quote is only a phone number or only an
