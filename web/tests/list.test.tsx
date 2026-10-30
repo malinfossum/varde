@@ -8,7 +8,7 @@ import { Pagination } from "../src/components/Pagination.tsx"
 import { ResourceCard } from "../src/components/ResourceCard.tsx"
 import { useResources } from "../src/hooks/useResources.ts"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
-import type { Filters } from "../src/services/urlState.ts"
+import { EMPTY_FILTERS, type Filters } from "../src/services/filters.ts"
 import type { ResourceDto } from "../src/types/api.ts"
 import { stubDataFiles } from "./stubData.ts"
 
@@ -148,9 +148,9 @@ test("an unknown ?municipality= value doesn't crash the app and the list renders
 	window.history.pushState(null, "", "/sok?municipality=abc")
 	render(<App />)
 
-	// A non-numeric municipality id never survives URL parsing (parseFilters' positiveInt
-	// rejects it), so filters.municipality stays null and the list renders unfiltered rather
-	// than scoped to a municipality that doesn't exist.
+	// A value that is neither an old id nor a kommunenummer fails parseFilters' shape check, so
+	// no place is picked and the list renders unfiltered rather than scoped to a municipality
+	// that doesn't exist.
 	expect(await screen.findByText("Krisesenteret i Hamar")).toBeInTheDocument()
 	// No phantom selection in the combobox either — its input stays empty rather than showing
 	// some municipality's name.
@@ -171,6 +171,23 @@ test("Tøm clears both municipality and national selection from the URL", async 
 
 	expect(window.location.search).not.toContain("municipality")
 	expect(window.location.search).not.toContain("national")
+})
+
+test("a category suggestion adds to the ticked categories instead of replacing them", async () => {
+	stubDataFiles({
+		resources: [resource],
+		municipalities,
+		categories: [
+			{ id: 4, slug: "rus", name: "Rus", isFallbackTranslation: false },
+			{ id: 2, slug: "bolig", name: "Bolig", isFallbackTranslation: false },
+		],
+	})
+	window.history.pushState(null, "", "/sok?category=rus&search=bol")
+	const user = userEvent.setup()
+	render(<App />)
+	const lists = await screen.findAllByRole("list", { name: "Forslag" })
+	await user.click(within(lists[0] as HTMLElement).getByRole("button", { name: /Bolig/ }))
+	await waitFor(() => expect(window.location.search).toContain("category=bolig&category=rus"))
 })
 
 test("list page heading levels never skip: h1 results heading, h2 cards", async () => {
@@ -237,13 +254,7 @@ test("paging moves focus to the results heading; typing in search does not", asy
 	expect(search).toHaveFocus()
 })
 
-const baseFilters: Filters = {
-	search: "",
-	categories: [],
-	municipality: null,
-	national: false,
-	page: 1,
-}
+const baseFilters: Filters = EMPTY_FILTERS
 
 test("once the index is cached, filtering (e.g. two keystrokes in the search box) never re-enters loading", async () => {
 	const many = Array.from({ length: 5 }, (_, i) => ({ ...resource, id: i + 1, name: `Treff ${i}` }))

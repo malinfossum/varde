@@ -22,7 +22,8 @@ export function Suggestions({
 					suggestion.kind === "municipality"
 						? t("search.suggestionMunicipality")
 						: t("search.suggestionCategory")
-				const key = suggestion.kind === "municipality" ? `m${suggestion.id}` : `c${suggestion.slug}`
+				const key =
+					suggestion.kind === "municipality" ? `m${suggestion.number}` : `c${suggestion.slug}`
 				return (
 					<li key={key}>
 						<button

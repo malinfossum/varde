@@ -1,9 +1,8 @@
 import type { MunicipalityDto, PagedResult, ResourceDto } from "../types/api.ts"
-import type { Feature, Filters as FilterState, NationalMode } from "./filters.ts"
-import type { Filters } from "./urlState.ts"
+import type { Feature, Filters, NationalMode } from "./filters.ts"
 
-// Mirrors api/Varde.Data/Repositories/ResourceRepository.cs SearchAsync exactly, so moving
-// search into the browser changes no result. Keep the two in step.
+// Search and filtering run in the browser only. The C# ResourceRepository.SearchAsync is frozen
+// as it is and gets none of these filters (filter spec, decision 7).
 export const PAGE_SIZE = 20
 
 const collator = new Intl.Collator("nb")
@@ -26,33 +25,10 @@ export function compareResources(a: ResourceDto, b: ResourceDto): number {
 	return collator.compare(a.name, b.name) || a.id - b.id
 }
 
-export function applyQuery(resources: ResourceDto[], filters: Filters): PagedResult<ResourceDto> {
-	let rows = resources
-	if (filters.national) rows = rows.filter((r) => r.isNational)
-	else if (filters.municipality !== null) {
-		// Located there, national, or covering it — a shared krisesenter must appear in every
-		// kommune it serves, not only the one holding its address (ResourceRepository.cs).
-		const id = filters.municipality
-		rows = rows.filter((r) => r.isNational || matchesMunicipality(r, id))
-	}
-	if (filters.categories.length > 0) {
-		rows = rows.filter((r) => r.categories.some((c) => filters.categories.includes(c.slug)))
-	}
-	if (filters.search.trim()) rows = rows.filter((r) => matchesSearch(r, filters.search))
-	const sorted = [...rows].sort(compareResources)
-	const start = (filters.page - 1) * PAGE_SIZE
-	return {
-		items: sorted.slice(start, start + PAGE_SIZE),
-		page: filters.page,
-		pageSize: PAGE_SIZE,
-		totalCount: sorted.length,
-	}
-}
-
 // The database ids a Sted pick covers: every picked kommune plus every kommune in a picked fylke.
 // null means no pick, so every row passes Sted.
 export function pickedIds(
-	filters: FilterState,
+	filters: Filters,
 	municipalities: readonly MunicipalityDto[]
 ): ReadonlySet<number> | null {
 	if (filters.counties.length === 0 && filters.municipalities.length === 0) return null
@@ -94,7 +70,7 @@ export function hasFeature(r: ResourceDto, feature: Feature): boolean {
 // cost drops out once any Pris box is ticked.
 export function matchesFilters(
 	r: ResourceDto,
-	filters: FilterState,
+	filters: Filters,
 	ids: ReadonlySet<number> | null
 ): boolean {
 	return (
@@ -109,7 +85,7 @@ export function matchesFilters(
 
 export function applyFilters(
 	resources: readonly ResourceDto[],
-	filters: FilterState,
+	filters: Filters,
 	municipalities: readonly MunicipalityDto[]
 ): PagedResult<ResourceDto> {
 	const ids = pickedIds(filters, municipalities)

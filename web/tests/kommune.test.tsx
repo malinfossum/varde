@@ -74,7 +74,7 @@ test("renders own and served resources, then national ones, with one h1", async 
 	expect(within(national).getAllByRole("heading", { level: 3 })).toHaveLength(1)
 	expect(screen.getByRole("link", { name: "Søk og filtrer i Hamar" })).toHaveAttribute(
 		"href",
-		"/sok?municipality=1"
+		"/sok?municipality=3403"
 	)
 	expect(container.querySelectorAll("h1")).toHaveLength(1)
 	// PageHead sets the title in a passive effect, which can flush after the heading is

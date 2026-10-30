@@ -5,16 +5,10 @@ import {
 	type NavigateOptions,
 	useCurrentUrl,
 } from "../navigation.ts"
+import { type Filters, parseFilters } from "../services/filters.ts"
 import { createHistoryCounter } from "../services/historyCounter.ts"
 import { mergeEntry, readEntry } from "../services/historyEntry.ts"
-import {
-	type Filters,
-	type Lang,
-	parseFilters,
-	parseUrl,
-	pathFor,
-	type Route,
-} from "../services/urlState.ts"
+import { type Lang, parseUrl, pathFor, type Route } from "../services/urlState.ts"
 
 type UrlState = {
 	lang: Lang

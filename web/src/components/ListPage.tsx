@@ -4,8 +4,15 @@ import { useCatalog } from "../hooks/useCatalog.ts"
 import { useResources } from "../hooks/useResources.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { useNavigate } from "../navigation.ts"
+import {
+	applyPatch,
+	buildSearch,
+	CLEAR_ALL,
+	type Filters,
+	resolveFilters,
+	suggestionPatch,
+} from "../services/filters.ts"
 import { type Suggestion, suggest } from "../services/match.ts"
-import { applyPatch, buildSearch, type Filters } from "../services/urlState.ts"
 import { EmptyState } from "./EmptyState.tsx"
 import { ErrorState } from "./ErrorState.tsx"
 import { FilterBar } from "./FilterBar.tsx"
@@ -32,6 +39,12 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	const { state: catalogState, retry: retryCatalog } = useCatalog(lang)
 	const catalog = catalogState.kind === "ready" ? catalogState.catalog : null
 	const { state, retry } = useResources(filters, lang)
+	// Old ids and places without data resolve against the catalog; until it loads, the parsed
+	// filters stand (filter spec, Old links).
+	const resolved = useMemo(
+		() => (catalog ? resolveFilters(filters, catalog.municipalities, catalog.counties) : filters),
+		[catalog, filters]
+	)
 
 	const retryFailed = () => {
 		retryCatalog()
@@ -39,7 +52,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	}
 
 	const apply = (patch: Partial<Filters>) =>
-		navigate("/sok", buildSearch(applyPatch(filters, patch)))
+		navigate("/sok", buildSearch(applyPatch(resolved, patch)))
 
 	// The pager sits under the whole list. After "Neste" the new cards render above the
 	// viewport and focus stays on the button — the user sees nothing change. Only the pager
@@ -67,7 +80,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	// would flood back/forward with useless states. Replace the current entry instead — every
 	// other filter change (picker, suggestions, pager, clear, toggle) still pushes normally.
 	const applySearch = (patch: Partial<Filters>) =>
-		navigate("/sok", buildSearch(applyPatch(filters, patch)), { replace: true })
+		navigate("/sok", buildSearch(applyPatch(resolved, patch)), { replace: true })
 
 	// suggest() re-scans the whole catalog on every call — memoize so it only re-runs when the
 	// search text or the catalog itself actually changes, not on every ListPage render.
@@ -76,10 +89,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 		[catalog, filters.search]
 	)
 
-	const onPick = (suggestion: Suggestion) =>
-		suggestion.kind === "municipality"
-			? apply({ municipality: suggestion.id })
-			: apply({ categories: [suggestion.slug] })
+	const onPick = (suggestion: Suggestion) => apply(suggestionPatch(resolved, suggestion))
 
 	// A failure is a settled state too: without its own announcement the live region keeps
 	// saying "Laster …" while the visible page shows the error. Loading only reaches here for a
@@ -97,28 +107,16 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	// stays "ready" across a synchronous filter change) so the count still gets announced once
 	// typing settles.
 	const totalCount = state.kind === "ready" ? state.data.totalCount : null
-	const categoriesKey = filters.categories.join(",")
-	// biome-ignore lint/correctness/useExhaustiveDependencies: categoriesKey stands in for filters.categories, a fresh array reference on every parse
+	// Every filter key, the new ones included, in one string (the URL without its page).
+	const filterKey = buildSearch({ ...resolved, page: 1 })
+	// biome-ignore lint/correctness/useExhaustiveDependencies: filterKey stands in for every filter value
 	useEffect(() => {
 		if (totalCount === null) return
 		const names = suggestions.map((s) => s.name).join(", ")
 		const message = `${totalCount} ${t("status.results")}${names ? `. ${t("search.suggestions")}: ${names}` : ""}`
 		const timer = setTimeout(() => announce(message), 300)
 		return () => clearTimeout(timer)
-	}, [
-		totalCount,
-		filters.search,
-		categoriesKey,
-		filters.municipality,
-		filters.national,
-		filters.page,
-		suggestions,
-	])
-
-	// Unknown municipality id in a hand-edited URL: no phantom selection (spec).
-	const knownMunicipality =
-		filters.municipality !== null &&
-		catalog?.municipalities.some((m) => m.id === filters.municipality)
+	}, [totalCount, filterKey, filters.page, suggestions])
 
 	return (
 		<div className="grid gap-6 lg:grid-cols-[280px_1fr]">
@@ -149,7 +147,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 			>
 				<FilterBar
 					catalog={catalog}
-					filters={{ ...filters, municipality: knownMunicipality ? filters.municipality : null }}
+					filters={resolved}
 					onPatch={apply}
 					onSearch={(value) => applySearch({ search: value })}
 				/>
@@ -171,9 +169,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 				    blank list. */}
 				{state.kind === "ready" && state.data.items.length === 0 && (
 					<EmptyState
-						onClearFilters={() =>
-							apply({ search: "", categories: [], municipality: null, national: false })
-						}
+						onClearFilters={() => apply(CLEAR_ALL)}
 						suggestions={suggestions}
 						onPick={onPick}
 						headingRef={resultsHeading}

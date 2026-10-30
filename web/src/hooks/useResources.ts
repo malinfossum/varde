@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
 import type { Lang } from "../i18n/LanguageProvider.tsx"
-import { clearIndexCache, loadIndex, peekIndex } from "../services/data.ts"
-import { applyQuery } from "../services/query.ts"
-import type { Filters } from "../services/urlState.ts"
+import { clearIndexCache, type Index, loadIndex, peekIndex } from "../services/data.ts"
+import { type Filters, resolveFilters } from "../services/filters.ts"
+import { applyFilters } from "../services/query.ts"
+import { loadRows } from "../services/rows.ts"
 import type { PagedResult, ResourceDto } from "../types/api.ts"
 
 export type ResourcesState =
@@ -10,13 +11,20 @@ export type ResourcesState =
 	| { kind: "error" }
 	| { kind: "ready"; data: PagedResult<ResourceDto> }
 
+// An old link's places resolve against the index before matching, so ?municipality=1 still
+// finds Hamar on the very first render.
+function compute(index: Index, filters: Filters): PagedResult<ResourceDto> {
+	const resolved = resolveFilters(filters, index.municipalities, index.counties)
+	return applyFilters(loadRows(index, resolved), resolved, index.municipalities)
+}
+
 // When the index is already settled, filtering is pure computation over data already in
 // memory — this is what lets a filter change (e.g. every keystroke in the search box) apply
 // synchronously below, instead of round-tripping through a "loading" state for a fetch that
 // never actually happens.
 function readyFromCache(lang: Lang, filters: Filters): ResourcesState | null {
 	const index = peekIndex(lang)
-	return index ? { kind: "ready", data: applyQuery(index.resources, filters) } : null
+	return index ? { kind: "ready", data: compute(index, filters) } : null
 }
 
 export function useResources(filters: Filters, lang: Lang) {
@@ -36,7 +44,7 @@ export function useResources(filters: Filters, lang: Lang) {
 		setState({ kind: "loading" })
 		loadIndex(lang).then(
 			(index) => {
-				if (!cancelled) setState({ kind: "ready", data: applyQuery(index.resources, filters) })
+				if (!cancelled) setState({ kind: "ready", data: compute(index, filters) })
 			},
 			() => {
 				if (!cancelled) setState({ kind: "error" })

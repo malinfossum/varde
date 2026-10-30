@@ -23,7 +23,8 @@ import { useThemeChoice } from "./hooks/useThemeChoice.ts"
 import { useUrlState } from "./hooks/useUrlState.ts"
 import { LanguageProvider, useLanguage, useTranslation } from "./i18n/LanguageProvider.tsx"
 import { ArrivalContext, HistoryEventsContext, NavigationContext } from "./navigation.ts"
-import type { Filters, Route } from "./services/urlState.ts"
+import type { Filters } from "./services/filters.ts"
+import type { Route } from "./services/urlState.ts"
 
 // ListPage and ResourceDetail pull in react-aria-components (the municipality combobox)
 // and the card/detail layout, none of which the landing page needs to paint its first frame.

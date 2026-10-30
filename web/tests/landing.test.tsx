@@ -5,6 +5,7 @@ import { App } from "../src/App.tsx"
 import nbStrings from "../src/i18n/nb.json"
 import { PageDataContext } from "../src/pageData.ts"
 import { CATEGORY_SLUGS, FEATURED_SLUGS, GRID_SLUGS } from "../src/services/categories.ts"
+import { categorySearch } from "../src/services/filters.ts"
 import { bakedHelplines, stubDataFiles } from "./stubData.ts"
 
 const nb = nbStrings as Record<string, string>
@@ -71,7 +72,7 @@ test("a suggestion goes straight to scoped results", async () => {
 	await user.type(screen.getByRole("searchbox", { name: /Søk/ }), "ham")
 	await user.click(await screen.findByRole("button", { name: /Hamar/ }))
 	expect(window.location.pathname).toBe("/sok")
-	expect(window.location.search).toContain("municipality=1")
+	expect(window.location.search).toContain("municipality=3403")
 })
 
 test("a failed catalog still lets Enter navigate", async () => {
@@ -96,7 +97,7 @@ test("ten category chips link to scoped results, each with its real label, and t
 	const main = screen.getByRole("main")
 	const chips = within(main)
 		.getAllByRole("link")
-		.filter((a) => a.getAttribute("href")?.startsWith("/sok?category="))
+		.filter((a) => a.getAttribute("href")?.startsWith("/sok?"))
 	expect(chips).toHaveLength(10)
 	expect(screen.getAllByRole("link", { name: /116 117/ }).length).toBeGreaterThanOrEqual(2) // strip + emergency section
 })
@@ -109,7 +110,7 @@ test("Nødtjenester and Lavterskeltilbud lead as a list of two; the other eight 
 	const byHref = (slug: string) =>
 		within(main)
 			.getAllByRole("link")
-			.find((a) => a.getAttribute("href") === `/sok?category=${slug}`) as HTMLElement
+			.find((a) => a.getAttribute("href") === `/sok${categorySearch(slug)}`) as HTMLElement
 	const acute = byHref("nodtjenester")
 	const featured = byHref("lavterskeltilbud")
 	expect(acute).toHaveClass("chip", "chip-acute")
@@ -124,7 +125,7 @@ test("Nødtjenester and Lavterskeltilbud lead as a list of two; the other eight 
 		within(row)
 			.getAllByRole("link")
 			.map((a) => a.getAttribute("href"))
-	).toEqual(FEATURED_SLUGS.map((s) => `/sok?category=${s}`))
+	).toEqual(FEATURED_SLUGS.map((s) => `/sok${categorySearch(s)}`))
 	const grid = byHref("bolig").closest("ul") as HTMLElement
 	expect(grid).not.toBe(row)
 	expect(

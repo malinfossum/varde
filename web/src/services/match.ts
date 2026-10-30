@@ -18,7 +18,7 @@ export function matchesEitherWay(a: string, b: string): boolean {
 }
 
 export type Suggestion =
-	| { kind: "municipality"; id: number; name: string }
+	| { kind: "municipality"; number: string; name: string }
 	| { kind: "category"; slug: string; name: string }
 
 export function suggest(query: string, catalog: Catalog): Suggestion[] {
@@ -27,7 +27,7 @@ export function suggest(query: string, catalog: Catalog): Suggestion[] {
 	const municipalities: Suggestion[] = catalog.municipalities
 		.filter((m) => matchesEitherWay(trimmed, m.name))
 		.slice(0, 3)
-		.map((m) => ({ kind: "municipality", id: m.id, name: m.name }))
+		.map((m) => ({ kind: "municipality", number: m.number, name: m.name }))
 	const categories: Suggestion[] = catalog.categories
 		.filter((c) => matchesEitherWay(trimmed, c.name) || matchesEitherWay(trimmed, c.slug))
 		.slice(0, 3)

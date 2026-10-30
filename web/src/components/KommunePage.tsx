@@ -21,7 +21,7 @@ type State =
 
 // Own resources and served resources both belong in "local" — a shared krisesenter must appear
 // in every kommune it serves, not only the one holding its address (mirrors query.ts's
-// applyQuery, which does the same for the ?municipality= filter).
+// applyFilters, which does the same for the ?municipality= filter).
 export function splitForKommune(entry: KommuneEntry, resources: ResourceDto[]): Data {
 	const local = resources
 		.filter((r) => !r.isNational && matchesMunicipality(r, entry.id))
@@ -109,7 +109,7 @@ export function KommunePage({ slug, arrival }: { slug: string; arrival: number }
 				</ul>
 			</section>
 			<p>
-				<Link to={`/sok?municipality=${entry.id}`} className="btn-secondary">
+				<Link to={`/sok?municipality=${entry.number}`} className="btn-secondary">
 					{fill(t("kommune.refine"), values)}
 				</Link>
 			</p>

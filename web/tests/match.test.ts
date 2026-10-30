@@ -30,7 +30,9 @@ test("containment matches both directions", () => {
 
 test("suggest finds kommuner and categories, ignores short queries", () => {
 	expect(suggest("h", catalog)).toEqual([])
-	expect(suggest("loten", catalog)).toEqual([{ kind: "municipality", id: 6, name: "Løten" }])
+	expect(suggest("loten", catalog)).toEqual([
+		{ kind: "municipality", number: "3412", name: "Løten" },
+	])
 	expect(suggest("rusbehandling", catalog)).toEqual([
 		{ kind: "category", slug: "rus", name: "Rus" },
 	])

@@ -129,7 +129,7 @@ for (const path of ["/", "/en/"]) {
 
 test("the Lavterskeltilbud chip leads to a non-empty result list", async ({ page }) => {
 	await page.goto("/")
-	await page.locator('main a[href="/sok?category=lavterskeltilbud"]').click()
-	await expect(page).toHaveURL(/category=lavterskeltilbud/)
+	await page.locator('main a[href="/sok?feature=lavterskel"]').click()
+	await expect(page).toHaveURL(/feature=lavterskel/)
 	await expect(page.locator('main a[href^="/resources/"]').first()).toBeVisible()
 })

@@ -2,11 +2,15 @@ import { useEffect, useMemo, useState } from "react"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { useNavigate } from "../navigation.ts"
 import { type Catalog, catalogOf, loadIndex, prefetchIndex } from "../services/data.ts"
+import {
+	applyPatch,
+	buildSearch,
+	EMPTY_FILTERS,
+	type Filters,
+	suggestionPatch,
+} from "../services/filters.ts"
 import { type Suggestion, suggest } from "../services/match.ts"
-import { buildSearch, type Filters } from "../services/urlState.ts"
 import { Suggestions } from "./Suggestions.tsx"
-
-const empty: Filters = { search: "", categories: [], municipality: null, national: false, page: 1 }
 
 export function LandingSearch() {
 	const { lang } = useLanguage()
@@ -38,14 +42,15 @@ export function LandingSearch() {
 		[catalog, value]
 	)
 
-	const go = (patch: Partial<Filters>) => navigate("/sok", buildSearch({ ...empty, ...patch }))
+	const go = (patch: Partial<Filters>) =>
+		navigate("/sok", buildSearch(applyPatch(EMPTY_FILTERS, patch)))
 	// A municipality with its own kommune page is a better landing than the filtered list —
 	// falls back to /sok?municipality= for the ones plan 5's regional data hasn't reached yet.
 	const onPick = (s: Suggestion) => {
-		if (s.kind !== "municipality") return go({ categories: [s.slug] })
-		const kommune = catalog?.kommuner.find((k) => k.id === s.id)
+		if (s.kind !== "municipality") return go(suggestionPatch(EMPTY_FILTERS, s))
+		const kommune = catalog?.kommuner.find((k) => k.number === s.number)
 		if (kommune) navigate(`/kommune/${kommune.slug}`, "")
-		else go({ municipality: s.id })
+		else go(suggestionPatch(EMPTY_FILTERS, s))
 	}
 
 	return (
