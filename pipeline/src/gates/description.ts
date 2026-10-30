@@ -1,6 +1,7 @@
 import type { DescriptionDraft } from "../schema/model.ts"
 import { normaliseText, normaliseUrl, quoteHasPhone } from "../text/normalise.ts"
 import { words } from "./phrases.ts"
+import { fitsNumberPlan } from "./validity.ts"
 
 // The description gate: every number, link, email and mid-sentence name in an AI draft must
 // match a value in the lock file. Words that open a sentence are not checked for names,
@@ -63,7 +64,9 @@ export function numberInText(token: string, text: string): boolean {
 			if (want.every((g, j) => have[i + j] === g)) return true
 		}
 	}
-	return quoteHasPhone(text, token)
+	// Only a token in the Nkom plan may match a phone in another grouping. Without this, a glued
+	// part of a phone ("6200" from "62 00 00 00") would pass as the whole number.
+	return fitsNumberPlan(token) && quoteHasPhone(text, token)
 }
 
 export function checkDraft(draft: string, values: readonly string[]): string[] {

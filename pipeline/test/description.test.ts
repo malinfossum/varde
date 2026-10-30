@@ -23,6 +23,10 @@ describe("numberInText", () => {
 		expect(numberInText("9", "hverdager 09.00-15.30")).toBe(false)
 		expect(numberInText("62000000", "62 00 00 00")).toBe(true)
 	})
+
+	it("rejects a glued partial of a phone number", () => {
+		expect(numberInText("6200", "62 00 00 00")).toBe(false)
+	})
 })
 
 describe("description gate", () => {
@@ -56,5 +60,10 @@ describe("description gate", () => {
 
 	it("lets weekday and month names through", () => {
 		expect(checkDraft("Open Monday to Friday, closed in July.", VALUES)).toEqual([])
+	})
+
+	it("rejects a number glued from part of a phone number", () => {
+		expect(checkDraft("Det koster 6200 kr.", VALUES)).toEqual(["6200"])
+		expect(checkDraft("Kode 0000 brukes.", VALUES)).toEqual(["0000"])
 	})
 })
