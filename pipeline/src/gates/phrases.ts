@@ -453,10 +453,11 @@ function closingForAlle(ws: readonly string[], i: number): boolean {
 	return ws[i] === "for" && ws[i + 1] === "alle" && i + 2 === ws.length
 }
 
-// The only characters a plain sentence may hold: letters, digits, spaces and . , ! ? : ; / ( )
-// and hyphens. Any other mark, an asterisk or a dagger in any of its forms included, points
-// to a footnote or some other qualifier ("Gratis*", "Døgnåpent \u2020").
-const PLAIN_CHARS = /^[\p{L}\p{N}\s.,!?:;/()-]*$/u
+// The only characters a plain sentence may hold: letters, ASCII digits, spaces and . , ! ? :
+// ; / ( ) and hyphens. Any other mark points to a footnote or some other qualifier: an
+// asterisk or a dagger in any of its forms ("Gratis*", "Døgnåpent \u2020"), and a superscript,
+// circled, fraction or full-width number glued to a word.
+const PLAIN_CHARS = /^[\p{L}0-9\s.,!?:;/()-]*$/u
 
 // A question ("Er tilbudet gratis?") is never a plain claim, and nor is a sentence with any
 // character outside PLAIN_CHARS.

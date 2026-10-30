@@ -503,3 +503,24 @@ describe("final fixes 3 H3: a claim or a neighbour holds only plain characters",
 		}
 	})
 })
+
+describe("final fixes 3 I1: only ASCII digits are plain", () => {
+	it("never gives yes when a footnote number is glued to a Lavterskel word", () => {
+		// A superscript one or two, a circled two and a vulgar half, each glued to the word.
+		const single = ["Drop-in uten henvisning\u00B9."]
+		expect(readReferral(single)).toBe("unclear")
+		expect(lavterskel(single, "free").outcome).toBe("review")
+		for (const claim of [
+			"Uten henvisning\u00B2",
+			"Drop-in\u00B9",
+			"Lavterskel\u00B9",
+			"Lavterskeltilbud\u2461",
+			"Henvisningsfritt\u00BD",
+			"Uten vedtak\u00B9",
+		]) {
+			const quotes = [claim, "Gratis."]
+			expect(readReferral(quotes), claim).toBe("unclear")
+			expect(lavterskel(quotes, undefined).outcome, claim).toBe("review")
+		}
+	})
+})
