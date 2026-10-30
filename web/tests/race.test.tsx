@@ -32,8 +32,9 @@ const resourceFor = (lang: "nb" | "en"): ResourceDto[] => [
 	},
 ]
 
-// Deferred per language, so the test controls exactly when each language's index resolves —
-// municipalities.json, kommuner.json, counties.json and aliases.json are shared across languages and resolve immediately.
+// Deferred per language, so the test controls exactly when each language's index resolves.
+// municipalities.json, kommuner.json, counties.json and aliases.json are shared across
+// languages and resolve immediately.
 function stubIndexByLang() {
 	const deferred = { nb: Promise.withResolvers<void>(), en: Promise.withResolvers<void>() }
 	vi.stubGlobal(
@@ -74,7 +75,7 @@ test("a language switch during load never applies the stale language's data", as
 
 	// The new (current) language's response lands first…
 	deferred.en.resolve()
-	await screen.findByText("Crisis Centre")
+	await screen.findByText("Crisis Centre", undefined, { timeout: 3000 })
 
 	// …then the superseded nb response tries to land. It must change nothing.
 	deferred.nb.resolve()

@@ -45,7 +45,10 @@ describe("the committed place files", () => {
 		const seeded = [...seed.matchAll(/new Municipality \{ Id = (\w+), Name = "([^"]+)"/g)].map(
 			(m) => `${consts.get(m[1]) ?? Number(m[1])} ${m[2]}`
 		)
-		expect(seeded.length).toBeGreaterThan(0)
+		// Count every seeded kommune from the file text, so a regex that misses one row fails here.
+		const declared = seed.match(/new Municipality \{/g)?.length ?? 0
+		expect(declared).toBeGreaterThan(0)
+		expect(seeded.length).toBe(declared)
 		const placeKeys = readPlaceFiles(dataDir).places.map((p) => `${p.id} ${p.name}`)
 		for (const kommune of seeded) expect(placeKeys).toContain(kommune)
 	})

@@ -58,7 +58,8 @@ test("focusing the search box prefetches the catalog; Enter submits the text to 
 	expect(fetchSpy).not.toHaveBeenCalled()
 	await user.click(box)
 	// loadIndex fetches all six data files together (resources, municipalities, categories,
-	// kommuner, counties, aliases) — the prefetch is all-or-nothing, unlike the old two-endpoint catalog call.
+	// kommuner, counties, aliases). The prefetch is all-or-nothing, unlike the old two-endpoint
+	// catalog call.
 	await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(6))
 	await user.type(box, "rus{Enter}")
 	expect(window.location.pathname).toBe("/sok")
