@@ -1,5 +1,5 @@
 import type { DescriptionDraft } from "../schema/model.ts"
-import { normaliseText, normaliseUrl, quoteHasPhone } from "../text/normalise.ts"
+import { normaliseText, normaliseUrl, quoteHasPhone, quoteHasText } from "../text/normalise.ts"
 import { words } from "./phrases.ts"
 import { fitsNumberPlan } from "./validity.ts"
 
@@ -71,7 +71,6 @@ export function numberInText(token: string, text: string): boolean {
 
 export function checkDraft(draft: string, values: readonly string[]): string[] {
 	const unmatched: string[] = []
-	const haystack = values.map(normaliseText)
 
 	for (const token of draft.match(LINK_OR_EMAIL) ?? []) {
 		const clean = token.replace(/[.,;:]+$/, "")
@@ -97,7 +96,8 @@ export function checkDraft(draft: string, values: readonly string[]): string[] {
 			if (!/^\p{Lu}/u.test(w)) continue
 			const lower = w.toLocaleLowerCase("nb")
 			if (CALENDAR_WORDS.has(lower) || ALWAYS_ALLOWED.has(lower)) continue
-			if (haystack.some((v) => v.includes(normaliseText(w)))) continue
+			// A whole word, so "Ham" is not found inside "Hamar".
+			if (values.some((v) => quoteHasText(v, w))) continue
 			unmatched.push(w)
 		}
 	}

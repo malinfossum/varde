@@ -58,6 +58,12 @@ describe("description gate", () => {
 		expect(checkDraft("Skriv til postmottak@hamar.kommune.no.", VALUES)).toEqual([])
 	})
 
+	it("rejects a name that only matches the start of a longer word", () => {
+		expect(checkDraft("Tilbudet ligger i Ham sentrum.", VALUES)).toEqual(["Ham"])
+		expect(checkDraft("Kom til Stor og ring oss.", VALUES)).toEqual(["Stor"])
+		expect(checkDraft("Kom til Storgata i Hamar.", VALUES)).toEqual([])
+	})
+
 	it("lets weekday and month names through", () => {
 		expect(checkDraft("Open Monday to Friday, closed in July.", VALUES)).toEqual([])
 	})
