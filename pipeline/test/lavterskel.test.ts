@@ -227,3 +227,38 @@ describe("final fixes 2 R4: a closure in any sentence of any quote", () => {
 		expect(readReferral(["Krever henvisning.", "Tilbudet er avviklet."])).toBe("unclear")
 	})
 })
+
+describe("final fixes 2 concern 1: a negator or a limit anywhere in a lavterskel or drop-in sentence", () => {
+	it("never gives yes when the marker sentence holds a stray negator or a limiting word", () => {
+		for (const quotes of [
+			["Drop-in er ikke mulig.", "Gratis."],
+			["Drop-in kun for innbyggere.", "Gratis."],
+			["Lavterskeltilbud, men ikke for alle.", "Gratis."],
+			["Drop-in er dessverre ikke mulig.", "Gratis."],
+			["Lavterskeltilbud bare for innbyggere.", "Gratis."],
+			["Drop-in, unntatt i ferier.", "Gratis."],
+		]) {
+			expect(readReferral(quotes), quotes[0]).toBe("unclear")
+			expect(lavterskel(quotes, undefined).outcome, quotes[0]).toBe("review")
+		}
+	})
+
+	it("takes the negator as a no-referral phrase only right before the referral word", () => {
+		const quotes = ["Drop-in ikke mulig, henvisning kreves.", "Gratis."]
+		expect(readReferral(quotes)).toBe("unclear")
+		expect(lavterskel(quotes, undefined).outcome).toBe("review")
+		// A no-referral marker never takes the exception.
+		expect(readReferral(["Selvhenvisning, ikke henvisning."])).toBe("unclear")
+	})
+
+	it("still counts the one negator of a no-referral phrase beside the marker", () => {
+		expect(readReferral(["Drop-in, uten henvisning."])).toBe("noneNeeded")
+		expect(readReferral(["Lavterskeltilbud, ingen henvisning."])).toBe("noneNeeded")
+		expect(lavterskel(["Drop-in, uten henvisning."], "free").outcome).toBe("yes")
+	})
+
+	it("still gives yes to a plain marker sentence", () => {
+		expect(lavterskel(["Drop-in hver tirsdag.", "Gratis."], undefined).outcome).toBe("yes")
+		expect(readReferral(["Et lavterskeltilbud for voksne."])).toBe("noneNeeded")
+	})
+})

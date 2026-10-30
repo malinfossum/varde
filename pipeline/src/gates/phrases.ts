@@ -293,13 +293,34 @@ function markerIndexes(ws: readonly string[]): number[] {
 	return found
 }
 
-// A no-referral marker reads noneNeeded only in a plain sentence. A negator anywhere in it
-// ("Selvhenvisning er ikke mulig", "ikke for alle") or a limiting word makes it unclear.
-function markerReading(ws: readonly string[], i: number): "noneNeeded" | "unclear" {
-	if (noReferralMarker(ws, i)) {
-		return ws.some((w) => NEGATORS.has(w)) || limiting(ws) ? "unclear" : "noneNeeded"
+// A marker reads noneNeeded only in a plain sentence. A limiting word ("Drop-in kun for
+// innbyggere") or a negator anywhere in it ("Drop-in er ikke mulig", "ikke for alle") makes it
+// unclear. One exception for a lavterskel or drop-in marker: the single negator right before
+// the sentence's one referral word ("Drop-in, uten henvisning") is that no-referral phrase,
+// not a stray negator. A no-referral marker gets no such exception.
+function markerReading(
+	ws: readonly string[],
+	i: number,
+	negatorIsNoReferral: boolean
+): "noneNeeded" | "unclear" {
+	if (limiting(ws)) return "unclear"
+	if (!ws.some((w) => NEGATORS.has(w))) return "noneNeeded"
+	return !noReferralMarker(ws, i) && negatorIsNoReferral ? "noneNeeded" : "unclear"
+}
+
+// A sentence's referral words, read on their own: needed with no negator, noneNeeded when one
+// negator stands up to three words before the one referral word, otherwise unclear.
+function referralWordReading(
+	ws: readonly string[],
+	referralAt: readonly number[]
+): Exclude<ReferralReading, "silent"> | undefined {
+	if (referralAt.length === 0) return undefined
+	const negators = ws.filter((w) => NEGATORS.has(w)).length
+	if (negators === 0) return "needed"
+	if (negators === 1 && referralAt.length === 1 && negatedWithin(ws, referralAt[0] ?? 0)) {
+		return "noneNeeded"
 	}
-	return negatedWithin(ws, i) ? "unclear" : "noneNeeded"
+	return "unclear"
 }
 
 // A sentence that says the service has closed or ended: "Drop-in-tilbudet er avviklet".
@@ -322,10 +343,10 @@ export function closedIn(quotes: readonly string[]): boolean {
 }
 
 // Per sentence:
-// - A lavterskel or drop-in word means none is needed, unless a negator stands up to three
-//   words before it ("ikke et lavterskeltilbud"), which makes the sentence unclear.
-// - A no-referral word means none is needed only when the sentence holds no negator and no
-//   limiting word at all.
+// - A lavterskel, drop-in or no-referral word means none is needed only when the sentence
+//   holds no limiting word and no negator ("ikke et lavterskeltilbud", "Drop-in er ikke
+//   mulig"). A lavterskel or drop-in word may stand beside one negated referral word
+//   ("Drop-in, uten henvisning").
 // - A lone referral word reads noneNeeded only when the sentence holds exactly one negator
 //   and it stands up to three words before that word. With no negator it reads needed.
 // - Two negators, a negator out of reach, or several referral words next to any negator
@@ -338,16 +359,16 @@ export function readReferral(quotes: readonly string[]): ReferralReading {
 		for (const sentence of sentences(quote)) {
 			const ws = words(sentence)
 			const markers = markerIndexes(ws)
-			for (const i of markers) readings.add(markerReading(ws, i))
 			const referralAt = ws.flatMap((w, i) =>
 				REFERRAL_WORD.test(w) && !NO_REFERRAL_WORD.test(w) && !markers.includes(i) ? [i] : []
 			)
-			if (referralAt.length === 0) continue
-			const negators = ws.filter((w) => NEGATORS.has(w)).length
-			if (negators === 0) readings.add("needed")
-			else if (negators === 1 && referralAt.length === 1 && negatedWithin(ws, referralAt[0] ?? 0)) {
-				readings.add("noneNeeded")
-			} else readings.add("unclear")
+			const referral = referralWordReading(ws, referralAt)
+			// Only a negator right before the referral word ("uten henvisning", "ikke vedtak") is
+			// the no-referral phrase: "Drop-in ikke mulig, henvisning kreves" is not.
+			const negatorIsNoReferral =
+				referral === "noneNeeded" && NEGATORS.has(ws[(referralAt[0] ?? 0) - 1] ?? "")
+			for (const i of markers) readings.add(markerReading(ws, i, negatorIsNoReferral))
+			if (referral !== undefined) readings.add(referral)
 		}
 	}
 	if (readings.size === 0) return "silent"
