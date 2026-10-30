@@ -167,3 +167,33 @@ describe("final fixes F2: henvisningsfri and selvhenvisning mean no referral", (
 		expect(readReferral(["Du kan ikke henvise deg selv."])).toBe("unclear")
 	})
 })
+
+describe("final fixes 2 N1: a negator or a limit after a no-referral marker", () => {
+	it("reads a no-referral marker with a negator anywhere in the sentence as unclear", () => {
+		for (const quote of [
+			"Selvhenvisning er ikke mulig.",
+			"Selvhenvisning er dessverre ikke mulig lenger.",
+			"Henvisningsfritt, men ikke for alle.",
+		]) {
+			expect(readReferral([quote]), quote).toBe("unclear")
+		}
+		expect(lavterskel(["Selvhenvisning er ikke mulig.", "Gratis."], undefined).outcome).toBe(
+			"review"
+		)
+	})
+
+	it("reads a no-referral marker with a limiting word as unclear", () => {
+		for (const quote of [
+			"Henvisningsfritt, men bare for voksne.",
+			"Du kan kun henvise deg selv til kurset.",
+			"Vedtaksfritt unntatt for langtidsopphold.",
+		]) {
+			expect(readReferral([quote]), quote).toBe("unclear")
+		}
+	})
+
+	it("still reads a plain no-referral marker as noneNeeded", () => {
+		expect(readReferral(["Tilbudet er gratis og henvisningsfritt."])).toBe("noneNeeded")
+		expect(readReferral(["Du kan henvise deg selv."])).toBe("noneNeeded")
+	})
+})

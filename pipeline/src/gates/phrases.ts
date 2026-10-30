@@ -16,6 +16,14 @@ export function words(sentence: string): string[] {
 	return sentence.split(/[^\p{L}\p{N}-]+/u).filter((w) => w.length > 0)
 }
 
+// Words that limit a claim to some people or some cases: "men", "kun", "bare", "unntatt" and
+// any word starting with "unntak". Shared by the referral, free and always-open readings.
+export function limiting(ws: readonly string[]): boolean {
+	return ws.some(
+		(w) => w === "men" || w === "kun" || w === "bare" || w === "unntatt" || w.startsWith("unntak")
+	)
+}
+
 // True when a negator stands within `span` words before position `index`.
 export function negatedWithin(ws: readonly string[], index: number, span = 3): boolean {
 	return ws.slice(Math.max(0, index - span), index).some((w) => NEGATORS.has(w))
@@ -175,6 +183,14 @@ const REFERRAL_WORD = /^(?:henvis|vedtak)/
 // vedtaksfrie, selvhenvisning. Checked before REFERRAL_WORD.
 const NO_REFERRAL_WORD = /^(?:henvisningsfri|vedtaksfri|selvhenvis)/
 
+// A no-referral word or "henvise deg selv" at position i.
+function noReferralMarker(ws: readonly string[], i: number): boolean {
+	const w = ws[i] ?? ""
+	return (
+		NO_REFERRAL_WORD.test(w) || (w === "henvise" && ws[i + 1] === "deg" && ws[i + 2] === "selv")
+	)
+}
+
 // "Lavterskel..." (any word starting so), drop-in, the no-referral words and "henvise deg
 // selv". The index of each one in the sentence.
 function markerIndexes(ws: readonly string[]): number[] {
@@ -184,13 +200,21 @@ function markerIndexes(ws: readonly string[]): number[] {
 			w.startsWith("lavterskel") ||
 			w.startsWith("drop-in") ||
 			(w === "drop" && ws[i + 1] === "in") ||
-			NO_REFERRAL_WORD.test(w) ||
-			(w === "henvise" && ws[i + 1] === "deg" && ws[i + 2] === "selv")
+			noReferralMarker(ws, i)
 		) {
 			found.push(i)
 		}
 	}
 	return found
+}
+
+// A no-referral marker reads noneNeeded only in a plain sentence. A negator anywhere in it
+// ("Selvhenvisning er ikke mulig", "ikke for alle") or a limiting word makes it unclear.
+function markerReading(ws: readonly string[], i: number): "noneNeeded" | "unclear" {
+	if (noReferralMarker(ws, i)) {
+		return ws.some((w) => NEGATORS.has(w)) || limiting(ws) ? "unclear" : "noneNeeded"
+	}
+	return negatedWithin(ws, i) ? "unclear" : "noneNeeded"
 }
 
 // A sentence that says the service has closed or ended: "Drop-in-tilbudet er avviklet".
@@ -207,8 +231,10 @@ function saysClosed(ws: readonly string[]): boolean {
 }
 
 // Per sentence:
-// - A lavterskel, drop-in or no-referral word means none is needed, unless a negator stands
-//   up to three words before it ("ikke et lavterskeltilbud"), which makes the sentence unclear.
+// - A lavterskel or drop-in word means none is needed, unless a negator stands up to three
+//   words before it ("ikke et lavterskeltilbud"), which makes the sentence unclear.
+// - A no-referral word means none is needed only when the sentence holds no negator and no
+//   limiting word at all.
 // - A lone referral word reads noneNeeded only when the sentence holds exactly one negator
 //   and it stands up to three words before that word. With no negator it reads needed.
 // - Two negators, a negator out of reach, or several referral words next to any negator
@@ -223,7 +249,8 @@ export function readReferral(quotes: readonly string[]): ReferralReading {
 			const none = saysClosed(ws) ? "unclear" : "noneNeeded"
 			const markers = markerIndexes(ws)
 			for (const i of markers) {
-				readings.add(negatedWithin(ws, i) ? "unclear" : none)
+				const reading = markerReading(ws, i)
+				readings.add(reading === "noneNeeded" ? none : reading)
 			}
 			const referralAt = ws.flatMap((w, i) =>
 				REFERRAL_WORD.test(w) && !NO_REFERRAL_WORD.test(w) && !markers.includes(i) ? [i] : []
