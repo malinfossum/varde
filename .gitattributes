@@ -3,6 +3,10 @@
 # out LF too (api/.gitattributes), for the same reason with dotnet format.
 * text=auto
 web/** text=auto eol=lf
+# pipeline/ and data/ check out LF too: Biome and the schema snapshot need it on Windows,
+# where core.autocrlf is true.
+pipeline/** text=auto eol=lf
+data/** text=auto eol=lf
 
 # The vendored fonts under web/public/fonts/ are the first binary files under web/. text=auto
 # is a heuristic that normally leaves woff2 alone, but a heuristic is the wrong guarantee for
