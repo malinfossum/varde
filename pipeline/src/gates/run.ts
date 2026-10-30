@@ -17,9 +17,24 @@ export const GATES: readonly Gate[] = [
 
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
-// A name token of two or more letters, as a whole word: not glued to a letter or digit.
+// Accents never decide a match: "Ánne-Marié" is "Anne-Marie". Text is compared in NFD, where
+// each accent is a combining mark after its letter.
+const stripMarks = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "")
+
+// The letters of a name part, each allowed any accents after it.
+function letters(token: string): string {
+	return [...stripMarks(token)].map((ch) => `${escapeRegExp(ch)}\\p{M}*`).join("")
+}
+
+// A genitive "s" after a name is still the name: "Karis kontor", "ANNEMARIES".
+const GENITIVE = "(?:'?s)?"
+
+// A name token of two or more letters, as a whole word: not glued to a letter, digit or mark.
 function tokenPattern(token: string, flags: string): RegExp {
-	return new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(token)}(?![\\p{L}\\p{N}])`, flags)
+	return new RegExp(
+		`(?<![\\p{L}\\p{N}\\p{M}])${letters(token)}${GENITIVE}(?![\\p{L}\\p{N}\\p{M}])`,
+		flags
+	)
 }
 
 // Name parts split on spaces and on every hyphen or dash, so "Anne-Marie" is two parts and a
@@ -34,32 +49,41 @@ function nameParts(personName: string): string[] {
 		.filter((t) => t.length > 0)
 }
 
-// A hyphen- or dash-joined word of the name also goes in with its parts glued together, so a
-// page that writes "Anne-Marie" as "ANNEMARIE" is caught too. These go first, before the parts.
+// Every run of two or more adjacent parts also goes in glued together, longest first, so a page
+// that writes "Anne-Marie-Louise" or "Anne Marie" as "ANNEMARIELOUISE", "MARIELOUISE" or
+// "AnneMarie" is caught too. Runs that take in the surname are the safe side.
 function joinedParts(personName: string): string[] {
-	return personName
-		.trim()
-		.split(/[\s\u00A0]+/u)
-		.map((word) => word.split(/[\u2010-\u2015-]+/u).filter((t) => t.length > 0))
-		.filter((parts) => parts.length > 1)
-		.map((parts) => parts.join(""))
+	const parts = nameParts(personName)
+	const runs: string[] = []
+	for (let length = parts.length; length >= 2; length--) {
+		for (let start = 0; start + length <= parts.length; start++) {
+			runs.push(parts.slice(start, start + length).join(""))
+		}
+	}
+	return runs
 }
 
 function nameTokens(personName: string): string[] {
 	return [...joinedParts(personName), ...nameParts(personName)].filter(
-		(t) => (t.match(/\p{L}/gu) ?? []).length >= 2
+		(t) => (stripMarks(t).match(/\p{L}/gu) ?? []).length >= 2
 	)
 }
 
-// The full name goes first, with any spacing, hyphen or case, so a whole name becomes one
-// marker. Then every name token goes on its own, so "Kari" or "Nordmann, Kari" cannot survive.
+// The full name goes first, with any spacing, hyphen, case or accent, so a whole name becomes
+// one marker. Then every name token goes on its own, so "Kari" or "Nordmann, Kari" cannot
+// survive. The quote is read in NFD so accents match, and goes back to NFC.
 export function redact(quotes: readonly string[], personName: string | undefined): string[] {
 	if (personName === undefined || personName.trim() === "") return [...quotes]
-	const parts = nameParts(personName).map(escapeRegExp)
-	const full = new RegExp(parts.join(NAME_SEPARATOR), "giu")
+	const parts = nameParts(personName).map(letters)
+	const full = new RegExp(`${parts.join(NAME_SEPARATOR)}${GENITIVE}`, "giu")
 	const tokens = nameTokens(personName).map((t) => tokenPattern(t, "giu"))
 	return quotes.map((q) =>
-		tokens.reduce((text, token) => text.replace(token, "[navn]"), q.replace(full, "[navn]"))
+		tokens
+			.reduce(
+				(text, token) => text.replace(token, "[navn]"),
+				q.normalize("NFD").replace(full, "[navn]")
+			)
+			.normalize("NFC")
 	)
 }
 
@@ -67,8 +91,8 @@ export function redact(quotes: readonly string[], personName: string | undefined
 // name split by a soft hyphen can survive. Such a field is dropped, never stored.
 function nameSurvives(texts: readonly string[], personName: string | undefined): boolean {
 	if (personName === undefined) return false
-	const tokens = nameTokens(personName).map((t) => tokenPattern(normaliseText(t), "u"))
-	return texts.some((text) => tokens.some((token) => token.test(normaliseText(text))))
+	const tokens = nameTokens(personName).map((t) => tokenPattern(normaliseText(t), "iu"))
+	return texts.some((text) => tokens.some((token) => token.test(stripMarks(normaliseText(text)))))
 }
 
 function stored(evidence: Evidence, personName: string | undefined): Evidence {

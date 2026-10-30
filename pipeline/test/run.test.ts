@@ -294,6 +294,80 @@ ${quote}`,
 	})
 })
 
+describe("final fixes 3 O6: every joined, genitive or accented spelling of the name", () => {
+	const named = (quote: string, personName: string) =>
+		runGates(
+			candidate({
+				value: "900 00 000",
+				evidence: { kind: "quote", quotes: [quote] },
+				role: "Avdelingsleder",
+				personName,
+			}),
+			context({
+				pageText: () => `${PAGE}
+${quote}`,
+			}),
+			T
+		)
+	// Redacted or dropped, never accepted with the name left in.
+	const neverKept = (quote: string, personName: string, left: RegExp) => {
+		const field = named(quote, personName)
+		expect(JSON.stringify(field), quote).not.toMatch(left)
+		expect(["accepted", "dropped"], quote).toContain(field.status)
+	}
+
+	it("joins every adjacent pair and the whole of a name with three or more parts", () => {
+		const name = "Anne-Marie-Louise Nordmann"
+		for (const joined of ["ANNEMARIE", "MARIELOUISE", "ANNEMARIELOUISE"]) {
+			expect(redact([`Kontakt ${joined} på 900 00 000`], name), joined).toEqual([
+				"Kontakt [navn] på 900 00 000",
+			])
+			neverKept(`Kontakt ${joined} på 900 00 000`, name, new RegExp(joined, "i"))
+		}
+	})
+
+	it("joins space-separated given names", () => {
+		expect(redact(["Kontakt AnneMarie på 900 00 000"], "Anne Marie Nordmann")).toEqual([
+			"Kontakt [navn] på 900 00 000",
+		])
+		neverKept("Kontakt AnneMarie på 900 00 000", "Anne Marie Nordmann", /annemarie/i)
+	})
+
+	it("redacts a name token with a trailing genitive s", () => {
+		expect(redact(["Ring ANNEMARIES kontor på 900 00 000"], "Anne-Marie Nordmann")).toEqual([
+			"Ring [navn] kontor på 900 00 000",
+		])
+		expect(redact(["Ring Karis kontor"], "Kari Nordmann")).toEqual(["Ring [navn] kontor"])
+		neverKept("Ring ANNEMARIES kontor på 900 00 000", "Anne-Marie Nordmann", /annemarie/i)
+	})
+
+	it("matches the name ignoring accents, both ways", () => {
+		expect(redact(["Kontakt \u00C1nne-Mari\u00E9 Nordmann"], "Anne-Marie Nordmann")).toEqual([
+			"Kontakt [navn]",
+		])
+		expect(redact(["Kontakt Anne-Marie Nordmann"], "\u00C1nne-Mari\u00E9 Nordmann")).toEqual([
+			"Kontakt [navn]",
+		])
+		// A decomposed accent (e and a combining acute) is the same letter.
+		expect(redact(["Ring Marie\u0301 n\u00E5"], "Anne-Marie Nordmann")).toEqual([
+			"Ring [navn] n\u00E5",
+		])
+		neverKept("Kontakt \u00C1nne på 900 00 000", "Anne-Marie Nordmann", /nne/i)
+	})
+
+	// Redact cannot see through the soft hyphen, so only nameSurvives can catch these.
+	it("drops the field when a soft hyphen hides an accented or genitive name", () => {
+		for (const quote of [
+			"Kontakt \u00C1n\u00ADne på 900 00 000",
+			"Ring AN\u00ADNES kontor på 900 00 000",
+		]) {
+			const field = named(quote, "Anne-Marie Nordmann")
+			expect(field.status, quote).toBe("dropped")
+			expect(field.reason, quote).toBe("person name left after redaction")
+		}
+	})
+})
+
 describe("redact", () => {
 	it("replaces every spelling of the name", () => {
 		expect(redact(["KARI NORDMANN og Kari\u00A0Nordmann"], "Kari Nordmann")).toEqual([
