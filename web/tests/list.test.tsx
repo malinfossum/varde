@@ -385,3 +385,57 @@ test("card badges are the items of a list, so a screen reader reads each one in 
 			.map((el) => el.textContent)
 	).toEqual(["Akutt", "Døgnåpent", "Lavterskel", "Koster penger"])
 })
+
+test("an old link is rewritten to its canonical URL once the catalog loads, keeping the entry's state", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	window.history.pushState(
+		{ idx: 4, scrollY: 120 },
+		"",
+		"/sok?category=lavterskeltilbud&municipality=1&national=yes"
+	)
+	const length = window.history.length
+	render(<App />)
+	await waitFor(() => expect(window.location.search).toBe("?municipality=3403&feature=lavterskel"))
+	expect(window.history.length).toBe(length)
+	expect(window.history.state).toMatchObject({ idx: 4, scrollY: 120 })
+	expect(screen.getByRole("combobox", { name: "Kommune" })).toHaveValue("Hamar")
+})
+
+test("search text the browser encoded differently is rewritten once, with no new entry", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	window.history.pushState({ idx: 0 }, "", "/sok?search=krise%20hamar")
+	const length = window.history.length
+	render(<App />)
+	await waitFor(() => expect(window.location.search).toBe("?search=krise+hamar"))
+	expect(window.history.length).toBe(length)
+})
+
+test("an English old link stays English after the rewrite", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	window.history.pushState({ idx: 0 }, "", "/en/sok?municipality=1")
+	render(<App />)
+	await waitFor(() =>
+		expect(window.location.pathname + window.location.search).toBe("/en/sok?municipality=3403")
+	)
+})
+
+test("a canonical URL is left alone", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	window.history.pushState({ idx: 0 }, "", "/sok?municipality=3403")
+	const replace = vi.spyOn(window.history, "replaceState")
+	render(<App />)
+	expect(await screen.findByText("Krisesenteret i Hamar")).toBeInTheDocument()
+	// The router's own state merges pass no URL; the rewrite passes one.
+	expect(replace.mock.calls.filter((call) => call.length > 2)).toEqual([])
+})
+
+test("with the catalog down, an old link stays exactly as typed", async () => {
+	vi.stubGlobal(
+		"fetch",
+		vi.fn(async () => new Response("down", { status: 503 }))
+	)
+	window.history.pushState({ idx: 0 }, "", "/sok?municipality=1")
+	render(<App />)
+	expect(await screen.findByRole("heading", { name: "Noe gikk galt" })).toBeInTheDocument()
+	expect(window.location.search).toBe("?municipality=1")
+})

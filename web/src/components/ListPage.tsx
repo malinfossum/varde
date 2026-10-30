@@ -46,6 +46,21 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 		[catalog, filters]
 	)
 
+	// A URL the catalog reads differently (an old id, a place without data, a stray value, other
+	// encoding) is rewritten to its one canonical form once the catalog has loaded (filter spec,
+	// Old links). Passing the entry's own state keeps its scroll key for Back. This skips
+	// navigate on purpose: navigate would re-read the URL and mark the change as a push, which
+	// can flip a Back restore half-way, and the resolved filters already are what the new URL
+	// says. With the catalog down nothing is rewritten, so a retry can still resolve it.
+	useEffect(() => {
+		if (!catalog) return
+		const canonical = buildSearch(resolved)
+		const { pathname, search, hash } = window.location
+		if (canonical !== search) {
+			window.history.replaceState(window.history.state, "", `${pathname}${canonical}${hash}`)
+		}
+	}, [catalog, resolved])
+
 	const retryFailed = () => {
 		retryCatalog()
 		if (state.kind === "error") retry()
