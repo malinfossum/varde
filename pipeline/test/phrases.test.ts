@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
 import {
 	classifyCost,
+	closedIn,
+	freeQualifiedIn,
 	readAlwaysOpen,
 	saysAlwaysOpen,
 	saysFee,
@@ -197,5 +199,33 @@ describe("final fixes 2 R3: a limited always-open claim is qualified", () => {
 		]) {
 			expect(readAlwaysOpen(text), text).toBe("yes")
 		}
+	})
+})
+
+describe("final fixes 3 A2: the denylist second net learns the probe words", () => {
+	it("O3: reads avsluttet, stengte and satt på pause as a closure", () => {
+		for (const quote of [
+			"Tilbudet er avsluttet.",
+			"Drop-in avsluttes i desember.",
+			"Kontoret stengte i fjor.",
+			"Tilbudet er satt på pause.",
+		]) {
+			expect(closedIn([quote]), quote).toBe(true)
+		}
+	})
+
+	it("O2: reads avgift, gebyr, vederlag and their compounds as a price", () => {
+		for (const quote of [
+			"Avgift",
+			"Gebyr",
+			"Vederlag",
+			"Kursavgift.",
+			"Egenbetaling.",
+			"Kontingent.",
+			"Kostnad etter avtale.",
+		]) {
+			expect(freeQualifiedIn([quote]), quote).toBe(true)
+		}
+		expect(freeQualifiedIn(["Kostnadsfritt."])).toBe(false)
 	})
 })

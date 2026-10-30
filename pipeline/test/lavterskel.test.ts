@@ -377,3 +377,41 @@ describe("final fixes 3 A1: Lavterskel reads yes only from plain claims and clea
 		}
 	})
 })
+
+describe("final fixes 3 A2: the reviewer probes O3 to O5 never give Lavterskel yes", () => {
+	it("O3: reads a closure in the next sentence or another quote as unclear", () => {
+		const quotes = ["Drop-in uten henvisning. Tilbudet er avsluttet."]
+		expect(readReferral(quotes)).toBe("unclear")
+		expect(lavterskel(quotes, "free").outcome).toBe("review")
+		for (const closed of [
+			"Tilbudet er avsluttet.",
+			"Kontoret stengte i fjor.",
+			"Tilbudet er satt på pause.",
+		]) {
+			expect(readReferral(["Drop-in, uten henvisning.", closed]), closed).toBe("unclear")
+			expect(lavterskel(["Drop-in, uten henvisning.", closed], "free").outcome, closed).toBe(
+				"review"
+			)
+		}
+	})
+
+	it("O4: a negator in a neighbouring sentence never gives yes", () => {
+		for (const quotes of [
+			["Selvhenvisning.", "Det er ikke mulig.", "Gratis."],
+			["Drop-in.", "Ikke mulig for tiden.", "Gratis."],
+		]) {
+			expect(readReferral(quotes), quotes[0]).toBe("unclear")
+			expect(lavterskel(quotes, undefined).outcome, quotes[0]).toBe("review")
+		}
+	})
+
+	it("O5: a limit on the referral-word path reads unclear", () => {
+		for (const quote of [
+			"Uten henvisning, men kun for innbyggere.",
+			"Du trenger ikke henvisning, men bare for medlemmer.",
+		]) {
+			expect(readReferral([quote]), quote).toBe("unclear")
+			expect(lavterskel([quote, "Gratis."], undefined).outcome, quote).toBe("review")
+		}
+	})
+})

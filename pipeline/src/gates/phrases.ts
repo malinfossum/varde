@@ -147,16 +147,20 @@ export function saysFee(quote: string): boolean {
 }
 
 // Words that speak of a price even without a number: kr, kroner, egenandel (but not "uten
-// egenandel"), betal*, koster (but not "koster ingenting") and pris*.
+// egenandel"), koster (but not "koster ingenting"), pris*, and any word holding betal, avgift,
+// gebyr, vederlag, kontingent or kostnad (but not kostnadsfri), so "Egenbetaling" and
+// "Kursavgift" count too.
+const PRICE_PARTS = ["betal", "avgift", "gebyr", "vederlag", "kontingent"]
 function priceSignal(ws: readonly string[]): boolean {
 	return ws.some(
 		(w, i) =>
 			w === "kr" ||
 			w === "kroner" ||
 			(w.startsWith("egenandel") && ws[i - 1] !== "uten") ||
-			w.startsWith("betal") ||
 			(w === "koster" && ws[i + 1] !== "ingenting") ||
-			w.startsWith("pris")
+			w.startsWith("pris") ||
+			PRICE_PARTS.some((p) => w.includes(p)) ||
+			(w.includes("kostnad") && !w.includes("kostnadsfri"))
 	)
 }
 
@@ -328,7 +332,8 @@ function referralWordReading(
 	if (negators === 0) return "needed"
 	const at = referralAt[0] ?? 0
 	if (negators === 1 && referralAt.length === 1 && negatesNext(sentence, at - 1)) {
-		return requiredAfter(ws, at) ? "unclear" : "noneNeeded"
+		// "Uten henvisning, men kun for innbyggere" limits the no-referral reading.
+		return requiredAfter(ws, at) || limiting(ws) ? "unclear" : "noneNeeded"
 	}
 	return "unclear"
 }
@@ -356,14 +361,18 @@ function requiredAfter(ws: readonly string[], at: number): boolean {
 		)
 }
 
-// A sentence that says the service has closed or ended: "Drop-in-tilbudet er avviklet".
+// A sentence that says the service has closed, ended or paused: "Drop-in-tilbudet er
+// avviklet", "Tilbudet er avsluttet", "satt på pause".
 export function saysClosed(ws: readonly string[]): boolean {
 	return ws.some(
 		(w, i) =>
 			w === "avviklet" ||
 			w === "nedlagt" ||
 			w === "stengt" ||
+			w === "stengte" ||
+			w.startsWith("avslutt") ||
 			w.startsWith("opphør") ||
+			(w === "på" && ws[i + 1] === "pause") ||
 			(w === "lagt" && ws[i + 1] === "ned") ||
 			(w === "ikke" && ws[i + 1] === "lenger")
 	)

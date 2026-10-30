@@ -365,3 +365,69 @@ describe("final fixes 3 A1: free and always-open read yes only from a plain clai
 		}
 	})
 })
+
+describe("final fixes 3 A2: the reviewer probes O1 to O3 never ground a yes", () => {
+	const ground = (field: "cost" | "alwaysOpen", value: string | boolean, quotes: string[]) =>
+		groundingGate(
+			candidate({ field, value, evidence: { kind: "quote", quotes } }),
+			context({ pageText: () => quotes.join(" ") })
+		)
+	const toReview = { pass: false, onFail: "review" }
+
+	it("O1: a negating sibling quote sends the claim to review", () => {
+		for (const quotes of [
+			["Døgnåpent.", "Kontoret er ikke døgnåpent."],
+			["Døgnåpent.", "Ikke åpent om natten."],
+			["Døgnåpent.", "Ingen bemanning om natten."],
+		]) {
+			expect(ground("alwaysOpen", true, quotes), quotes.join(" | ")).toMatchObject(toReview)
+		}
+		for (const quotes of [
+			["Gratis.", "Ikke gratis"],
+			["Gratis.", "Delvis gratis."],
+		]) {
+			expect(ground("cost", "free", quotes), quotes.join(" | ")).toMatchObject(toReview)
+		}
+	})
+
+	it("O2: a free claim with any qualifier, or beside a fee word, goes to review", () => {
+		for (const quote of [
+			"Gratis frem til nyttår.",
+			"Gratis ut året.",
+			"Gratis i sommer.",
+			"Gratis bortsett fra materiell.",
+			"Gratis etter avtale.",
+			"Gratis med mindre du uteblir.",
+			"Gratis eller rimelig.",
+			"Delvis gratis.",
+		]) {
+			expect(ground("cost", "free", [quote]), quote).toMatchObject(toReview)
+		}
+		for (const fee of ["Avgift", "Gebyr", "Vederlag"]) {
+			expect(ground("cost", "free", ["Gratis.", fee]), fee).toMatchObject(toReview)
+		}
+	})
+
+	it("O2: an always-open claim with any qualifier goes to review", () => {
+		for (const quote of [
+			"Døgnåpent ved akutt behov.",
+			"Døgnåpent etter avtale.",
+			"Døgnåpent hvis du har time.",
+			"Døgnåpent, utenom natten.",
+			"Vi har ikke et slikt døgnåpent tilbud.",
+		]) {
+			expect(ground("alwaysOpen", true, [quote]), quote).toMatchObject(toReview)
+		}
+	})
+
+	it("O3: a closure in another quote sends free and always-open to review", () => {
+		for (const closed of [
+			"Tilbudet er avsluttet.",
+			"Kontoret stengte i fjor.",
+			"Tilbudet er satt på pause.",
+		]) {
+			expect(ground("alwaysOpen", true, ["Døgnåpent.", closed]), closed).toMatchObject(toReview)
+			expect(ground("cost", "free", ["Gratis.", closed]), closed).toMatchObject(toReview)
+		}
+	})
+})
