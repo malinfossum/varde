@@ -110,7 +110,7 @@ describe("safety gate: krisesenter, injection, Lavterskel", () => {
 		expect(emailNamesAService("frivilligsentralen@hamar.kommune.no")).toBe(true)
 	})
 
-	it("keeps a token only when it is, or starts with, a service word", () => {
+	it("drops a token that ends with a service word after a name", () => {
 		expect(emailNamesAService("karipost@example.no")).toBe(false)
 		expect(emailNamesAService("kariinfo@example.no")).toBe(false)
 		expect(emailNamesAService("post@example.no")).toBe(true)
@@ -147,5 +147,33 @@ describe("safety gate: krisesenter, injection, Lavterskel", () => {
 		expect(isMobile("900 00 000")).toBe(true)
 		expect(isMobile("+47 900 00 000")).toBe(true)
 		expect(isMobile("62 00 00 00")).toBe(false)
+	})
+})
+
+describe("final fixes 2 R6: an email token made only of service words", () => {
+	it("drops a token with a leftover fragment after a service word", () => {
+		expect(emailNamesAService("kontorkari@example.no")).toBe(false)
+		expect(emailNamesAService("infokari@example.no")).toBe(false)
+		expect(emailNamesAService("postmottakkari@example.no")).toBe(false)
+		const c = candidate({ field: "email", value: "kontorkari@example.no" })
+		expect(safetyGate(c, context())).toMatchObject({ pass: false, onFail: "drop" })
+	})
+
+	it("drops an empty token", () => {
+		expect(emailNamesAService("post.@example.no")).toBe(false)
+		expect(emailNamesAService("@example.no")).toBe(false)
+	})
+
+	it("keeps a token that is one service word or several joined", () => {
+		for (const email of [
+			"post@example.no",
+			"postmottak@example.no",
+			"info@example.no",
+			"kontakt@example.no",
+			"postmottak@hamar.kommune.no",
+			"frivilligsentralen@hamar.kommune.no",
+		]) {
+			expect(emailNamesAService(email), email).toBe(true)
+		}
 	})
 })

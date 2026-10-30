@@ -6,9 +6,10 @@ export function isMobile(phone: string): boolean {
 	return /^[49]\d{7}$/.test(phoneDigits(phone))
 }
 
-// An email is kept only when every token of its local part is, or starts with, a service
-// word. Anything else may be a person's own address: "karipost" ends with "post" and
-// "kari.postmyr" holds a token that is not one.
+// An email is kept only when every token of its local part is a service word or several of
+// them joined ("postmottak"). Anything else may be a person's own address: "karipost",
+// "kontorkari" and "kari.postmyr" all leave a fragment that is not one. "rusmottak" drops to
+// human entry too, which is an accepted cost.
 const SERVICE_WORDS = [
 	"post",
 	"kontakt",
@@ -33,12 +34,26 @@ const SERVICE_WORDS = [
 	"kontor",
 	"senter",
 	"tjeneste",
+	"sentralen",
 ]
+
+// True when the token splits into service words with nothing left over.
+function madeOfServiceWords(token: string): boolean {
+	if (token.length === 0) return false
+	const ends = new Set<number>([0])
+	for (let start = 0; start < token.length; start++) {
+		if (!ends.has(start)) continue
+		for (const w of SERVICE_WORDS) {
+			if (token.startsWith(w, start)) ends.add(start + w.length)
+		}
+	}
+	return ends.has(token.length)
+}
 
 export function emailNamesAService(email: string): boolean {
 	const local = email.toLowerCase().split("@")[0] ?? ""
 	const tokens = local.split(/[.\-_+]/)
-	return tokens.every((token) => SERVICE_WORDS.some((w) => token.startsWith(w)))
+	return tokens.every(madeOfServiceWords)
 }
 
 export const ACCOUNT_NUMBER = /\b\d{4}[ .]?\d{2}[ .]?\d{5}\b/
