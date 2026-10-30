@@ -22,19 +22,28 @@ function tokenPattern(token: string, flags: string): RegExp {
 	return new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(token)}(?![\\p{L}\\p{N}])`, flags)
 }
 
-function nameTokens(personName: string): string[] {
+// Name parts split on spaces and on every hyphen or dash, so "Anne-Marie" is two parts and a
+// page that writes "Anne Marie" or "Anne\u2011Marie" is still caught. The same separators may
+// stand between the parts of the full name.
+const NAME_SEPARATOR = "[\\s\\u00A0\\u2010-\\u2015-]+"
+
+function nameParts(personName: string): string[] {
 	return personName
 		.trim()
-		.split(/\s+/)
-		.filter((t) => (t.match(/\p{L}/gu) ?? []).length >= 2)
+		.split(new RegExp(NAME_SEPARATOR, "u"))
+		.filter((t) => t.length > 0)
 }
 
-// The full name goes first, with any spacing or case, so a whole name becomes one marker.
-// Then every name token goes on its own, so "Kari" or "Nordmann, Kari" cannot survive.
+function nameTokens(personName: string): string[] {
+	return nameParts(personName).filter((t) => (t.match(/\p{L}/gu) ?? []).length >= 2)
+}
+
+// The full name goes first, with any spacing, hyphen or case, so a whole name becomes one
+// marker. Then every name token goes on its own, so "Kari" or "Nordmann, Kari" cannot survive.
 export function redact(quotes: readonly string[], personName: string | undefined): string[] {
 	if (personName === undefined || personName.trim() === "") return [...quotes]
-	const parts = personName.trim().split(/\s+/).map(escapeRegExp)
-	const full = new RegExp(parts.join("[\\s\\u00A0]+"), "giu")
+	const parts = nameParts(personName).map(escapeRegExp)
+	const full = new RegExp(parts.join(NAME_SEPARATOR), "giu")
 	const tokens = nameTokens(personName).map((t) => tokenPattern(t, "giu"))
 	return quotes.map((q) =>
 		tokens.reduce((text, token) => text.replace(token, "[navn]"), q.replace(full, "[navn]"))

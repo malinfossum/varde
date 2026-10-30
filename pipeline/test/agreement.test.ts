@@ -66,12 +66,15 @@ describe("agreement gate", () => {
 		})
 	})
 
-	it("never compares with another unit or another field", () => {
+	it("never compares with another unit", () => {
 		const otherUnit = brreg("900 00 000", { unitId: "org:999999998" })
 		expect(agreementGate(candidate(), context({ peers: [otherUnit] }))).toMatchObject({
 			pass: true,
 			reason: "single source",
 		})
+	})
+
+	it("never compares with another field", () => {
 		const otherField = brreg("Rusteamet Hamar", { field: "name" })
 		expect(agreementGate(candidate(), context({ peers: [otherField] }))).toMatchObject({
 			pass: true,

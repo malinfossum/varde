@@ -194,6 +194,61 @@ describe("person names", () => {
 	})
 })
 
+describe("final fixes F4: hyphenated names", () => {
+	const hyphen = (quote: string) =>
+		runGates(
+			candidate({
+				value: "900 00 000",
+				evidence: { kind: "quote", quotes: [quote] },
+				role: "Avdelingsleder",
+				personName: "Anne-Marie Nordmann",
+			}),
+			context({
+				pageText: () => `${PAGE}
+${quote}`,
+			}),
+			T
+		)
+
+	it("redacts a hyphenated name the page writes with a space", () => {
+		const field = hyphen("Kontakt Anne Marie Nordmann, avdelingsleder, på 900 00 000")
+		expect(field).toMatchObject({ status: "accepted" })
+		expect(field.evidence).toEqual({
+			kind: "quote",
+			quotes: ["Kontakt [navn], avdelingsleder, på 900 00 000"],
+		})
+		expect(JSON.stringify(field)).not.toMatch(/Anne|Marie|Nordmann/)
+	})
+
+	it("redacts one part of a hyphenated first name on its own", () => {
+		const field = hyphen("Ring Anne på 900 00 000")
+		expect(field).toMatchObject({ status: "accepted" })
+		expect(field.evidence).toEqual({ kind: "quote", quotes: ["Ring [navn] på 900 00 000"] })
+	})
+
+	// Redact cannot see through the soft hyphen, so only nameSurvives, splitting the name the
+	// same way, can catch the first-name part left behind.
+	it("drops the field when a soft hyphen hides one part of a hyphenated name", () => {
+		const field = hyphen("Ring An\u00ADne på 900 00 000")
+		expect(field.status).toBe("dropped")
+		expect(field.reason).toBe("person name left after redaction")
+		expect(JSON.stringify(field)).not.toContain("900")
+	})
+
+	it("redacts the name with an ASCII or a typographic hyphen", () => {
+		expect(redact(["Ring Anne-Marie Nordmann nå"], "Anne-Marie Nordmann")).toEqual([
+			"Ring [navn] nå",
+		])
+		expect(redact(["Ring Anne\u2011Marie Nordmann nå"], "Anne-Marie Nordmann")).toEqual([
+			"Ring [navn] nå",
+		])
+		// Without the surname the full-name pattern cannot match, so each part goes on its own.
+		expect(redact(["Ring Anne Marie nå"], "Anne\u2010Marie Nordmann")).toEqual([
+			"Ring [navn] [navn] nå",
+		])
+	})
+})
+
 describe("redact", () => {
 	it("replaces every spelling of the name", () => {
 		expect(redact(["KARI NORDMANN og Kari\u00A0Nordmann"], "Kari Nordmann")).toEqual([
