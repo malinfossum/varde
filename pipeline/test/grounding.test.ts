@@ -501,6 +501,9 @@ describe("final fixes 3 G1: only a plain address is exempt from the neighbour ch
 			// Capitals do not make prose a street name, and a place name takes no prose after it.
 			"Forbeholdt Beboere Storgata 5",
 			"Storgata 5, 2815 Gjøvik forbeholdt beboere",
+			// A lowercase word before a separate street word, and prose after the number.
+			"Billetter i gate 5",
+			"Storgata 5 forbeholdt beboere",
 		]) {
 			expect(ground(["Gratis.", other]), other).toMatchObject({ pass: false, onFail: "review" })
 		}
