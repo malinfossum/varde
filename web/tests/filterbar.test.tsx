@@ -9,14 +9,16 @@ import type { Filters } from "../src/services/urlState.ts"
 
 const catalog: Catalog = {
 	municipalities: [
-		{ id: 1, name: "Hamar", county: "Innlandet" },
-		{ id: 8, name: "Oslo", county: "Oslo" },
+		{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+		{ id: 8, name: "Oslo", county: "Oslo", number: "0301", countyNumber: "03" },
 	],
 	categories: [
 		{ id: 1, slug: "bolig", name: "Bolig", isFallbackTranslation: false },
 		{ id: 2, slug: "rus", name: "Rus og avhengighet", isFallbackTranslation: false },
 	],
 	kommuner: [],
+	counties: [],
+	aliases: [],
 }
 
 const noFilters: Filters = {

@@ -4,6 +4,7 @@
 import { mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
+import { attachNumbers, checkPlaces, readPlaceFiles } from "./places.mjs"
 import { kommunerWithPages } from "./slug.mjs"
 
 // If the export sees fewer rows than this, the API is half-broken and the build must fail
@@ -30,7 +31,17 @@ async function allResources(fetchImpl, baseUrl, lang) {
 	}
 }
 
-export async function exportData({ baseUrl, outDir, fetchImpl = fetch, log = console.log }) {
+export async function exportData({
+	baseUrl,
+	outDir,
+	fetchImpl = fetch,
+	log = console.log,
+	placesDir = fileURLToPath(new URL("../data/", import.meta.url)),
+}) {
+	// The place files are checked before anything is fetched, so a bad edit fails fast.
+	const { places, counties, aliases } = readPlaceFiles(placesDir)
+	const placeErrors = checkPlaces(places, counties, aliases)
+	if (placeErrors.length > 0) throw new Error(`place files: ${placeErrors.join("; ")}`)
 	const resources = {}
 	for (const lang of LANGS) {
 		resources[lang] = await allResources(fetchImpl, baseUrl, lang)
@@ -40,7 +51,10 @@ export async function exportData({ baseUrl, outDir, fetchImpl = fetch, log = con
 			)
 		}
 	}
-	const municipalities = await getJson(fetchImpl, `${baseUrl}/api/municipalities`)
+	const municipalities = attachNumbers(
+		await getJson(fetchImpl, `${baseUrl}/api/municipalities`),
+		places
+	)
 	const categories = {}
 	for (const lang of LANGS)
 		categories[lang] = await getJson(fetchImpl, `${baseUrl}/api/categories?lang=${lang}`)
@@ -55,6 +69,8 @@ export async function exportData({ baseUrl, outDir, fetchImpl = fetch, log = con
 	write("municipalities.json", municipalities)
 	for (const lang of LANGS) write(`categories.${lang}.json`, categories[lang])
 	write("kommuner.json", kommuner)
+	write("counties.json", counties)
+	write("aliases.json", aliases)
 
 	const summary = {
 		resources: { nb: resources.nb.length, en: resources.en.length },

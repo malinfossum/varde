@@ -1,7 +1,14 @@
 // Hand-written mirrors of api/Varde.Core/Dtos — phase 2 generates these from OpenAPI; phase 1 writes them by hand on purpose.
 
 export type CategoryDto = { id: number; slug: string; name: string; isFallbackTranslation: boolean }
-export type MunicipalityDto = { id: number; name: string; county: string }
+// number and countyNumber are not from the API: the export attaches them from web/data/places.json.
+export type MunicipalityDto = {
+	id: number
+	name: string
+	county: string
+	number: string
+	countyNumber: string
+}
 export type PagedResult<T> = { items: T[]; page: number; pageSize: number; totalCount: number }
 // The API's ResourceCost, as ResourceService spells it on the wire. null is "not stated".
 export type ResourceCost = "free" | "paid" | "partly"

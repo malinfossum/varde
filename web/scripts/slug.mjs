@@ -24,7 +24,7 @@ export function kommunerWithPages(municipalities, resources) {
 		let slug = slugify(m.name)
 		if (taken.has(slug)) slug = `${slug}-${m.id}`
 		taken.add(slug)
-		out.push({ id: m.id, slug, name: m.name, county: m.county })
+		out.push({ id: m.id, slug, name: m.name, county: m.county, number: m.number })
 	}
 	return out
 }

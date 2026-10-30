@@ -7,9 +7,9 @@ import { AnnouncerProvider } from "../src/components/StatusRegion.tsx"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
 
 const municipalities = [
-	{ id: 1, name: "Hamar", county: "Innlandet" },
-	{ id: 6, name: "Løten", county: "Innlandet" },
-	{ id: 8, name: "Oslo", county: "Oslo" },
+	{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+	{ id: 6, name: "Løten", county: "Innlandet", number: "3412", countyNumber: "34" },
+	{ id: 8, name: "Oslo", county: "Oslo", number: "0301", countyNumber: "03" },
 ]
 
 function Wrapper({ children }: { children: ReactNode }) {
@@ -98,10 +98,11 @@ test("no match shows the coverage note with the national link; clear resets to a
 test("county groups sort with Norwegian collation, not backend order", async () => {
 	// Backend order here is deliberately not alphabetical; nb collation sorts a-z, then æ, ø, å —
 	// so "Østfold" and "Ærlig" must land after "Agder" despite arriving first.
+	// Made-up kommunenummer, with the right fylke prefix.
 	const unsorted = [
-		{ id: 1, name: "Sarpsborg", county: "Østfold" },
-		{ id: 2, name: "Grimstad", county: "Agder" },
-		{ id: 3, name: "Nord-Aurdal", county: "Ærlig" },
+		{ id: 1, name: "Sarpsborg", county: "Østfold", number: "3098", countyNumber: "30" },
+		{ id: 2, name: "Grimstad", county: "Agder", number: "4298", countyNumber: "42" },
+		{ id: 3, name: "Nord-Aurdal", county: "Ærlig", number: "3497", countyNumber: "34" },
 	]
 	const user = userEvent.setup()
 	render(
@@ -125,9 +126,10 @@ test("county groups sort with Norwegian collation, not backend order", async () 
 })
 
 test("municipalities within a county sort with Norwegian collation too", async () => {
+	// Made-up kommunenummer, with the right fylke prefix.
 	const unsorted = [
-		{ id: 1, name: "Åsane", county: "Vestland" },
-		{ id: 2, name: "Bergen", county: "Vestland" },
+		{ id: 1, name: "Åsane", county: "Vestland", number: "4698", countyNumber: "46" },
+		{ id: 2, name: "Bergen", county: "Vestland", number: "4699", countyNumber: "46" },
 	]
 	const user = userEvent.setup()
 	render(

@@ -63,7 +63,9 @@ test("the landing's lists keep role=list: strip, featured row, chip grid, emerge
 test("the results page's lists keep role=list: filter chips, result cards, badges", async () => {
 	stubDataFiles({
 		resources: [resource],
-		municipalities: [{ id: 1, name: "Hamar", county: "Innlandet" }],
+		municipalities: [
+			{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+		],
 		categories: [{ id: 4, slug: "rus", name: "Rus og avhengighet", isFallbackTranslation: false }],
 	})
 	window.history.pushState(null, "", "/sok")

@@ -11,7 +11,7 @@ import { makeResource, stubDataFiles } from "./stubData.ts"
 // Page data belongs to the URL that was loaded. A client-side switch to the other language
 // must show that language's rows, not the ones baked into the cold-loaded page (issue #79).
 
-const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet" }
+const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet", number: "3403" }
 const nb = [
 	makeResource({
 		id: 12,

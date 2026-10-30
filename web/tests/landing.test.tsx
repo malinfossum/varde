@@ -9,7 +9,9 @@ import { bakedHelplines, stubDataFiles } from "./stubData.ts"
 
 const nb = nbStrings as Record<string, string>
 
-const municipalities = [{ id: 1, name: "Hamar", county: "Innlandet" }]
+const municipalities = [
+	{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+]
 const categories = [
 	{ id: 4, slug: "rus", name: "Rus og avhengighet", isFallbackTranslation: false },
 ]
@@ -54,9 +56,9 @@ test("focusing the search box prefetches the catalog; Enter submits the text to 
 	const box = screen.getByRole("searchbox", { name: /Søk/ })
 	expect(fetchSpy).not.toHaveBeenCalled()
 	await user.click(box)
-	// loadIndex fetches all four data files together (resources, municipalities, categories,
-	// kommuner) — the prefetch is all-or-nothing, unlike the old two-endpoint catalog call.
-	await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(4))
+	// loadIndex fetches all six data files together (resources, municipalities, categories,
+	// kommuner, counties, aliases) — the prefetch is all-or-nothing, unlike the old two-endpoint catalog call.
+	await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(6))
 	await user.type(box, "rus{Enter}")
 	expect(window.location.pathname).toBe("/sok")
 	expect(window.location.search).toContain("search=rus")

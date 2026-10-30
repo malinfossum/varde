@@ -4,7 +4,7 @@ import { App } from "../src/App.tsx"
 import { clearIndexCache } from "../src/services/data.ts"
 import { stubDataFiles } from "./stubData.ts"
 
-const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet" }
+const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet", number: "3403" }
 const rows = [
 	{ id: 1, name: "NAV Hamar", municipalityId: 1, servedMunicipalityIds: [], isNational: false },
 	{
@@ -54,7 +54,9 @@ test("renders own and served resources, then national ones, with one h1", async 
 	stubDataFiles({
 		resources: rows,
 		kommuner: [hamar],
-		municipalities: [{ id: 1, name: "Hamar", county: "Innlandet" }],
+		municipalities: [
+			{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+		],
 	})
 	window.history.pushState(null, "", "/kommune/hamar")
 	const { container } = render(<App />)

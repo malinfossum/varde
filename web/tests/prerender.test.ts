@@ -41,7 +41,7 @@ const row = {
 	address: null,
 	municipalityName: "Hamar",
 }
-const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet" }
+const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet", number: "3403" }
 
 // prerenderSite takes a required `split` option (the server bundle's splitForKommune) instead
 // of computing the kommune local/national split itself — this stub mirrors its shape.

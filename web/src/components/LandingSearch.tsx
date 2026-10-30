@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { useNavigate } from "../navigation.ts"
-import { type Catalog, loadIndex, prefetchIndex } from "../services/data.ts"
+import { type Catalog, catalogOf, loadIndex, prefetchIndex } from "../services/data.ts"
 import { type Suggestion, suggest } from "../services/match.ts"
 import { buildSearch, type Filters } from "../services/urlState.ts"
 import { Suggestions } from "./Suggestions.tsx"
@@ -25,12 +25,7 @@ export function LandingSearch() {
 		let cancelled = false
 		loadIndex(lang)
 			.then((index) => {
-				if (!cancelled)
-					setCatalog({
-						municipalities: index.municipalities,
-						categories: index.categories,
-						kommuner: index.kommuner,
-					})
+				if (!cancelled) setCatalog(catalogOf(index))
 			})
 			.catch(() => {})
 		return () => {

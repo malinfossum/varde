@@ -3,14 +3,16 @@ import { fold, matchesEitherWay, suggest } from "../src/services/match.ts"
 
 const catalog = {
 	municipalities: [
-		{ id: 1, name: "Hamar", county: "Innlandet" },
-		{ id: 6, name: "Løten", county: "Innlandet" },
+		{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+		{ id: 6, name: "Løten", county: "Innlandet", number: "3412", countyNumber: "34" },
 	],
 	categories: [
 		{ id: 4, slug: "rus", name: "Rus", isFallbackTranslation: false },
 		{ id: 2, slug: "bolig", name: "Bolig", isFallbackTranslation: false },
 	],
 	kommuner: [],
+	counties: [],
+	aliases: [],
 }
 
 test("fold normalises norwegian letters and case", () => {

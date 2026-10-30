@@ -5,6 +5,7 @@ export type ExportDataOptions = {
 	outDir: string
 	fetchImpl?: typeof fetch
 	log?: (message: string) => void
+	placesDir?: string
 }
 export type ExportDataResult = { resources: { nb: number; en: number }; kommuner: number }
 

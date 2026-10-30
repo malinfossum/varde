@@ -5,9 +5,16 @@ import { pickHelplines } from "../src/services/helplines.ts"
 import type { Lang } from "../src/services/urlState.ts"
 import type { ResourceDto } from "../src/types/api.ts"
 
-const empty: Index = { resources: [], municipalities: [], categories: [], kommuner: [] }
+const empty: Index = {
+	resources: [],
+	municipalities: [],
+	categories: [],
+	kommuner: [],
+	counties: [],
+	aliases: [],
+}
 
-// One fetch stub for every test that needs data: answers the six JSON files the export
+// One fetch stub for every test that needs data: answers the eight JSON files the export
 // script writes, 404s everything else. Replaces the per-test API stubs from the API era.
 // A plain vi.fn() (not vi.stubGlobal's own closure) so tests can assert on call counts, e.g.
 // the useCatalog retry test asserting the fetch call count grows.
@@ -21,6 +28,8 @@ export function stubDataFiles(fixture: Partial<Index> = {}, enResources?: Resour
 		"/data/categories.nb.json": index.categories,
 		"/data/categories.en.json": index.categories,
 		"/data/kommuner.json": index.kommuner,
+		"/data/counties.json": index.counties,
+		"/data/aliases.json": index.aliases,
 	}
 	vi.stubGlobal(
 		"fetch",

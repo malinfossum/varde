@@ -119,8 +119,8 @@ test("empty state offers national fallbacks as tel links", () => {
 })
 
 const municipalities = [
-	{ id: 1, name: "Hamar", county: "Innlandet" },
-	{ id: 8, name: "Oslo", county: "Oslo" },
+	{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+	{ id: 8, name: "Oslo", county: "Oslo", number: "0301", countyNumber: "03" },
 ]
 
 function stubCatalogAndResources() {
