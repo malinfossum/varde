@@ -102,7 +102,9 @@ Tests create disposable `varde_test_<guid>` databases. The connection defaults t
 standard local development setup (`localhost`, `postgres`/`postgres`); override it with the
 `VARDE_TEST_PG` environment variable. `npm run data` exports the API's data into
 `web/public/data/` so the dev server has something to search over; re-run it whenever the
-underlying data changes. Run `npm run build:site` instead of `npm run dev` for the full prerender.
+underlying data changes. When I add a kommune to the C# seed (`api/Varde.Data/Seed/SeedData.cs`),
+I add its row to `web/data/places.json` in the same PR, because `tests/places.test.ts` and the
+deploy's export fail otherwise. Run `npm run build:site` instead of `npm run dev` for the full prerender.
 It builds the client and server bundles and writes a static `web/dist/` with one page per
 URL, matching what the deploy workflow produces. `vite preview` over that `dist/` can't
 validate routing, though: it serves the file-form pages directly by path, but only Cloudflare

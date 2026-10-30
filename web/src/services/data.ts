@@ -2,20 +2,37 @@ import type { PageData } from "../pageData.ts"
 import type { CategoryDto, MunicipalityDto, ResourceDto } from "../types/api.ts"
 import type { Lang } from "./urlState.ts"
 
-export type KommuneEntry = { id: number; slug: string; name: string; county: string }
+export type KommuneEntry = {
+	id: number
+	slug: string
+	name: string
+	county: string
+	number: string
+}
+export type County = { number: string; name: string }
+// A town name that picks its kommune in Sted ("Brumunddal" picks Ringsaker). Ships empty; the
+// national data pipeline fills it from a named source (filter spec, Data contract).
+export type Alias = { alias: string; number: string; source: string }
 export type Index = {
 	resources: ResourceDto[]
 	municipalities: MunicipalityDto[]
 	categories: CategoryDto[]
 	kommuner: KommuneEntry[]
+	counties: County[]
+	aliases: Alias[]
 }
 
-// The municipality/category/kommune trio the catalog-era hooks and components consume. Kept
-// here (not in a dedicated file) now that all three come from the same index.
-export type Catalog = {
-	municipalities: MunicipalityDto[]
-	categories: CategoryDto[]
-	kommuner: KommuneEntry[]
+// Everything in the index except the rows: what the filter and the search suggestions read.
+export type Catalog = Omit<Index, "resources">
+
+export function catalogOf(index: Index): Catalog {
+	return {
+		municipalities: index.municipalities,
+		categories: index.categories,
+		kommuner: index.kommuner,
+		counties: index.counties,
+		aliases: index.aliases,
+	}
 }
 
 const cache = new Map<Lang, Promise<Index>>()
@@ -27,7 +44,7 @@ async function getJson<T>(path: string, fetchImpl: typeof fetch): Promise<T> {
 	return (await response.json()) as T
 }
 
-// The six files scripts/export-data.mjs writes. All-or-nothing: a half index would render a
+// The eight files scripts/export-data.mjs writes. All-or-nothing: a half index would render a
 // results page that silently lacks a filter.
 export function loadIndex(lang: Lang, fetchImpl: typeof fetch = fetch): Promise<Index> {
 	let pending = cache.get(lang)
@@ -37,11 +54,15 @@ export function loadIndex(lang: Lang, fetchImpl: typeof fetch = fetch): Promise<
 			getJson<MunicipalityDto[]>("/data/municipalities.json", fetchImpl),
 			getJson<CategoryDto[]>(`/data/categories.${lang}.json`, fetchImpl),
 			getJson<KommuneEntry[]>("/data/kommuner.json", fetchImpl),
-		]).then(([resources, municipalities, categories, kommuner]) => ({
+			getJson<County[]>("/data/counties.json", fetchImpl),
+			getJson<Alias[]>("/data/aliases.json", fetchImpl),
+		]).then(([resources, municipalities, categories, kommuner, counties, aliases]) => ({
 			resources,
 			municipalities,
 			categories,
 			kommuner,
+			counties,
+			aliases,
 		}))
 		// One combined handler, not a separate .then plus .catch: two independent chains off the
 		// same rejected promise would leave the .then-only one an unhandled rejection (nothing

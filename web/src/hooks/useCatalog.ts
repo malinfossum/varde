@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import type { Lang } from "../i18n/LanguageProvider.tsx"
 import {
 	type Catalog,
+	catalogOf,
 	clearIndexCache,
 	type Index,
 	loadIndex,
@@ -16,14 +17,7 @@ export type CatalogState =
 	| { kind: "ready"; catalog: Catalog }
 
 function toReady(index: Index): CatalogState {
-	return {
-		kind: "ready",
-		catalog: {
-			municipalities: index.municipalities,
-			categories: index.categories,
-			kommuner: index.kommuner,
-		},
-	}
+	return { kind: "ready", catalog: catalogOf(index) }
 }
 
 // Ready from the first render when the index has already settled, as useResources is. Back to

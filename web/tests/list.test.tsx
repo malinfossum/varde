@@ -8,7 +8,7 @@ import { Pagination } from "../src/components/Pagination.tsx"
 import { ResourceCard } from "../src/components/ResourceCard.tsx"
 import { useResources } from "../src/hooks/useResources.ts"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
-import type { Filters } from "../src/services/urlState.ts"
+import { EMPTY_FILTERS, type Filters } from "../src/services/filters.ts"
 import type { ResourceDto } from "../src/types/api.ts"
 import { stubDataFiles } from "./stubData.ts"
 
@@ -119,8 +119,8 @@ test("empty state offers national fallbacks as tel links", () => {
 })
 
 const municipalities = [
-	{ id: 1, name: "Hamar", county: "Innlandet" },
-	{ id: 8, name: "Oslo", county: "Oslo" },
+	{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+	{ id: 8, name: "Oslo", county: "Oslo", number: "0301", countyNumber: "03" },
 ]
 
 function stubCatalogAndResources() {
@@ -148,9 +148,9 @@ test("an unknown ?municipality= value doesn't crash the app and the list renders
 	window.history.pushState(null, "", "/sok?municipality=abc")
 	render(<App />)
 
-	// A non-numeric municipality id never survives URL parsing (parseFilters' positiveInt
-	// rejects it), so filters.municipality stays null and the list renders unfiltered rather
-	// than scoped to a municipality that doesn't exist.
+	// A value that is neither an old id nor a kommunenummer fails parseFilters' shape check, so
+	// no place is picked and the list renders unfiltered rather than scoped to a municipality
+	// that doesn't exist.
 	expect(await screen.findByText("Krisesenteret i Hamar")).toBeInTheDocument()
 	// No phantom selection in the combobox either — its input stays empty rather than showing
 	// some municipality's name.
@@ -171,6 +171,23 @@ test("Tøm clears both municipality and national selection from the URL", async 
 
 	expect(window.location.search).not.toContain("municipality")
 	expect(window.location.search).not.toContain("national")
+})
+
+test("a category suggestion adds to the ticked categories instead of replacing them", async () => {
+	stubDataFiles({
+		resources: [resource],
+		municipalities,
+		categories: [
+			{ id: 4, slug: "rus", name: "Rus", isFallbackTranslation: false },
+			{ id: 2, slug: "bolig", name: "Bolig", isFallbackTranslation: false },
+		],
+	})
+	window.history.pushState(null, "", "/sok?category=rus&search=bol")
+	const user = userEvent.setup()
+	render(<App />)
+	const lists = await screen.findAllByRole("list", { name: "Forslag" })
+	await user.click(within(lists[0] as HTMLElement).getByRole("button", { name: /Bolig/ }))
+	await waitFor(() => expect(window.location.search).toContain("category=bolig&category=rus"))
 })
 
 test("list page heading levels never skip: h1 results heading, h2 cards", async () => {
@@ -237,13 +254,7 @@ test("paging moves focus to the results heading; typing in search does not", asy
 	expect(search).toHaveFocus()
 })
 
-const baseFilters: Filters = {
-	search: "",
-	categories: [],
-	municipality: null,
-	national: false,
-	page: 1,
-}
+const baseFilters: Filters = EMPTY_FILTERS
 
 test("once the index is cached, filtering (e.g. two keystrokes in the search box) never re-enters loading", async () => {
 	const many = Array.from({ length: 5 }, (_, i) => ({ ...resource, id: i + 1, name: `Treff ${i}` }))
@@ -373,4 +384,58 @@ test("card badges are the items of a list, so a screen reader reads each one in 
 			.getAllByRole("listitem")
 			.map((el) => el.textContent)
 	).toEqual(["Akutt", "Døgnåpent", "Lavterskel", "Koster penger"])
+})
+
+test("an old link is rewritten to its canonical URL once the catalog loads, keeping the entry's state", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	window.history.pushState(
+		{ idx: 4, scrollY: 120 },
+		"",
+		"/sok?category=lavterskeltilbud&municipality=1&national=yes"
+	)
+	const length = window.history.length
+	render(<App />)
+	await waitFor(() => expect(window.location.search).toBe("?municipality=3403&feature=lavterskel"))
+	expect(window.history.length).toBe(length)
+	expect(window.history.state).toMatchObject({ idx: 4, scrollY: 120 })
+	expect(screen.getByRole("combobox", { name: "Kommune" })).toHaveValue("Hamar")
+})
+
+test("search text the browser encoded differently is rewritten once, with no new entry", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	window.history.pushState({ idx: 0 }, "", "/sok?search=krise%20hamar")
+	const length = window.history.length
+	render(<App />)
+	await waitFor(() => expect(window.location.search).toBe("?search=krise+hamar"))
+	expect(window.history.length).toBe(length)
+})
+
+test("an English old link stays English after the rewrite", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	window.history.pushState({ idx: 0 }, "", "/en/sok?municipality=1")
+	render(<App />)
+	await waitFor(() =>
+		expect(window.location.pathname + window.location.search).toBe("/en/sok?municipality=3403")
+	)
+})
+
+test("a canonical URL is left alone", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	window.history.pushState({ idx: 0 }, "", "/sok?municipality=3403")
+	const replace = vi.spyOn(window.history, "replaceState")
+	render(<App />)
+	expect(await screen.findByText("Krisesenteret i Hamar")).toBeInTheDocument()
+	// The router's own state merges pass no URL; the rewrite passes one.
+	expect(replace.mock.calls.filter((call) => call.length > 2)).toEqual([])
+})
+
+test("with the catalog down, an old link stays exactly as typed", async () => {
+	vi.stubGlobal(
+		"fetch",
+		vi.fn(async () => new Response("down", { status: 503 }))
+	)
+	window.history.pushState({ idx: 0 }, "", "/sok?municipality=1")
+	render(<App />)
+	expect(await screen.findByRole("heading", { name: "Noe gikk galt" })).toBeInTheDocument()
+	expect(window.location.search).toBe("?municipality=1")
 })

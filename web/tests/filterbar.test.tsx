@@ -5,26 +5,20 @@ import { FilterBar } from "../src/components/FilterBar.tsx"
 import { AnnouncerProvider } from "../src/components/StatusRegion.tsx"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
 import type { Catalog } from "../src/services/data.ts"
-import type { Filters } from "../src/services/urlState.ts"
+import { CLEAR_ALL, EMPTY_FILTERS, type Filters } from "../src/services/filters.ts"
 
 const catalog: Catalog = {
 	municipalities: [
-		{ id: 1, name: "Hamar", county: "Innlandet" },
-		{ id: 8, name: "Oslo", county: "Oslo" },
+		{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+		{ id: 8, name: "Oslo", county: "Oslo", number: "0301", countyNumber: "03" },
 	],
 	categories: [
 		{ id: 1, slug: "bolig", name: "Bolig", isFallbackTranslation: false },
 		{ id: 2, slug: "rus", name: "Rus og avhengighet", isFallbackTranslation: false },
 	],
 	kommuner: [],
-}
-
-const noFilters: Filters = {
-	search: "",
-	categories: [],
-	municipality: null,
-	national: false,
-	page: 1,
+	counties: [],
+	aliases: [],
 }
 
 function renderBar(filters: Partial<Filters> = {}) {
@@ -35,7 +29,7 @@ function renderBar(filters: Partial<Filters> = {}) {
 			<AnnouncerProvider>
 				<FilterBar
 					catalog={catalog}
-					filters={{ ...noFilters, ...filters }}
+					filters={{ ...EMPTY_FILTERS, ...filters }}
 					onPatch={onPatch}
 					onSearch={onSearch}
 				/>
@@ -48,7 +42,7 @@ function renderBar(filters: Partial<Filters> = {}) {
 				<AnnouncerProvider>
 					<FilterBar
 						catalog={catalog}
-						filters={{ ...noFilters, ...next }}
+						filters={{ ...EMPTY_FILTERS, ...next }}
 						onPatch={onPatch}
 						onSearch={onSearch}
 					/>
@@ -64,12 +58,12 @@ test("the national toggle turns national services on, and off again", async () =
 	const toggle = screen.getByRole("button", { name: "Nasjonale tjenester" })
 	expect(toggle).toHaveAttribute("aria-pressed", "false")
 	await user.click(toggle)
-	expect(onPatch).toHaveBeenCalledWith({ national: true })
+	expect(onPatch).toHaveBeenCalledWith({ national: "only" })
 
-	rerenderWith({ national: true })
+	rerenderWith({ national: "only" })
 	expect(toggle).toHaveAttribute("aria-pressed", "true")
 	await user.click(toggle)
-	expect(onPatch).toHaveBeenCalledWith({ national: false })
+	expect(onPatch).toHaveBeenCalledWith({ national: "include" })
 })
 
 test("a category chip adds its slug, and clicking an active one removes it", async () => {
@@ -94,18 +88,13 @@ test("Nullstill only appears once a filter is set, and clears every one of them"
 
 	rerenderWith({ categories: ["bolig"] })
 	await user.click(screen.getByRole("button", { name: "Nullstill" }))
-	expect(onPatch).toHaveBeenCalledWith({
-		search: "",
-		categories: [],
-		municipality: null,
-		national: false,
-	})
+	expect(onPatch).toHaveBeenCalledWith(CLEAR_ALL)
 })
 
-test.each([
+test.each<[string, Partial<Filters>]>([
 	["search", { search: "hamar" }],
-	["municipality", { municipality: 1 }],
-	["national", { national: true }],
+	["municipality", { municipalities: ["3403"] }],
+	["national", { national: "only" }],
 ])("Nullstill appears when only %s is set", (_name, filters) => {
 	renderBar(filters)
 	expect(screen.getByRole("button", { name: "Nullstill" })).toBeInTheDocument()
@@ -116,13 +105,13 @@ test("the municipality field follows a filter change made outside it", async () 
 	// browser back/forward all change the municipality without touching the combobox, and
 	// ListPage is not keyed — so the field has to follow, or it keeps naming a filter that is
 	// no longer applied.
-	const { rerenderWith } = renderBar({ municipality: 1 })
+	const { rerenderWith } = renderBar({ municipalities: ["3403"] })
 	const field = screen.getByRole("combobox", { name: "Kommune" })
 	expect(field).toHaveValue("Hamar")
 
-	rerenderWith({ municipality: null })
+	rerenderWith({ municipalities: [] })
 	expect(field).toHaveValue("")
 
-	rerenderWith({ national: true, municipality: 8 })
+	rerenderWith({ national: "only", municipalities: ["0301"] })
 	expect(field).toHaveValue("")
 })

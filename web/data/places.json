@@ -1,0 +1,10 @@
+[
+	{ "id": 8, "number": "0301", "countyNumber": "03", "name": "Oslo" },
+	{ "id": 1, "number": "3403", "countyNumber": "34", "name": "Hamar" },
+	{ "id": 2, "number": "3405", "countyNumber": "34", "name": "Lillehammer" },
+	{ "id": 3, "number": "3407", "countyNumber": "34", "name": "Gjøvik" },
+	{ "id": 4, "number": "3411", "countyNumber": "34", "name": "Ringsaker" },
+	{ "id": 6, "number": "3412", "countyNumber": "34", "name": "Løten" },
+	{ "id": 5, "number": "3413", "countyNumber": "34", "name": "Stange" },
+	{ "id": 7, "number": "3420", "countyNumber": "34", "name": "Elverum" }
+]

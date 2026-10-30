@@ -2,6 +2,7 @@ import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { FEATURED_SLUGS, type FeaturedSlug, GRID_SLUGS } from "../services/categories.ts"
 import { emergencyLines, telHref } from "../services/emergency.ts"
+import { categorySearch } from "../services/filters.ts"
 import { Helplines } from "./Helplines.tsx"
 import { LandingSearch } from "./LandingSearch.tsx"
 import { Link } from "./Link.tsx"
@@ -63,7 +64,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 						{FEATURED_SLUGS.map((slug) => (
 							<li key={slug}>
 								<Link
-									to={`/sok?category=${slug}`}
+									to={`/sok${categorySearch(slug)}`}
 									className={`chip ${FEATURED_CLASS[slug]} h-full w-full`}
 								>
 									{t(`category.${slug}`)}
@@ -78,7 +79,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 					>
 						{GRID_SLUGS.map((slug) => (
 							<li key={slug}>
-								<Link to={`/sok?category=${slug}`} className="chip h-full w-full">
+								<Link to={`/sok${categorySearch(slug)}`} className="chip h-full w-full">
 									{t(`category.${slug}`)}
 								</Link>
 							</li>

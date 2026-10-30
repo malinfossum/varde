@@ -35,7 +35,7 @@ const resource = {
 	parentId: null,
 	phoneMenuOption: null,
 }
-const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet" }
+const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet", number: "3403" }
 
 // Every hydrated root is unmounted after its test. A root left mounted keeps React's
 // scheduler busy, and work that runs after Vitest tears down jsdom throws
@@ -72,7 +72,9 @@ async function hydrate(url: string, data: PageData) {
 	stubDataFiles({
 		resources: [resource],
 		kommuner: [hamar],
-		municipalities: [{ id: 1, name: "Hamar", county: "Innlandet" }],
+		municipalities: [
+			{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+		],
 	})
 	const { html } = await render(url, data)
 	expect(html.length).toBeGreaterThan(200)

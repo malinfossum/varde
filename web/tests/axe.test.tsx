@@ -30,11 +30,13 @@ const resource: ResourceDto = {
 	parentId: null,
 	phoneMenuOption: null,
 }
-const municipalities = [{ id: 1, name: "Hamar", county: "Innlandet" }]
+const municipalities = [
+	{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+]
 const categories = [
 	{ id: 9, slug: "nodtjenester", name: "Nødtjenester", isFallbackTranslation: false },
 ]
-const kommuner = [{ id: 1, slug: "hamar", name: "Hamar", county: "Innlandet" }]
+const kommuner = [{ id: 1, slug: "hamar", name: "Hamar", county: "Innlandet", number: "3403" }]
 
 type Mode = "ok" | "empty" | "error"
 function stub(mode: Mode) {

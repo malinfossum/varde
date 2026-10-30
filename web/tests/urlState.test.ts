@@ -1,10 +1,8 @@
 import { describe, expect, test } from "vitest"
+import { buildSearch, EMPTY_FILTERS } from "../src/services/filters.ts"
 import {
-	applyPatch,
-	buildSearch,
 	canHydrate,
 	legacyRedirect,
-	parseFilters,
 	parseRoute,
 	parseUrl,
 	pathFor,
@@ -19,45 +17,6 @@ test("detail and not-found routes", () => {
 	expect(parseRoute("/resources/42")).toEqual({ kind: "detail", id: 42 })
 	expect(parseRoute("/resources/abc")).toEqual({ kind: "notFound" })
 	expect(parseRoute("/nope")).toEqual({ kind: "notFound" })
-})
-
-test("filters parse defensively", () => {
-	const filters = parseFilters(
-		new URLSearchParams("search=rus&category=rus&category=bolig&municipality=4&page=3")
-	)
-	expect(filters).toEqual({
-		search: "rus",
-		categories: ["rus", "bolig"],
-		municipality: 4,
-		national: false,
-		page: 3,
-	})
-	const junk = parseFilters(new URLSearchParams("municipality=abc&page=-1&national=whatever"))
-	expect(junk.municipality).toBeNull()
-	expect(junk.page).toBe(1)
-	expect(junk.national).toBe(false)
-})
-
-test("any filter change resets page to 1", () => {
-	const base: ReturnType<typeof parseFilters> = {
-		search: "",
-		categories: [],
-		municipality: null,
-		national: false,
-		page: 3,
-	}
-	expect(applyPatch(base, { search: "nav" }).page).toBe(1)
-	expect(applyPatch(base, { categories: ["rus"] }).page).toBe(1)
-	expect(applyPatch(base, { page: 4 }).page).toBe(4) // explicit paging does not reset itself
-})
-
-test("municipality and national are mutually exclusive", () => {
-	const base = { search: "", categories: [], municipality: null, national: true, page: 1 }
-	const picked = applyPatch(base, { municipality: 4 })
-	expect(picked.national).toBe(false)
-	const backToNational = applyPatch(picked, { national: true })
-	expect(backToNational.municipality).toBeNull()
-	expect(buildSearch({ ...base, municipality: 4, national: true })).not.toContain("municipality")
 })
 
 test("root is the landing, /sok is the list, detail and unknown are unchanged", () => {
@@ -91,13 +50,12 @@ describe("language prefix", () => {
 
 	test("buildSearch never emits lang", () => {
 		const search = buildSearch({
+			...EMPTY_FILTERS,
 			search: "nav",
-			categories: [],
-			municipality: 3,
-			national: false,
+			municipalities: ["3407"],
 			page: 2,
 		})
-		expect(search).toBe("?search=nav&municipality=3&page=2")
+		expect(search).toBe("?search=nav&municipality=3407&page=2")
 	})
 })
 

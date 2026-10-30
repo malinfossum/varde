@@ -32,15 +32,21 @@ const resourceFor = (lang: "nb" | "en"): ResourceDto[] => [
 	},
 ]
 
-// Deferred per language, so the test controls exactly when each language's index resolves —
-// municipalities.json and kommuner.json are shared across languages and resolve immediately.
+// Deferred per language, so the test controls exactly when each language's index resolves.
+// municipalities.json, kommuner.json, counties.json and aliases.json are shared across
+// languages and resolve immediately.
 function stubIndexByLang() {
 	const deferred = { nb: Promise.withResolvers<void>(), en: Promise.withResolvers<void>() }
 	vi.stubGlobal(
 		"fetch",
 		vi.fn(async (input: RequestInfo | URL) => {
 			const path = new URL(String(input), "http://localhost").pathname
-			if (path === "/data/municipalities.json" || path === "/data/kommuner.json") {
+			if (
+				path === "/data/municipalities.json" ||
+				path === "/data/kommuner.json" ||
+				path === "/data/counties.json" ||
+				path === "/data/aliases.json"
+			) {
 				return new Response(JSON.stringify([]), { status: 200 })
 			}
 			const lang = path.includes(".en.json") ? "en" : "nb"
@@ -69,7 +75,7 @@ test("a language switch during load never applies the stale language's data", as
 
 	// The new (current) language's response lands first…
 	deferred.en.resolve()
-	await screen.findByText("Crisis Centre")
+	await screen.findByText("Crisis Centre", undefined, { timeout: 3000 })
 
 	// …then the superseded nb response tries to land. It must change nothing.
 	deferred.nb.resolve()

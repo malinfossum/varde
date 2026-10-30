@@ -11,7 +11,7 @@ test("suggestions render as buttons and report picks", async () => {
 		<LanguageProvider lang="nb">
 			<Suggestions
 				suggestions={[
-					{ kind: "municipality", id: 1, name: "Hamar" },
+					{ kind: "municipality", number: "3403", name: "Hamar" },
 					{ kind: "category", slug: "rus", name: "Rus" },
 				]}
 				onPick={onPick}
@@ -19,6 +19,10 @@ test("suggestions render as buttons and report picks", async () => {
 		</LanguageProvider>
 	)
 	await user.click(screen.getByRole("button", { name: "Hamar (kommune)" }))
-	expect(onPick).toHaveBeenCalledWith({ kind: "municipality", id: 1, name: "Hamar" })
+	expect(onPick).toHaveBeenCalledWith({
+		kind: "municipality",
+		number: "3403",
+		name: "Hamar",
+	})
 	expect(screen.getByRole("button", { name: "Rus (kategori)" })).toBeInTheDocument()
 })

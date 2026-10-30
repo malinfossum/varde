@@ -8,7 +8,9 @@ afterEach(() => vi.restoreAllMocks())
 
 test("derives municipalities and categories from loadIndex", async () => {
 	stubDataFiles({
-		municipalities: [{ id: 1, name: "Hamar", county: "Innlandet" }],
+		municipalities: [
+			{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+		],
 		categories: [{ id: 4, slug: "rus", name: "Rus", isFallbackTranslation: false }],
 	})
 
@@ -17,7 +19,7 @@ test("derives municipalities and categories from loadIndex", async () => {
 	await waitFor(() => expect(result.current.state.kind).toBe("ready"))
 	if (result.current.state.kind === "ready") {
 		expect(result.current.state.catalog.municipalities).toEqual([
-			{ id: 1, name: "Hamar", county: "Innlandet" },
+			{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
 		])
 		expect(result.current.state.catalog.categories).toEqual([
 			{ id: 4, slug: "rus", name: "Rus", isFallbackTranslation: false },
@@ -43,12 +45,14 @@ test("is ready on its first render when the index has already settled", async ()
 
 test("retry() re-fetches after a failed load and can succeed", async () => {
 	// One fetch mock spanning both attempts so the call count is comparable across them — a
-	// failed attempt calls all four data files, and the retry after a success flip must call
+	// failed attempt calls all six data files, and the retry after a success flip must call
 	// them again (the fetch call count grows).
 	let fail = true
 	const files: Record<string, unknown> = {
 		"/data/resources.nb.json": [],
-		"/data/municipalities.json": [{ id: 1, name: "Hamar", county: "Innlandet" }],
+		"/data/municipalities.json": [
+			{ id: 1, name: "Hamar", county: "Innlandet", number: "3403", countyNumber: "34" },
+		],
 		"/data/categories.nb.json": [],
 		"/data/kommuner.json": [],
 	}
@@ -62,13 +66,13 @@ test("retry() re-fetches after a failed load and can succeed", async () => {
 	const { result } = renderHook(() => useCatalog("nb"))
 
 	await waitFor(() => expect(result.current.state.kind).toBe("error"))
-	expect(fetchMock).toHaveBeenCalledTimes(4)
+	expect(fetchMock).toHaveBeenCalledTimes(6)
 
 	fail = false
 	act(() => result.current.retry())
 
 	await waitFor(() => expect(result.current.state.kind).toBe("ready"))
-	expect(fetchMock.mock.calls.length).toBeGreaterThan(4)
+	expect(fetchMock.mock.calls.length).toBeGreaterThan(6)
 	if (result.current.state.kind === "ready") {
 		expect(result.current.state.catalog.municipalities).toHaveLength(1)
 	}
