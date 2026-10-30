@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { groundingGate } from "../src/gates/grounding.ts"
+import { freeQualifiedIn } from "../src/gates/phrases.ts"
 import { candidate, context } from "./helpers.ts"
 
 describe("grounding gate", () => {
@@ -243,8 +244,9 @@ describe("final fixes 2 R1, R2, R4: grounding reads every quote together", () =>
 		for (const quotes of [
 			["Gratis.", "Kun for medlemmer."],
 			["Gratis.", "Gjelder første samtale."],
-			// Read together, a number anywhere limits too, a phone number included.
-			["Gratis.", "Ring 62 00 00 00."],
+			// Read together, a number anywhere limits too. A quote that is only a phone number is
+			// the one exception (final fixes 3 F2), so this one says more than the number.
+			["Gratis.", "Ring 62 00 00 00 før du kommer."],
 		]) {
 			expect(ground("cost", "free", quotes), quotes.join(" | ")).toMatchObject(toReview)
 		}
@@ -315,10 +317,12 @@ describe("final fixes 3 A1: free and always-open read yes only from a plain clai
 		}
 	})
 
-	// The phone-only exemption is the allowlist's; the digit rule of the second net still sends
-	// a free claim beside a number to review.
-	it("still sends a free claim beside a phone-only quote to review through the digit rule", () => {
-		expect(ground("cost", "free", ["Gratis.", "Telefon: 62 00 00 00"])).toMatchObject(toReview)
+	// Final fixes 3 F2: the second net's digit rule skips a phone-only or address-only quote too.
+	it("grounds a free claim beside a phone-only or an address-only quote", () => {
+		expect(ground("cost", "free", ["Gratis.", "Telefon: 62 00 00 00"]).pass).toBe(true)
+		expect(ground("cost", "free", ["Gratis.", "Besøksadresse: Storgata 1, 2317 Hamar"]).pass).toBe(
+			true
+		)
 	})
 
 	it("still grounds the plain always-open claims", () => {
@@ -461,5 +465,20 @@ describe("final fixes 3 F1: a neighbour quote must itself be plain", () => {
 		expect(ground("cost", "free", ["Gratis.", "Tilbudet er henvisningsfritt."]).pass).toBe(true)
 		// The neighbour passes the free vocabulary.
 		expect(ground("alwaysOpen", true, ["Døgnåpent.", "Gratis."]).pass).toBe(true)
+	})
+})
+
+describe("final fixes 3 F2: the free digit rule skips a phone-only or address-only quote", () => {
+	it("keeps the digit rule for every other quote", () => {
+		expect(freeQualifiedIn(["Telefon: 62 00 00 00"])).toBe(false)
+		expect(freeQualifiedIn(["Storgata 1, 2317 Hamar"])).toBe(false)
+		expect(freeQualifiedIn(["Ring 62 00 00 00 før du kommer."])).toBe(true)
+		expect(freeQualifiedIn(["Egenandel kr 350 per time."])).toBe(true)
+		const quotes = ["Gratis.", "Egenandel kr 350 per time."]
+		const c = candidate({ field: "cost", value: "free", evidence: { kind: "quote", quotes } })
+		expect(groundingGate(c, context({ pageText: () => quotes.join(" ") }))).toMatchObject({
+			pass: false,
+			onFail: "review",
+		})
 	})
 })
