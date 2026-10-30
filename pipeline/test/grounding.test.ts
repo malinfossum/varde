@@ -186,3 +186,80 @@ describe("grounding gate", () => {
 		})
 	})
 })
+
+describe("final fixes 2 R1, R2, R4: grounding reads every quote together", () => {
+	const ground = (field: "cost" | "alwaysOpen", value: string | boolean, quotes: string[]) =>
+		groundingGate(
+			candidate({ field, value, evidence: { kind: "quote", quotes } }),
+			context({ pageText: () => quotes.join(" ") })
+		)
+	const toReview = { pass: false, onFail: "review" }
+
+	it("sends an always-open claim to review when another quote qualifies it", () => {
+		for (const quotes of [
+			["Døgnåpent.", "Stengt 24. desember."],
+			["Døgnåpent.", "Åpent mandag til fredag."],
+			["Døgnåpent.", "Kun for innlagte."],
+			// Read together, a number anywhere is a time signal too, so a phone number beside
+			// the claim also goes to review. readAlwaysOpen on the one quote still says yes.
+			["Legevakten er døgnåpen.", "Ring 62 00 00 00."],
+			["Legevakten er døgnåpen. Ring 62 00 00 00."],
+		]) {
+			expect(ground("alwaysOpen", true, quotes), quotes.join(" | ")).toMatchObject(toReview)
+		}
+	})
+
+	it("sends an always-open claim to review when any quote says the service closed", () => {
+		for (const quotes of [
+			["Døgnåpent.", "Tilbudet er lagt ned."],
+			["Døgnåpent.", "Tilbudet finnes ikke lenger."],
+			["Døgnåpent. Tilbudet ble avviklet i fjor."],
+		]) {
+			expect(ground("alwaysOpen", true, quotes), quotes.join(" | ")).toMatchObject(toReview)
+		}
+	})
+
+	it("still grounds an always-open claim the quotes make plainly", () => {
+		expect(ground("alwaysOpen", true, ["Døgnåpent.", "Legevakten er døgnåpen."]).pass).toBe(true)
+		expect(ground("alwaysOpen", true, ["Åpent hele døgnet for alle."]).pass).toBe(true)
+	})
+
+	it("sends a free cost to review when another quote holds a price signal", () => {
+		for (const quotes of [
+			["Gratis.", "Egenandel kr 350 per time."],
+			["Gratis.", "Egenandel gjelder."],
+			["Gratis.", "Du må betale for materiell."],
+			["Gratis.", "Kurset koster litt."],
+			["Gratis.", "Se prislisten."],
+			["Gratis.", "Ta med noen kroner."],
+			["Gratis.", "Ta med kr til kaffe."],
+		]) {
+			expect(ground("cost", "free", quotes), quotes.join(" | ")).toMatchObject(toReview)
+		}
+	})
+
+	it("sends a free cost to review when another quote limits it", () => {
+		for (const quotes of [
+			["Gratis.", "Kun for medlemmer."],
+			["Gratis.", "Gjelder første samtale."],
+		]) {
+			expect(ground("cost", "free", quotes), quotes.join(" | ")).toMatchObject(toReview)
+		}
+		expect(ground("cost", "free", ["Gratis første time."])).toMatchObject(toReview)
+	})
+
+	it("sends a free cost to review when any quote says the service closed", () => {
+		expect(ground("cost", "free", ["Gratis.", "Tilbudet er lagt ned."])).toMatchObject(toReview)
+	})
+
+	it("still grounds a plain free cost", () => {
+		for (const quotes of [
+			["Gratis."],
+			["Tilbudet er gratis.", "Det koster ingenting."],
+			["Samtalene er uten egenandel."],
+			["Gratis for alle."],
+		]) {
+			expect(ground("cost", "free", quotes).pass, quotes.join(" | ")).toBe(true)
+		}
+	})
+})

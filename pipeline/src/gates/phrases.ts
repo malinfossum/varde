@@ -142,6 +142,33 @@ export function saysFee(quote: string): boolean {
 	return false
 }
 
+// Words that speak of a price even without a number: kr, kroner, egenandel (but not "uten
+// egenandel"), betal*, koster (but not "koster ingenting") and pris*.
+function priceSignal(ws: readonly string[]): boolean {
+	return ws.some(
+		(w, i) =>
+			w === "kr" ||
+			w === "kroner" ||
+			(w.startsWith("egenandel") && ws[i - 1] !== "uten") ||
+			w.startsWith("betal") ||
+			(w === "koster" && ws[i + 1] !== "ingenting") ||
+			w.startsWith("pris")
+	)
+}
+
+// Grounding of cost "free" reads every quote together: a price, a limit or a closure in any
+// sentence of any quote means the value goes to me.
+export function freeQualifiedIn(quotes: readonly string[]): boolean {
+	return quotes.some(
+		(q) =>
+			saysFee(q) ||
+			sentences(q).some((sentence) => {
+				const ws = words(sentence)
+				return priceSignal(ws) || freeLimited(sentence, ws) || saysClosed(ws)
+			})
+	)
+}
+
 export function classifyCost(quotes: readonly string[]): Cost | undefined {
 	const free = quotes.some(saysFree)
 	const fee = quotes.some(saysFee)
@@ -214,6 +241,19 @@ export function readAlwaysOpen(quote: string): AlwaysOpenReading {
 	if (claims.some(({ sentence, ws }) => limitedInTime(sentence, ws))) return "qualified"
 	if (claims.some(({ ws }) => limitedToSome(ws))) return "qualified"
 	return "yes"
+}
+
+// Grounding of alwaysOpen reads every quote together: a closure, a season, a time limit, a
+// limiting word or a group in any sentence of any quote means the value goes to me.
+export function alwaysOpenQualifiedIn(quotes: readonly string[]): boolean {
+	return quotes.some((q) =>
+		sentences(q).some((sentence) => {
+			const ws = words(sentence)
+			return (
+				closedOrSeasonal(ws) || limitedInTime(sentence, ws) || limitedToSome(ws) || saysClosed(ws)
+			)
+		})
+	)
 }
 
 export function saysAlwaysOpen(quote: string): boolean {
