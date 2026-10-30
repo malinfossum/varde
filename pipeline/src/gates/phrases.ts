@@ -264,7 +264,7 @@ function markerReading(ws: readonly string[], i: number): "noneNeeded" | "unclea
 }
 
 // A sentence that says the service has closed or ended: "Drop-in-tilbudet er avviklet".
-function saysClosed(ws: readonly string[]): boolean {
+export function saysClosed(ws: readonly string[]): boolean {
 	return ws.some(
 		(w, i) =>
 			w === "avviklet" ||
@@ -276,6 +276,12 @@ function saysClosed(ws: readonly string[]): boolean {
 	)
 }
 
+// Any sentence of any quote that says the service closed or ended. "Drop-in hver tirsdag.
+// Det ble avviklet i 2024." puts the closure in the next sentence, so no reading stays local.
+export function closedIn(quotes: readonly string[]): boolean {
+	return quotes.some((q) => sentences(q).some((sentence) => saysClosed(words(sentence))))
+}
+
 // Per sentence:
 // - A lavterskel or drop-in word means none is needed, unless a negator stands up to three
 //   words before it ("ikke et lavterskeltilbud"), which makes the sentence unclear.
@@ -285,19 +291,15 @@ function saysClosed(ws: readonly string[]): boolean {
 //   and it stands up to three words before that word. With no negator it reads needed.
 // - Two negators, a negator out of reach, or several referral words next to any negator
 //   ("Krever ikke henvisning, men vedtak") are unclear.
-// - A noneNeeded reading in a sentence that says the service closed or ended is unclear.
-// Quotes that read more than one way are unclear too.
+// Quotes that read more than one way are unclear too, and so is any reading when a sentence of
+// any quote says the service closed or ended.
 export function readReferral(quotes: readonly string[]): ReferralReading {
 	const readings = new Set<Exclude<ReferralReading, "silent">>()
 	for (const quote of quotes) {
 		for (const sentence of sentences(quote)) {
 			const ws = words(sentence)
-			const none = saysClosed(ws) ? "unclear" : "noneNeeded"
 			const markers = markerIndexes(ws)
-			for (const i of markers) {
-				const reading = markerReading(ws, i)
-				readings.add(reading === "noneNeeded" ? none : reading)
-			}
+			for (const i of markers) readings.add(markerReading(ws, i))
 			const referralAt = ws.flatMap((w, i) =>
 				REFERRAL_WORD.test(w) && !NO_REFERRAL_WORD.test(w) && !markers.includes(i) ? [i] : []
 			)
@@ -305,11 +307,11 @@ export function readReferral(quotes: readonly string[]): ReferralReading {
 			const negators = ws.filter((w) => NEGATORS.has(w)).length
 			if (negators === 0) readings.add("needed")
 			else if (negators === 1 && referralAt.length === 1 && negatedWithin(ws, referralAt[0] ?? 0)) {
-				readings.add(none)
+				readings.add("noneNeeded")
 			} else readings.add("unclear")
 		}
 	}
 	if (readings.size === 0) return "silent"
-	if (readings.size > 1) return "unclear"
+	if (readings.size > 1 || closedIn(quotes)) return "unclear"
 	return [...readings][0] ?? "silent"
 }

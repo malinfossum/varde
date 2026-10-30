@@ -197,3 +197,33 @@ describe("final fixes 2 N1: a negator or a limit after a no-referral marker", ()
 		expect(readReferral(["Du kan henvise deg selv."])).toBe("noneNeeded")
 	})
 })
+
+describe("final fixes 2 R4: a closure in any sentence of any quote", () => {
+	it("reads a closure in the next sentence as unclear", () => {
+		const quotes = ["Drop-in hver tirsdag. Det ble avviklet i 2024."]
+		expect(readReferral(quotes)).toBe("unclear")
+		expect(lavterskel(quotes, "free").outcome).toBe("review")
+	})
+
+	it("reads a closure in another quote as unclear", () => {
+		const quotes = ["Drop-in hver tirsdag.", "Det ble avviklet i 2024."]
+		expect(readReferral(quotes)).toBe("unclear")
+		expect(lavterskel(quotes, "free").outcome).toBe("review")
+	})
+
+	it("reads every closure word in another quote as unclear", () => {
+		for (const closed of [
+			"Tilbudet er lagt ned.",
+			"Tilbudet er nedlagt.",
+			"Kontoret er stengt.",
+			"Tilbudet finnes ikke lenger.",
+			"Tilbudet opphørte i fjor.",
+		]) {
+			expect(readReferral(["Gratis drop-in, uten henvisning.", closed]), closed).toBe("unclear")
+		}
+	})
+
+	it("reads a referral need beside a closure as unclear too", () => {
+		expect(readReferral(["Krever henvisning.", "Tilbudet er avviklet."])).toBe("unclear")
+	})
+})
