@@ -200,6 +200,7 @@ describe("final fixes 2 R1, R2, R4: grounding reads every quote together", () =>
 			["Døgnåpent.", "Stengt 24. desember."],
 			["Døgnåpent.", "Åpent mandag til fredag."],
 			["Døgnåpent.", "Kun for innlagte."],
+			["Døgnåpent.", "Redusert bemanning i julen."],
 			// Read together, a number anywhere is a time signal too, so a phone number beside
 			// the claim also goes to review. readAlwaysOpen on the one quote still says yes.
 			["Legevakten er døgnåpen.", "Ring 62 00 00 00."],
@@ -242,6 +243,8 @@ describe("final fixes 2 R1, R2, R4: grounding reads every quote together", () =>
 		for (const quotes of [
 			["Gratis.", "Kun for medlemmer."],
 			["Gratis.", "Gjelder første samtale."],
+			// Read together, a number anywhere limits too, a phone number included.
+			["Gratis.", "Ring 62 00 00 00."],
 		]) {
 			expect(ground("cost", "free", quotes), quotes.join(" | ")).toMatchObject(toReview)
 		}

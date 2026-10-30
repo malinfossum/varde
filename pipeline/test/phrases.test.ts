@@ -136,6 +136,7 @@ describe("final fixes 2 R2: a limited free phrase is not free evidence", () => {
 
 	it("reads each limiting signal on its own", () => {
 		for (const text of [
+			"Gratis ut 2026.",
 			"Gratis den første gangen.",
 			"Gratis to ganger.",
 			"Gratis dersom du bor i kommunen.",
