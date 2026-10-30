@@ -660,3 +660,19 @@ describe("final fixes 3 H3: a claim or a neighbour holds only plain characters",
 		expect(ground("cost", "free", ["Gratis: tilbudet er gratis!"]).pass).toBe(true)
 	})
 })
+
+describe("final fixes 3 I2: a Lavterskel-vocabulary neighbour uses whole words from a closed list", () => {
+	it("sends a claim beside a referral compound outside the list to review", () => {
+		for (const [field, value, claim, other] of [
+			["alwaysOpen", true, "Døgnåpent.", "Henvisningsplikt."],
+			["cost", "free", "Gratis.", "Vedtakskrav."],
+		] as const) {
+			const quotes = [claim, other]
+			const c = candidate({ field, value, evidence: { kind: "quote", quotes } })
+			expect(groundingGate(c, context({ pageText: () => quotes.join(" ") })), other).toMatchObject({
+				pass: false,
+				onFail: "review",
+			})
+		}
+	})
+})

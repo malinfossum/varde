@@ -689,32 +689,54 @@ function mentionsLavterskel(ws: readonly string[]): boolean {
 	)
 }
 
+// The whole word forms a plain Lavterskel claim may use (final fixes 3 I2). The prefix
+// matchers (REFERRAL_WORD, NO_REFERRAL_WORD, lavterskel*, drop-in*) stay in the readings as the
+// second net, but a plain claim takes only these, so "Drop-in500", "henvisningsavgift" or
+// "Henvisningsplikt" is never plain.
+const REFERRAL_FORMS: ReadonlySet<string> = new Set([
+	"henvisning",
+	"henvisningen",
+	"henvisninger",
+	"vedtak",
+	"vedtaket",
+])
+const LAVTERSKEL_FORMS: ReadonlySet<string> = new Set([
+	...REFERRAL_FORMS,
+	"henvisningsfri",
+	"henvisningsfritt",
+	"henvisningsfrie",
+	"selvhenvisning",
+	"selvhenvisningen",
+	"selvhenvisninger",
+	"selvhenvise",
+	"henvise",
+	"vedtaksfri",
+	"vedtaksfritt",
+	"vedtaksfrie",
+	"lavterskel",
+	"lavterskeltilbud",
+	"lavterskeltilbudet",
+	"lavterskeltilbudene",
+	"drop-in",
+])
+
 // A negator in a plain Lavterskel claim stands right before a referral word that is no marker:
 // "uten henvisning", "trenger ikke vedtak".
 function negatesReferral(ws: readonly string[], i: number): boolean {
-	const next = ws[i + 1] ?? ""
-	return (
-		NEGATORS.has(ws[i] ?? "") &&
-		REFERRAL_WORD.test(next) &&
-		!NO_REFERRAL_WORD.test(next) &&
-		!noReferralMarker(ws, i + 1)
-	)
+	return NEGATORS.has(ws[i] ?? "") && REFERRAL_FORMS.has(ws[i + 1] ?? "")
 }
 
-// A word of a plain Lavterskel claim: the free words, the markers, the referral words, a
-// negator right before a referral word, and a weekday only beside a marker ("Drop-in hver
+// A word of a plain Lavterskel claim: the free words, the closed list of marker and referral
+// forms, a negator right before a referral word, and a weekday only beside a marker ("Drop-in hver
 // tirsdag.").
 function lavterskelWord(ws: readonly string[], i: number, hasMarker: boolean): boolean {
 	const w = ws[i] ?? ""
 	return (
 		freeWord(ws, i) ||
 		LAVTERSKEL_WORDS.has(w) ||
-		w.startsWith("lavterskel") ||
-		w.startsWith("drop-in") ||
+		LAVTERSKEL_FORMS.has(w) ||
 		(w === "drop" && ws[i + 1] === "in") ||
 		(w === "in" && ws[i - 1] === "drop") ||
-		NO_REFERRAL_WORD.test(w) ||
-		REFERRAL_WORD.test(w) ||
 		negatesReferral(ws, i) ||
 		(hasMarker && WEEKDAYS.includes(w))
 	)

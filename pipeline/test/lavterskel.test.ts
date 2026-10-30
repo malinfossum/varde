@@ -524,3 +524,13 @@ describe("final fixes 3 I1: only ASCII digits are plain", () => {
 		}
 	})
 })
+
+describe("final fixes 3 I2: a Lavterskel claim uses whole words from a closed list", () => {
+	it("never gives yes to a marker or referral word with something glued on", () => {
+		for (const claim of ["Drop-in500", "Drop-in uten henvisningsavgift."]) {
+			const quotes = [claim, "Gratis."]
+			expect(readReferral(quotes), claim).toBe("unclear")
+			expect(lavterskel(quotes, undefined).outcome, claim).toBe("review")
+		}
+	})
+})
