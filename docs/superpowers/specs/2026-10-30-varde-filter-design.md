@@ -1,13 +1,13 @@
 # Varde filter redesign
 
-Date: 30.10.2026. Status: draft, awaiting my review.
+Date: 30.10.2026. Status: reviewed 30.10.2026 (Akutt and Lavterskel folded in), awaiting approval.
 
 ## Goal
 
 The /sok filter has to work at national scale and answer real questions in one pass. My test
 case is "rus i Hamar": it must show the kommune's own rus services and the lavterskel rus
 offers next to them. Today the filter takes one kommune, a national on/off toggle and any-of
-category chips. It cannot pick a fylke or several kommuner. It cannot ask for "akutt" and
+category chips. It cannot pick a fylke or several kommuner. It cannot ask for "rus" and
 "lavterskel" at once, and it hides how many results a choice would give.
 
 Done means: a model that scales to 357 kommuner and 15 fylker, a layout that works from 375 px
@@ -25,11 +25,16 @@ to 1920 px, old links that keep working, and no new dependency.
    and picking it selects Ringsaker kommune. Filter state holds fylker and kommuner only,
    because every row belongs to a kommune and no field says which town a service sits in.
 4. **Two overlap rules, both shown to the user.** Kategorier are any-of. Egenskaper are all-of.
-   Rus plus Akutt means acute rus help. Rus plus Nødtjenester means rus or emergency.
-   Lavterskeltilbud and Nødtjenester stay in Kategorier.
-5. **National services are a 3-way radio under Sted:** Ta med (default), Skjul, Bare nasjonale.
+   Rus plus Lavterskel means lavterskel rus help. Rus plus Nødtjenester means rus or emergency.
+5. **One control per meaning.** Nødtjenester stays in Kategorier, and Akutt is not an Egenskap,
+   because Akutt is that same category under another name. Lavterskel is an Egenskap only
+   (`isLowThreshold`, which follows my definition and carries a quote), and the category
+   Lavterskeltilbud is not offered as a filter. On 30.10.2026 the category and the flag
+   agreed on only 17 rows (48 in the category, 43 flagged), so side by side they would give
+   two different lists under nearly the same name. Both card badges stay as they are.
+6. **National services are a 3-way radio under Sted:** Ta med (default), Skjul, Bare nasjonale.
    National rows serve every place. "Nasjonal" is not an Egenskap; its card badge stays.
-6. **The browser is the only search.** `web/src/services/query.ts` stops promising to mirror
+7. **The browser is the only search.** `web/src/services/query.ts` stops promising to mirror
    the C# `ResourceRepository.SearchAsync`. The C# search is frozen as it is and gets none of
    the new filters. What happens to the API itself belongs to spec B (storage).
 
@@ -40,8 +45,8 @@ to 1920 px, old links that keep working, and no new dependency.
 | Søk | `search` | free text | Substring of name or description, as today |
 | Sted | `county`, `municipality` | fylkesnummer (`34`), kommunenummer (`3403`) | Any picked place |
 | Nasjonale tjenester | `national` | `exclude`, `only`; absent means Ta med | Narrows |
-| Kategorier | `category` | category slug | Any of |
-| Egenskaper | `feature` | `akutt`, `lavterskel`, `dognapent` | All of |
+| Kategorier | `category` | category slug, except `lavterskeltilbud` | Any of |
+| Egenskaper | `feature` | `lavterskel`, `dognapent` | All of |
 | Pris | `cost` | `free`, `partly`, `paid` | Any of |
 | Tilbyder | `provider` | `offentlig`, `frivillig` | Any of. Hidden until rows carry the field |
 
@@ -63,15 +68,23 @@ Place numbers are strings everywhere (`"0301"`, `"03"`), because the leading zer
   it is being ignored.
 - **Redundant picks are allowed.** Innlandet plus Hamar gives the same rows as Innlandet. Both
   stay as chips, so removing one never removes the other.
-- **Egenskaper.** Akutt is a row with category `nodtjenester` (as `ResourceBadges` derives it
-  today). Lavterskel is `isLowThreshold`. Døgnåpent is `isAlwaysOpen`.
+- **Egenskaper.** Lavterskel is `isLowThreshold`. Døgnåpent is `isAlwaysOpen`.
 - **Pris.** Matches `cost`. A row with no stated cost drops out once any Pris box is ticked.
 - **Tilbyder.** Matches `providerType` from the national data spec.
 
 ### Facet counts
 
 Every checkbox and radio option shows how many results the list would have if I ticked it,
-with every other group kept as it is (disjunctive counts). An option with 0 stays visible and
+with every other group kept as it is. How an option's own group counts depends on its rule:
+
+- **Any-of groups** (Kategorier, Pris, Tilbyder) and the national radio count each option
+  without the group's other ticks (disjunctive). Ticking one more Kategori can only widen the
+  list, so its count is never below the current total.
+- **All-of groups** (Egenskaper) count each option with the group's other ticks kept. With
+  Døgnåpent ticked, the count next to Lavterskel is the rows that are both.
+- **A ticked option** shows the count of the list as it is now, in both kinds of group.
+
+An option with 0 stays visible and
 enabled, so the layout never jumps and nothing is hidden from a screen reader. One pure function,
 `facetCounts(rows, filters)`, computes all counts in one pass over the rows.
 
@@ -84,6 +97,8 @@ Parsing stays lenient, so no shared link breaks:
   4 Ringsaker 3411, 5 Stange 3413, 6 Løten 3412, 7 Elverum 3420, 8 Oslo 0301 (SSB KLASS,
   classification 131, codesAt 30.10.2026).
 - `national=true` means `only`.
+- `category=lavterskeltilbud` means `feature=lavterskel`. The list behind an old link can
+  differ slightly, because the flag and the category are not yet the same rows.
 - Unknown values in any param are dropped, not errors. Repeated values are deduplicated.
 - A kommunenummer that changed in a reform maps through KLASS's correspondence tables. That
   table lives with the place data (spec B), and the parser takes it as input.
@@ -152,12 +167,15 @@ it is rewritten with `history.replaceState(history.state, "", url)`. Passing the
 
 - The debounced result-count announcement fires on every filter key, the new ones included.
 - Picking a search suggestion adds the place or category to the filter. Today a category
-  suggestion replaces the chosen categories, and that changes.
+  suggestion replaces the chosen categories, and that changes. A Lavterskeltilbud suggestion
+  ticks the Lavterskel Egenskap.
 - The filter column reserves its loaded height while the catalog loads, so Back to /sok lands
   on the saved scroll position. The reserved height is re-measured for the new layout, both
   below and from 1024 px, and `e2e/historyNav.spec.ts` stays green.
 - Links into /sok from the landing page, the acute strip and the kommune pages keep working.
-  The kommune page link switches to `?municipality=<kommunenummer>`.
+  The kommune page link switches to `?municipality=<kommunenummer>`. The landing page's
+  Lavterskeltilbud chip links to `?feature=lavterskel`. The acute strip keeps
+  `?category=nodtjenester`.
 
 ### Copy
 
@@ -169,7 +187,7 @@ it is rewritten with `history.replaceState(history.state, "", url)`. Passing the
 | National legend | Nasjonale tjenester | National services |
 | National options | Ta med, Skjul, Bare nasjonale | Include, Hide, National only |
 | Facet legends | Kategorier, Egenskaper, Pris, Tilbyder | Categories, Features, Cost, Provider |
-| Features | Akutt, Lavterskel, Døgnåpent | Acute, Low threshold, Open 24/7 |
+| Features | Lavterskel, Døgnåpent | Low threshold, Open 24/7 |
 | Cost | Gratis, Delvis gratis, Betalt | Free, Partly free, Paid |
 | Provider | Offentlig, Frivillig | Public, Voluntary |
 | Phone button | Flere filtre (n) | More filters (n) |
@@ -196,7 +214,7 @@ use two words for one thing.
 
 ## Data contract
 
-The filter needs place numbers and a fylke list. It does not need new resource fields: Akutt,
+The filter needs place numbers and a fylke list. It does not need new resource fields:
 Lavterskel, Døgnåpent and Pris use fields every row already has.
 
 - **`places.json`** in the web data: each kommune with `number`, `countyNumber`, `name` and the
@@ -216,17 +234,25 @@ Lavterskel, Døgnåpent and Pris use fields every row already has.
 - **A `loadRows(places)` seam.** Filtering and facet counts call this one function for their
   rows. Today it returns every row. Spec B can make it fetch only the picked places' files
   without touching the filter code.
-- **One data rule for the pipeline:** a row in category `lavterskeltilbud` also carries its
-  topic category (for example `rus`). Without it "rus i Hamar" misses the lavterskel offers.
-  31 of the 48 lavterskeltilbud rows carry no other category today. Adding their topic
-  categories is a data change of its own, done where the data lives.
+- **A data reconcile, before PR 2 opens.** The filter reaches lavterskel rows through the
+  flag and topic categories only, so two things must hold for every row in category
+  `lavterskeltilbud`:
+  - It carries its topic category (for example `rus`). On 30.10.2026, 31 of the 48 rows
+    carried no other category, so "rus i Hamar" missed them.
+  - Its `isLowThreshold` is settled against my definition: a quote from the source earns the
+    flag, and a row without one stays unflagged. The never-invent rule holds, so a flag is
+    never set from memory.
+
+  This is its own data PR, done where the data lives. The pipeline follows the same two rules
+  for new rows. The category itself stays in the data for its badge and landing page chip.
 
 Spec B (storage) takes over ownership of these three files.
 
 ## Testing
 
 - **Unit (vitest), PR 1:** table-driven tests for every group alone and for groups combined.
-  Disjunctive counts, including a 0 count. Every old link form. The fylke expansion, served
+  Disjunctive counts in an any-of group, kept-tick counts in Egenskaper, a ticked option's
+  count, and a 0 count. Every old link form, `category=lavterskeltilbud` included. The fylke expansion, served
   kommuner and the three national modes. Bare nasjonale clearing Sted, and a place pick
   resetting the radio. URL round trip: parse then build gives the same URL, and two orders of
   the same params build one URL. The place-file guard, with its failing fixture.
@@ -249,7 +275,9 @@ Spec B (storage) takes over ownership of these three files.
    `loadRows` seam), `facetCounts`, the three data files and the build step that attaches
    numbers. Today's UI changes only as much as it must to write the new params. The single
    combobox writes a kommunenummer, and the national button writes `only`.
-2. **PR 2: the UI.** PlaceBar, FacetGroup, FacetPanel, ActiveFilters, the copy, and the
+2. **Data PR: the lavterskel reconcile** (see Data contract). It can run in parallel with
+   PR 1 and must merge before PR 2 opens.
+3. **PR 2: the UI.** PlaceBar, FacetGroup, FacetPanel, ActiveFilters, the copy, and the
    reserved-height re-measure.
 
 The Tilbyder group ships with the national data spec's UI follow-up, when rows carry
