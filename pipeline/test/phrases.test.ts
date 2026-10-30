@@ -64,6 +64,8 @@ describe("final fixes F1: qualified free and always-open text is not a yes", () 
 		expect(saysFree("Gratis for studenter.")).toBe(false)
 		expect(saysFree("Gratis for de under 25 år.")).toBe(false)
 		expect(saysFree("Gratis for alle under 25 år.")).toBe(false)
+		// The digit rule (final fixes 2 R2) also catches the line above; this one has no digit.
+		expect(saysFree("Gratis for alle som bor i kommunen.")).toBe(false)
 		expect(classifyCost(["Gratis for barn under 18 år."])).toBeUndefined()
 		expect(classifyCost(["Gratis parkering."])).toBeUndefined()
 	})
@@ -178,6 +180,8 @@ describe("final fixes 2 R3: a limited always-open claim is qualified", () => {
 			"Vi svarer 24/7 for ansatte.",
 			"Døgnåpent, bare ved akutt behov.",
 			"Åpent hele døgnet for alle over 18 år.",
+			// No digit here, so only the "for alle" narrowing rule can qualify it.
+			"Døgnåpent for alle som er innlagt.",
 		]) {
 			expect(readAlwaysOpen(text), text).toBe("qualified")
 			expect(saysAlwaysOpen(text), text).toBe(false)
