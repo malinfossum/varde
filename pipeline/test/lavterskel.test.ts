@@ -463,3 +463,13 @@ describe("final fixes 3 G3: an asterisk marks a footnote, so the claim is qualif
 		}
 	})
 })
+
+describe("final fixes 3 G4: a neighbour that says a referral is needed", () => {
+	it("never gives yes, and still reads 'Du trenger ikke henvisning.' as noneNeeded", () => {
+		expect(lavterskel(["Drop-in.", "Gratis.", "Du trenger henvisning."], undefined).outcome).toBe(
+			"review"
+		)
+		expect(readReferral(["Du trenger ikke henvisning."])).toBe("noneNeeded")
+		expect(lavterskel(["Du trenger ikke henvisning.", "Gratis."], undefined).outcome).toBe("yes")
+	})
+})

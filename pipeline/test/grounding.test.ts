@@ -558,3 +558,21 @@ describe("final fixes 3 G3: an asterisk marks a footnote, so the claim is qualif
 		})
 	})
 })
+
+describe("final fixes 3 G4: a neighbour that says a referral is needed is not plain", () => {
+	it("sends a claim beside 'Du trenger henvisning' to review", () => {
+		for (const [field, value, claim] of [
+			["alwaysOpen", true, "Døgnåpent."],
+			["cost", "free", "Gratis."],
+		] as const) {
+			for (const other of ["Du trenger henvisning.", "Du trenger vedtak."]) {
+				const quotes = [claim, other]
+				const c = candidate({ field, value, evidence: { kind: "quote", quotes } })
+				expect(
+					groundingGate(c, context({ pageText: () => quotes.join(" ") })),
+					other
+				).toMatchObject({ pass: false, onFail: "review" })
+			}
+		}
+	})
+})

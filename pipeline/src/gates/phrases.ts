@@ -522,6 +522,7 @@ const QUALIFIER_WORDS: ReadonlySet<string> = new Set([
 	"kreves",
 	"krever",
 	"påkrevd",
+	"trenger",
 ])
 const QUALIFIER_PREFIXES = [
 	"avtale",
