@@ -1,0 +1,3450 @@
+{
+	"frozenOn": "2026-10-30",
+	"source": "https://varde.pages.dev/data/resources.nb.json",
+	"rows": [
+		{
+			"id": 1,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Hjelpetelefonen (Mental Helse)",
+			"nameEn": "Hjelpetelefonen (Mental Helse)",
+			"categories": [
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "116 123",
+				"address": null,
+				"email": null,
+				"website": "https://mentalhelse.no",
+				"chatUrl": null,
+				"openingHours": "Døgnåpent",
+				"cost": "free",
+				"costNote": "116 123 er en gratis og døgnåpen telefontjeneste for alle som trenger noen å snakke med.",
+				"alwaysOpen": true,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 2,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Kirkens SOS",
+			"nameEn": "Kirkens SOS",
+			"categories": [
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "22 40 00 40",
+				"address": null,
+				"email": null,
+				"website": "https://www.kirkens-sos.no",
+				"chatUrl": "https://www.soschat.no",
+				"openingHours": "Døgnåpent",
+				"cost": "free",
+				"costNote": "Kirkens SOS tar seg ikke betalt for tjenesten og tjener ingenting på tellerskrittene.",
+				"alwaysOpen": true,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 3,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Legevakt",
+			"nameEn": "Legevakt",
+			"categories": [
+				"nodtjenester",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "116 117",
+				"address": null,
+				"email": null,
+				"website": "https://www.helsenorge.no/legevakt/",
+				"chatUrl": null,
+				"openingHours": "Døgnåpent",
+				"cost": "paid",
+				"costNote": "Når du bruker tjenester fra legevakt må du betale en egenandel hvis du ikke har frikort.",
+				"alwaysOpen": true,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 4,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Alarmtelefonen for barn og unge",
+			"nameEn": "Alarmtelefonen for barn og unge",
+			"categories": [
+				"familie-og-barn",
+				"nodtjenester",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "116 111",
+				"address": null,
+				"email": null,
+				"website": "https://www.116111.no",
+				"chatUrl": "https://www.116111.no",
+				"openingHours": "Døgnåpent",
+				"cost": "free",
+				"costNote": "Alarmtelefonen er en gratis tjeneste der du kan henvende deg anonymt.",
+				"alwaysOpen": true,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 5,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "VO-linjen",
+			"nameEn": "VO-linjen",
+			"categories": [
+				"nodtjenester",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "116 006",
+				"address": null,
+				"email": null,
+				"website": "https://www.volinjen.no",
+				"chatUrl": "https://www.volinjen.no",
+				"openingHours": "Døgnåpent",
+				"cost": "free",
+				"costNote": "Helt gratis og anonymt.",
+				"alwaysOpen": true,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 6,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Navs økonomi- og gjeldsveiledningstelefon",
+			"nameEn": "Navs økonomi- og gjeldsveiledningstelefon",
+			"categories": [
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 39",
+				"address": null,
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Hverdager 09:00–15:00",
+				"cost": "free",
+				"costNote": "Tjenesten er gratis, og du bør søke hjelp så tidlig som mulig.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 7,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Jussbuss",
+			"nameEn": "Jussbuss",
+			"categories": [
+				"juridisk-hjelp"
+			],
+			"fields": {
+				"phone": "22 84 29 00",
+				"address": null,
+				"email": null,
+				"website": "https://foreninger.uio.no/jussbuss/",
+				"chatUrl": null,
+				"openingHours": "Mandag 17:00–20:00 og tirsdag 10:00–15:00",
+				"cost": "free",
+				"costNote": "Jussbuss gir gratis rettshjelp i enkeltsaker, og er drevet av jusstudenter.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 8,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Rustelefonen",
+			"nameEn": "Rustelefonen",
+			"categories": [
+				"rus"
+			],
+			"fields": {
+				"phone": "915 08 588",
+				"address": null,
+				"email": null,
+				"website": "https://rustelefonen.no",
+				"chatUrl": null,
+				"openingHours": "Hverdager 11:00–14:30 og 15:00–18:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 9,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": 1,
+			"name": "Arbeidslivstelefonen (Mental Helse)",
+			"nameEn": "Arbeidslivstelefonen (Mental Helse)",
+			"categories": [
+				"arbeid",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "116 123",
+				"address": null,
+				"email": null,
+				"website": "https://mentalhelse.no",
+				"chatUrl": null,
+				"openingHours": "Mandag, tirsdag, onsdag og fredag 08:30–16:00, torsdag 08:30–18:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 10,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Familievernkontoret Innlandet Øst, avdeling Hamar",
+			"nameEn": "Familievernkontoret Innlandet Øst, avdeling Hamar",
+			"categories": [
+				"familie-og-barn"
+			],
+			"fields": {
+				"phone": "466 17 130",
+				"address": "Vangsvegen 121, 2318 Hamar",
+				"email": null,
+				"website": "https://www.bufdir.no/familie/familievernkontorer/oversikt/innlandet-ost/",
+				"chatUrl": null,
+				"openingHours": "08:30–15:00, redusert om sommeren",
+				"cost": "free",
+				"costNote": "Tilbudet er gratis.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 11,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Hamar",
+			"nameEn": "Nav Hamar",
+			"categories": [
+				"arbeid",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Torggata 63, 2317 Hamar",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag og onsdag 12:00–14:00, fredag 10:00–12:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 12,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [
+				"3411",
+				"3413",
+				"3412",
+				"3420"
+			],
+			"parentId": null,
+			"name": "Hamar interkommunale krisesenter",
+			"nameEn": "Hamar interkommunale krisesenter",
+			"categories": [
+				"bolig",
+				"nodtjenester",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "62 56 18 30",
+				"address": "Kronborgvegen 23, 2318 Hamar",
+				"email": null,
+				"website": "https://www.hamar.kommune.no/familiehjelp-oversikt-over-tilbud/krisesenter/",
+				"chatUrl": null,
+				"openingHours": "Døgnåpent",
+				"cost": "free",
+				"costNote": "Hamar interkommunale krisesenter er et gratis døgnåpent akuttsenter.",
+				"alwaysOpen": true,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 13,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Tjeneste psykisk helse og rus, Hamar kommune",
+			"nameEn": "Tjeneste psykisk helse og rus, Hamar kommune",
+			"categories": [
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "916 03 327",
+				"address": "Vangsvegen 121, 2318 Hamar",
+				"email": null,
+				"website": "https://www.hamar.kommune.no/helseogomsorg/psykisk-helse-og-rus/",
+				"chatUrl": null,
+				"openingHours": "Kun dagtid",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 14,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [
+				"3411",
+				"3413",
+				"3412",
+				"3420"
+			],
+			"parentId": null,
+			"name": "Ringsaker interkommunale barnevernvakt",
+			"nameEn": "Ringsaker interkommunale barnevernvakt",
+			"categories": [
+				"familie-og-barn",
+				"nodtjenester",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "404 04 015",
+				"address": null,
+				"email": null,
+				"website": "https://www.hamar.kommune.no/familiehjelp-oversikt-over-tilbud/hjelpetelefoner-for-familier-og-barn-unge/",
+				"chatUrl": null,
+				"openingHours": "Kveld og natt 15:30–08:00, samt helger og helligdager",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 15,
+			"kommune": "3405",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Rask psykisk helsehjelp, Lillehammer kommune",
+			"nameEn": "Rask psykisk helsehjelp, Lillehammer kommune",
+			"categories": [
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "917 13 338",
+				"address": null,
+				"email": null,
+				"website": "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/",
+				"chatUrl": null,
+				"openingHours": "Mandag og onsdag 11:30–13:00",
+				"cost": "free",
+				"costNote": "Rask psykisk helsehjelp er et gratis og tidsavgrenset tilbud til deg fra 16 år som ønsker hjelp med begynnende og/eller lettere former for angst, depresjon, søvnvansker og alkohol-/rusproblemer.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 16,
+			"kommune": "3405",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Gudbrandsdal Krisesenter IKS",
+			"nameEn": "Gudbrandsdal Krisesenter IKS",
+			"categories": [
+				"nodtjenester",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "414 81 220",
+				"address": "Skoletorget 6 D, 2609 Lillehammer",
+				"email": null,
+				"website": "https://gudbrandsdal-krisesenter.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 17,
+			"kommune": "3405",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Housing First, Lillehammer kommune",
+			"nameEn": "Housing First, Lillehammer kommune",
+			"categories": [
+				"bolig",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "451 64 131",
+				"address": null,
+				"email": null,
+				"website": "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/",
+				"chatUrl": null,
+				"openingHours": "Hverdager 09:00–15:00",
+				"cost": "free",
+				"costNote": "Våre tjenester er gratis.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 18,
+			"kommune": "3405",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Oppfølgingsteamet, Lillehammer kommune",
+			"nameEn": "Oppfølgingsteamet, Lillehammer kommune",
+			"categories": [
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "902 43 733",
+				"address": null,
+				"email": null,
+				"website": "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/",
+				"chatUrl": null,
+				"openingHours": "Hver dag 09:00–21:00",
+				"cost": "free",
+				"costNote": "Våre tjenester er gratis.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 19,
+			"kommune": "3405",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Mottak for seksuelle overgrep, Lillehammer",
+			"nameEn": "Mottak for seksuelle overgrep, Lillehammer",
+			"categories": [
+				"nodtjenester",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "61 27 22 16",
+				"address": null,
+				"email": null,
+				"website": "https://lillehammer.kommune.no/om-kommunen/kontakt-oss/nod-og-vakttelefoner/",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 20,
+			"kommune": "3407",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Gjøvik",
+			"nameEn": "Nav Gjøvik",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Parkgata 10 A, 2815 Gjøvik",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Hverdager 09:00–15:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 21,
+			"kommune": "3407",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Gjøvik Krisesenter IKS",
+			"nameEn": "Gjøvik Krisesenter IKS",
+			"categories": [
+				"nodtjenester",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "61 17 55 60",
+				"address": null,
+				"email": null,
+				"website": "https://www.krisesenteret-gjovik.no",
+				"chatUrl": null,
+				"openingHours": "Døgnåpent",
+				"cost": "free",
+				"costNote": "Tilbudet er gratis.",
+				"alwaysOpen": true,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 22,
+			"kommune": "3407",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Jobbhus Gjøvik",
+			"nameEn": "Jobbhus Gjøvik",
+			"categories": [
+				"arbeid"
+			],
+			"fields": {
+				"phone": null,
+				"address": null,
+				"email": null,
+				"website": "https://www.gjovik.kommune.no/jobbhus/jeg-onsker-jobb/",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 23,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Brannvesen (nødnummer)",
+			"nameEn": "Brannvesen (nødnummer)",
+			"categories": [
+				"nodtjenester"
+			],
+			"fields": {
+				"phone": "110",
+				"address": null,
+				"email": null,
+				"website": "https://www.dsb.no/brannsikkerhet/nodmelding/110-sentralene/",
+				"chatUrl": null,
+				"openingHours": "Døgnåpent",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": true,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 24,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Politi (nødnummer)",
+			"nameEn": "Politi (nødnummer)",
+			"categories": [
+				"nodtjenester"
+			],
+			"fields": {
+				"phone": "112",
+				"address": null,
+				"email": null,
+				"website": "https://www.politiet.no/kontakt-politiet/ring-politiet",
+				"chatUrl": null,
+				"openingHours": "Døgnåpent",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": true,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 25,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Ambulanse (medisinsk nødhjelp)",
+			"nameEn": "Ambulanse (medisinsk nødhjelp)",
+			"categories": [
+				"nodtjenester"
+			],
+			"fields": {
+				"phone": "113",
+				"address": null,
+				"email": null,
+				"website": "https://www.helsenorge.no/forstehjelp",
+				"chatUrl": null,
+				"openingHours": "Døgnåpent",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": true,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 101,
+			"kommune": "3411",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Ringsaker",
+			"nameEn": "Nav Ringsaker",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Nordåsvegen 4, 2382 Brumunddal",
+				"email": null,
+				"website": "https://www.nav.no/kontor/nav-ringsaker",
+				"chatUrl": null,
+				"openingHours": "Mandag 12.00-14.00, onsdag 12.00-14.00, fredag 10.00-12.00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 102,
+			"kommune": "3411",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Psykisk helse- og rustjenester, Ringsaker kommune",
+			"nameEn": "Psykisk helse- og rustjenester, Ringsaker kommune",
+			"categories": [
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "62 33 52 20",
+				"address": "Brugata 3, 2380 Brumunddal",
+				"email": "postmottak.psykisk.helse@ringsaker.kommune.no",
+				"website": "https://www.ringsaker.kommune.no/tjenester/helse-og-omsorg/psykisk-helse-og-rustjenester",
+				"chatUrl": null,
+				"openingHours": "Kan kontaktes i tidsrommet 08-15.30",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 103,
+			"kommune": "3411",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Barneverntjenesten i Ringsaker",
+			"nameEn": "Barneverntjenesten i Ringsaker",
+			"categories": [
+				"familie-og-barn"
+			],
+			"fields": {
+				"phone": "47 47 27 87",
+				"address": "Administrasjonsbygget, Furnesvegen 28, 2382 Brumunddal",
+				"email": null,
+				"website": "https://www.ringsaker.kommune.no/tjenester/barn-oppvekst-og-laering/barnevern/melding-til-barneverntjenesten",
+				"chatUrl": null,
+				"openingHours": "Hverdager 08.00–15.30",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 104,
+			"kommune": "3413",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Stange",
+			"nameEn": "Nav Stange",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Storgata 43, 2335 Stange",
+				"email": "nav.stange@nav.no",
+				"website": "https://www.nav.no/kontor/nav-stange",
+				"chatUrl": null,
+				"openingHours": "Selvbetjent mottak mandag, tirsdag, torsdag og fredag 09.00-14.30 og onsdag 12.00-14.30; betjent mottak onsdag 09.00-12.00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 105,
+			"kommune": "3413",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Stangehjelpa (avdeling for psykisk helse og rus), Stange kommune",
+			"nameEn": "Stangehjelpa (avdeling for psykisk helse og rus), Stange kommune",
+			"categories": [
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "62 56 23 00",
+				"address": null,
+				"email": null,
+				"website": "https://www.stange.kommune.no/helse-og-mestring/psykisk-helse-og-rus/stangehjelpa/",
+				"chatUrl": null,
+				"openingHours": "Telefontid hverdager 09.00-15.00 (stengt 11.00-11.45)",
+				"cost": "free",
+				"costNote": "Det er gratis å motta hjelp hos oss.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 106,
+			"kommune": "3413",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Psykososial krisehjelp, Stange kommune",
+			"nameEn": "Psykososial krisehjelp, Stange kommune",
+			"categories": [
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "908 05 567",
+				"address": null,
+				"email": null,
+				"website": "https://www.stange.kommune.no/helse-og-mestring/psykisk-helse-og-rus/psykososial-krisehjelp/",
+				"chatUrl": null,
+				"openingHours": "Hverdager til 15.30 (16.00 fredag) settes over til Stangehjelpa",
+				"cost": "free",
+				"costNote": "Kriseteam tilbyr gratis hjelp og støtte etter spesielt vanskelige hendelser.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 107,
+			"kommune": "3413",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Barneverntjenesten i Stange",
+			"nameEn": "Barneverntjenesten i Stange",
+			"categories": [
+				"familie-og-barn"
+			],
+			"fields": {
+				"phone": "905 42 305",
+				"address": null,
+				"email": null,
+				"website": "https://www.stange.kommune.no/helse-og-mestring/barn-unge-og-familie/barnevern/",
+				"chatUrl": null,
+				"openingHours": "Vakttelefon mandag–fredag 08.30–15.00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 108,
+			"kommune": "3412",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Løten",
+			"nameEn": "Nav Løten",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Kildevegen 1, 2340 Løten",
+				"email": "nav.loten@nav.no",
+				"website": "https://www.nav.no/kontor/nav-loten",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 109,
+			"kommune": "3412",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Økonomisk rådgivning, Nav Løten",
+			"nameEn": "Økonomisk rådgivning, Nav Løten",
+			"categories": [
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": null,
+				"email": null,
+				"website": "https://www.loten.kommune.no/helse-sosial-og-familie/sosiale-tjenester-og-nav/okonomisk-radgivning/",
+				"chatUrl": null,
+				"openingHours": "Mandag, onsdag og fredag 09.00 – 15.00; tirsdag og torsdag 09.00 – 13.00",
+				"cost": "free",
+				"costNote": "Dette er en gratis tjeneste vi tilbyr personer som oppholder seg i Løten kommune, som har behov for det.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 110,
+			"kommune": "3412",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Psykisk helse-team, Løten kommune",
+			"nameEn": "Psykisk helse-team, Løten kommune",
+			"categories": [
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "904 74 982",
+				"address": null,
+				"email": null,
+				"website": "https://www.loten.kommune.no/helse-sosial-og-familie/psykisk-helse-og-rus/psykisk-helse-og-rus-kategori/",
+				"chatUrl": null,
+				"openingHours": "Krisetelefon mandag – fredag kl. 08.00-15.00",
+				"cost": "free",
+				"costNote": "Tjenesten er gratis.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 111,
+			"kommune": "3412",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Barnevernet i Løten",
+			"nameEn": "Barnevernet i Løten",
+			"categories": [
+				"familie-og-barn"
+			],
+			"fields": {
+				"phone": "948 70 878",
+				"address": null,
+				"email": null,
+				"website": "https://www.loten.kommune.no/helse-sosial-og-familie/barn-unge-og-familie/barnevern/",
+				"chatUrl": null,
+				"openingHours": "Mandag - fredag kl. 08:00-15:30",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 112,
+			"kommune": "3412",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Rask psykisk helsehjelp (RPH), Løten kommune",
+			"nameEn": "Rask psykisk helsehjelp (RPH), Løten kommune",
+			"categories": [
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": null,
+				"address": "Kildevegen 1, 2340 Løten",
+				"email": null,
+				"website": "https://www.loten.kommune.no/helse-sosial-og-familie/psykisk-helse-og-rus/rask-psykisk-helsehjelp-rph/",
+				"chatUrl": null,
+				"openingHours": "kl. 08.00-15.30",
+				"cost": "free",
+				"costNote": "Rask psykisk helsehjelp er gratis hjelp for deg over 16 år med milde til moderate psykiske plager.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 113,
+			"kommune": "3420",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Elverum",
+			"nameEn": "Nav Elverum",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "St. Olavs gate 4, 2414 Elverum",
+				"email": null,
+				"website": "https://www.nav.no/kontor/nav-elverum",
+				"chatUrl": null,
+				"openingHours": "Telefontid hverdager kl. 09 - 15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 114,
+			"kommune": "3420",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Barneverntjenesten i Elverum",
+			"nameEn": "Barneverntjenesten i Elverum",
+			"categories": [
+				"familie-og-barn"
+			],
+			"fields": {
+				"phone": "940 17 770",
+				"address": "Helsehuset, Kirkevegen 47, 2413 Elverum",
+				"email": null,
+				"website": "https://www.elverum.kommune.no/vare-tjenester/barnehage-og-skole/barnevern/kontakt-barnevernet/",
+				"chatUrl": null,
+				"openingHours": "Mandag - fredag kl. 08 - 15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 115,
+			"kommune": "3420",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Lavterskel rus- og psykisk helsehjelp (Annekset og Grip), Elverum kommune",
+			"nameEn": "Lavterskel rus- og psykisk helsehjelp (Annekset og Grip), Elverum kommune",
+			"categories": [
+				"lavterskeltilbud",
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "993 72 609",
+				"address": null,
+				"email": null,
+				"website": "https://www.elverum.kommune.no/vare-tjenester/helse-omsorg-og-sosiale-tjenester/rus-og-psykisk-helsetjenester/lavterskel-rus-og-psykisk-helsehjelp/",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": "free",
+				"costNote": "Våre tjenester er gratis.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 116,
+			"kommune": "3420",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Ambulant akutt enhet (AAE), DPS Elverum-Hamar",
+			"nameEn": "Ambulant akutt enhet (AAE), DPS Elverum-Hamar",
+			"categories": [
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "915 06 200",
+				"address": null,
+				"email": null,
+				"website": "https://www.elverum.kommune.no/vare-tjenester/helse-omsorg-og-sosiale-tjenester/rus-og-psykisk-helsetjenester/er-du-i-en-krisesituasjon-og-trenger-akutt-hjelp/",
+				"chatUrl": null,
+				"openingHours": "Mandag – fredag kl. 07.30 - 15.30",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 117,
+			"kommune": "3420",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nok. Elverum Ressurssenter",
+			"nameEn": "Nok. Elverum Ressurssenter",
+			"categories": [
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "971 59 810",
+				"address": "Storgata 10, 2408 Elverum",
+				"email": "post@nokelverum.no",
+				"website": "https://nokelverum.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": "free",
+				"costNote": "Tilbudet er gratis for innbyggerne på grunn av kommunens samarbeidsavtale med senteret, og det er kort ventetid.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 118,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [
+				"3412"
+			],
+			"parentId": null,
+			"name": "Nok. Hamar",
+			"nameEn": "Nok. Hamar",
+			"categories": [
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "916 91 714",
+				"address": null,
+				"email": "post@nokhamar.no",
+				"website": "https://www.nokhamar.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": "free",
+				"costNote": "Vi er et tverrfaglig, gratis og lavterskel hjelpetilbud og støttesenter for utsatte av seksuelle overgrep og deres pårørende.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 119,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Husbanken",
+			"nameEn": "Husbanken",
+			"categories": [
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "22 96 16 00",
+				"address": null,
+				"email": "post@husbanken.no",
+				"website": "https://husbanken.no/person/",
+				"chatUrl": null,
+				"openingHours": "Mandag - fredag, kl. 08.00 - 15.45 (15. september - 14. mai); mandag - fredag, kl. 08.00 - 15.00 (15. mai - 14. september)",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 120,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Skatteetaten",
+			"nameEn": "Skatteetaten",
+			"categories": [
+				"okonomi"
+			],
+			"fields": {
+				"phone": "800 80 000",
+				"address": null,
+				"email": null,
+				"website": "https://www.skatteetaten.no",
+				"chatUrl": null,
+				"openingHours": "Åpningstiden vår er 09:00–15:00 alle hverdager",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 121,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Kors på halsen (Røde Kors)",
+			"nameEn": "Kors på halsen (Røde Kors)",
+			"categories": [
+				"familie-og-barn",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "800 33 321",
+				"address": null,
+				"email": null,
+				"website": "https://www.korspahalsen.no",
+				"chatUrl": "https://www.korspahalsen.no",
+				"openingHours": "Åpent alle dager, hele året, kl. 14-22 (jule- og sommerferie 16-22)",
+				"cost": "free",
+				"costNote": "Tilbudet er gratis og du kan være anonym.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 122,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": 1,
+			"name": "Sidetmedord (Mental Helse)",
+			"nameEn": "Sidetmedord (Mental Helse)",
+			"categories": [
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": null,
+				"address": null,
+				"email": null,
+				"website": "https://sidetmedord.mentalhelse.no/",
+				"chatUrl": "https://mentalhelse.no/hjelpechat/",
+				"openingHours": null,
+				"cost": "free",
+				"costNote": "Ta kontakt med våre gratis og anonyme svartjenester: Hjelpetelefonen, Arbeidslivstelefonen, Sidetmedord.no eller Foreldresupport.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 201,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Alna",
+			"nameEn": "Nav Alna",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Trygve Lies plass 5, 1051 Oslo (Furuset senter, Bydelshuset, Innbyggertorget, 1. etasje)",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 202,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Bjerke",
+			"nameEn": "Nav Bjerke",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Ulvenveien 84A, 0581 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 203,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Frogner",
+			"nameEn": "Nav Frogner",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Drammensveien 60, 0271 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 204,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Gamle Oslo",
+			"nameEn": "Nav Gamle Oslo",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Hagegata 24, 0653 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 205,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Grorud",
+			"nameEn": "Nav Grorud",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Kakkelovnskroken 3A, 0954 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 206,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Grünerløkka",
+			"nameEn": "Nav Grünerløkka",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi",
+				"rus"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Marstrandgata 6, 0566 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 207,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Nordre Aker",
+			"nameEn": "Nav Nordre Aker",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Gullhaugveien 7, 0484 Oslo, inngang fra Sandakerveien 130–138",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 208,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Nordstrand",
+			"nameEn": "Nav Nordstrand",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Cecilie Thoresens vei 1, 1153 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 209,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Sagene",
+			"nameEn": "Nav Sagene",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Thorvald Meyers gate 9, 0555 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15. Drop-in økonomirådgivning onsdager 9–11",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 210,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav St. Hanshaugen",
+			"nameEn": "Nav St. Hanshaugen",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Pilestredet 56, 0167 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 211,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Stovner",
+			"nameEn": "Nav Stovner",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Stovner Senter 17, 0985 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 212,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Søndre Nordstrand",
+			"nameEn": "Nav Søndre Nordstrand",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Ravnåsveien 3, 1254 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 213,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Ullern",
+			"nameEn": "Nav Ullern",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Hoffsveien 48, 0377 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 214,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Vestre Aker",
+			"nameEn": "Nav Vestre Aker",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Sørkedalsveien 150A, 0754 Oslo, inngang til venstre når man kommer inn hovedinngangen",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 215,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Nav Østensjø",
+			"nameEn": "Nav Østensjø",
+			"categories": [
+				"arbeid",
+				"bolig",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "55 55 33 33",
+				"address": "Olaf Helsets vei 6, 0694 Oslo",
+				"email": null,
+				"website": "https://www.nav.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in mandag–fredag 11.00–15.00. Telefontid hverdager 9–15",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 216,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Oslo Krisesenter",
+			"nameEn": "Oslo Krisesenter",
+			"categories": [
+				"bolig",
+				"nodtjenester",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "22 48 03 80",
+				"address": null,
+				"email": null,
+				"website": "https://www.oslokrisesenter.no",
+				"chatUrl": null,
+				"openingHours": "Døgnåpent",
+				"cost": "free",
+				"costNote": "Det koster ingenting å bo på eller få hjelp av krisesenteret.",
+				"alwaysOpen": true,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 217,
+			"kommune": null,
+			"national": true,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Unge Relasjoner",
+			"nameEn": "Unge Relasjoner",
+			"categories": [
+				"psykisk-helse",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": null,
+				"address": null,
+				"email": null,
+				"website": "https://www.ungerelasjoner.no",
+				"chatUrl": "https://www.ungerelasjoner.no/",
+				"openingHours": "Chat tirsdag 12–20 og fredag 12–15",
+				"cost": "free",
+				"costNote": "Tjenesten vår er helt gratis å bruke, og du kan ta kontakt så mange ganger du vil.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 218,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Overgrepsmottaket, Legevakten i Oslo",
+			"nameEn": "Overgrepsmottaket, Legevakten i Oslo",
+			"categories": [
+				"nodtjenester",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "23 04 05 00",
+				"address": "Trondheimsveien 233 (Aker sykehus), 0587 Oslo",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": "Døgnåpent",
+				"cost": "free",
+				"costNote": "Mottaket tilbyr gratis medisinsk og psykososial akuttbehandling, krisehjelp og rettsmedisinske undersøkelser.",
+				"alwaysOpen": true,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 219,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Alternativ til Vold (ATV) Oslo",
+			"nameEn": "Alternativ til Vold (ATV) Oslo",
+			"categories": [
+				"psykisk-helse",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "22 40 11 10",
+				"address": "Brugata 19, 0186 Oslo",
+				"email": null,
+				"website": "https://atv-stiftelsen.no",
+				"chatUrl": null,
+				"openingHours": "Telefontid mandag–fredag 09.00–15.00",
+				"cost": "paid",
+				"costNote": "ATV har en egenandel på kr 350,- for voksne utøverklienter i individualterapi. For gruppebehandling vil egenandelen variere uavhengig hva slags gruppe det dreier seg om. Mange av tilbudene på ATV har en egenandelsbetaling, mens enkelte kontorer og tilbud er gratis.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 220,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Vake kirkelig ressurssenter mot seksuelle overgrep",
+			"nameEn": "Vake kirkelig ressurssenter mot seksuelle overgrep",
+			"categories": [
+				"psykisk-helse",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "23 22 79 30",
+				"address": "Lovisenberggata 15A, 0456 Oslo",
+				"email": null,
+				"website": "https://www.ressurssenteret.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 221,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Psykososial akuttjeneste, Legevakten i Oslo",
+			"nameEn": "Psykososial akuttjeneste, Legevakten i Oslo",
+			"categories": [
+				"nodtjenester",
+				"psykisk-helse",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "23 04 05 00",
+				"address": "Trondheimsveien 233 (Aker sykehus), 0587 Oslo",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": "Døgnåpent",
+				"cost": "free",
+				"costNote": "Tjenesten er gratis, krever ikke henvisning og de ansatte har taushetsplikt etter helsepersonelloven.",
+				"alwaysOpen": true,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 222,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Legevakten i Oslo",
+			"nameEn": "Legevakten i Oslo",
+			"categories": [
+				"nodtjenester",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "116 117",
+				"address": "Trondheimsveien 233 (Aker sykehus)",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": "Åpent 00–24",
+				"cost": "paid",
+				"costNote": "Du må som hovedregel betale egenandel for behandling på legevakten. Det er ulike priser for behandling på allmennlegevakten, skadelegevakten og psykiatrisk legevakt.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 223,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Uteseksjonen, Oslo kommune",
+			"nameEn": "Uteseksjonen, Oslo kommune",
+			"categories": [
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "913 03 913",
+				"address": "Maridalsveien 3, 0178 Oslo",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": "Rådgivningstjenesten i Maridalsveien 3 mandag–fredag 10:00–15:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 224,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Uteseksjonens psykologtjeneste",
+			"nameEn": "Uteseksjonens psykologtjeneste",
+			"categories": [
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "913 03 913",
+				"address": "Maridalsveien 3, 0178 Oslo",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 225,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Prindsen mottakssenter",
+			"nameEn": "Prindsen mottakssenter",
+			"categories": [
+				"bolig",
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "23 42 72 00",
+				"address": "Hausmannsgate 11, 0182 Oslo",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": "Brukerrom mandag–søndag 09:00–22:00. Feltpleie mandag–fredag 09:00–22:00, lørdag–søndag 10:00–20:00",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 226,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Feltpleien i Oslo (Frelsesarmeen)",
+			"nameEn": "Feltpleien i Oslo (Frelsesarmeen)",
+			"categories": [
+				"rus"
+			],
+			"fields": {
+				"phone": "22 67 43 45",
+				"address": "Urtegata 16 A, 0187 Oslo",
+				"email": null,
+				"website": "https://frelsesarmeen.no",
+				"chatUrl": null,
+				"openingHours": "Mandag–fredag 09.00–15.00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 227,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Fyrlyset, Oslo (Frelsesarmeen)",
+			"nameEn": "Fyrlyset, Oslo (Frelsesarmeen)",
+			"categories": [
+				"bolig",
+				"lavterskeltilbud",
+				"rus"
+			],
+			"fields": {
+				"phone": "23 03 66 80",
+				"address": "Urtegata 16 A, 0187 Oslo",
+				"email": "fyrlyset.oslo@frelsesarmeen.no",
+				"website": "https://frelsesarmeen.no",
+				"chatUrl": null,
+				"openingHours": "Hverdager 09.00–14.30, søndager 11.00–13.00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 228,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "LINK Oslo",
+			"nameEn": "LINK Oslo",
+			"categories": [
+				"lavterskeltilbud",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "940 30 488",
+				"address": "Lilletorget 1, 5. etasje",
+				"email": null,
+				"website": "https://linkoslo.no",
+				"chatUrl": null,
+				"openingHours": "Telefon hverdager 9–15",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 229,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Rask psykisk helsehjelp – Bydel Alna",
+			"nameEn": "Rask psykisk helsehjelp – Bydel Alna",
+			"categories": [
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "22 30 77 12",
+				"address": "Trygve Lies Plass 6, 1051 Oslo",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 230,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Rask psykisk helsehjelp – Bydel Ullern",
+			"nameEn": "Rask psykisk helsehjelp – Bydel Ullern",
+			"categories": [
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "95 29 83 22",
+				"address": "Hoffsveien 48, 0377 Oslo",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": "Telefonen er bemannet torsdager 12:00–13:00",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 231,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Rask psykisk helsehjelp – Bydel Vestre Aker",
+			"nameEn": "Rask psykisk helsehjelp – Bydel Vestre Aker",
+			"categories": [
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "47 78 13 15",
+				"address": "Sørkedalsveien 150 A, 0754 Oslo",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 232,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Ung Arena Oslo sentrum",
+			"nameEn": "Ung Arena Oslo sentrum",
+			"categories": [
+				"familie-og-barn",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "904 15 388",
+				"address": "Hagegata 32, 0653 Oslo",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": "Drop-in torsdager 14:00–17:00",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 233,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Kontoret for fri rettshjelp, Oslo kommune",
+			"nameEn": "Kontoret for fri rettshjelp, Oslo kommune",
+			"categories": [
+				"bolig",
+				"juridisk-hjelp",
+				"okonomi"
+			],
+			"fields": {
+				"phone": "23 48 79 00",
+				"address": "Storgata 19, 0184 Oslo",
+				"email": "frirettshjelp@vel.oslo.kommune.no",
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": "Timeavtaler mandag–fredag 08:00–15:30. Drop-in mandag–torsdag 16:00–19:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 234,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "JURK – Juridisk rådgivning for kvinner",
+			"nameEn": "JURK – Juridisk rådgivning for kvinner",
+			"categories": [
+				"juridisk-hjelp",
+				"okonomi",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "22 84 29 50",
+				"address": "Skippergata 23, 0154 Oslo",
+				"email": null,
+				"website": "https://foreninger.uio.no/jurk/",
+				"chatUrl": null,
+				"openingHours": "Nye saker: mandag 12:00–15:00, onsdag 09:00–12:00 (kun telefon) og onsdag 17:00–20:00",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 235,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Gatejuristen",
+			"nameEn": "Gatejuristen",
+			"categories": [
+				"juridisk-hjelp",
+				"rus"
+			],
+			"fields": {
+				"phone": null,
+				"address": null,
+				"email": null,
+				"website": "https://kirkensbymisjon.no/gatejuristen/",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 236,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Barnevernvakten i Oslo",
+			"nameEn": "Barnevernvakten i Oslo",
+			"categories": [
+				"familie-og-barn",
+				"nodtjenester",
+				"vold-og-overgrep"
+			],
+			"fields": {
+				"phone": "40 42 77 77",
+				"address": null,
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 237,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Familievernkontoret Christiania",
+			"nameEn": "Familievernkontoret Christiania",
+			"categories": [
+				"familie-og-barn"
+			],
+			"fields": {
+				"phone": "23 28 39 40",
+				"address": "Dronningens gate 8 A, 0152 Oslo",
+				"email": null,
+				"website": "https://www.bufdir.no",
+				"chatUrl": null,
+				"openingHours": "Åpent 08.15–15.30, telefontid 08.30–15.00",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 238,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Familievernkontoret Enerhaugen",
+			"nameEn": "Familievernkontoret Enerhaugen",
+			"categories": [
+				"familie-og-barn"
+			],
+			"fields": {
+				"phone": "466 17 010",
+				"address": "Grønlandsleiret 25, 0190 Oslo",
+				"email": null,
+				"website": "https://www.bufdir.no",
+				"chatUrl": null,
+				"openingHours": "08.30–15.00",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 239,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Familievernkontoret Homansbyen",
+			"nameEn": "Familievernkontoret Homansbyen",
+			"categories": [
+				"familie-og-barn"
+			],
+			"fields": {
+				"phone": "466 16 660",
+				"address": "Oscars gate 20, 0352 Oslo",
+				"email": null,
+				"website": "https://www.bufdir.no",
+				"chatUrl": null,
+				"openingHours": "08.30–15.00",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 240,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Familievernkontoret Oslo Nord",
+			"nameEn": "Familievernkontoret Oslo Nord",
+			"categories": [
+				"familie-og-barn"
+			],
+			"fields": {
+				"phone": "46 61 51 20",
+				"address": "Kabelgata 2, 0581 Oslo",
+				"email": null,
+				"website": "https://www.bufdir.no",
+				"chatUrl": null,
+				"openingHours": "08.30–15.30. Telefontider 08.30–14.00",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 241,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Sentrum helsestasjon for ungdom (HFU)",
+			"nameEn": "Sentrum helsestasjon for ungdom (HFU)",
+			"categories": [
+				"familie-og-barn",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "23 43 19 04",
+				"address": "Hagegata 32, 0653 Oslo",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": "Telefontid tirsdag og torsdag 11:00–14:00",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 242,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Helsestasjon for ungdom (HFU) i Oslo",
+			"nameEn": "Helsestasjon for ungdom (HFU) i Oslo",
+			"categories": [
+				"familie-og-barn",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": null,
+				"address": null,
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 243,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Oslohjelpa",
+			"nameEn": "Oslohjelpa",
+			"categories": [
+				"familie-og-barn",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": null,
+				"address": null,
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 244,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Boligkontorene i Oslo",
+			"nameEn": "Boligkontorene i Oslo",
+			"categories": [
+				"bolig"
+			],
+			"fields": {
+				"phone": null,
+				"address": null,
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 245,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Stovner boligkontor",
+			"nameEn": "Stovner boligkontor",
+			"categories": [
+				"bolig"
+			],
+			"fields": {
+				"phone": null,
+				"address": "Bydel Stovner, Boligenheten, Karl Fossums vei 30, 0985 Oslo",
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 246,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Økonomisk rådgivning og gjeldsrådgivning, Oslo kommune",
+			"nameEn": "Økonomisk rådgivning og gjeldsrådgivning, Oslo kommune",
+			"categories": [
+				"okonomi"
+			],
+			"fields": {
+				"phone": null,
+				"address": null,
+				"email": null,
+				"website": "https://www.oslo.kommune.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 247,
+			"kommune": "0301",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Bymisjonssenteret, Oslo (Kirkens Bymisjon)",
+			"nameEn": "Bymisjonssenteret, Oslo (Kirkens Bymisjon)",
+			"categories": [
+				"lavterskeltilbud",
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "22 66 67 80",
+				"address": "Herslebsgate 43, 0578 Oslo",
+				"email": null,
+				"website": "https://kirkensbymisjon.no",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 301,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Sagatun Brukerstyrt Senter",
+			"nameEn": "Sagatun Brukerstyrt Senter",
+			"categories": [
+				"lavterskeltilbud",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "62 50 97 55",
+				"address": "Sagatunvegen 47A, 2317 Hamar",
+				"email": "post@sagatun.no",
+				"website": "https://sagatun.no/",
+				"chatUrl": null,
+				"openingHours": "Mandag til fredag, 08:00–15:30 (kontor). Mandag til torsdag, 11:30–13:00 (kafé).",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 302,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Hamar Frivilligsentral",
+			"nameEn": "Hamar Frivilligsentral",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "62 51 00 96",
+				"address": "Torggata 73, 2317 Hamar",
+				"email": "hamar@frivillighet.no",
+				"website": "https://hamar.frivilligsentral.no/",
+				"chatUrl": null,
+				"openingHours": "Man-tor kl 10.00-15.00; Fre kl 10.00-13.00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 303,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Høbben, et sted for ungdom",
+			"nameEn": "Høbben, et sted for ungdom",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "477 86 203",
+				"address": "Torggata 83, 2317 Hamar",
+				"email": "postmottak@hamar.kommune.no",
+				"website": "https://www.hamar.kommune.no/hobben/hobben-et-sted-for-ungdom",
+				"chatUrl": null,
+				"openingHours": "Mandag og onsdag klokka 14:30-21:30. Fredag klokka 14:30-22:00. Lørdag klokka 16:00-22:00.",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 304,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [
+				"3413"
+			],
+			"parentId": null,
+			"name": "CRUX Arbeideren",
+			"nameEn": "CRUX Arbeideren",
+			"categories": [
+				"lavterskeltilbud",
+				"rus"
+			],
+			"fields": {
+				"phone": null,
+				"address": "Grønnegt. 51, inngang Håkons gate, 2317 Hamar",
+				"email": "hamartiltakene@stiftelsencrux.no",
+				"website": "https://stiftelsencrux.no/vare-virksomheter/hamartiltakene/crux-arbeideren",
+				"chatUrl": null,
+				"openingHours": "Tirsdag og torsdag: kl. 10-14.30. Onsdag: stengt. Mandag og fredag: kl. 9-15 (brukerutstyr).",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 305,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Evangeliesenteret kontaktsenter Hamar",
+			"nameEn": "Evangeliesenteret kontaktsenter Hamar",
+			"categories": [
+				"lavterskeltilbud",
+				"rus"
+			],
+			"fields": {
+				"phone": "21 00 49 00",
+				"address": "Torggata 71, Hamar",
+				"email": "post@evangeliesenteret.no",
+				"website": "https://www.evangeliesenteret.no/kontaktsenter/hamar",
+				"chatUrl": null,
+				"openingHours": "hver onsdag kl. 12:00 – 16:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 306,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Blå Kors barnas stasjon Hamar",
+			"nameEn": "Blå Kors barnas stasjon Hamar",
+			"categories": [
+				"familie-og-barn",
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "990 93 994",
+				"address": "Grønnegata 134, 2317 Hamar",
+				"email": "barnasstasjonhamar@bks.no",
+				"website": "https://www.blakors.no/barnas-stasjon/hamar/",
+				"chatUrl": null,
+				"openingHours": "Mandag til fredag: 08.00 til 16.00",
+				"cost": "free",
+				"costNote": "Gratis lavterskeltilbud",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 307,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Støttesenter for pårørende, Hospice Sangen",
+			"nameEn": "Støttesenter for pårørende, Hospice Sangen",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "62 54 20 90",
+				"address": "Høyensalgata 74, 2317 Hamar",
+				"email": "hei@sangen.no",
+				"website": "https://www.haraldsplass.org/hospice-sangen/",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 308,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Hamar Røde Kors",
+			"nameEn": "Hamar Røde Kors",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "918 21 211",
+				"address": "Stormyrveien 9, 2315 HAMAR",
+				"email": "hamar@redcross.no",
+				"website": "https://www.rodekors.no/lokalforeninger/hedmark/hamar/",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 309,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "BUA Hamar",
+			"nameEn": "BUA Hamar",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "477 76 977",
+				"address": "Torggata 83, på Torghjørnet ved Stortorget, Hamar",
+				"email": "buahamar101@gmail.com",
+				"website": "https://stiftelsencrux.no/vare-virksomheter/hamartiltakene/bua-hamar",
+				"chatUrl": null,
+				"openingHours": "Man., tors. og fred.: kl. 13.00-18.00.",
+				"cost": "free",
+				"costNote": "helt gratis",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 310,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Åpen barnehage (Ankerløkken barnehage)",
+			"nameEn": "Åpen barnehage (Ankerløkken barnehage)",
+			"categories": [
+				"familie-og-barn",
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "909 98 617",
+				"address": "Frivilligsentralens lokaler, Torggata 73, 2317 Hamar",
+				"email": null,
+				"website": "https://www.hamar.kommune.no/category1034.html",
+				"chatUrl": null,
+				"openingHours": "Onsdager og torsdager kl. 10:00-14:00",
+				"cost": "paid",
+				"costNote": "Pris kr 10 pr barn pr dag, ha med mat og drikke selv, kaffe / te kan kjøpes.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 311,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Prestrud ungdomsklubb",
+			"nameEn": "Prestrud ungdomsklubb",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "950 39 833",
+				"address": "Møtested for ungdommer på iskroa i CC amfi/hockeyhallen",
+				"email": null,
+				"website": null,
+				"chatUrl": null,
+				"openingHours": "Mandag og onsdag klokka 17.30-21.00, fredag klokka 18.00-23.00.",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 312,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Fritidsklubb Wiik",
+			"nameEn": "Fritidsklubb Wiik",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "950 39 833",
+				"address": "Øvre Vang samfunnshus",
+				"email": null,
+				"website": null,
+				"chatUrl": null,
+				"openingHours": "Åpen mandag, tirsdag og torsdag klokka 18.00 - 22.00.",
+				"cost": "paid",
+				"costNote": "Medlemskap kr 120,- pr skoleår.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 313,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Terningkast 7",
+			"nameEn": "Terningkast 7",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": null,
+				"address": "Foajeen, Hamar Kulturhus, Torggata 100, 2317 Hamar",
+				"email": "post@terningkast7.org",
+				"website": "https://www.terningkast7.no/",
+				"chatUrl": null,
+				"openingHours": "hver onsdag kl 16:00",
+				"cost": "free",
+				"costNote": "Spillkveldene våre på onsdager er helt gratis å delta på.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 314,
+			"kommune": "3403",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Parkrun Ankerskogen",
+			"nameEn": "Parkrun Ankerskogen",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": null,
+				"address": "Ankerskogen",
+				"email": null,
+				"website": "https://www.parkrun.no/ankerskogen/",
+				"chatUrl": null,
+				"openingHours": "Hver lørdag kl 09.30",
+				"cost": "free",
+				"costNote": "Gratis tilbud.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 315,
+			"kommune": "3405",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Lavterskeltilbud Storgata 9B",
+			"nameEn": "Lavterskeltilbud Storgata 9B",
+			"categories": [
+				"lavterskeltilbud",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "949 74 618",
+				"address": "Storgata 9B",
+				"email": null,
+				"website": "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/arbeid-og-aktivitetstilbud/lavterskeltilbud-storgata-9b/",
+				"chatUrl": null,
+				"openingHours": "Mandag og fredag: klokken 09.30 til 15.00; Onsdager: klokken 09:30 - 15:00 denne dagen er det tur fra 11.30 - 15.00",
+				"cost": "free",
+				"costNote": "Tilbudet er gratis, og du trenger ikke melde deg på.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 316,
+			"kommune": "3405",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Lavterskeltilbud Gamlevegen 101",
+			"nameEn": "Lavterskeltilbud Gamlevegen 101",
+			"categories": [
+				"lavterskeltilbud",
+				"rus"
+			],
+			"fields": {
+				"phone": "902 43 733",
+				"address": "Gamlevegen 101",
+				"email": null,
+				"website": "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/lavterskeltilbud-for-personer-med-rusutfordringer/",
+				"chatUrl": null,
+				"openingHours": "Mandager og torsdager fra 11.00 til 13.00 hele året",
+				"cost": "free",
+				"costNote": "Tilbudet er gratis",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 317,
+			"kommune": "3405",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Lillehammer Frivilligsentral",
+			"nameEn": "Lillehammer Frivilligsentral",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "992 69 600",
+				"address": "Brubakken 14, 2615 Lillehammer",
+				"email": "post@lillehammer.frivilligsentral.no",
+				"website": "https://lillehammer.frivilligsentral.no/",
+				"chatUrl": null,
+				"openingHours": "Vår kjernetid er fra mandag til torsdag 10.00 til 14.00. Fredag fra 10.00 til 13.00.",
+				"cost": "partly",
+				"costNote": "Alle våre aktiviteter er gratis og krever ingen påmelding. Vi tar 5 kroner for A4, 10 kr for A3, laminering/fotopapir 15 kroner.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 318,
+			"kommune": "3405",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Lillehammer Røde Kors",
+			"nameEn": "Lillehammer Røde Kors",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "415 80 011",
+				"address": "Anne Mouruds veg 10 G, 2615 Lillehammer",
+				"email": "lillehammer@rodekors.org",
+				"website": "https://www.rodekors.no/lokalforeninger/oppland/lillehammer/",
+				"chatUrl": null,
+				"openingHours": "Onsdagstreffen: Onsdager (kl.10:30 for trim) kl.11:00-13:00; Barnas Røde Kors: Onsdager 18:00-19:30; Norsktrening: Tirsdager 17:00-19:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 320,
+			"kommune": "3407",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Blå Kors gatenært Gjøvik (Kafe Kampen)",
+			"nameEn": "Blå Kors gatenært Gjøvik (Kafe Kampen)",
+			"categories": [
+				"lavterskeltilbud",
+				"rus"
+			],
+			"fields": {
+				"phone": "61 17 04 80",
+				"address": "Øvre Torvgate 8, 2815 Gjøvik",
+				"email": null,
+				"website": "https://www.blakors.no/gatenaert/kampen/",
+				"chatUrl": null,
+				"openingHours": "Mandag til fredag 12.00 – 15.00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 321,
+			"kommune": "3407",
+			"national": false,
+			"servedKommuner": [
+				"3403",
+				"3405",
+				"3411",
+				"3413",
+				"3412",
+				"3420"
+			],
+			"parentId": null,
+			"name": "Fontenehuset Gjøvik",
+			"nameEn": "Fontenehuset Gjøvik",
+			"categories": [
+				"lavterskeltilbud",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "977 30 330",
+				"address": "Strandgata 38, 2821 Gjøvik",
+				"email": "post@fontenehusetgjovik.no",
+				"website": "https://www.fontenehusetgjovik.no/",
+				"chatUrl": null,
+				"openingHours": "Mandag – fredag kl 08:00-15:30",
+				"cost": "free",
+				"costNote": "Å være medlem på Fontenehuset koster ingenting.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 322,
+			"kommune": "3407",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Gjøvik frivilligsentral avd. Sentrum",
+			"nameEn": "Gjøvik frivilligsentral avd. Sentrum",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "61 15 85 55",
+				"address": "Øvre Torvgate 2, Gjøvik",
+				"email": "frivilligsentral@gjovik.kommune.no",
+				"website": "https://gjovik.frivilligsentral.no/",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 323,
+			"kommune": "3407",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Gjøvik frivilligsentral avd. Øverby (Øverbykafeen og Torsdagstreff)",
+			"nameEn": "Gjøvik frivilligsentral avd. Øverby (Øverbykafeen og Torsdagstreff)",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "61 15 85 55",
+				"address": "Øverbyvegen 95, Gjøvik",
+				"email": "frivilligsentral@gjovik.kommune.no",
+				"website": "https://gjovik.frivilligsentral.no/overby",
+				"chatUrl": null,
+				"openingHours": "Mandager: 11.00-13.30 Torsdager: 10.00-13.00 Søndager: 11.00-14.00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 324,
+			"kommune": "3407",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "PULS - ditt værested (Frelsesarmeen Gjøvik og Toten)",
+			"nameEn": "PULS - ditt værested (Frelsesarmeen Gjøvik og Toten)",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "409 12 050",
+				"address": "Bakkegata 14, 2821 Gjøvik",
+				"email": "puls@frelsesarmeen.no",
+				"website": "https://frelsesarmeen.no/korps/puls-ditt-vaerested",
+				"chatUrl": null,
+				"openingHours": "Onsdag og fredag kl. 11.00-15.00. Torsdag kl. 11.00-18.00 de torsdagene det er Kulturkafé. Ellers til kl. 15.00.",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 326,
+			"kommune": "3407",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Ung i Gjøvik (Ungdommens hus)",
+			"nameEn": "Ung i Gjøvik (Ungdommens hus)",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": null,
+				"address": "Trondhjemsvegen 8, 2821 Gjøvik",
+				"email": null,
+				"website": "https://www.gjovik.kommune.no/tjenester/barn-ungdom-og-familie/ung-i-gjovik/",
+				"chatUrl": null,
+				"openingHours": "Mandag Stengt, Tirsdag 14:00-18:00, Onsdag 14:00-18:00, Torsdag 14:00-21:00, Fredag Stengt, Lørdag-søndag Stengt",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 327,
+			"kommune": "3407",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Hverdag - Mat & Mening",
+			"nameEn": "Hverdag - Mat & Mening",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "929 29 994",
+				"address": "Mimes veg 3, 2817 Gjøvik",
+				"email": "post@ashverdag.no",
+				"website": "https://www.ashverdag.no/",
+				"chatUrl": null,
+				"openingHours": "Onsdag: 11:00 - 18:00 Kjøkkenet stenger kl. 17:30 Torsdag: 11:00 - 16:00 Kjøkkenet stenger kl. 15:30 Fredag: 11:00 - 16:00 Kjøkkenet stenger kl. 15:30",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 328,
+			"kommune": "3407",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Norsktrening (Gjøvik Røde Kors)",
+			"nameEn": "Norsktrening (Gjøvik Røde Kors)",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": null,
+				"address": "Gjøvik Læringssenter, Teknologiveien 8, Kallerud, Gjøvik",
+				"email": "gjovik.rode.kors@gmail.com",
+				"website": "https://www.rodekors.no/lokalforeninger/oppland/gjovik/",
+				"chatUrl": null,
+				"openingHours": "hver tirsdag etter skoletid mellom 14.30 og 16.30",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 329,
+			"kommune": "3411",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Solsia aktivitetshus",
+			"nameEn": "Solsia aktivitetshus",
+			"categories": [
+				"lavterskeltilbud",
+				"psykisk-helse",
+				"rus"
+			],
+			"fields": {
+				"phone": "907 78 510",
+				"address": "Nordåsveien 6, 2380 Brumunddal",
+				"email": null,
+				"website": "https://www.ringsaker.kommune.no/tjenester/helse-og-omsorg/psykisk-helse-og-rustjenester/kortvarig-psykisk-helsehjelp",
+				"chatUrl": null,
+				"openingHours": "Tidspunkt: 10:00-14:00 (unntatt tirsdag 17:00-19:00)",
+				"cost": "free",
+				"costNote": "Solsia aktivitetshus er gratis tilbud for deg over 18 år",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 330,
+			"kommune": "3411",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Mental Helse Ringsaker",
+			"nameEn": "Mental Helse Ringsaker",
+			"categories": [
+				"lavterskeltilbud",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": null,
+				"address": "Sjurstuvegen 2B, 2383 Brumunddal",
+				"email": "ringsaker@mentalhelse.no",
+				"website": "https://mentalhelse.no/ringsaker/",
+				"chatUrl": null,
+				"openingHours": "Tirsdag kl. 10.00 – 14.00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 331,
+			"kommune": "3411",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Brumunddal frivilligsentral",
+			"nameEn": "Brumunddal frivilligsentral",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "973 47 717",
+				"address": "Sjurstuvegen 2B, 2383 Brumunddal",
+				"email": "brumunddal@frivillighet.no",
+				"website": "https://brumunddal.frivilligsentral.no/",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": "free",
+				"costNote": "Alle gruppearrangement er åpne for alle og gratis å delta på.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 332,
+			"kommune": "3411",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Moelv frivilligsentral",
+			"nameEn": "Moelv frivilligsentral",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "974 34 918",
+				"address": "Storgata 119, 2390 Moelv",
+				"email": "post@moelvfrivilligsentral.no",
+				"website": "https://moelvfrivilligsentral.no",
+				"chatUrl": null,
+				"openingHours": "Mandag til fredag er vår kjernetiden kl. 10.00 - 14.00.",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 333,
+			"kommune": "3411",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Ringsaker Røde Kors: Norsktrening",
+			"nameEn": "Ringsaker Røde Kors: Norsktrening",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": null,
+				"address": "Kilde Skole, Storgate 31, 2390 Moelv",
+				"email": "ringsaker@rodekors.org",
+				"website": "https://www.rodekors.no/lokalforeninger/hedmark/ringsaker/",
+				"chatUrl": null,
+				"openingHours": "Tirsdager fra kl. 18:00 – 20:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 334,
+			"kommune": "3411",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "LHL Ringsaker: lavterskeltrim i Brumunddal",
+			"nameEn": "LHL Ringsaker: lavterskeltrim i Brumunddal",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "22 79 90 00",
+				"address": "Buttekvern Aktivitetssenter, Buttekvernveien 1, Brumunddal",
+				"email": null,
+				"website": "https://www.lhl.no/lokallag/lhl-innlandet/lhl-ringsaker/fysisk-aktivitet-brumunddal77/",
+				"chatUrl": null,
+				"openingHours": "Ukentlig kl. 11.00–13.00",
+				"cost": "free",
+				"costNote": "Trimmen er gratis og åpen for alle.",
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 335,
+			"kommune": "3413",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Stangehjelpa aktivitetshus",
+			"nameEn": "Stangehjelpa aktivitetshus",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "911 65 956",
+				"address": "Skolegata 13, 2335 Stange",
+				"email": null,
+				"website": "https://www.stange.kommune.no/helse-og-mestring/psykisk-helse-og-rus/stangehjelpa/voksne/stangehjelpa-aktivitetshus/",
+				"chatUrl": null,
+				"openingHours": "Allaktivitetshuset: mandag-fredag 09.00-15.00, Kjernetid (10.00-14.00). Loppa: mandag, onsdag, fredag 10.00-14.00. Sykkelverkstedet: mandag, onsdag, torsdag 10.00-14.00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 336,
+			"kommune": "3413",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Ottestad frivilligsentral",
+			"nameEn": "Ottestad frivilligsentral",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "940 93 665",
+				"address": "Kjonerudvegen 9, 2312 Ottestad (2. etasje Amtmannsbygget)",
+				"email": "ST-frivilligsentralen@stange.kommune.no",
+				"website": "https://www.stange.kommune.no/kultur-og-frivillighet/frivillighet/ottestad-frivilligsentral/",
+				"chatUrl": null,
+				"openingHours": "Mandag - torsdag kl. 10:00-14:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 337,
+			"kommune": "3413",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Ungdomshuset i Ottestad",
+			"nameEn": "Ungdomshuset i Ottestad",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": null,
+				"address": "Statsminister Otto Blehrs 2, 2312 Ottestad",
+				"email": null,
+				"website": "https://www.stange.kommune.no/kultur-og-frivillighet/aktiviteter-for-ungdom/",
+				"chatUrl": null,
+				"openingHours": "Mandag 15.00-21.00, Torsdag 15.00-21.00",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 338,
+			"kommune": "3413",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Stange musikkverksted",
+			"nameEn": "Stange musikkverksted",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": null,
+				"address": "Skolegata 13, 2335 Stange",
+				"email": null,
+				"website": "https://www.stange.kommune.no/kultur-og-frivillighet/aktiviteter-for-ungdom/",
+				"chatUrl": null,
+				"openingHours": "Mandag 14.00-21.00, Tirsdag 14.00-21.00, Onsdag 17.00-20.00",
+				"cost": "free",
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 339,
+			"kommune": "3412",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Løten Frivilligsentral",
+			"nameEn": "Løten Frivilligsentral",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "481 41 769",
+				"address": "Stasjonsvegen 23, Bøndernes Hus, 2340 Løten",
+				"email": "post@loten.frivilligsentral.no",
+				"website": "https://loten.frivilligsentral.no/",
+				"chatUrl": null,
+				"openingHours": "mandag til fredag kl.10.00 – kl.14.00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 340,
+			"kommune": "3412",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Ungdommens hus",
+			"nameEn": "Ungdommens hus",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "62 56 40 00",
+				"address": "Venslivegen 13, 2340 Løten",
+				"email": "post@loten.kommune.no",
+				"website": "https://www.loten.kommune.no/helse-sosial-og-familie/barn-unge-og-familie/ungdom/ungdommens-hus/",
+				"chatUrl": null,
+				"openingHours": "Det er åpent mandag, tirsdag og torsdag.",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 341,
+			"kommune": "3412",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Felles aktivitet i Løtenhallen",
+			"nameEn": "Felles aktivitet i Løtenhallen",
+			"categories": [
+				"lavterskeltilbud",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "62 56 40 00",
+				"address": "Løtenhallen",
+				"email": "post@loten.kommune.no",
+				"website": "https://www.loten.kommune.no/helse-sosial-og-familie/psykisk-helse-og-rustjenesten/aktiviteter-og-kurs/felles-aktivitet-i-lotenhallen/",
+				"chatUrl": null,
+				"openingHours": "Hver onsdag er det tilbud om fysisk aktivitet i Løtenhallen fra kl. 14.00-15.00.",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 342,
+			"kommune": "3412",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "BUA Løten",
+			"nameEn": "BUA Løten",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "990 80 167",
+				"address": "Skolevegen 6, 2340 Løten",
+				"email": "post@loten.kommune.no",
+				"website": "https://www.loten.kommune.no/kultur-og-aktivitet/fritidstilbud/bua-loten/",
+				"chatUrl": null,
+				"openingHours": null,
+				"cost": "free",
+				"costNote": "helt gratis!",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 343,
+			"kommune": "3420",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Elverum frivilligsentral",
+			"nameEn": "Elverum frivilligsentral",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "62 43 64 55",
+				"address": "Lærerskolealleen 1, 2408 Elverum",
+				"email": "post@elverumfrivilligsentral.no",
+				"website": "https://elverum.frivilligsentral.no/",
+				"chatUrl": null,
+				"openingHours": "Frivilligkaféen: Åpningstiden er mellom kl 10:00 og 14:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 344,
+			"kommune": "3420",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Møteplassen Elverum",
+			"nameEn": "Møteplassen Elverum",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "911 84 893",
+				"address": "Lærerskolealléen 1, 2408 Elverum",
+				"email": "post@moteplassen.elverum.no",
+				"website": "https://moteplassen.elverum.no/",
+				"chatUrl": null,
+				"openingHours": "Mandag-fredag 09:00-15:00. Kafé: mandag - fredag 09:00-15:00, torsdag til 15:30.",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		},
+		{
+			"id": 345,
+			"kommune": "3420",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Treffpunktet (Møteplassen Elverum)",
+			"nameEn": "Treffpunktet (Møteplassen Elverum)",
+			"categories": [
+				"lavterskeltilbud",
+				"psykisk-helse"
+			],
+			"fields": {
+				"phone": "942 02 575",
+				"address": "Lærerskolealléen 1, 2408 Elverum",
+				"email": null,
+				"website": "https://moteplassen.elverum.no/index.php/treffpunkt",
+				"chatUrl": null,
+				"openingHours": "Mandag, onsdag, torsdag og fredag kl. 10:00 - 14:00",
+				"cost": null,
+				"costNote": null,
+				"alwaysOpen": false,
+				"lowThreshold": true
+			}
+		},
+		{
+			"id": 346,
+			"kommune": "3420",
+			"national": false,
+			"servedKommuner": [],
+			"parentId": null,
+			"name": "Ungdommens hus",
+			"nameEn": "Ungdommens hus",
+			"categories": [
+				"lavterskeltilbud"
+			],
+			"fields": {
+				"phone": "489 57 545",
+				"address": "St. Olavsgate 6, 2414 Elverum",
+				"email": null,
+				"website": "https://www.elverum.kommune.no/vare-tjenester/barn-og-familie/ungdommens-hus/",
+				"chatUrl": null,
+				"openingHours": "Mandag kl. 14.00 - 20.45; Tirsdag kl. 14.00 - 20.00 (Juniorklubben 5. - 7. trinn); Onsdag kl. 14.00 - 20.45; Torsdag kl. 14.00 - 20.45; Fredag kl. 14.00 - 20.45",
+				"cost": "free",
+				"costNote": "Her kan du være med på en hel haug med aktiviteter, og det er gratis.",
+				"alwaysOpen": false,
+				"lowThreshold": false
+			}
+		}
+	]
+}
