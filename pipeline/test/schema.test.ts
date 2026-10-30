@@ -72,6 +72,9 @@ describe("LockField", () => {
 		expect(LockField.safeParse(review).success).toBe(true)
 		expect(LockField.safeParse({ ...review, gates: [] }).success).toBe(false)
 		expect(LockField.safeParse({ ...review, gates: allGatesPass().slice(1) }).success).toBe(false)
+		// Each gate is there, one twice: only the length rule catches this.
+		const six = [...allGatesPass(), { gate: "safety" as const, pass: true }]
+		expect(LockField.safeParse({ ...review, gates: six }).success).toBe(false)
 	})
 
 	it("rejects a gate that appears twice in place of another", () => {
