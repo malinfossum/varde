@@ -1,6 +1,6 @@
 import { type FieldName, type FieldValue, MAX_QUOTE } from "../schema/common.ts"
 import { normaliseText, quoteHasPhone, quoteHasText, quoteHasUrl } from "../text/normalise.ts"
-import { classifyCost, saysAlwaysOpen } from "./phrases.ts"
+import { classifyCost, readAlwaysOpen } from "./phrases.ts"
 import { drop, type Gate, pass, review } from "./types.ts"
 
 // Does this quote hold this value? Cost and the two booleans are judged by phrase rules
@@ -37,11 +37,17 @@ export const groundingGate: Gate = (c, ctx) => {
 			return classifyCost(quotes) === c.value
 				? pass("grounding")
 				: review("grounding", "the quotes do not support this cost value")
-		case "alwaysOpen":
+		case "alwaysOpen": {
 			if (c.value !== true) return drop("grounding", "only an always-open claim is stored")
-			return quotes.some(saysAlwaysOpen)
+			const readings = quotes.map(readAlwaysOpen)
+			// "Døgnåpent fra fredag til mandag" is a claim, but not one I store without a look.
+			if (readings.includes("qualified")) {
+				return review("grounding", "the always-open quote is qualified")
+			}
+			return readings.includes("yes")
 				? pass("grounding")
 				: drop("grounding", "no quote says the service is always open")
+		}
 		default:
 			return quotes.some((q) => quoteHasValue(c.field, c.value, q))
 				? pass("grounding")

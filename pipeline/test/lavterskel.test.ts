@@ -43,8 +43,9 @@ describe("lavterskel rule", () => {
 	it("never infers partly from quotes alone", () => {
 		const coffee = ["Gratis å delta, uten henvisning.", "Kaffe koster 20 kr."]
 		expect(lavterskel(coffee, undefined).outcome).toBe("review")
+		// Free parking is no free evidence (final fixes F1), so this reads as a fee: no, not yes.
 		const parking = ["Uten henvisning. Egenandel kr 350. Gratis parkering."]
-		expect(lavterskel(parking, undefined).outcome).toBe("review")
+		expect(lavterskel(parking, undefined).outcome).toBe("no")
 	})
 
 	it("says no to a lavterskel service with a fee", () => {
@@ -108,5 +109,61 @@ describe("fix round 1: false yes outcomes go to review", () => {
 	it("5. the unit's free cost does not silence a fee in the quotes", () => {
 		const quotes = ["Uten henvisning. Egenandel kr 350 per time."]
 		expect(lavterskel(quotes, "free").outcome).toBe("review")
+	})
+})
+
+describe("final fixes F1: qualified text never gives an automatic yes", () => {
+	it("does not count a free extra as a free service", () => {
+		for (const quote of [
+			"Gratis parkering. Du trenger ikke henvisning.",
+			"Gratis kaffe. Drop-in hver tirsdag.",
+			"Gratis parkering for besøkende. Drop-in alle hverdager.",
+		]) {
+			expect(lavterskel([quote], undefined).outcome, quote).toBe("review")
+		}
+	})
+
+	it("does not count free for one group as a free service", () => {
+		const quotes = ["Gratis for barn under 18 år. Du trenger ikke henvisning."]
+		expect(lavterskel(quotes, undefined).outcome).toBe("review")
+	})
+
+	it("reads a closed or ended drop-in or lavterskel service as unclear", () => {
+		for (const quote of [
+			"Drop-in-tilbudet er avviklet.",
+			"Lavterskeltilbudet er lagt ned.",
+			"Drop-in er nedlagt.",
+			"Drop-in er stengt i sommer.",
+			"Lavterskeltilbudet finnes ikke lenger.",
+			"Drop-in opphører fra januar.",
+			"Tilbudet uten henvisning er avviklet.",
+		]) {
+			expect(readReferral([quote]), quote).toBe("unclear")
+			expect(lavterskel([`Gratis. ${quote}`], undefined).outcome, quote).toBe("review")
+		}
+	})
+})
+
+describe("final fixes F2: henvisningsfri and selvhenvisning mean no referral", () => {
+	it("reads the no-referral compounds as noneNeeded", () => {
+		for (const quote of [
+			"Tilbudet er gratis og henvisningsfritt.",
+			"Et henvisningsfritt tilbud.",
+			"Samtalene er vedtaksfrie.",
+			"Du kan selvhenvise deg.",
+			"Tilbudet tar imot selvhenvisninger.",
+			"Du kan henvise deg selv.",
+		]) {
+			expect(readReferral([quote]), quote).toBe("noneNeeded")
+		}
+	})
+
+	it("gives yes to a free, henvisningsfritt service", () => {
+		expect(lavterskel(["Tilbudet er gratis og henvisningsfritt."], undefined).outcome).toBe("yes")
+	})
+
+	it("still reads a negated compound as unclear", () => {
+		expect(readReferral(["Tilbudet er ikke henvisningsfritt."])).toBe("unclear")
+		expect(readReferral(["Du kan ikke henvise deg selv."])).toBe("unclear")
 	})
 })

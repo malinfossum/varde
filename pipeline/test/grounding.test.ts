@@ -130,4 +130,59 @@ describe("grounding gate", () => {
 		})
 		expect(groundingGate(whole, ctx).pass).toBe(true)
 	})
+
+	it("sends a free cost grounded only on a free extra to review", () => {
+		const page = "Gratis parkering. Egenandel kr 350 per time."
+		const c = candidate({
+			field: "cost",
+			value: "free",
+			evidence: { kind: "quote", quotes: ["Gratis parkering."] },
+		})
+		expect(groundingGate(c, context({ pageText: () => page }))).toMatchObject({
+			pass: false,
+			onFail: "review",
+		})
+	})
+
+	it("sends an always-open claim on a qualified sentence to review", () => {
+		for (const quote of [
+			"Telefonen er stengt hele døgnet 24. desember.",
+			"Åpent hele døgnet i helger og høytider.",
+			"Døgnåpent fra fredag til mandag.",
+			"Chatten er åpen 24/7 i sommerferien.",
+		]) {
+			const c = candidate({
+				field: "alwaysOpen",
+				value: true,
+				evidence: { kind: "quote", quotes: [quote] },
+			})
+			expect(groundingGate(c, context({ pageText: () => quote })), quote).toMatchObject({
+				pass: false,
+				onFail: "review",
+			})
+		}
+	})
+
+	it("grounds an always-open claim on an unqualified sentence", () => {
+		const quote = "Legevakten er døgnåpen."
+		const c = candidate({
+			field: "alwaysOpen",
+			value: true,
+			evidence: { kind: "quote", quotes: [quote] },
+		})
+		expect(groundingGate(c, context({ pageText: () => quote })).pass).toBe(true)
+	})
+
+	it("drops an always-open claim no quote makes", () => {
+		const quote = "Åpent tirsdager."
+		const c = candidate({
+			field: "alwaysOpen",
+			value: true,
+			evidence: { kind: "quote", quotes: [quote] },
+		})
+		expect(groundingGate(c, context({ pageText: () => quote }))).toMatchObject({
+			pass: false,
+			onFail: "drop",
+		})
+	})
 })

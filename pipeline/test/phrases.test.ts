@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { classifyCost, saysAlwaysOpen, saysFee, saysFree } from "../src/gates/phrases.ts"
+import {
+	classifyCost,
+	readAlwaysOpen,
+	saysAlwaysOpen,
+	saysFee,
+	saysFree,
+} from "../src/gates/phrases.ts"
 
 describe("cost phrases", () => {
 	it("reads the spec's three free phrases", () => {
@@ -39,5 +45,75 @@ describe("saysAlwaysOpen", () => {
 	it("refuses a negation and a 24-hour reply time", () => {
 		expect(saysAlwaysOpen("Kontoret er ikke døgnåpent.")).toBe(false)
 		expect(saysAlwaysOpen("Vi svarer innen 24 timer.")).toBe(false)
+	})
+})
+
+describe("final fixes F1: qualified free and always-open text is not a yes", () => {
+	it("does not read a free extra as a free service", () => {
+		expect(saysFree("Gratis parkering.")).toBe(false)
+		expect(saysFree("Gratis kaffe. Drop-in hver tirsdag.")).toBe(false)
+		expect(saysFree("Gratis parkering for besøkende. Drop-in alle hverdager.")).toBe(false)
+		expect(saysFree("Vi har gratis wifi og enkel servering.")).toBe(false)
+		expect(saysFree("Parkering er gratis.")).toBe(false)
+		expect(saysFree("Kaffen koster ingenting.")).toBe(false)
+	})
+
+	it("does not read free for a group as a free service", () => {
+		expect(saysFree("Gratis for barn under 18 år.")).toBe(false)
+		expect(saysFree("Kurset er gratis for medlemmer.")).toBe(false)
+		expect(saysFree("Gratis for studenter.")).toBe(false)
+		expect(saysFree("Gratis for de under 25 år.")).toBe(false)
+		expect(saysFree("Gratis for alle under 25 år.")).toBe(false)
+		expect(classifyCost(["Gratis for barn under 18 år."])).toBeUndefined()
+		expect(classifyCost(["Gratis parkering."])).toBeUndefined()
+	})
+
+	it("still reads the plain free phrases", () => {
+		expect(saysFree("Tilbudet er gratis.")).toBe(true)
+		expect(saysFree("Gratis å delta.")).toBe(true)
+		expect(saysFree("Gratis for alle.")).toBe(true)
+		expect(saysFree("Gratis drop-in.")).toBe(true)
+		expect(saysFree("Det koster ingenting å komme.")).toBe(true)
+		expect(classifyCost(["Tilbudet er gratis, og du trenger ikke henvisning."])).toBe("free")
+	})
+
+	it("reads a qualified always-open sentence as qualified, never as yes", () => {
+		for (const text of [
+			"Telefonen er stengt hele døgnet 24. desember.",
+			"Åpent hele døgnet i helger og høytider.",
+			"Døgnåpent fra fredag til mandag.",
+			"Chatten er åpen 24/7 i sommerferien.",
+			"Døgnåpent på hverdager.",
+			"Døgnåpent unntatt julaften.",
+		]) {
+			expect(saysAlwaysOpen(text), text).toBe(false)
+			expect(readAlwaysOpen(text), text).toBe("qualified")
+		}
+	})
+
+	it("reads an unqualified always-open sentence as yes", () => {
+		for (const text of [
+			"Åpent hele døgnet.",
+			"Døgnåpent.",
+			"Vi svarer 24/7.",
+			"Åpent 24 timer i døgnet.",
+		]) {
+			expect(saysAlwaysOpen(text), text).toBe(true)
+			expect(readAlwaysOpen(text), text).toBe("yes")
+		}
+	})
+
+	it("reads a quote that says both as qualified", () => {
+		expect(
+			readAlwaysOpen("Legevakten er døgnåpen. Telefonen er stengt hele døgnet 1. juledag.")
+		).toBe("qualified")
+		// A closure in the next sentence qualifies the claim too; a phone number there does not.
+		expect(readAlwaysOpen("Døgnåpent. Stengt 24. desember.")).toBe("qualified")
+		expect(readAlwaysOpen("Legevakten er døgnåpen. Ring 62 00 00 00.")).toBe("yes")
+	})
+
+	it("reads no claim or a negated claim as no", () => {
+		expect(readAlwaysOpen("Åpent tirsdager.")).toBe("no")
+		expect(readAlwaysOpen("Kontoret er ikke døgnåpent.")).toBe("no")
 	})
 })
