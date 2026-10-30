@@ -583,11 +583,11 @@ function addressOnly(quote: string): boolean {
 
 // A neighbour sentence is plain only when its quote is only a phone number or only an
 // address, or the sentence passes one of the three claim vocabularies (free, always-open,
-// Lavterskel). Anything else, "Ta kontakt med legen din." included, blocks a yes. The word
-// list in blocksYes stays behind this as a second net.
+// Lavterskel). The Lavterskel vocabulary holds every free word, so checking it covers free
+// too. Anything else, "Ta kontakt med legen din." included, blocks a yes. The word list in
+// blocksYes stays behind this as a second net.
 function plainNeighbour(sentence: string, ws: readonly string[], exempt: boolean): boolean {
 	if (exempt) return true
-	if (plain(sentence, ws, (i) => freeWord(ws, i))) return true
 	if (plainAlwaysOpenWords(sentence, ws)) return true
 	const hasMarker = markerIndexes(ws).length > 0
 	return plain(sentence, ws, (i) => lavterskelWord(ws, i, hasMarker))
