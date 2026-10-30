@@ -158,14 +158,13 @@ function priceSignal(ws: readonly string[]): boolean {
 
 // Grounding of cost "free" reads every quote together: a price, a limit or a closure in any
 // sentence of any quote means the value goes to me.
+// A price with a number is caught by the digit rule in freeLimited.
 export function freeQualifiedIn(quotes: readonly string[]): boolean {
-	return quotes.some(
-		(q) =>
-			saysFee(q) ||
-			sentences(q).some((sentence) => {
-				const ws = words(sentence)
-				return priceSignal(ws) || freeLimited(sentence, ws) || saysClosed(ws)
-			})
+	return quotes.some((q) =>
+		sentences(q).some((sentence) => {
+			const ws = words(sentence)
+			return priceSignal(ws) || freeLimited(sentence, ws) || saysClosed(ws)
+		})
 	)
 }
 
