@@ -29,9 +29,19 @@ describe("checkData", () => {
 		expect(checkData(repo({}))).toEqual([])
 	})
 
-	it("flags a file name that does not match its kommune", () => {
-		expect(checkData(repo({ "lock/3405.json": lock }))).toHaveLength(1)
-		expect(checkData(repo({ "curated/hamar.json": curated }))).toHaveLength(1)
+	it("flags a lock file name that does not match its kommune", () => {
+		expect(checkData(repo({ "lock/3405.json": lock }))).toEqual([
+			"lock/3405.json: name must be <kommune number>.json for its kommune",
+		])
+	})
+
+	it("flags a curated file name that does not match its kommune", () => {
+		expect(checkData(repo({ "curated/hamar.json": curated }))).toEqual([
+			"curated/hamar.json: name must be <kommune number>-<slug>.json for its kommune",
+		])
+		expect(checkData(repo({ "curated/3405-hamar.json": curated }))).toEqual([
+			"curated/3405-hamar.json: name must be <kommune number>-<slug>.json for its kommune",
+		])
 	})
 
 	it("reports a file that is not JSON without printing its text", () => {
@@ -56,28 +66,33 @@ describe("checkData", () => {
 	it("flags an accepted value its quote does not hold, without printing the value", () => {
 		const bad = lockUnit({ fields: { phone: acceptedField({ value: "900 00 000" }) } })
 		const problems = checkData(repo({ "lock/3403.json": { kommune: "3403", units: [bad] } }))
-		expect(problems).toHaveLength(1)
+		expect(problems).toEqual([
+			"lock/3403.json org:999999999 phone: no stored quote holds the value",
+		])
 		expect(problems[0]).not.toContain("900 00 000")
 	})
 
-	it("flags an accepted phone outside the number plan and hours over 200", () => {
+	it("flags an accepted phone outside the number plan", () => {
 		const phone = lockUnit({
 			fields: {
 				phone: acceptedField({ value: "1234", evidence: { kind: "quote", quotes: ["Ring 1234"] } }),
 			},
 		})
-		expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [phone] } }))).toHaveLength(
-			1
-		)
+		expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [phone] } }))).toEqual([
+			"lock/3403.json org:999999999 phone: not a number in the Nkom plan",
+		])
+	})
+
+	it("flags accepted hours over 200 characters", () => {
 		const long = "x".repeat(201)
 		const hours = lockUnit({
 			fields: {
 				openingHours: acceptedField({ value: long, evidence: { kind: "quote", quotes: [long] } }),
 			},
 		})
-		expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [hours] } }))).toHaveLength(
-			1
-		)
+		expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [hours] } }))).toEqual([
+			"lock/3403.json org:999999999 openingHours: longer than 200 characters",
+		])
 	})
 
 	it("flags an account number anywhere in a lock file", () => {
@@ -89,6 +104,8 @@ describe("checkData", () => {
 				}),
 			},
 		})
-		expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [bad] } }))).toHaveLength(1)
+		expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [bad] } }))).toEqual([
+			"lock/3403.json: holds an account number",
+		])
 	})
 })
