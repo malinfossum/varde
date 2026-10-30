@@ -262,3 +262,35 @@ describe("final fixes 2 concern 1: a negator or a limit anywhere in a lavterskel
 		expect(readReferral(["Et lavterskeltilbud for voksne."])).toBe("noneNeeded")
 	})
 })
+
+describe("final fixes 2 referral window: the negator stands right before the referral word", () => {
+	it("never gives yes to a negator out of place or a requirement after the word", () => {
+		for (const quotes of [
+			["Ikke mulig, henvisning kreves.", "Gratis."],
+			["Ikke, henvisning kreves.", "Gratis."],
+			["Ikke mulig uten at henvisning foreligger.", "Gratis."],
+			// No requirement word in these two, so only the window rule can catch them.
+			["Ikke mulig, henvisning fra lege.", "Gratis."],
+			["Ikke, henvisning fra lege.", "Gratis."],
+			["Ingen henvisning kreves.", "Gratis."],
+			["Uten henvisning krever vi time.", "Gratis."],
+			["Ingen henvisning er påkrevd.", "Gratis."],
+			["Uten vedtak må ha avtale.", "Gratis."],
+		]) {
+			expect(readReferral(quotes), quotes[0]).toBe("unclear")
+			expect(lavterskel(quotes, undefined).outcome, quotes[0]).toBe("review")
+		}
+	})
+
+	it("still reads a negator right before the referral word as noneNeeded", () => {
+		for (const quote of [
+			"Du trenger ikke henvisning.",
+			"Krever ikke henvisning.",
+			"Uten henvisning.",
+			"Du trenger ikke vedtak.",
+		]) {
+			expect(readReferral([quote]), quote).toBe("noneNeeded")
+		}
+		expect(lavterskel(["Drop-in, uten henvisning."], "free").outcome).toBe("yes")
+	})
+})

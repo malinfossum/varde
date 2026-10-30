@@ -309,18 +309,43 @@ function markerReading(
 }
 
 // A sentence's referral words, read on their own: needed with no negator, noneNeeded when one
-// negator stands up to three words before the one referral word, otherwise unclear.
+// negator stands directly before the one referral word, otherwise unclear.
 function referralWordReading(
+	sentence: string,
 	ws: readonly string[],
 	referralAt: readonly number[]
 ): Exclude<ReferralReading, "silent"> | undefined {
 	if (referralAt.length === 0) return undefined
 	const negators = ws.filter((w) => NEGATORS.has(w)).length
 	if (negators === 0) return "needed"
-	if (negators === 1 && referralAt.length === 1 && negatedWithin(ws, referralAt[0] ?? 0)) {
-		return "noneNeeded"
+	const at = referralAt[0] ?? 0
+	if (negators === 1 && referralAt.length === 1 && negatesNext(sentence, at - 1)) {
+		return requiredAfter(ws, at) ? "unclear" : "noneNeeded"
 	}
 	return "unclear"
+}
+
+// True when word i is a negator and only spaces stand between it and word i + 1 in the
+// sentence: "uten henvisning" counts, "Ikke, henvisning kreves" and "Ikke mulig, henvisning"
+// do not.
+function negatesNext(sentence: string, i: number): boolean {
+	const spans = [...sentence.matchAll(/[\p{L}\p{N}-]+/gu)]
+	const word = spans[i]
+	const next = spans[i + 1]
+	if (i < 0 || word === undefined || next === undefined || !NEGATORS.has(word[0])) return false
+	const between = sentence.slice((word.index ?? 0) + word[0].length, next.index)
+	return /^\s+$/.test(between)
+}
+
+// A requirement word after the referral word turns it back into a need: "Ingen henvisning
+// kreves" reads as a claim I want to see myself.
+function requiredAfter(ws: readonly string[], at: number): boolean {
+	return ws
+		.slice(at + 1)
+		.some(
+			(w, j, rest) =>
+				w === "kreves" || w === "krever" || w === "påkrevd" || (w === "må" && rest[j + 1] === "ha")
+		)
 }
 
 // A sentence that says the service has closed or ended: "Drop-in-tilbudet er avviklet".
@@ -347,10 +372,11 @@ export function closedIn(quotes: readonly string[]): boolean {
 //   holds no limiting word and no negator ("ikke et lavterskeltilbud", "Drop-in er ikke
 //   mulig"). A lavterskel or drop-in word may stand beside one negated referral word
 //   ("Drop-in, uten henvisning").
-// - A lone referral word reads noneNeeded only when the sentence holds exactly one negator
-//   and it stands up to three words before that word. With no negator it reads needed.
-// - Two negators, a negator out of reach, or several referral words next to any negator
-//   ("Krever ikke henvisning, men vedtak") are unclear.
+// - A lone referral word reads noneNeeded only when the sentence holds exactly one negator,
+//   it stands directly before that word with only spaces between, and no requirement word
+//   (kreves, krever, påkrevd, "må ha") follows the word. With no negator it reads needed.
+// - Two negators, a negator out of place, a requirement after the word, or several referral
+//   words next to any negator ("Krever ikke henvisning, men vedtak") are unclear.
 // Quotes that read more than one way are unclear too, and so is any reading when a sentence of
 // any quote says the service closed or ended.
 export function readReferral(quotes: readonly string[]): ReferralReading {
@@ -362,11 +388,10 @@ export function readReferral(quotes: readonly string[]): ReferralReading {
 			const referralAt = ws.flatMap((w, i) =>
 				REFERRAL_WORD.test(w) && !NO_REFERRAL_WORD.test(w) && !markers.includes(i) ? [i] : []
 			)
-			const referral = referralWordReading(ws, referralAt)
-			// Only a negator right before the referral word ("uten henvisning", "ikke vedtak") is
-			// the no-referral phrase: "Drop-in ikke mulig, henvisning kreves" is not.
-			const negatorIsNoReferral =
-				referral === "noneNeeded" && NEGATORS.has(ws[(referralAt[0] ?? 0) - 1] ?? "")
+			const referral = referralWordReading(sentence, ws, referralAt)
+			// A noneNeeded referral reading means its one negator stands right before the referral
+			// word ("uten henvisning"), so that negator is the no-referral phrase itself.
+			const negatorIsNoReferral = referral === "noneNeeded"
 			for (const i of markers) readings.add(markerReading(ws, i, negatorIsNoReferral))
 			if (referral !== undefined) readings.add(referral)
 		}
