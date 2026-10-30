@@ -517,3 +517,23 @@ describe("final fixes 3 G1: only a plain address is exempt from the neighbour ch
 		}
 	})
 })
+
+describe("final fixes 3 G2: only an 8-digit number is a phone-only quote", () => {
+	const ground = (quotes: string[]) =>
+		groundingGate(
+			candidate({ field: "cost", value: "free", evidence: { kind: "quote", quotes } }),
+			context({ pageText: () => quotes.join(" ") })
+		)
+
+	it("reads a short number, with or without a label, as a limit", () => {
+		for (const other of ["350", "35 000", "150 000", "Ring 350"]) {
+			expect(ground(["Gratis.", other]), other).toMatchObject({ pass: false, onFail: "review" })
+		}
+	})
+
+	it("still grounds a free claim beside an 8-digit phone number", () => {
+		for (const phone of ["Telefon: 62 00 00 00", "Ring 62 00 00 00."]) {
+			expect(ground(["Gratis.", phone]).pass, phone).toBe(true)
+		}
+	})
+})

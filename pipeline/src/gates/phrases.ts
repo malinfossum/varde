@@ -566,11 +566,12 @@ function blocksYes(sentence: string, ws: readonly string[], numbersAllowed: bool
 	)
 }
 
-// A quote that is only a phone number, with at most a label: "Telefon: 62 00 00 00".
+// A quote that is only a phone number, with at most a label: "Telefon: 62 00 00 00". Only an
+// 8-digit number counts, so "350", "35 000" or "Ring 350" stay numbers that limit a claim.
 const PHONE_LABEL = /^(?:telefonnummer|telefon|tlf|mobil|ring|sms)\.?:?\s*/
 function phoneOnly(quote: string): boolean {
 	const rest = normaliseText(quote).replace(/\.$/, "").replace(PHONE_LABEL, "")
-	return /^\+?[\d ]+$/.test(rest) && [3, 5, 6, 8].includes(phoneDigits(rest).length)
+	return /^\+?[\d ]+$/.test(rest) && phoneDigits(rest).length === 8
 }
 
 // A quote that is only an address, and nothing else: an optional label (Adresse,
