@@ -42,11 +42,15 @@ export const LockField = z
 		evidence: Evidence.optional(),
 		fetchedAt: UtcTimestamp,
 		verifiedAt: UtcTimestamp,
-		gates: z.array(GateResult),
+		// runGates writes all five results on every field, whatever its status.
+		gates: z.array(GateResult).length(GATE_NAMES.length),
 		reason: NonBlank.optional(),
 	})
 	.superRefine((field, ctx) => {
 		const issue = (message: string) => ctx.addIssue({ code: "custom", message })
+		if (new Set(field.gates.map((g) => g.gate)).size !== GATE_NAMES.length) {
+			issue("a field needs one result for each of the five gates")
+		}
 		if (field.status === "dropped") {
 			// The address id points at a value, so a dropped field may not keep it either.
 			if (

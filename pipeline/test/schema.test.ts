@@ -3,7 +3,7 @@ import { KommuneNumber } from "../src/schema/common.ts"
 import { CuratedFile } from "../src/schema/curated.ts"
 import { unitId } from "../src/schema/ids.ts"
 import { LockField, LockFile } from "../src/schema/lock.ts"
-import { acceptedField, curatedUnit, lockUnit, T } from "./helpers.ts"
+import { acceptedField, allGatesPass, curatedUnit, lockUnit, T } from "./helpers.ts"
 
 describe("KommuneNumber", () => {
 	it("keeps Oslo's leading zero", () => {
@@ -12,6 +12,13 @@ describe("KommuneNumber", () => {
 		expect(KommuneNumber.safeParse(301).success).toBe(false)
 	})
 })
+
+// What runGates writes for a field the safety gate drops: all five results, one failed.
+function droppedGates() {
+	return allGatesPass().map((g) =>
+		g.gate === "safety" ? { ...g, pass: false, onFail: "drop" as const, reason: "x" } : g
+	)
+}
 
 describe("LockField", () => {
 	it("accepts a fully gated field", () => {
@@ -41,7 +48,7 @@ describe("LockField", () => {
 			sourceUrl: acceptedField().sourceUrl,
 			fetchedAt: T,
 			verifiedAt: T,
-			gates: [],
+			gates: droppedGates(),
 			reason: "a mobile from a staff list",
 		}
 		expect(LockField.safeParse(dropped).success).toBe(true)
@@ -53,11 +60,24 @@ describe("LockField", () => {
 			sourceUrl: acceptedField().sourceUrl,
 			fetchedAt: T,
 			verifiedAt: T,
-			gates: [],
+			gates: droppedGates(),
 			reason: "an address from a register",
 			addressId: "3403-1234",
 		}
 		expect(LockField.safeParse(dropped).success).toBe(false)
+	})
+
+	it("rejects a review field without its five gate results", () => {
+		const review = { ...acceptedField(), status: "review", reason: "validity: x" }
+		expect(LockField.safeParse(review).success).toBe(true)
+		expect(LockField.safeParse({ ...review, gates: [] }).success).toBe(false)
+		expect(LockField.safeParse({ ...review, gates: allGatesPass().slice(1) }).success).toBe(false)
+	})
+
+	it("rejects a gate that appears twice in place of another", () => {
+		const gates = allGatesPass().map((g) => (g.gate === "safety" ? { ...g, gate: "source" } : g))
+		const review = { ...acceptedField(), status: "review", reason: "validity: x", gates }
+		expect(LockField.safeParse(review).success).toBe(false)
 	})
 
 	it("rejects a blank quote", () => {
