@@ -43,9 +43,40 @@ describe("agreement gate", () => {
 		})
 	})
 
-	it("ignores a second quote from the same host, which is not independent", () => {
-		const peers = [candidate({ value: "62 11 11 11" })]
-		expect(agreementGate(candidate(), context({ peers })).pass).toBe(true)
+	it("does not count an agreeing quote from the same host as independent", () => {
+		const peers = [candidate({ sourceUrl: "https://www.hamar.kommune.no/b/" })]
+		expect(agreementGate(candidate(), context({ peers }))).toMatchObject({
+			pass: true,
+			reason: "single source",
+		})
+		const brregPeer = [brreg("+47 62000000")]
+		expect(agreementGate(candidate(), context({ peers: brregPeer }))).toMatchObject({
+			pass: true,
+			reason: "2 sources agree",
+		})
+	})
+
+	it("sends a disagreement on the same host to review", () => {
+		const a = candidate({ sourceUrl: "https://www.hamar.kommune.no/a/" })
+		const b = candidate({ sourceUrl: "https://www.hamar.kommune.no/b/", value: "900 00 000" })
+		expect(agreementGate(a, context({ peers: [a, b] }))).toMatchObject({
+			pass: false,
+			onFail: "review",
+			reason: "1 other source(s) disagree",
+		})
+	})
+
+	it("never compares with another unit or another field", () => {
+		const otherUnit = brreg("900 00 000", { unitId: "org:999999998" })
+		expect(agreementGate(candidate(), context({ peers: [otherUnit] }))).toMatchObject({
+			pass: true,
+			reason: "single source",
+		})
+		const otherField = brreg("Rusteamet Hamar", { field: "name" })
+		expect(agreementGate(candidate(), context({ peers: [otherField] }))).toMatchObject({
+			pass: true,
+			reason: "single source",
+		})
 	})
 
 	it("never compares a switchboard with a direct line", () => {

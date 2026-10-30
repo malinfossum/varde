@@ -13,7 +13,8 @@ export function sourceKey(c: Candidate): string {
 
 // Gate 4: independent sources that agree confirm a value; any disagreement goes to me.
 // Phone numbers are compared only within one role, so a switchboard never fights a
-// direct line.
+// direct line. A disagreement counts from any source, the same host included; only
+// agreement needs an independent one.
 export const agreementGate: Gate = (c, ctx) => {
 	const key = (p: Candidate): string => {
 		if (p.field === "address" && typeof p.value === "string") {
@@ -22,18 +23,15 @@ export const agreementGate: Gate = (c, ctx) => {
 		}
 		return comparable(p.field, p.value)
 	}
-	const mine = sourceKey(c)
-	const others = ctx.peers.filter(
+	const peers = ctx.peers.filter(
 		(p) =>
-			p !== c &&
-			p.unitId === c.unitId &&
-			p.field === c.field &&
-			(p.role ?? "") === (c.role ?? "") &&
-			sourceKey(p) !== mine
+			p !== c && p.unitId === c.unitId && p.field === c.field && (p.role ?? "") === (c.role ?? "")
 	)
-	if (others.length === 0) return pass("agreement", "single source")
 	const value = key(c)
-	const disagreeing = others.filter((p) => key(p) !== value).length
+	const disagreeing = peers.filter((p) => key(p) !== value).length
 	if (disagreeing > 0) return review("agreement", `${disagreeing} other source(s) disagree`)
-	return pass("agreement", `${others.length + 1} sources agree`)
+	const mine = sourceKey(c)
+	const independent = peers.filter((p) => sourceKey(p) !== mine)
+	if (independent.length === 0) return pass("agreement", "single source")
+	return pass("agreement", `${independent.length + 1} sources agree`)
 }
