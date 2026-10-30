@@ -25,6 +25,15 @@ updates:
         patterns: ["*"]
         update-types: [minor, patch]
 
+  - package-ecosystem: npm # pipeline/package.json
+    directory: /pipeline
+    schedule:
+      interval: weekly
+    groups:
+      npm-minor-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
   - package-ecosystem: nuget # *.csproj
     directory: /api
     schedule:
