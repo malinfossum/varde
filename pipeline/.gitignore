@@ -1,0 +1,2 @@
+# Dependencies (Biome reads this file for its VCS ignore list; the repo root ignores the same)
+node_modules/

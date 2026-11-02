@@ -1,0 +1,1905 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"kommune": {
+			"type": "string",
+			"pattern": "^\\d{4}$"
+		},
+		"units": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"unitId": {
+						"type": "string",
+						"pattern": "^(?:org:\\d{9}|adr:[^:\\s]+:[a-z0-9-]+)$"
+					},
+					"sources": {
+						"minItems": 1,
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"kind": {
+									"type": "string",
+									"enum": [
+										"brreg",
+										"nav",
+										"nklm",
+										"page"
+									]
+								},
+								"ref": {
+									"type": "string",
+									"pattern": "\\S"
+								}
+							},
+							"required": [
+								"kind",
+								"ref"
+							],
+							"additionalProperties": false
+						}
+					},
+					"fields": {
+						"type": "object",
+						"properties": {
+							"name": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							},
+							"phone": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							},
+							"phoneHours": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							},
+							"address": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							},
+							"email": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							},
+							"website": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							},
+							"chatUrl": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							},
+							"openingHours": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							},
+							"cost": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							},
+							"costNote": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							},
+							"alwaysOpen": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							},
+							"lowThreshold": {
+								"type": "object",
+								"properties": {
+									"status": {
+										"type": "string",
+										"enum": [
+											"accepted",
+											"review",
+											"dropped"
+										]
+									},
+									"value": {
+										"anyOf": [
+											{
+												"type": "string",
+												"pattern": "\\S"
+											},
+											{
+												"type": "boolean"
+											}
+										]
+									},
+									"role": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"addressId": {
+										"type": "string",
+										"pattern": "\\S"
+									},
+									"sourceUrl": {
+										"type": "string",
+										"format": "uri"
+									},
+									"evidence": {
+										"oneOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "register"
+													},
+													"register": {
+														"type": "string",
+														"enum": [
+															"brreg",
+															"nav",
+															"klass",
+															"nklm",
+															"kartverket"
+														]
+													},
+													"recordId": {
+														"type": "string",
+														"pattern": "\\S"
+													}
+												},
+												"required": [
+													"kind",
+													"register",
+													"recordId"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "quote"
+													},
+													"quotes": {
+														"minItems": 1,
+														"type": "array",
+														"items": {
+															"type": "string",
+															"maxLength": 400,
+															"pattern": "\\S"
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"quotes"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									"fetchedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"verifiedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"gates": {
+										"minItems": 5,
+										"maxItems": 5,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"gate": {
+													"type": "string",
+													"enum": [
+														"source",
+														"grounding",
+														"validity",
+														"agreement",
+														"safety"
+													]
+												},
+												"pass": {
+													"type": "boolean"
+												},
+												"onFail": {
+													"type": "string",
+													"enum": [
+														"drop",
+														"review"
+													]
+												},
+												"reason": {
+													"type": "string",
+													"pattern": "\\S"
+												}
+											},
+											"required": [
+												"gate",
+												"pass"
+											],
+											"additionalProperties": false
+										}
+									},
+									"reason": {
+										"type": "string",
+										"pattern": "\\S"
+									}
+								},
+								"required": [
+									"status",
+									"sourceUrl",
+									"fetchedAt",
+									"verifiedAt",
+									"gates"
+								],
+								"additionalProperties": false
+							}
+						},
+						"additionalProperties": false
+					}
+				},
+				"required": [
+					"unitId",
+					"sources",
+					"fields"
+				],
+				"additionalProperties": false
+			}
+		}
+	},
+	"required": [
+		"kommune",
+		"units"
+	],
+	"additionalProperties": false
+}

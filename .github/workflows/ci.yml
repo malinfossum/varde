@@ -66,3 +66,29 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Playwright
         run: npx playwright test
+
+  # The data pipeline (pipeline/): lint, types, unit and gate tests, the golden test against
+  # the answer key, and the check over every file in data/.
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: pipeline/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Lint and format
+        run: npx biome ci .
+      - name: Types
+        run: npm run typecheck
+      - name: Tests
+        run: npm test
+      - name: Data check
+        run: npm run data:check

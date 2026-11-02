@@ -1,0 +1,53 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"fields": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"field": {
+						"type": "string",
+						"enum": [
+							"name",
+							"phone",
+							"phoneHours",
+							"address",
+							"email",
+							"website",
+							"chatUrl",
+							"openingHours",
+							"cost",
+							"costNote",
+							"alwaysOpen"
+						]
+					},
+					"value": {
+						"type": "string"
+					},
+					"quote": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"field",
+					"value",
+					"quote"
+				],
+				"additionalProperties": false
+			}
+		},
+		"referralQuotes": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		}
+	},
+	"required": [
+		"fields",
+		"referralQuotes"
+	],
+	"additionalProperties": false
+}

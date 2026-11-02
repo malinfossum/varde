@@ -39,3 +39,6 @@ dist/
 
 # Brand contact sheet and review renders (npm run brand -- --sheet), never committed
 .superpowers/brand-review/
+
+# Pipeline page cache: raw pages can hold staff names, never committed
+.cache/

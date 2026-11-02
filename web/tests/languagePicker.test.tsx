@@ -72,7 +72,9 @@ test("choosing System when the browser already matches stays on the page and mov
 	expect(localStorage.getItem("varde.lang")).toBe("system")
 	expect(system).toHaveAttribute("aria-current", "true")
 	expect(desktopTools().getByRole("link", { name: "Norsk" })).not.toHaveAttribute("aria-current")
-	expect(screen.getByText("Språket følger nå nettleseren")).toBeInTheDocument()
+	// The status region joins messages that land within 1.5 s, so a results announcement on a slow
+	// runner can come first ("… . Språket følger nå nettleseren"). Match the phrase, not the whole text.
+	expect(await screen.findByText(/Språket følger nå nettleseren/)).toBeInTheDocument()
 })
 
 test("choosing Norsk after System replaces the stored choice", async () => {
