@@ -270,7 +270,7 @@ training crawler, and these kommuner have said they do not want AI on their cont
 - The fetcher uses its own honest user agent, `VardeBot/1.0 (+https://varde.pages.dev/om)`,
   which robots.txt allows. The URL follows the domain if it changes, and the UI follow-up adds
   the Om Varde section it points to. The fetcher never spoofs a browser, and it honours each
-  site's crawl delay (seen: 1, 5, 7 and 30 seconds).
+  site's crawl delay with a 5-second floor (seen: 1, 5, 7 and 30 seconds).
 - Their pages are extracted by a local model through Ollama (NorMistral-11B or a Gemma or Qwen
   model, picked in the pilot), so the text never leaves the runner.
 - If the local model misses the pass mark, those kommuner are researched by hand.
@@ -431,8 +431,9 @@ Each PR leaves `main` green. None of them changes what the site shows.
 1. **Skeleton:** `pipeline/` workspace, Zod schema and JSON Schema export, curated and lock
    formats, all five gates with their fixtures, the answer key and the golden test harness. No
    network. Licence request drafts.
-2. **Discover and fetch:** registers (brreg, Nav, NKLM, KLASS, Kartverket), sitemaps, the
-   fetcher with robots and crawl delay, the CMS adapters.
+2. **Discover and fetch:** registers (brreg, Nav, KLASS, Kartverket), sitemaps, the
+   fetcher with robots and crawl delay, the CMS adapters. Detail in "PR 2: discover and
+   fetch" below.
 3. **Extract, verify, review:** Haiku batch, Ollama, the review command.
 4. **Pilot run:** Innlandet and Oslo scored against the pass mark, with a report in the PR. Not
    published.
@@ -442,6 +443,122 @@ Each PR leaves `main` green. None of them changes what the site shows.
 Then spec B, then Innlandet goes live, then the rollout. The UI follow-up, with the Om Varde
 notice and "Kilder og lisenser", ships before the first pipeline row goes live, because the
 Art. 14 notice and the NLOD credit lines must be there from the first published value.
+
+## PR 2: discover and fetch
+
+Decided in the brainstorm on 02.11.2026 and 03.11.2026. Where this section and an earlier one
+disagree, this section wins.
+
+### What it delivers
+
+- The `discover`, `fetch` and `recall-report` commands. Nothing new goes into `data/`.
+- Done when every test passes and the PR body holds the recall report.
+
+### Modules
+
+- `src/net/` is the only code that touches the network. It reads robots.txt (`Disallow`,
+  `Crawl-delay`, `Visit-time`, `Sitemap`), keeps one queue per host and sends the `VardeBot`
+  user agent. It writes each page plus a manifest (URL, status, final URL, fetch time, content
+  hash) to the cache folder.
+- `src/registers/` has one reader each for Brreg (enheter and underenheter by SN2025 code,
+  legevakt by name), the nav.no office pages (`__NEXT_DATA__`), KLASS 131 (kommuner and their
+  changes) and the Kartverket address API.
+- `src/discover/` reads the sitemaps robots.txt lists, and tries `/sitemap.xml` on every host
+  even when robots.txt lists none. Engerdal serves 773 URLs there and lists no sitemap.
+  Catalogues (dinutvei, Bymisjon, Konfliktrådet, frivilligsentral.no) only point to a
+  provider's own page.
+- `src/adapters/` holds ACOS, CorePublish, Sitevision, the site rule list and the fallback.
+  Each one detects its CMS, returns the page's main text and sets the value's `origin`.
+- Fetch, extract and verify run in one Actions job and share its temporary folder. Locally the
+  cache is `.cache/pages/`. Artifacts are not used: on a public repository anyone signed in can
+  download them.
+- The NKLM reader waits for PR 3 or for NKLM's licence answer. Until then legevakter are found
+  through Brreg names and kommune sitemaps.
+
+### Crawl rules
+
+- Wait 5 seconds or the host's `Crawl-delay`, whichever is longer, between two requests to
+  one host. One request at a time per host, hosts in parallel. The slowest host sets the job's
+  length either way (Kongsvinger asks for 30 seconds), so the floor costs no total time.
+- On 429 or 503, wait as long as `Retry-After` says. A second one stops that host for the run.
+- `Visit-time` is honoured for every host. Outside the window the host is skipped and named in
+  the run report. frivilligsentral.no asks for 02:00–05:00 UTC+1, so the scheduled runs in
+  PR 5 start at 01:00 UTC.
+- 30 seconds timeout and 5 MB cap per request. PDFs and other non-HTML responses are skipped
+  and listed.
+- A redirect is followed only to an allow-listed host, and robots.txt is checked again there.
+- A host that fails (a timeout, a server error, a second 429) is skipped for the run and
+  listed. The run goes on.
+
+### CMS coverage
+
+Innlandet runs ACOS (34), CorePublish (8), Sitevision (3: Ringsaker, Nordre Land, Gran) and
+Optimizely (1: Søndre Land). Oslo is on CorePublish by the vendor's account, unconfirmed.
+
+- **Sitevision gets an adapter now.** The three Sitevision homepages share one template
+  (`main.svp-main` and the same generated class names), so one adapter should fit the other
+  Sitevision kommuner too.
+- **Optimizely gets no adapter.** Each site is built by an agency: Asker marks its content
+  `main#main-content`, Drammen `main.mainBody`, and Søndre Land has no `<main>` at all. A site
+  rule list maps a host to the selector of its main text instead. Søndre Land is the first row.
+- **Everything else falls back to `<main>`.** Values from fallback pages are marked, and PR 3
+  sends them to review.
+
+### Licences
+
+`LicenceStatus` gains `ccBy` (CC BY 4.0). It works like `nlod`: free reuse, with a credit line
+under "Kilder og lisenser".
+
+| Source | Status |
+|---|---|
+| nav.no office pages | `ownPage`: Nav describes its own offices. The licence request to Nav still goes out |
+| Aim API (Prokom) | `pending` until Prokom answers. Those kommuner's own pages are read instead |
+| Kartverket, KLASS | `ccBy` |
+
+### Fixes carried over from PR 1
+
+- Register evidence names its register, and the source gate checks that register's licence
+  (`nlod` or `ccBy`).
+- Agreement independence compares registrable domains (the Public Suffix List, through
+  `tldts`), not hostnames.
+- A `unitPage` origin must be the unit's own host.
+- `unitId()` only emits ids that `UnitId` accepts. An email domain no longer grounds a root URL.
+- The kommune number is checked against the kommune name through KLASS.
+- The lock's `Evidence` register list and the `SourceRef` kinds agree (`klass`, `kartverket`).
+- PR 1's "no network" rule becomes: only `src/net/` touches the network, and no test does.
+
+Moved to PR 3: several person names per candidate (ruling 28), dot-grouped phone numbers, and
+how the length of opening hours is counted.
+
+### Dependencies
+
+`cheerio` reads HTML and sitemap XML by CSS selector. `tldts` finds registrable domains.
+Both are pinned and covered by Dependabot.
+
+### Tests
+
+- No test touches the network. A fake fetcher and a fake clock test the 5-second floor,
+  `Retry-After`, the stop after a second 429, and `Visit-time`.
+- The robots reader: `Disallow`, `Crawl-delay`, `Visit-time` and `Sitemap` lines, and a
+  missing robots.txt.
+- Each adapter and the site rule list: trimmed saved pages with no personal data in them.
+- The fallback marks its pages.
+- Recall matching: one case per matching rule below, and one miss.
+- The fetcher tests above (a redirect off the allow-list, a private address) land here.
+
+### Recall report
+
+Run once by hand against the live sources for Innlandet and Oslo. Discover only: no page text
+and no model.
+
+- An answer-key service counts as found when discover lists it by org number, by name and
+  address (pass mark 3), or by the service's own website URL, since sitemaps give URLs and
+  not names.
+- The PR body shows "found X of 138" against the 9-in-10 bar. It lists each miss with its
+  kommune and a likely reason, and every host that was skipped for its visiting hours or a
+  failure.
+- A low number does not block PR 2. Each miss becomes a discover fix before the pilot run in
+  PR 4.
 
 ## Considered and rejected
 
