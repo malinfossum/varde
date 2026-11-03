@@ -6,12 +6,12 @@ provider's own page and to cross-check, and takes the facts from that page or a 
 
 | Body | What I ask for | Draft | Sent | Answer |
 |---|---|---|---|---|
-| Prokom | The Aim API for 29 kommuner | [prokom-aim.md](prokom-aim.md) | | |
-| Nav | Office pages on nav.no/kontor | [nav.md](nav.md) | | |
-| NKLM | The legevakt list | [nklm.md](nklm.md) | | |
-| NKVTS | dinutvei.no's help services | [nkvts-dinutvei.md](nkvts-dinutvei.md) | | |
-| Norges Frivilligsentraler | The frivilligsentral register | [norges-frivilligsentraler.md](norges-frivilligsentraler.md) | | |
-| Kirkens Bymisjon | The tilbud list | [kirkens-bymisjon.md](kirkens-bymisjon.md) | | |
+| Prokom | The Aim API for 29 kommuner | [prokom-aim.md](prokom-aim.md) | 03.11.2026 | |
+| Nav | Office pages on nav.no/kontor | [nav.md](nav.md) | 03.11.2026 | |
+| NKLM | The legevakt list | [nklm.md](nklm.md) | 03.11.2026 | |
+| NKVTS | dinutvei.no's help services | [nkvts-dinutvei.md](nkvts-dinutvei.md) | 03.11.2026 | |
+| Norges Frivilligsentraler | The frivilligsentral register | [norges-frivilligsentraler.md](norges-frivilligsentraler.md) | 03.11.2026 | |
+| Kirkens Bymisjon | The tilbud list | [kirkens-bymisjon.md](kirkens-bymisjon.md) | 03.11.2026 | |
 
 When an answer comes, I record it here and set the host's licence status in the pipeline
 (`granted`, or leave it `pending`).
