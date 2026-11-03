@@ -22,7 +22,9 @@ npm run fetch -- --only 3405 --limit 3  # pages discover listed, into the cache
 npm run recall-report > ../.cache/recall-report.md  # discover's output against the 138-row answer key
 ```
 
-`--only` takes kommune numbers or two-digit fylke prefixes, and `discover` requires it.
+`--only` takes kommune numbers or two-digit fylke prefixes, and `discover` requires it. An
+`--only` that matches no kommune stops `discover` before it writes anything, and a `fetch`
+selection with no pages exits with code 2 and leaves `pages/report.json` as it was.
 `discover` and `fetch` take `--dry-run` (read and report, write nothing) and `--cache <dir>`
 (default `.cache/` at the repo root); `recall-report` takes `--cache <dir>` too. `discover`
 also takes `--date YYYY-MM-DD` (the day KLASS codes are read for). `fetch` takes `--limit N`
@@ -32,8 +34,8 @@ offices and catalogue findings.
 ## How it fetches
 
 - Only `src/net/` touches the network. It sends `VardeBot/1.0 (+https://varde.pages.dev/om)`,
-  HTTPS only, to allow-listed hosts only, and refuses any host that resolves to a private
-  address.
+  HTTPS only, to allow-listed hosts only (no port, no user info in the URL), and refuses any
+  host that resolves to a private address.
 - It reads robots.txt (`Disallow`, `Allow`, `Crawl-delay`, `Visit-time`, `Sitemap`) and waits
   5 seconds or the host's crawl delay, whichever is longer, between two requests to one host.
   A crawl delay over 60 seconds keeps the host out for the run.

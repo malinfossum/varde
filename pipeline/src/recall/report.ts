@@ -48,7 +48,9 @@ function missReason(row: KeyRow, ctx: Context): string {
 		return `${prefix}no website in the key, and no unit matched by name and address`
 	if (isFrontPage(website, ctx.kommuneHosts))
 		return `${prefix}the key's website is the kommune's front page`
-	const h = siteHost(website) ?? website
+	// A value that is not a URL is never echoed: it is no host, and it is not code.
+	const h = siteHost(website)
+	if (h === undefined) return `${prefix}the key's website is not a valid URL`
 	const stop = ctx.stopped.get(h)
 	if (stop !== undefined) return `${prefix}\`${h}\` was skipped: ${STOP_TEXT[stop]}`
 	if (!ctx.allowed.has(h))
@@ -162,7 +164,7 @@ export function renderRecall(r: RecallResult): string {
 	const lines = [
 		"## Recall report",
 		"",
-		`Found **${r.found} of ${r.total}** answer-key services (${percent}%). The pilot bar is 9 in 10: ${Math.ceil(r.total * 0.9)} of ${r.total}.`,
+		`Found **${r.found} of ${r.total}** answer-key services (${percent}%). The pilot bar is 9 in 10: ${Math.ceil((r.total * 9) / 10)} of ${r.total}.`,
 		`Discover only, against the live sources on ${dotted(r.date)}. No page text and no model.`,
 		"",
 		"| Rows | Found | Of |",

@@ -139,6 +139,11 @@ describe("recall over the key", () => {
 			}),
 			row({ id: 5, name: "Ny side", fields: { address: null, website: `${L}/helse/ny-side/` } }),
 			row({
+				id: 7,
+				name: "Ugyldig nettside",
+				fields: { address: null, website: "ikke en `adresse`" },
+			}),
+			row({
 				id: 6,
 				name: "Hjelpetelefonen",
 				kommune: null,
@@ -161,10 +166,10 @@ describe("recall over the key", () => {
 
 	it("counts what it found, by rule and by kind of row", () => {
 		expect(result).toMatchObject({
-			total: 6,
+			total: 7,
 			found: 1,
 			byRule: { orgNumber: 0, nameAndAddress: 1, website: 0 },
-			kommuneRows: { total: 5, found: 1 },
+			kommuneRows: { total: 6, found: 1 },
 			nationalRows: { total: 1, found: 0 },
 		})
 	})
@@ -175,6 +180,7 @@ describe("recall over the key", () => {
 			[3, "`lillehammer.frivilligsentral.no` was not found by any register, sitemap or catalogue"],
 			[4, "`frivilligsentral.no` was skipped: outside its Visit-time window"],
 			[5, "not in the sitemap of `lillehammer.kommune.no`"],
+			[7, "the key's website is not a valid URL"],
 			[6, "national row: no website in the key, and no unit matched by name and address"],
 		])
 	})
@@ -182,7 +188,7 @@ describe("recall over the key", () => {
 	it("renders the headline against the bar, and every name as inert text", () => {
 		const md = renderRecall(result)
 		expect(md).toContain(
-			"Found **1 of 6** answer-key services (16.7%). The pilot bar is 9 in 10: 6 of 6."
+			"Found **1 of 7** answer-key services (14.3%). The pilot bar is 9 in 10: 7 of 7."
 		)
 		expect(md).toContain("on 03.11.2026")
 		expect(md).toContain("| 2 Barnehagen | 3405 |")

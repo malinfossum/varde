@@ -300,6 +300,23 @@ describe("crawler: a robots.txt that cannot be read", () => {
 		])
 	})
 
+	it("stops a register as retryAfterTooLong when its robots.txt redirects to an over-cap wait", async () => {
+		const { crawler, calls } = withRegisters({
+			[`${R}/robots.txt`]: redirect(`${R2}/robots.txt`),
+			[`${R2}/robots.txt`]: html("", 503, { "retry-after": "3600" }),
+			[`${R}/api/a`]: html("a"),
+		})
+		expect(await crawler.get(`${R}/api/a`, "html")).toMatchObject({
+			ok: false,
+			reason: "hostSkipped",
+		})
+		expect(calls).toEqual([`${R}/robots.txt`, `${R2}/robots.txt`])
+		expect(crawler.report().hosts).toEqual([
+			{ host: "data.register-a.no", requests: 1, stopped: "retryAfterTooLong" },
+			{ host: "data.register-b.no", requests: 1, stopped: "retryAfterTooLong" },
+		])
+	})
+
 	it("takes the kind from the host asked for, not from where robots.txt redirects", async () => {
 		const calls = await readsTwice(
 			redirect(`${P}/robots.txt`),

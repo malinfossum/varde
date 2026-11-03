@@ -18,8 +18,9 @@ const rel = (path: string) => relative(ROOT, path).split("\\").join("/")
 const read = (path: string) => readFileSync(path, "utf8")
 
 // The full cheerio build loads undici's URL loader, so only cheerio/slim may be imported.
+// Every way to load a module counts: from, a bare side-effect import, import() and require().
 const NETWORK =
-	/from\s+"(?:node:)?(?:http|https|http2|net|tls|dgram|dns|dns\/promises)"|from\s+"(?:undici|cheerio)"|\bfetch\s*\(/
+	/(?:\bfrom|\bimport|\bimport\s*\(|\brequire\s*\()\s*["'](?:(?:node:)?(?:http|https|http2|net|tls|dgram|dns|dns\/promises)|undici|cheerio)["']|\bfetch\s*\(/
 const REAL_TRANSPORT = /from\s+"[^"]*src\/(?:net\/http|cli\/)[^"]*"/
 
 describe("network boundary", () => {
@@ -36,6 +37,22 @@ describe("network boundary", () => {
 			.filter((f) => REAL_TRANSPORT.test(read(f)) || NETWORK.test(read(f)))
 			.map(rel)
 		expect(offenders).toEqual([])
+	})
+
+	it("catches every way to load a network module, and lets cheerio/slim through", () => {
+		// Each form is split in two, so this file does not trip its own pattern.
+		const forms = [
+			['import { request } from "node:', 'https"'],
+			["import 'node:", "tls'"],
+			['const http = await import("node:', 'http")'],
+			["const net = require('node:", "net')"],
+			['const u = require("', 'undici")'],
+			['import { load } from "', 'cheerio"'],
+			["await fe", 'tch("https://www.nav.no/")'],
+		]
+		for (const [head, tail] of forms) expect(NETWORK.test(`${head}${tail}`), head).toBe(true)
+		expect(NETWORK.test('import { load } from "cheerio/slim"')).toBe(false)
+		expect(NETWORK.test('import { httpsHost } from "../text/normalise.ts"')).toBe(false)
 	})
 
 	it("the real transport sends VardeBot's user agent", () => {

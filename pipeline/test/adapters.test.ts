@@ -123,6 +123,22 @@ describe("readPage: the fallback", () => {
 		})
 	})
 
+	it("gives empty text when the main element or an ancestor is hidden", () => {
+		const body = "<main><p>Skjult tekst for en modell.</p></main>"
+		for (const html of [
+			`<html><body><div hidden>${body}</div></body></html>`,
+			`<html><body><div aria-hidden="true">${body}</div></body></html>`,
+			`<html><body><div style="display: none">${body}</div></body></html>`,
+			`<html><body><main style="visibility:hidden"><p>Skjult tekst for en modell.</p></main></body></html>`,
+			`<html><body><main hidden><p>Skjult tekst for en modell.</p></main></body></html>`,
+		]) {
+			expect(readPage(html, K), html).toMatchObject({ adapter: "fallback", text: "" })
+		}
+		expect(readPage(`<html><body><div>${body}</div></body></html>`, K).text).toBe(
+			"Skjult tekst for en modell."
+		)
+	})
+
 	it("gives empty text, marked, for a page with no main element", () => {
 		expect(readPage(page("nomain.html"), K)).toEqual({
 			adapter: "fallback",

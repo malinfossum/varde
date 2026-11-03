@@ -64,8 +64,8 @@ export function normaliseUrl(url: string): string {
 	}
 }
 
-// A link never starts right after "@", a dot, a hyphen or a letter, so the domain of
-// "post@hamar.kommune.no" is not read as a link to hamar.kommune.no.
+// A link never starts right after a letter, a digit, "@", a dot, "_" or a hyphen, so the
+// domain of "post@hamar.kommune.no" is not read as a link to hamar.kommune.no.
 const URL_TOKEN =
 	/(?<![\p{L}\p{N}@._-])(?:https?:\/\/)?[a-z0-9æøå-]+(?:\.[a-z0-9æøå-]+)+(?:\/[^\s"'<>()]*)?/gu
 

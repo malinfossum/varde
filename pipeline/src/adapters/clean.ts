@@ -2,8 +2,8 @@ import type { CheerioAPI } from "cheerio/slim"
 
 // Never part of the main text: code, navigation, forms, and anything a visitor cannot see
 // (a classic place for instructions aimed at a model).
-const DROP =
-	"script, style, noscript, template, svg, iframe, object, nav, form, button, select, [hidden], [aria-hidden='true']"
+const HIDDEN = "[hidden], [aria-hidden='true']"
+const DROP = `script, style, noscript, template, svg, iframe, object, nav, form, button, select, ${HIDDEN}`
 const HIDDEN_STYLE = /display\s*:\s*none|visibility\s*:\s*hidden/i
 const BLOCK =
 	"address, article, aside, blockquote, dd, div, dl, dt, figcaption, footer, h1, h2, h3, h4, h5, h6, header, li, main, ol, p, pre, section, table, tbody, td, th, thead, tr, ul"
@@ -30,10 +30,19 @@ function linkTarget(href: string, pageUrl: string): string | undefined {
 
 // The visible text of the first element the selector finds, one line per block, with each
 // link written as its text followed by its address (PR 1's contract, so a website or chat URL
-// can be grounded in a quote). undefined when there is no such element or it holds no text.
+// can be grounded in a quote). undefined when there is no such element, when it or an
+// ancestor is hidden, or when it holds no text.
 export function mainText($: CheerioAPI, selector: string, pageUrl: string): string | undefined {
 	const root = $(selector).first()
 	if (root.length === 0) return undefined
+	const hidden = root
+		.parents()
+		.addBack()
+		.filter((_, el) => {
+			const node = $(el)
+			return node.is(HIDDEN) || HIDDEN_STYLE.test(node.attr("style") ?? "")
+		})
+	if (hidden.length > 0) return undefined
 	root.find(DROP).remove()
 	root
 		.find("[style]")

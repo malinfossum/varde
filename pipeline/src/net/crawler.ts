@@ -230,10 +230,11 @@ export class Crawler {
 		const state = this.#state(host)
 		// The kind comes from the host asked for, not from where a redirect leads.
 		const isRegister = this.#allow.get(host)?.kind === "register"
-		let failure: string | undefined
+		let failure: HostStop | "tooLarge" | undefined
 		let url = new URL(`https://${host}/robots.txt`)
 		for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-			// A register's failed robots.txt read must not stop any host in the redirect chain.
+			// A register's failed robots.txt read stops no host in the redirect chain, except for
+			// a Retry-After over the cap, which stops the host that sent it.
 			const res = await this.#request(
 				this.#state(url.hostname),
 				url,
@@ -274,7 +275,7 @@ export class Crawler {
 		// Registers are documented open APIs (NLOD, CC BY), so since 03.11.2026 I treat an
 		// unreadable robots.txt there as no rules. Every other limit still applies, Retry-After included.
 		if (isRegister && failure !== "retryAfterTooLong") return ALLOW_ALL
-		state.stopped ??= "robotsUnreachable"
+		state.stopped ??= failure === "retryAfterTooLong" ? "retryAfterTooLong" : "robotsUnreachable"
 		return DISALLOW_ALL
 	}
 
@@ -287,8 +288,8 @@ export class Crawler {
 
 	// One request, with the 429 and 503 rule. A string is why the host stopped, or tooLarge.
 	// visitTime is undefined for robots.txt itself, read before the window is known. With
-	// keepRunning, a failure comes back with its reason but does not stop the host: only a
-	// register's robots.txt read uses it.
+	// keepRunning, a failure comes back with its reason but does not stop the host, except a
+	// Retry-After over the cap, which always does. Only a register's robots.txt read uses it.
 	async #request(
 		state: HostState,
 		url: URL,
@@ -348,7 +349,7 @@ export class Crawler {
 			if (wait > 0) await this.#clock.sleep(wait)
 			if (state.stopped !== undefined) return state.stopped
 			if (visitTime !== undefined && !inVisitWindow(this.#clock.now(), visitTime)) {
-				state.stopped = "visitTime"
+				state.stopped ??= "visitTime"
 				return state.stopped
 			}
 			state.requests++
