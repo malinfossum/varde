@@ -60,12 +60,12 @@ Choices the spec leaves open or that the live sources forced. Evidence is from s
 - **robots.txt follows RFC 9309.** A 4xx allows everything. A 5xx or no answer keeps the host out. Redirects are followed up to 5 hops. `*` and `$` work, the longest match wins and `Allow` wins a tie. A robots.txt that redirects off the allow-list or cannot be read keeps the host out (stricter than the RFC's "unavailable"). An unreadable `Visit-time` line is ignored and noted in the report.
 - **Private addresses are refused inside the DNS lookup** that `node:https` calls at connect time. A host cannot pass a check with one address and connect to another. All addresses of a name must be public. No `undici` dependency: cheerio is imported as `cheerio/slim`, which leaves out its URL loader.
 - **Licence status is by exact hostname, never by registrable domain.** `frivilligsentral.no` (the register, `pending`) and `hamar.frivilligsentral.no` (a sentral's own site, `ownPage`) differ. Konfliktrådet and Kirkens Bymisjon list their own offices and tilbud, so their pages are `ownPage`. Their WordPress APIs only list those pages. dinutvei.no and frivilligsentral.no stay `pending`: finders only. `api.aimcms.no` is never fetched.
-- **Register licences:** brreg `nlod`, KLASS `ccBy`, Kartverket `ccBy`, nav `ownPage` (the spec's licence table), NKLM `pending`. The spec's fix says the source gate checks the register's licence "(`nlod` or `ccBy`)". I read that as naming the licences registers have, so the gate passes register evidence whose licence is recorded and not `pending`. That lets Nav office data through as `ownPage`, as the licence table says. **My call to confirm.**
+- **Register licences:** brreg `nlod`, KLASS `ccBy`, Kartverket `ccBy`, nav `ownPage` (the spec's licence table), NKLM `pending`. The spec's fix says the source gate checks the register's licence "(`nlod` or `ccBy`)". I read that as naming the licences registers have, so the gate passes register evidence whose licence is recorded and not `pending`. That lets Nav office data through as `ownPage`, as the licence table says. **Confirmed by me on 03.11.2026.**
 - **Register evidence must come from its register's own host** (`data.brreg.no`, `www.nav.no`, `data.ssb.no`, `api.kartverket.no`). Grounding skips the page check for register evidence, so a register claim on a kommune page would otherwise pass unchecked.
 - **The unit's own host** is the host of one of the unit's own pages, lower case, without `www.`, compared exactly. Registrable domains are only for agreement independence.
 - **The real `GateContext` is assembled in PR 3,** where verify needs it. PR 2 delivers its parts: robots decisions, the manifest (final status per URL), page text (adapters), the Kartverket lookup and the licence map.
 - **Adapters set `origin: "unitPage"`** on the main text and a `fallback` flag. A detected CMS or site rule whose element is missing (a redesign) falls back to `<main>`, marked. PR 3 narrows `unitPage` to `unitContact` and sends fallback values to review.
-- **Oslo gets a site rule (`main`).** Oslo shows no CMS marker. On its helsestasjon hub and its legevakt page, the `<h1>` and every `tel:` link sit inside `<main>`. Without the rule, every Oslo value would go to review in PR 3, and Oslo alone could break the 1-in-10 bar. **My call to confirm.** Søndre Land is the first row (`div.basic-article`, checked on its legevakt page).
+- **Oslo gets a site rule (`main`).** Oslo shows no CMS marker. On its helsestasjon hub and its legevakt page, the `<h1>` and every `tel:` link sit inside `<main>`. Without the rule, every Oslo value would go to review in PR 3, and Oslo alone could break the 1-in-10 bar. **Confirmed by me on 03.11.2026.** Søndre Land is the first row (`div.basic-article`, checked on its legevakt page).
 - **Ringsaker and Søndre Land publish no sitemap** (`/sitemap.xml` is 404 and robots.txt names none). The recall report will show their misses as "no sitemap". Crawling their link trees is not in this PR. It becomes a discover fix before PR 4 if the misses matter.
 - **Recall matching.** Org number: the 138-row key holds no org numbers, so this rule matches nothing in this report. It is there for curated files, and the report says so. Name and address: both must match (name words, allowing a definite ending such as "Helsestasjonen" for "HELSESTASJON"; street and number plus postcode). Website: the normalised URL is equal, and a kommune's front page never counts.
 - **The live recall run happens in daytime.** frivilligsentral.no asks for `Visit-time: 0200-0500 UTC+1`, so it is skipped and listed. Its sentraler can still be found through Brreg websites and kommune sitemaps. The register parser is therefore written against the column layout in my research notes, not against a page fetched inside the window. A parse that finds no rows is reported, never silent, and the first run inside the window checks it (see "Left for later plans").
@@ -6702,11 +6702,11 @@ nothing the site shows changes.
 
 <one line per break from Tasks 1 to 16: what I broke, which test failed>
 
-## For me to confirm
+## Decided in review
 
 - Register evidence passes the source gate when its register's licence is recorded and not
-  pending (Nav office data counts as `ownPage`).
-- Oslo reads by a site rule (`main`) instead of the marked fallback.
+  pending (Nav office data counts as `ownPage`). Confirmed on 03.11.2026.
+- Oslo reads by a site rule (`main`) instead of the marked fallback. Confirmed on 03.11.2026.
 ````
 
 Fill the `<...>` sections before opening the PR. Then follow the session's PR tooling (`get_status`, `bind_pr`) and report the CI result. Do not merge: I merge.
