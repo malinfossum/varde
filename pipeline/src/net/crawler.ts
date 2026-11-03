@@ -1,7 +1,13 @@
 import { getDomain } from "tldts"
 import type { AllowList } from "./allowList.ts"
 import { type Clock, isoSeconds } from "./clock.ts"
-import { DISALLOW_ALL, inVisitWindow, type Robots, robotsFromResponse } from "./robots.ts"
+import {
+	DISALLOW_ALL,
+	inVisitWindow,
+	type Robots,
+	robotsFromResponse,
+	type VisitWindow,
+} from "./robots.ts"
 import {
 	DEFAULT_RETRY_MS,
 	FLOOR_MS,
@@ -191,7 +197,7 @@ export class Crawler {
 			return skip("hostSkipped")
 		}
 		if (!robots.allows(target.pathname + target.search)) return skip("robots")
-		const res = await this.#request(state, target, ACCEPT[kind])
+		const res = await this.#request(state, target, ACCEPT[kind], robots.visitTime)
 		if (res === "tooLarge") return skip("tooLarge")
 		if (typeof res === "string") return skip("hostSkipped")
 		const location = res.headers.location
@@ -252,22 +258,25 @@ export class Crawler {
 	}
 
 	// One request, with the 429 and 503 rule. A string is why the host stopped, or tooLarge.
+	// visitTime is undefined for robots.txt itself, read before the window is known.
 	async #request(
 		state: HostState,
 		url: URL,
-		accept: string
+		accept: string,
+		visitTime?: VisitWindow
 	): Promise<RawResponse | HostStop | "tooLarge"> {
 		for (;;) {
 			if (state.stopped !== undefined) return state.stopped
-			let res: RawResponse
+			let res: RawResponse | HostStop
 			try {
-				res = await this.#turn(state, () => this.#transport(url, accept))
+				res = await this.#turn(state, visitTime, () => this.#transport(url, accept))
 			} catch (err) {
 				const kind = err instanceof NetError ? err.kind : "network"
 				if (kind === "tooLarge") return "tooLarge"
 				state.stopped ??= kind
 				return state.stopped
 			}
+			if (typeof res === "string") return res
 			if (res.status === 429 || res.status === 503) {
 				state.tooMany++
 				if (state.tooMany >= 2) {
@@ -292,12 +301,24 @@ export class Crawler {
 	}
 
 	// One request at a time per server, each starting no sooner than the server's delay after
-	// the one before it ended. Servers do not wait for each other.
-	#turn<T>(state: HostState, work: () => Promise<T>): Promise<T> {
+	// the one before it ended. Servers do not wait for each other. A request may wait in the
+	// queue while its host stops or its visiting hours end, so both are checked again when its
+	// turn comes. A turn that sends nothing leaves the pace as it was for the rest of the queue.
+	#turn<T>(
+		state: HostState,
+		visitTime: VisitWindow | undefined,
+		work: () => Promise<T>
+	): Promise<T | HostStop> {
 		const queue = state.queue
 		const run = queue.tail.then(async () => {
+			if (state.stopped !== undefined) return state.stopped
 			const wait = queue.next - this.#clock.now()
 			if (wait > 0) await this.#clock.sleep(wait)
+			if (state.stopped !== undefined) return state.stopped
+			if (visitTime !== undefined && !inVisitWindow(this.#clock.now(), visitTime)) {
+				state.stopped = "visitTime"
+				return state.stopped
+			}
 			state.requests++
 			try {
 				return await work()

@@ -132,6 +132,30 @@ describe("crawler: 429 and 503", () => {
 		expect(crawler.report().hosts[0]?.stopped).toBe("secondTooMany")
 	})
 
+	it("sends nothing more from the queue after the second 429, and keeps the server's queue going", async () => {
+		const tooMany = html("", 429, { "retry-after": "10" })
+		const bare = "https://eksempel.kommune.no/x/"
+		const { crawler, calls } = setup({
+			[`${A}/a/`]: tooMany,
+			[`${A}/b/`]: tooMany,
+			[`${A}/c/`]: tooMany,
+			[`${A}/d/`]: tooMany,
+			[bare]: html("x"),
+		})
+		const results = await Promise.all(
+			[`${A}/a/`, `${A}/b/`, `${A}/c/`, `${A}/d/`, bare].map((url) => crawler.get(url, "html"))
+		)
+		expect(calls.filter((c) => c.startsWith(A))).toEqual([`${A}/robots.txt`, `${A}/a/`, `${A}/b/`])
+		expect(results.slice(0, 4).map((r) => !r.ok && r.reason)).toEqual(Array(4).fill("hostSkipped"))
+		// The bare domain shares the server's queue with www and is not held up by its stop.
+		expect(results[4]?.ok).toBe(true)
+		expect(crawler.report().hosts).toContainEqual({
+			host: "www.eksempel.kommune.no",
+			requests: 3,
+			stopped: "secondTooMany",
+		})
+	})
+
 	it("stops a host whose Retry-After is longer than ten minutes", async () => {
 		const { crawler } = setup({ [`${A}/a/`]: html("", 429, { "retry-after": "86400" }) })
 		await crawler.get(`${A}/a/`, "html")
@@ -200,6 +224,28 @@ describe("crawler: Visit-time", () => {
 		expect(await crawler.get(`${A}/a/`, "html")).toMatchObject({ ok: false, reason: "hostSkipped" })
 		expect(calls).toEqual([`${A}/robots.txt`])
 		expect(crawler.report().hosts[0]?.stopped).toBe("visitTime")
+	})
+
+	it("sends nothing from the queue once the window has closed", async () => {
+		// The window ends at 04:00 UTC: robots.txt at 03:59:50, the first page at 03:59:55.
+		const late = new FakeClock(Date.parse("2026-11-03T03:59:50Z"))
+		const pages = ["a", "b", "c", "d"].map((p) => `${A}/${p}/`)
+		const routes: Record<string, Route> = { [`${A}/robots.txt`]: robots }
+		for (const page of pages) routes[page] = html("side")
+		const { crawler, calls, clock } = setup(routes, late)
+		const results = await Promise.all(pages.map((page) => crawler.get(page, "html")))
+		expect(calls).toEqual([`${A}/robots.txt`, `${A}/a/`])
+		expect(results.map((r) => r.ok || r.reason)).toEqual([
+			true,
+			"hostSkipped",
+			"hostSkipped",
+			"hostSkipped",
+		])
+		// The turn after the window waits once and sends nothing; the ones after it do not wait.
+		expect(clock.sleeps).toEqual([5000, 5000])
+		expect(crawler.report().hosts).toEqual([
+			{ host: "www.eksempel.kommune.no", requests: 2, stopped: "visitTime" },
+		])
 	})
 
 	it("fetches inside them", async () => {
