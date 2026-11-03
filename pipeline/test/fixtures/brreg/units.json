@@ -1,0 +1,46 @@
+{
+	"_embedded": {
+		"underenheter": [
+			{
+				"organisasjonsnummer": "999999991",
+				"navn": "LILLEHAMMER KOMMUNE HELSESTASJON",
+				"organisasjonsform": {
+					"kode": "BEDR",
+					"beskrivelse": "Underenhet til næringsdrivende og offentlig forvaltning"
+				},
+				"naeringskode1": {
+					"kode": "86.942",
+					"beskrivelse": "Helsestasjons- og skolehelsetjenester"
+				},
+				"beliggenhetsadresse": {
+					"land": "Norge",
+					"landkode": "NO",
+					"postnummer": "2609",
+					"poststed": "LILLEHAMMER",
+					"adresse": ["Storgata 1"],
+					"kommune": "LILLEHAMMER",
+					"kommunenummer": "3405"
+				},
+				"hjemmeside": "www.lillehammer.kommune.no/helsestasjon/",
+				"telefon": "62 00 00 00",
+				"mobil": "900 00 000",
+				"epostadresse": "kari.nordmann@example.no",
+				"overordnetEnhet": "999999981"
+			},
+			{
+				"organisasjonsnummer": "999999992",
+				"navn": "KARI NORDMANN",
+				"organisasjonsform": { "kode": "ENK" },
+				"mobil": "900 00 001"
+			},
+			{
+				"organisasjonsnummer": "999999993",
+				"navn": "EKSEMPEL NEDLAGT",
+				"organisasjonsform": { "kode": "BEDR" },
+				"nedleggelsesdato": "2025-01-01"
+			},
+			{ "organisasjonsnummer": "12345", "navn": "UGYLDIG", "organisasjonsform": { "kode": "BEDR" } }
+		]
+	},
+	"page": { "size": 100, "totalElements": 4, "totalPages": 1, "number": 0 }
+}
