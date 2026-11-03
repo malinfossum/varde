@@ -9,6 +9,8 @@ import {
 	KommuneNumber,
 	MAX_QUOTE,
 	NonBlank,
+	REGISTERS,
+	Register,
 	UtcTimestamp,
 	valueFitsField,
 } from "./common.ts"
@@ -17,7 +19,7 @@ import { UnitId } from "./ids.ts"
 export const Evidence = z.discriminatedUnion("kind", [
 	z.strictObject({
 		kind: z.literal("register"),
-		register: z.enum(["brreg", "nav", "klass", "nklm", "kartverket"]),
+		register: Register,
 		recordId: NonBlank,
 	}),
 	z.strictObject({ kind: z.literal("quote"), quotes: z.array(NonBlank.max(MAX_QUOTE)).min(1) }),
@@ -80,7 +82,7 @@ export const LockField = z
 export type LockField = z.infer<typeof LockField>
 
 export const SourceRef = z.strictObject({
-	kind: z.enum(["brreg", "nav", "nklm", "page"]),
+	kind: z.enum([...REGISTERS, "page"]),
 	ref: NonBlank,
 })
 

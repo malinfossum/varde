@@ -61,3 +61,9 @@ export function valueFitsField(field: FieldName, value: FieldValue): boolean {
 export const GATE_NAMES = ["source", "grounding", "validity", "agreement", "safety"] as const
 export const GateName = z.enum(GATE_NAMES)
 export type GateName = z.infer<typeof GateName>
+
+// The registers a value can come from. The lock's evidence and the source references share
+// this one list, so the two cannot drift apart again.
+export const REGISTERS = ["brreg", "nav", "klass", "nklm", "kartverket"] as const
+export const Register = z.enum(REGISTERS)
+export type Register = z.infer<typeof Register>

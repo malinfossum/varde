@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
-import { KommuneNumber } from "../src/schema/common.ts"
+import { KommuneNumber, REGISTERS } from "../src/schema/common.ts"
 import { CuratedFile } from "../src/schema/curated.ts"
 import { unitId } from "../src/schema/ids.ts"
-import { LockField, LockFile } from "../src/schema/lock.ts"
+import { Evidence, LockField, LockFile, SourceRef } from "../src/schema/lock.ts"
 import { acceptedField, allGatesPass, curatedUnit, lockUnit, T } from "./helpers.ts"
 
 describe("KommuneNumber", () => {
@@ -186,5 +186,36 @@ describe("unitId", () => {
 
 	it("refuses a malformed org number", () => {
 		expect(() => unitId({ orgNumber: "12345", name: "X" })).toThrow()
+	})
+})
+
+describe("unitId only builds ids the schema accepts", () => {
+	it("refuses an empty address id, one with a space or colon, and a name with no letter", () => {
+		expect(() => unitId({ addressId: "", name: "Rusteamet" })).toThrow()
+		expect(() => unitId({ addressId: "100 937", name: "Rusteamet" })).toThrow()
+		expect(() => unitId({ addressId: "a:b", name: "Rusteamet" })).toThrow()
+		expect(() => unitId({ addressId: "100000001", name: "!!!" })).toThrow()
+	})
+
+	it("builds an id from a Kartverket adresseid", () => {
+		expect(unitId({ addressId: "100000001", name: "Kafé Møteplassen" })).toBe(
+			"adr:100000001:kafe-moteplassen"
+		)
+	})
+})
+
+describe("register lists", () => {
+	it("lets a source reference name every register that evidence can name", () => {
+		for (const register of REGISTERS) {
+			expect(SourceRef.safeParse({ kind: register, ref: "x" }).success, register).toBe(true)
+			expect(
+				Evidence.safeParse({ kind: "register", register, recordId: "x" }).success,
+				register
+			).toBe(true)
+		}
+		expect(
+			SourceRef.safeParse({ kind: "page", ref: "https://www.hamar.kommune.no/" }).success
+		).toBe(true)
+		expect(SourceRef.safeParse({ kind: "dinutvei", ref: "x" }).success).toBe(false)
 	})
 })

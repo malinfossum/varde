@@ -77,6 +77,13 @@ describe("URLs", () => {
 			quoteHasUrl("https://hamar.kommune.no/barnevern", "https://hamar.kommune.no/rusteamet")
 		).toBe(false)
 	})
+
+	it("does not read an email's domain as a link", () => {
+		expect(quoteHasUrl("E-post: postmottak@hamar.kommune.no", "https://hamar.kommune.no")).toBe(
+			false
+		)
+		expect(quoteHasUrl("Se hamar.kommune.no for mer.", "https://hamar.kommune.no")).toBe(true)
+	})
 })
 
 describe("quoteHasText", () => {
