@@ -106,6 +106,14 @@ export function siteHost(url: string): string | undefined {
 	}
 }
 
+// A site's front page: a URL with no path on one of the sites named, as siteHost gives them.
+// Every kommune site is discovered whole, so its front page points to no one service.
+export function isFrontPage(url: string, siteHosts: ReadonlySet<string>): boolean {
+	const host = siteHost(url)
+	if (host === undefined || !siteHosts.has(host)) return false
+	return new URL(url).pathname.replace(/\/+$/, "") === ""
+}
+
 // The lower-case host of a plain https URL whose host has a registrable domain. Anything
 // else (http, a port, user info, an IP address, a bare public suffix) gives undefined.
 export function httpsHost(url: string): string | undefined {

@@ -1,11 +1,15 @@
 import { createHash } from "node:crypto"
 import { existsSync, readdirSync, readFileSync, rmSync } from "node:fs"
 import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { z } from "zod"
 import { ADAPTER_NAMES, type AdapterName } from "../adapters/types.ts"
 import type { Fetched } from "../net/crawler.ts"
 import { HttpsUrl, UtcTimestamp } from "../schema/common.ts"
 import { writeFileAtomic, writeJsonAtomic } from "./files.ts"
+
+// The cache folder when a command gets no --cache: .cache/ at the repo root, gitignored.
+export const DEFAULT_CACHE_DIR = fileURLToPath(new URL("../../../.cache/", import.meta.url))
 
 // Raw pages can hold staff names, so a local cache keeps them 90 days at most.
 export const MAX_AGE_DAYS = 90

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
+	isFrontPage,
 	normaliseText,
 	normaliseUrl,
 	phoneDigits,
@@ -83,6 +84,21 @@ describe("URLs", () => {
 			false
 		)
 		expect(quoteHasUrl("Se hamar.kommune.no for mer.", "https://hamar.kommune.no")).toBe(true)
+	})
+})
+
+describe("isFrontPage", () => {
+	const kommune = new Set(["lillehammer.kommune.no"])
+
+	it("knows a site's front page, with or without www and the slash", () => {
+		expect(isFrontPage("https://www.lillehammer.kommune.no/", kommune)).toBe(true)
+		expect(isFrontPage("https://lillehammer.kommune.no", kommune)).toBe(true)
+	})
+
+	it("does not count a page under the front page or another site", () => {
+		expect(isFrontPage("https://www.lillehammer.kommune.no/helsestasjon/", kommune)).toBe(false)
+		expect(isFrontPage("https://www.hamar.kommune.no/", kommune)).toBe(false)
+		expect(isFrontPage("not a url", kommune)).toBe(false)
 	})
 })
 
