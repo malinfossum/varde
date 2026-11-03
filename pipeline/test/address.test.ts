@@ -20,6 +20,12 @@ describe("isPrivateAddress", () => {
 			"::ffff:10.0.0.1",
 			"::ffff:127.0.0.1",
 			"64:ff9b::a00:1",
+			"192.88.99.1",
+			"::a00:1",
+			"::ffff:0:a00:1",
+			"64:ff9b:1::a00:1",
+			"2001::a00:1",
+			"2002:a00:1::1",
 			"not-an-address",
 		]) {
 			expect(isPrivateAddress(ip), ip).toBe(true)
@@ -27,7 +33,7 @@ describe("isPrivateAddress", () => {
 	})
 
 	it("lets public addresses through", () => {
-		for (const ip of ["151.101.1.1", "2a02:c7f::1", "::ffff:151.101.1.1"]) {
+		for (const ip of ["151.101.1.1", "2a02:c7f::1", "::ffff:151.101.1.1", "2001:4860:4860::8888"]) {
 			expect(isPrivateAddress(ip), ip).toBe(false)
 		}
 	})

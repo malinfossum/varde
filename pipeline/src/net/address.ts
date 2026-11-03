@@ -3,7 +3,8 @@ import { BlockList, isIP, type LookupFunction } from "node:net"
 
 const blocked = new BlockList()
 // IPv4: this network, private ranges, shared address space, loopback, link-local, protocol
-// assignments, documentation, benchmarking, multicast, reserved and broadcast.
+// assignments, documentation, the old 6to4 relay anycast, benchmarking, multicast, reserved
+// and broadcast.
 for (const [net, prefix] of [
 	["0.0.0.0", 8],
 	["10.0.0.0", 8],
@@ -13,6 +14,7 @@ for (const [net, prefix] of [
 	["172.16.0.0", 12],
 	["192.0.0.0", 24],
 	["192.0.2.0", 24],
+	["192.88.99.0", 24],
 	["192.168.0.0", 16],
 	["198.18.0.0", 15],
 	["198.51.100.0", 24],
@@ -22,14 +24,20 @@ for (const [net, prefix] of [
 ] as const) {
 	blocked.addSubnet(net, prefix, "ipv4")
 }
-// IPv6: unspecified, loopback, NAT64, discard, documentation, unique local, link-local and
-// multicast. IPv4-mapped addresses are checked as IPv4 below.
+// IPv6: unspecified, loopback and IPv4-compatible, IPv4-translated, NAT64 (well-known and
+// local), discard, Teredo, documentation, 6to4, unique local, link-local and multicast. The
+// ranges that embed an IPv4 address are refused whole, since that address could be private.
+// IPv4-mapped addresses are checked as IPv4 below.
 for (const [net, prefix] of [
-	["::", 128],
+	["::", 96],
 	["::1", 128],
+	["::ffff:0:0:0", 96],
 	["64:ff9b::", 96],
+	["64:ff9b:1::", 48],
 	["100::", 64],
+	["2001::", 32],
 	["2001:db8::", 32],
+	["2002::", 16],
 	["fc00::", 7],
 	["fe80::", 10],
 	["ff00::", 8],

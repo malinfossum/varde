@@ -457,6 +457,40 @@ describe("crawler: failures and refusals", () => {
 		expect(calls).toEqual([])
 	})
 
+	it("refuses a URL with a port or user info, and a redirect to either, without a request", async () => {
+		const { crawler, calls } = setup({
+			[`${A}/til-port/`]: redirect("https://www.eksempel.kommune.no:8443/x"),
+			[`${A}/til-bruker/`]: redirect("https://kari:hemmelig@www.eksempel.kommune.no/x"),
+		})
+		for (const url of [
+			"https://www.eksempel.kommune.no:8443/x",
+			"https://kari:hemmelig@www.eksempel.kommune.no/x",
+			"https://kari@www.eksempel.kommune.no/x",
+		]) {
+			expect(await crawler.get(url, "html")).toMatchObject({ ok: false, reason: "notAllowListed" })
+		}
+		expect(calls).toEqual([])
+		for (const url of [`${A}/til-port/`, `${A}/til-bruker/`]) {
+			expect(await crawler.get(url, "html")).toMatchObject({ ok: false, reason: "notAllowListed" })
+		}
+		expect(calls).toEqual([`${A}/robots.txt`, `${A}/til-port/`, `${A}/til-bruker/`])
+	})
+
+	it("keeps a host out when robots.txt redirects to a port or to user info", async () => {
+		for (const location of [
+			"https://www.annen.kommune.no:8443/robots.txt",
+			"https://kari:hemmelig@www.annen.kommune.no/robots.txt",
+		]) {
+			const { crawler, calls } = setup({ [`${A}/robots.txt`]: redirect(location) })
+			expect(await crawler.get(`${A}/a/`, "html")).toMatchObject({
+				ok: false,
+				reason: "hostSkipped",
+			})
+			expect(calls).toEqual([`${A}/robots.txt`])
+			expect(crawler.report().hosts[0]?.stopped).toBe("robotsUnreachable")
+		}
+	})
+
 	it("refuses a path robots.txt disallows", async () => {
 		const { crawler, calls } = setup({
 			[`${A}/robots.txt`]: robotsTxt("User-agent: *", "Disallow: /Kontakt.aspx"),

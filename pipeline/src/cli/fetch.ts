@@ -43,8 +43,7 @@ try {
 	const kommuner = found.kommuner.filter(
 		(k) => only.length === 0 || only.some((p) => k.kommune.startsWith(p))
 	)
-	const allowList = new AllowList()
-	for (const h of found.hosts) allowList.add(h.host, h.kind, h.licence)
+	const allowList = AllowList.restore(found.hosts)
 	const cache = new PageCache(join(root, "pages"), { dryRun })
 	cache.purge(Date.now())
 	const crawler = new Crawler({ transport: httpsTransport, clock: systemClock, allowList })

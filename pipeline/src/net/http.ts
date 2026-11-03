@@ -21,11 +21,19 @@ function toNetError(err: unknown): NetError {
 
 // The only code in the pipeline that opens a socket. One GET, no redirect followed (the
 // crawler checks every hop), HTTPS only, IP-literal hosts refused up front, a host name that
-// resolves to a private address refused at connect time, 30 seconds for the whole exchange and 5 MB for the body, packed or unpacked. Tests never
-// import this file; they use a fake transport.
+// resolves to a private address refused at connect time, 30 seconds for the whole exchange and
+// 5 MB for the body, packed or unpacked. Tests never import this file; they use a fake
+// transport.
 export const httpsTransport: Transport = (url, accept) =>
 	new Promise<RawResponse>((resolve, reject) => {
-		if (url.protocol !== "https:") {
+		// The crawler already refuses a port or user info. I check again here, so no caller can
+		// reach another port or send credentials taken from a sitemap or a Location header.
+		if (
+			url.protocol !== "https:" ||
+			url.port !== "" ||
+			url.username !== "" ||
+			url.password !== ""
+		) {
 			reject(new NetError("network"))
 			return
 		}
@@ -40,7 +48,7 @@ export const httpsTransport: Transport = (url, accept) =>
 			{
 				method: "GET",
 				lookup,
-				headers: { "user-agent": USER_AGENT, accept, "accept-encoding": "gzip, br, deflate" },
+				headers: { "user-agent": USER_AGENT, accept, "accept-encoding": "gzip, br" },
 			},
 			(res) => {
 				const headers: Record<string, string> = {}

@@ -1,4 +1,5 @@
 import { getDomain } from "tldts"
+import { httpsHost } from "../text/normalise.ts"
 import type { AllowList } from "./allowList.ts"
 import { type Clock, isoSeconds } from "./clock.ts"
 import {
@@ -188,8 +189,9 @@ export class Crawler {
 		): NotFetched => ({ ok: false, url: original, reason, ...extra })
 		const target = parseUrl(current)
 		if (target === undefined || target.protocol !== "https:") return skip("notHttps")
-		const host = target.hostname.toLowerCase()
-		if (!this.#allow.has(host)) return skip("notAllowListed")
+		// The whole URL is checked, not just its hostname: a port or user info never gets past.
+		const host = httpsHost(target.href)
+		if (host === undefined || !this.#allow.has(host)) return skip("notAllowListed")
 		const robots = await this.robots(host)
 		const state = this.#state(host)
 		if (robots === undefined || state.stopped !== undefined) return skip("hostSkipped")
@@ -247,7 +249,12 @@ export class Crawler {
 			if (res.status >= 300 && res.status < 400 && location !== undefined) {
 				const next = parseUrl(location, url)
 				// Rules come only from an allow-listed HTTPS host; anything else keeps the host out.
-				if (next === undefined || next.protocol !== "https:" || !this.#allow.has(next.hostname)) {
+				if (
+					next === undefined ||
+					next.protocol !== "https:" ||
+					httpsHost(next.href) === undefined ||
+					!this.#allow.has(next.hostname)
+				) {
 					break
 				}
 				url = next

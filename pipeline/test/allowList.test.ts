@@ -28,6 +28,42 @@ describe("AllowList", () => {
 		expect(wwwTwin("lillehammer.kommune.no")).toBe("www.lillehammer.kommune.no")
 	})
 
+	it("gives a register no www twin, but keeps a catalogue's", () => {
+		const list = new AllowList()
+		for (const bare of ["www.data.brreg.no", "www.data.ssb.no", "ssb.no", "nav.no"]) {
+			expect(list.has(bare)).toBe(false)
+		}
+		expect(list.has("www.api.kartverket.no")).toBe(false)
+		expect(list.get("www.dinutvei.no")).toMatchObject({ kind: "catalogue", licence: "pending" })
+		const empty = new AllowList([])
+		empty.add("data.register.no", "register", "nlod")
+		expect(empty.entries().map((e) => e.host)).toEqual(["data.register.no"])
+	})
+
+	it("restores kommuner and providers from a hosts file, never a register or a catalogue", () => {
+		const list = AllowList.restore([
+			{ host: "data.brreg.no", kind: "register", licence: "nlod" },
+			{ host: "www.stray-register.no", kind: "register", licence: "nlod" },
+			{ host: "www.stray-catalogue.no", kind: "catalogue", licence: "ownPage" },
+			{ host: "www.lillehammer.kommune.no", kind: "kommune", licence: "ownPage" },
+			{ host: "www.leverandor.no", kind: "provider", licence: "ownPage" },
+		])
+		expect(list.has("www.stray-register.no")).toBe(false)
+		expect(list.has("stray-register.no")).toBe(false)
+		expect(list.has("www.stray-catalogue.no")).toBe(false)
+		expect(list.get("data.brreg.no")).toMatchObject({ kind: "register", licence: "nlod" })
+		expect(list.get("dinutvei.no")).toMatchObject({ kind: "catalogue", licence: "pending" })
+		expect(list.get("lillehammer.kommune.no")).toMatchObject({ kind: "kommune" })
+		expect(list.get("leverandor.no")).toMatchObject({ kind: "provider" })
+		const fixed = new AllowList().entries()
+		expect(list.entries().filter((e) => e.kind === "register")).toEqual(
+			fixed.filter((e) => e.kind === "register")
+		)
+		expect(list.entries().filter((e) => e.kind === "catalogue")).toEqual(
+			fixed.filter((e) => e.kind === "catalogue")
+		)
+	})
+
 	it("keeps the first entry for a host, so a catalogue never turns into a provider", () => {
 		const list = new AllowList()
 		list.add("frivilligsentral.no", "provider", "ownPage")
