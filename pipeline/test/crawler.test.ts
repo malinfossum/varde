@@ -237,7 +237,7 @@ describe("crawler: a robots.txt that cannot be read", () => {
 	async function readsTwice(
 		robots: Route,
 		extra: Record<string, Route> = {},
-		leadingSleeps: number[] = []
+		sleeps: number[] = [5000, 5000]
 	) {
 		const { crawler, clock, calls } = withRegisters({
 			[`${R}/robots.txt`]: robots,
@@ -249,8 +249,8 @@ describe("crawler: a robots.txt that cannot be read", () => {
 		expect((await crawler.get(`${R}/api/b`, "html")).ok).toBe(true)
 		expect(crawler.report().hosts.filter((h) => h.stopped !== undefined)).toEqual([])
 		expect(crawler.report().notFetched).toEqual([])
-		// The pages are still the floor apart, whatever happened to robots.txt.
-		expect(clock.sleeps).toEqual([...leadingSleeps, 5000, 5000])
+		// Every wait the register asked for is kept; the pages are never closer than the floor.
+		expect(clock.sleeps).toEqual(sleeps)
 		return calls
 	}
 
@@ -264,8 +264,12 @@ describe("crawler: a robots.txt that cannot be read", () => {
 		expect(calls).toEqual([`${R}/robots.txt`, `${R}/api/a`, `${R}/api/b`])
 	})
 
-	it("reads a register whose robots.txt answers 503, after waiting out Retry-After", async () => {
-		const calls = await readsTwice(html("", 503, { "retry-after": "10" }), {}, [10_000])
+	it("reads a register whose robots.txt answers 503, after waiting out each Retry-After", async () => {
+		const calls = await readsTwice(
+			html("", 503, { "retry-after": "10" }),
+			{},
+			[10_000, 10_000, 5000]
+		)
 		expect(calls).toEqual([`${R}/robots.txt`, `${R}/robots.txt`, `${R}/api/a`, `${R}/api/b`])
 	})
 
@@ -273,7 +277,27 @@ describe("crawler: a robots.txt that cannot be read", () => {
 		const loop: Record<string, Route> = {
 			[`${R2}/robots.txt`]: redirect(`${R}/robots.txt`),
 		}
-		await readsTwice(redirect(`${R2}/robots.txt`), loop, [5000, 5000])
+		await readsTwice(redirect(`${R2}/robots.txt`), loop, [5000, 5000, 5000, 5000])
+	})
+
+	it("reads a register whose robots.txt redirects off HTTPS", async () => {
+		const calls = await readsTwice(redirect("http://data.register-a.no/robots.txt"))
+		expect(calls).toEqual([`${R}/robots.txt`, `${R}/api/a`, `${R}/api/b`])
+	})
+
+	it("stops a register whose robots.txt asks for a Retry-After over the cap", async () => {
+		const { crawler, calls } = withRegisters({
+			[`${R}/robots.txt`]: html("", 503, { "retry-after": "3600" }),
+			[`${R}/api/a`]: html("a"),
+		})
+		expect(await crawler.get(`${R}/api/a`, "html")).toMatchObject({
+			ok: false,
+			reason: "hostSkipped",
+		})
+		expect(calls).toEqual([`${R}/robots.txt`])
+		expect(crawler.report().hosts).toEqual([
+			{ host: "data.register-a.no", requests: 1, stopped: "retryAfterTooLong" },
+		])
 	})
 
 	it("takes the kind from the host asked for, not from where robots.txt redirects", async () => {
@@ -282,7 +306,7 @@ describe("crawler: a robots.txt that cannot be read", () => {
 			{
 				[`${P}/robots.txt`]: new NetError("network"),
 			},
-			[]
+			[5000, 5000]
 		)
 		expect(calls).toEqual([`${R}/robots.txt`, `${P}/robots.txt`, `${R}/api/a`, `${R}/api/b`])
 	})

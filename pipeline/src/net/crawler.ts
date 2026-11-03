@@ -228,9 +228,10 @@ export class Crawler {
 		const state = this.#state(host)
 		// The kind comes from the host asked for, not from where a redirect leads.
 		const isRegister = this.#allow.get(host)?.kind === "register"
+		let failure: string | undefined
 		let url = new URL(`https://${host}/robots.txt`)
 		for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-			// A register's failed robots.txt read must not stop the register's own host.
+			// A register's failed robots.txt read must not stop any host in the redirect chain.
 			const res = await this.#request(
 				this.#state(url.hostname),
 				url,
@@ -238,7 +239,10 @@ export class Crawler {
 				undefined,
 				isRegister
 			)
-			if (typeof res === "string") break
+			if (typeof res === "string") {
+				failure = res
+				break
+			}
 			const location = res.headers.location
 			if (res.status >= 300 && res.status < 400 && location !== undefined) {
 				const next = parseUrl(location, url)
@@ -260,9 +264,9 @@ export class Crawler {
 			this.#pace(state, delay)
 			return robots
 		}
-		// Registers are documented open APIs (NLOD, CC BY), and Malin ruled on 03.11.2026 that an
-		// unreadable robots.txt there counts as no rules. Every other limit still applies.
-		if (isRegister) return ALLOW_ALL
+		// Registers are documented open APIs (NLOD, CC BY), so since 03.11.2026 I treat an
+		// unreadable robots.txt there as no rules. Every other limit still applies, Retry-After included.
+		if (isRegister && failure !== "retryAfterTooLong") return ALLOW_ALL
 		state.stopped ??= "robotsUnreachable"
 		return DISALLOW_ALL
 	}
@@ -303,11 +307,17 @@ export class Crawler {
 			if (typeof res === "string") return res
 			if (res.status === 429 || res.status === 503) {
 				state.tooMany++
-				if (state.tooMany >= 2) return stop("secondTooMany")
+				if (state.tooMany >= 2 && !keepRunning) return stop("secondTooMany")
 				const now = this.#clock.now()
 				const wait = retryAfterMs(res.headers["retry-after"], now) ?? DEFAULT_RETRY_MS
-				if (wait > MAX_RETRY_AFTER_MS) return stop("retryAfterTooLong")
+				// An over-long Retry-After stops the host even when the read is otherwise lenient.
+				if (wait > MAX_RETRY_AFTER_MS) {
+					state.stopped ??= "retryAfterTooLong"
+					return state.stopped
+				}
 				state.queue.next = Math.max(state.queue.next, now + wait)
+				// Only a register's robots.txt read gets here on the second one: its wait still holds.
+				if (state.tooMany >= 2) return "secondTooMany"
 				continue
 			}
 			if (res.status >= 500) return stop("serverError")
