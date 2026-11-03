@@ -126,13 +126,15 @@ export function parseRobots(text: string): Robots {
 			inAgentLines = true
 			continue
 		}
-		inAgentLines = false
 		if (key === "sitemap") {
 			if (/^https?:\/\//i.test(value)) sitemaps.push(value)
 			continue
 		}
 		if (current === undefined) continue
+		// RFC 9309: only a rule line ends a run of User-agent lines. Sitemap, Crawl-delay,
+		// Visit-time and unknown lines in between leave the run open.
 		if (key === "allow" || key === "disallow") {
+			inAgentLines = false
 			if (value !== "") current.rules.push(rule(key === "allow", value))
 		} else if (key === "crawl-delay") {
 			const seconds = Number(value)

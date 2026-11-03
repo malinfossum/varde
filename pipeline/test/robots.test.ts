@@ -25,6 +25,33 @@ describe("parseRobots: rules", () => {
 		expect(robots.allows("/helse/")).toBe(true)
 	})
 
+	it("keeps a User-agent run open across Sitemap and Crawl-delay lines (RFC 9309)", () => {
+		const sitemapBetween = parseRobots(
+			lines(
+				"User-agent: VardeBot",
+				"Sitemap: https://www.eksempel.kommune.no/sitemap.xml",
+				"User-agent: *",
+				"Disallow: /"
+			)
+		)
+		expect(sitemapBetween.allows("/x")).toBe(false)
+		const delayBetween = parseRobots(
+			lines("User-agent: VardeBot", "Crawl-delay: 7", "User-agent: *", "Disallow: /")
+		)
+		expect(delayBetween.allows("/x")).toBe(false)
+		expect(delayBetween.crawlDelayMs).toBe(7000)
+		const visitBetween = parseRobots(
+			lines(
+				"User-agent: *",
+				"Visit-time: 0200-0500 UTC+1",
+				"User-agent: VardeBot",
+				"Disallow: /privat/"
+			)
+		)
+		expect(visitBetween.visitTime).toEqual({ from: 60, to: 240 })
+		expect(visitBetween.allows("/privat/x")).toBe(false)
+	})
+
 	it("lets the longest match win, and Allow win a tie", () => {
 		const robots = parseRobots(
 			lines(
