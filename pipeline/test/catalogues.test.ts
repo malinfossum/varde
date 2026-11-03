@@ -104,6 +104,34 @@ describe("runCatalogue", () => {
 		expect((await runCatalogue(get, "bymisjon")).complete).toBe(false)
 	})
 
+	it("says so when the page count header cannot be read", async () => {
+		const get = fakeGet({
+			[wpQuery("bymisjon", 1)]: {
+				body: JSON.stringify([{ id: 1, link: "https://kirkensbymisjon.no/a/" }]),
+				headers: { "x-wp-totalpages": "abc" },
+			},
+		})
+		expect((await runCatalogue(get, "bymisjon")).complete).toBe(false)
+	})
+
+	it("says so when the header is missing on a full page", async () => {
+		const full = Array.from({ length: 100 }, (_, i) => ({
+			id: i + 1,
+			link: `https://kirkensbymisjon.no/${i}/`,
+		}))
+		const get = fakeGet({ [wpQuery("bymisjon", 1)]: { body: JSON.stringify(full) } })
+		expect((await runCatalogue(get, "bymisjon")).complete).toBe(false)
+	})
+
+	it("accepts a missing header on a short page as the last page", async () => {
+		const get = fakeGet({
+			[wpQuery("bymisjon", 1)]: {
+				body: JSON.stringify([{ id: 1, link: "https://kirkensbymisjon.no/a/" }]),
+			},
+		})
+		expect((await runCatalogue(get, "bymisjon")).complete).toBe(true)
+	})
+
 	it("reports a register with no rows as a failure, never a silent zero", async () => {
 		const get = fakeGet({
 			[FRIVILLIGSENTRAL_REGISTER]: {

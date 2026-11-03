@@ -46,11 +46,12 @@ const WP_LISTS: Readonly<Record<WpName, WpList>> = {
 	},
 }
 const MAX_WP_PAGES = 20
+const WP_PER_PAGE = 100
 
 export const FRIVILLIGSENTRAL_REGISTER = "https://frivilligsentral.no/register"
 
 export const wpQuery = (name: WpName, page: number) =>
-	`${WP_LISTS[name].base}?per_page=100&page=${page}&_fields=${WP_LISTS[name].fields}`
+	`${WP_LISTS[name].base}?per_page=${WP_PER_PAGE}&page=${page}&_fields=${WP_LISTS[name].fields}`
 
 const WpItems = z.array(
 	z.object({
@@ -148,8 +149,14 @@ export async function runCatalogue(get: Get, name: CatalogueName): Promise<Catal
 		if (found === undefined) return stop(false)
 		rows += found.rows
 		urls.push(...found.urls)
-		const total = Number(res.headers["x-wp-totalpages"] ?? "1")
-		if (!Number.isInteger(total) || page >= total) return stop(true)
+		// No header: the page is the last one only if it held fewer than a full page.
+		const header = res.headers["x-wp-totalpages"]
+		if (header === undefined) {
+			if (found.rows < WP_PER_PAGE) return stop(true)
+			return stop(false)
+		}
+		if (!/^\d+$/.test(header)) return stop(false)
+		if (page >= Number(header)) return stop(true)
 	}
 	return stop(false)
 }
