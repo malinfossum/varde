@@ -3,7 +3,14 @@
 	"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
 	"files": {
 		"ignoreUnknown": true,
-		"includes": ["**", "!**/*.md", "!node_modules", "!schema", "!test/answer-key.json"]
+		"includes": [
+			"**",
+			"!**/*.md",
+			"!node_modules",
+			"!schema",
+			"!test/answer-key.json",
+			"!test/fixtures/pages"
+		]
 	},
 	"formatter": { "enabled": true, "indentStyle": "tab", "lineWidth": 100 },
 	"linter": { "enabled": true, "rules": { "preset": "recommended" } },
