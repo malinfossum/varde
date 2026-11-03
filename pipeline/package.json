@@ -15,7 +15,8 @@
 		"schema": "node src/cli/export-schema.ts",
 		"data:check": "node src/cli/data-check.ts",
 		"key:freeze": "node src/cli/freeze-key.ts",
-		"discover": "node src/cli/discover.ts"
+		"discover": "node src/cli/discover.ts",
+		"fetch": "node src/cli/fetch.ts"
 	},
 	"dependencies": {
 		"cheerio": "1.2.0",
