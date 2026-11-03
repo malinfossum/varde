@@ -56,7 +56,14 @@ export async function fetchPages(
 				notFetched[res.reason] = (notFetched[res.reason] ?? 0) + 1
 				return
 			}
-			const page = readPage(res.body, res.finalUrl)
+			// One page that breaks the reader must not cost the run its manifest: it is stored as
+			// a fallback page with no main text, and save() still runs.
+			let page: { adapter: AdapterName; text: string }
+			try {
+				page = readPage(res.body, res.finalUrl)
+			} catch {
+				page = { adapter: "fallback", text: "" }
+			}
 			cache.put(res, { adapter: page.adapter, textLength: page.text.length })
 			fetched++
 			byAdapter[page.adapter]++

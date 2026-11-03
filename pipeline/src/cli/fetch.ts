@@ -43,11 +43,16 @@ try {
 	const kommuner = found.kommuner.filter(
 		(k) => only.length === 0 || only.some((p) => k.kommune.startsWith(p))
 	)
+	const urls = pagesToFetch(kommuner, values.national ? found.national : undefined, limit)
+	// A selection that matches nothing must not purge the cache or overwrite the last report.
+	if (urls.length === 0) {
+		console.error("nothing to fetch for this selection: pages/report.json was left as it was")
+		process.exit(2)
+	}
 	const allowList = AllowList.restore(found.hosts)
 	const cache = new PageCache(join(root, "pages"), { dryRun })
 	cache.purge(Date.now())
 	const crawler = new Crawler({ transport: httpsTransport, clock: systemClock, allowList })
-	const urls = pagesToFetch(kommuner, values.national ? found.national : undefined, limit)
 	const summary = await fetchPages(crawler.get, cache, urls)
 	cache.save()
 	if (!dryRun) writeJsonAtomic(join(root, "pages", "report.json"), crawler.report())

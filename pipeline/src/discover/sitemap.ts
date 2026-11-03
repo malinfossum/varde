@@ -57,7 +57,8 @@ async function fetchSitemap(get: Get, url: string): Promise<SitemapDoc | undefin
 export async function readSitemaps(
 	get: Get,
 	host: string,
-	listed: readonly string[]
+	listed: readonly string[],
+	maxUrls: number = MAX_SITEMAP_URLS
 ): Promise<SiteSitemaps> {
 	const site = siteHost(`https://${host}/`)
 	const sameSite = (url: string) => siteHost(url) === site
@@ -72,14 +73,21 @@ export async function readSitemaps(
 	const collect = (found: readonly SitemapUrl[]) => {
 		for (const u of found) {
 			if (!sameSite(u.loc) || urls.has(u.loc)) continue
-			if (urls.size >= MAX_SITEMAP_URLS) {
+			if (urls.size >= maxUrls) {
 				truncated = true
 				return
 			}
 			urls.set(u.loc, u)
 		}
 	}
+	// Each child is read once, and never again when robots.txt or the probe named it already.
+	const seen = new Set(starts)
 	for (const start of starts) {
+		// Once the cap is reached, no further sitemap is fetched at all.
+		if (urls.size >= maxUrls) {
+			truncated = true
+			break
+		}
 		const doc = await fetchSitemap(get, start)
 		if (doc === undefined || doc.kind === "invalid") {
 			failed++
@@ -92,6 +100,12 @@ export async function readSitemaps(
 			continue
 		}
 		for (const child of doc.sitemaps.filter(sameSite)) {
+			if (seen.has(child)) continue
+			seen.add(child)
+			if (urls.size >= maxUrls) {
+				truncated = true
+				break
+			}
 			if (children >= MAX_CHILD_SITEMAPS) {
 				truncated = true
 				break

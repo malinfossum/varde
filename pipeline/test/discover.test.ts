@@ -26,11 +26,12 @@ function web(): Record<string, Route> {
 		[codesAtQuery("2026-11-03")]: json(fixture("klass/codes-at-2026-11-03.json")),
 		[changesQuery("2025-01-01", "2026-11-03")]: json({
 			codeChanges: [
+				// A rename inside --only 3405: the code stays, so it is no renumbering.
 				{
-					oldCode: "0301",
-					oldName: "Oslo",
-					newCode: "0301",
-					newName: "Oslo - Oslove",
+					oldCode: "3405",
+					oldName: "Lillehammer",
+					newCode: "3405",
+					newName: "Lillehammer - Eksempel",
 					changeOccurred: "2026-01-01",
 				},
 			],
@@ -72,7 +73,7 @@ function web(): Record<string, Route> {
 	}
 }
 
-async function run(routes = web()) {
+async function run(routes = web(), only: readonly string[] = ["3405"]) {
 	const allowList = new AllowList()
 	const crawler = new Crawler({
 		transport: fakeWeb(routes).transport,
@@ -84,7 +85,7 @@ async function run(routes = web()) {
 		robots: (host) => crawler.robots(host),
 		allowList,
 		date: "2026-11-03",
-		only: ["3405"],
+		only,
 		now: () => "2026-11-03T12:00:00Z",
 	})
 	const crawl = crawler.report()
@@ -167,6 +168,58 @@ describe("discover", () => {
 		for (const secret of ["HELSESTASJON", "999999991", "62 00 00 00", "Kari", "https://"]) {
 			expect(summary).not.toContain(secret)
 		}
+	})
+
+	it("leaves a unit whose website is the kommune's front page out of the pages", async () => {
+		const routes = web()
+		const units = fixture("brreg/units.json") as {
+			_embedded: { underenheter: Record<string, unknown>[] }
+		}
+		units._embedded.underenheter.push({
+			organisasjonsnummer: "999999994",
+			navn: "LILLEHAMMER KOMMUNE EKSEMPELTJENESTE",
+			organisasjonsform: { kode: "BEDR" },
+			beliggenhetsadresse: { adresse: ["Storgata 1"], postnummer: "2609", kommunenummer: "3405" },
+			hjemmeside: "www.lillehammer.kommune.no/",
+		})
+		routes[unitsQuery("underenheter", "3405", UNIT_CODES)(0)] = json(units)
+		const { result } = await run(routes)
+		const k = result.kommuner[0]
+		expect(k?.units.map((u) => u.orgNumber)).toEqual(["999999991", "999999994"])
+		expect(k?.pages.map((p) => p.url)).toEqual([
+			`${L}/helse/helsestasjonen/`,
+			"https://www.lillehammer.kommune.no/helsestasjon/",
+		])
+	})
+
+	it("names a kommune whose sitemaps could not be read as a problem", async () => {
+		const routes = web()
+		routes[`${L}/sitemap.xml`] = html("Fant ikke siden", 404)
+		const { result } = await run(routes)
+		expect(result.kommuner[0]?.site?.sitemap).toBe("none")
+		expect(result.problems).toContain("3405: no sitemap could be read")
+	})
+
+	it("stays silent about a failed /sitemap.xml probe beside a working robots.txt sitemap", async () => {
+		const routes = web()
+		routes["https://www.lillehammer.kommune.no/robots.txt"] = text(
+			"User-agent: *\nDisallow:\nSitemap: https://www.lillehammer.kommune.no/sitemap-a.xml"
+		)
+		routes["https://www.lillehammer.kommune.no/sitemap-a.xml"] = xml(
+			urlset(`${L}/helse/helsestasjonen/`)
+		)
+		routes["https://www.lillehammer.kommune.no/sitemap.xml"] = html("Fant ikke siden", 404)
+		const { result } = await run(routes)
+		expect(result.kommuner[0]?.site).toMatchObject({ sitemap: "robots", sitemapUrls: 1 })
+		expect(result.problems.filter((p) => p.startsWith("3405"))).toEqual([])
+	})
+
+	it("stops and writes nothing when --only matches no kommune", async () => {
+		await expect(run(web(), ["9999"])).rejects.toThrow(
+			new DiscoverError(
+				"--only 9999 matches no kommune in KLASS on 2026-11-03: nothing was written"
+			)
+		)
 	})
 
 	it("stops and writes nothing when the KLASS kommune list cannot be read", async () => {

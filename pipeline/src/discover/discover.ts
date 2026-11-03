@@ -150,6 +150,11 @@ export async function discover(o: DiscoverOptions): Promise<DiscoverRun> {
 	}
 	const wanted = (code: string) => o.only.some((prefix) => code.startsWith(prefix))
 	const kommuner = all.filter((k) => wanted(k.code))
+	if (kommuner.length === 0) {
+		throw new DiscoverError(
+			`--only ${o.only.join(",")} matches no kommune in KLASS on ${o.date}: nothing was written`
+		)
+	}
 	const from = `${Number(o.date.slice(0, 4)) - 1}-01-01`
 	const changes = parseChanges(await readJson(o.get, changesQuery(from, o.date)))
 	if (changes === undefined) problems.push("the KLASS change list could not be read")
@@ -178,6 +183,7 @@ export async function discover(o: DiscoverOptions): Promise<DiscoverRun> {
 	const results = await Promise.all(kommuner.map((k) => discoverKommune(o, k, sites.get(k.code))))
 	for (const r of results) {
 		if (!r.brregComplete) problems.push(`${r.kommune}: a Brreg read was incomplete`)
+		if (r.site?.sitemap === "none") problems.push(`${r.kommune}: no sitemap could be read`)
 	}
 
 	return {

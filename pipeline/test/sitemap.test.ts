@@ -88,6 +88,51 @@ describe("readSitemaps", () => {
 		expect(result.truncated).toBe(true)
 	})
 
+	it("fetches no further sitemap once the URL cap is reached", async () => {
+		const asked: string[] = []
+		const get = fakeGet({
+			[`${S}/sitemap.xml`]: xmlBody(index(`${S}/s1.xml`, `${S}/s2.xml`, `${S}/s3.xml`)),
+			[`${S}/s1.xml`]: xmlBody(urlset(`${S}/a/`, `${S}/b/`)),
+			[`${S}/s2.xml`]: xmlBody(urlset(`${S}/c/`)),
+			[`${S}/s3.xml`]: xmlBody(urlset(`${S}/d/`)),
+		})
+		const counted: typeof get = (url, kind) => {
+			asked.push(url)
+			return get(url, kind)
+		}
+		const result = await readSitemaps(counted, "www.eksempel.kommune.no", [], 2)
+		expect(asked).toEqual([`${S}/sitemap.xml`, `${S}/s1.xml`])
+		expect(result.urls.map((u) => u.loc)).toEqual([`${S}/a/`, `${S}/b/`])
+		expect(result.truncated).toBe(true)
+
+		// The probe after a full robots.txt sitemap is not fetched either.
+		asked.length = 0
+		const full = fakeGet({ [`${S}/kart.xml`]: xmlBody(urlset(`${S}/a/`, `${S}/b/`)) })
+		const countedFull: typeof full = (url, kind) => {
+			asked.push(url)
+			return full(url, kind)
+		}
+		const capped = await readSitemaps(countedFull, "www.eksempel.kommune.no", [`${S}/kart.xml`], 2)
+		expect(asked).toEqual([`${S}/kart.xml`])
+		expect(capped).toMatchObject({ source: "robots", read: 1, failed: 0, truncated: true })
+	})
+
+	it("reads each child sitemap once, and skips one robots.txt already named", async () => {
+		const asked: string[] = []
+		const get = fakeGet({
+			[`${S}/kart.xml`]: xmlBody(urlset(`${S}/a/`)),
+			[`${S}/sitemap.xml`]: xmlBody(index(`${S}/kart.xml`, `${S}/s1.xml`, `${S}/s1.xml`)),
+			[`${S}/s1.xml`]: xmlBody(urlset(`${S}/b/`)),
+		})
+		const counted: typeof get = (url, kind) => {
+			asked.push(url)
+			return get(url, kind)
+		}
+		const result = await readSitemaps(counted, "www.eksempel.kommune.no", [`${S}/kart.xml`])
+		expect(asked).toEqual([`${S}/kart.xml`, `${S}/sitemap.xml`, `${S}/s1.xml`])
+		expect(result).toMatchObject({ read: 3, failed: 0 })
+	})
+
 	it("reports a soft 404 at /sitemap.xml as a failure, never a silent zero", async () => {
 		const get = fakeGet({
 			[`${S}/sitemap.xml`]: {

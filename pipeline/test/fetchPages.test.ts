@@ -1,13 +1,25 @@
 import { existsSync, mkdtempSync, readdirSync, readFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import type { KommuneDiscovery, NationalDiscovery } from "../src/discover/types.ts"
 import { fetchPages, formatFetchSummary, pagesToFetch } from "../src/fetch/fetchPages.ts"
 import { PageCache } from "../src/io/pageCache.ts"
 import { AllowList } from "../src/net/allowList.ts"
 import { Crawler } from "../src/net/crawler.ts"
 import { FakeClock, fakeWeb, html, redirect } from "./netHelpers.ts"
+
+// The real reader, except that a page under /kaster/ makes it throw.
+vi.mock("../src/adapters/read.ts", async (importOriginal) => {
+	const real = await importOriginal<typeof import("../src/adapters/read.ts")>()
+	return {
+		...real,
+		readPage: (body: string, url: string) => {
+			if (url.includes("/kaster/")) throw new Error("the reader broke")
+			return real.readPage(body, url)
+		},
+	}
+})
 
 const K = "https://www.eksempel.kommune.no"
 const acos = readFileSync(new URL("./fixtures/pages/acos-article.html", import.meta.url), "utf8")
@@ -91,6 +103,24 @@ describe("fetchPages", () => {
 		for (const secret of ["Eksempel helsestasjon", "62 00 00 00", "https://"]) {
 			expect(printed).not.toContain(secret)
 		}
+	})
+
+	it("stores a page the reader throws on as fallback with no main text, and still saves", async () => {
+		const crawler = crawlerFor({
+			[`${K}/kaster/`]: html("<main>Eksempel</main>"),
+			[`${K}/helse/helsestasjon/`]: html(acos),
+		})
+		const dir = mkdtempSync(join(tmpdir(), "varde-fetch-throw-"))
+		const cache = new PageCache(dir)
+		const summary = await fetchPages(crawler.get, cache, [
+			`${K}/kaster/`,
+			`${K}/helse/helsestasjon/`,
+		])
+		expect(summary).toMatchObject({ pages: 2, fetched: 2, noMainText: 1 })
+		expect(summary.byAdapter).toMatchObject({ fallback: 1, acos: 1 })
+		expect(cache.get(`${K}/kaster/`)).toMatchObject({ adapter: "fallback", textLength: 0 })
+		cache.save()
+		expect(existsSync(join(dir, "manifest.json"))).toBe(true)
 	})
 
 	it("still reads each page in a dry run, which writes no file", async () => {
