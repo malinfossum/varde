@@ -18,6 +18,8 @@ export const FIXED_HOSTS: readonly HostEntry[] = [
 	register("brreg"),
 	register("klass"),
 	register("kartverket"),
+	// data.ssb.no/robots.txt redirects to www.ssb.no, so the crawler needs that host allowed.
+	{ host: "www.ssb.no", kind: "register", licence: "ccBy" },
 	register("nav"),
 	// Finders only, until NKVTS and Norges Frivilligsentraler say yes.
 	{ host: "dinutvei.no", kind: "catalogue", licence: "pending" },

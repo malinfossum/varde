@@ -216,6 +216,123 @@ describe("crawler: answers to robots.txt itself", () => {
 	})
 })
 
+describe("crawler: a robots.txt that cannot be read", () => {
+	const R = "https://data.register-a.no"
+	const R2 = "https://data.register-b.no"
+	const P = "https://www.leverandor.no"
+
+	function withRegisters(routes: Record<string, Route>) {
+		const allowList = new AllowList([
+			{ host: "data.register-a.no", kind: "register", licence: "nlod" },
+			{ host: "data.register-b.no", kind: "register", licence: "ccBy" },
+			{ host: "www.leverandor.no", kind: "provider", licence: "ownPage" },
+			{ host: "www.eksempel.kommune.no", kind: "kommune", licence: "ownPage" },
+		])
+		const web = fakeWeb(routes)
+		const clock = new FakeClock()
+		const crawler = new Crawler({ transport: web.transport, clock, allowList })
+		return { crawler, clock, calls: web.calls }
+	}
+
+	async function readsTwice(
+		robots: Route,
+		extra: Record<string, Route> = {},
+		leadingSleeps: number[] = []
+	) {
+		const { crawler, clock, calls } = withRegisters({
+			[`${R}/robots.txt`]: robots,
+			[`${R}/api/a`]: html("a"),
+			[`${R}/api/b`]: html("b"),
+			...extra,
+		})
+		expect((await crawler.get(`${R}/api/a`, "html")).ok).toBe(true)
+		expect((await crawler.get(`${R}/api/b`, "html")).ok).toBe(true)
+		expect(crawler.report().hosts.filter((h) => h.stopped !== undefined)).toEqual([])
+		expect(crawler.report().notFetched).toEqual([])
+		// The pages are still the floor apart, whatever happened to robots.txt.
+		expect(clock.sleeps).toEqual([...leadingSleeps, 5000, 5000])
+		return calls
+	}
+
+	it("reads a register whose robots.txt fails with a network error, still 5 seconds apart", async () => {
+		const calls = await readsTwice(new NetError("network"))
+		expect(calls).toEqual([`${R}/robots.txt`, `${R}/api/a`, `${R}/api/b`])
+	})
+
+	it("reads a register whose robots.txt redirects off the allow-list", async () => {
+		const calls = await readsTwice(redirect("https://www.ssb-eksempel.example/robots.txt"))
+		expect(calls).toEqual([`${R}/robots.txt`, `${R}/api/a`, `${R}/api/b`])
+	})
+
+	it("reads a register whose robots.txt answers 503, after waiting out Retry-After", async () => {
+		const calls = await readsTwice(html("", 503, { "retry-after": "10" }), {}, [10_000])
+		expect(calls).toEqual([`${R}/robots.txt`, `${R}/robots.txt`, `${R}/api/a`, `${R}/api/b`])
+	})
+
+	it("reads a register whose robots.txt redirects forever", async () => {
+		const loop: Record<string, Route> = {
+			[`${R2}/robots.txt`]: redirect(`${R}/robots.txt`),
+		}
+		await readsTwice(redirect(`${R2}/robots.txt`), loop, [5000, 5000])
+	})
+
+	it("takes the kind from the host asked for, not from where robots.txt redirects", async () => {
+		const calls = await readsTwice(
+			redirect(`${P}/robots.txt`),
+			{
+				[`${P}/robots.txt`]: new NetError("network"),
+			},
+			[]
+		)
+		expect(calls).toEqual([`${R}/robots.txt`, `${P}/robots.txt`, `${R}/api/a`, `${R}/api/b`])
+	})
+
+	it("still honours a readable robots.txt from a register, Disallow included", async () => {
+		const { crawler } = withRegisters({
+			[`${R}/robots.txt`]: robotsTxt("User-agent: *", "Disallow: /x/"),
+			[`${R}/x/a`]: html("x"),
+			[`${R}/api/a`]: html("a"),
+		})
+		expect(await crawler.get(`${R}/x/a`, "html")).toMatchObject({ ok: false, reason: "robots" })
+		expect((await crawler.get(`${R}/api/a`, "html")).ok).toBe(true)
+	})
+
+	it("reads the rules of another register when robots.txt redirects there", async () => {
+		const { crawler, calls } = withRegisters({
+			[`${R}/robots.txt`]: redirect(`${R2}/robots.txt`),
+			[`${R2}/robots.txt`]: robotsTxt("User-agent: *", "Disallow: /x/"),
+			[`${R}/api/a`]: html("a"),
+		})
+		expect(await crawler.get(`${R}/x/a`, "html")).toMatchObject({ ok: false, reason: "robots" })
+		expect((await crawler.get(`${R}/api/a`, "html")).ok).toBe(true)
+		expect(calls).toEqual([`${R}/robots.txt`, `${R2}/robots.txt`, `${R}/api/a`])
+	})
+
+	it("still stops a kommune or a provider whose robots.txt fails with a network error", async () => {
+		const { crawler } = withRegisters({
+			[`${A}/robots.txt`]: new NetError("network"),
+			[`${P}/robots.txt`]: new NetError("network"),
+			[`${A}/a/`]: html("a"),
+			[`${P}/a/`]: html("a"),
+		})
+		expect(await crawler.get(`${A}/a/`, "html")).toMatchObject({ ok: false, reason: "hostSkipped" })
+		expect(await crawler.get(`${P}/a/`, "html")).toMatchObject({ ok: false, reason: "hostSkipped" })
+		expect(crawler.report().hosts).toEqual([
+			{ host: "www.eksempel.kommune.no", requests: 1, stopped: "network" },
+			{ host: "www.leverandor.no", requests: 1, stopped: "network" },
+		])
+	})
+
+	it("still stops a provider whose robots.txt answers 503 twice", async () => {
+		const { crawler } = withRegisters({
+			[`${P}/robots.txt`]: html("", 503, { "retry-after": "10" }),
+			[`${P}/a/`]: html("a"),
+		})
+		expect(await crawler.get(`${P}/a/`, "html")).toMatchObject({ ok: false, reason: "hostSkipped" })
+		expect(crawler.report().hosts[0]?.stopped).toBe("secondTooMany")
+	})
+})
+
 describe("crawler: Visit-time", () => {
 	const robots = robotsTxt("User-agent: *", "Disallow:", "Visit-time: 0200-0500 UTC+1")
 

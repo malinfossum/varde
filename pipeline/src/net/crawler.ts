@@ -2,6 +2,7 @@ import { getDomain } from "tldts"
 import type { AllowList } from "./allowList.ts"
 import { type Clock, isoSeconds } from "./clock.ts"
 import {
+	ALLOW_ALL,
 	DISALLOW_ALL,
 	inVisitWindow,
 	type Robots,
@@ -225,9 +226,18 @@ export class Crawler {
 
 	async #readRobots(host: string): Promise<Robots> {
 		const state = this.#state(host)
+		// The kind comes from the host asked for, not from where a redirect leads.
+		const isRegister = this.#allow.get(host)?.kind === "register"
 		let url = new URL(`https://${host}/robots.txt`)
 		for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-			const res = await this.#request(this.#state(url.hostname), url, ACCEPT.text)
+			// A register's failed robots.txt read must not stop the register's own host.
+			const res = await this.#request(
+				this.#state(url.hostname),
+				url,
+				ACCEPT.text,
+				undefined,
+				isRegister
+			)
 			if (typeof res === "string") break
 			const location = res.headers.location
 			if (res.status >= 300 && res.status < 400 && location !== undefined) {
@@ -247,24 +257,39 @@ export class Crawler {
 				state.stopped ??= "crawlDelayTooLong"
 				return robots
 			}
-			// A server's pace is the slowest any of its hosts asks for, never under the floor.
-			const queue = state.queue
-			queue.delayMs = Math.max(queue.delayMs, FLOOR_MS, delay)
-			queue.next = Math.max(queue.next, this.#clock.now() + queue.delayMs)
+			this.#pace(state, delay)
 			return robots
 		}
+		// Registers are documented open APIs (NLOD, CC BY), and Malin ruled on 03.11.2026 that an
+		// unreadable robots.txt there counts as no rules. Every other limit still applies.
+		if (isRegister) return ALLOW_ALL
 		state.stopped ??= "robotsUnreachable"
 		return DISALLOW_ALL
 	}
 
+	// A server's pace is the slowest any of its hosts asks for, never under the floor.
+	#pace(state: HostState, delay: number): void {
+		const queue = state.queue
+		queue.delayMs = Math.max(queue.delayMs, FLOOR_MS, delay)
+		queue.next = Math.max(queue.next, this.#clock.now() + queue.delayMs)
+	}
+
 	// One request, with the 429 and 503 rule. A string is why the host stopped, or tooLarge.
-	// visitTime is undefined for robots.txt itself, read before the window is known.
+	// visitTime is undefined for robots.txt itself, read before the window is known. With
+	// keepRunning, a failure comes back with its reason but does not stop the host: only a
+	// register's robots.txt read uses it.
 	async #request(
 		state: HostState,
 		url: URL,
 		accept: string,
-		visitTime?: VisitWindow
+		visitTime?: VisitWindow,
+		keepRunning = false
 	): Promise<RawResponse | HostStop | "tooLarge"> {
+		const stop = (reason: HostStop): HostStop => {
+			if (keepRunning) return reason
+			state.stopped ??= reason
+			return state.stopped
+		}
 		for (;;) {
 			if (state.stopped !== undefined) return state.stopped
 			let res: RawResponse | HostStop
@@ -273,29 +298,19 @@ export class Crawler {
 			} catch (err) {
 				const kind = err instanceof NetError ? err.kind : "network"
 				if (kind === "tooLarge") return "tooLarge"
-				state.stopped ??= kind
-				return state.stopped
+				return stop(kind)
 			}
 			if (typeof res === "string") return res
 			if (res.status === 429 || res.status === 503) {
 				state.tooMany++
-				if (state.tooMany >= 2) {
-					state.stopped ??= "secondTooMany"
-					return state.stopped
-				}
+				if (state.tooMany >= 2) return stop("secondTooMany")
 				const now = this.#clock.now()
 				const wait = retryAfterMs(res.headers["retry-after"], now) ?? DEFAULT_RETRY_MS
-				if (wait > MAX_RETRY_AFTER_MS) {
-					state.stopped ??= "retryAfterTooLong"
-					return state.stopped
-				}
+				if (wait > MAX_RETRY_AFTER_MS) return stop("retryAfterTooLong")
 				state.queue.next = Math.max(state.queue.next, now + wait)
 				continue
 			}
-			if (res.status >= 500) {
-				state.stopped ??= "serverError"
-				return state.stopped
-			}
+			if (res.status >= 500) return stop("serverError")
 			return res
 		}
 	}

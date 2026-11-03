@@ -8,6 +8,11 @@ describe("AllowList", () => {
 		expect(list.licence("data.brreg.no")).toBe("nlod")
 		expect(list.licence("data.ssb.no")).toBe("ccBy")
 		expect(list.licence("api.kartverket.no")).toBe("ccBy")
+		expect(list.get("www.ssb.no")).toEqual({
+			host: "www.ssb.no",
+			kind: "register",
+			licence: "ccBy",
+		})
 		expect(list.licence("www.nav.no")).toBe("ownPage")
 		expect(list.licence("dinutvei.no")).toBe("pending")
 		expect(list.licence("frivilligsentral.no")).toBe("pending")
