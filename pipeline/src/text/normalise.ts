@@ -1,6 +1,8 @@
 // Text helpers shared by the gates and the scorer. Every comparison in the pipeline goes
 // through these, so a page and a model answer that differ only in typography still match.
 
+import { getDomain } from "tldts"
+
 const SOFT_HYPHEN = /\u00AD/g
 const ODD_SPACES = /[\u00A0\u2007\u2009\u202F]/g
 const DASHES = /[\u2010-\u2015\u2212]/g
@@ -102,4 +104,45 @@ export function siteHost(url: string): string | undefined {
 	} catch {
 		return undefined
 	}
+}
+
+// The lower-case host of a plain https URL whose host has a registrable domain. Anything
+// else (http, a port, user info, an IP address, a bare public suffix) gives undefined.
+export function httpsHost(url: string): string | undefined {
+	let parsed: URL
+	try {
+		parsed = new URL(url)
+	} catch {
+		return undefined
+	}
+	if (
+		parsed.protocol !== "https:" ||
+		parsed.port !== "" ||
+		parsed.username !== "" ||
+		parsed.password !== ""
+	) {
+		return undefined
+	}
+	const host = parsed.hostname.toLowerCase()
+	return getDomain(host) === null ? undefined : host
+}
+
+// A web address the way Brreg writes it ("www.hamar.kommune.no/"), as an https URL. The
+// fetcher is HTTPS only, so an http address is tried as https.
+export function asHttpsUrl(raw: string): string | undefined {
+	const rest = raw.trim().replace(/^https?:\/\//i, "")
+	if (rest === "" || /\s/.test(rest)) return undefined
+	const url = `https://${rest}`
+	return httpsHost(url) === undefined ? undefined : new URL(url).href
+}
+
+// Lower case with æ, ø and å spelt the way URLs and Brreg's capitals often spell them.
+export function foldNorwegian(text: string): string {
+	return text
+		.toLowerCase()
+		.replace(/æ/g, "ae")
+		.replace(/ø/g, "o")
+		.replace(/å/g, "a")
+		.normalize("NFD")
+		.replace(/\p{M}/gu, "")
 }

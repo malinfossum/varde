@@ -1,17 +1,12 @@
 import { z } from "zod"
+import { foldNorwegian } from "../text/normalise.ts"
 
 // One unit, one id. Brreg org number first; without one, the Kartverket adresseid plus a
 // name slug, so two services at one address stay apart.
 export const UnitId = z.string().regex(/^(?:org:\d{9}|adr:[^:\s]+:[a-z0-9-]+)$/)
 
 export function slugify(name: string): string {
-	return name
-		.toLowerCase()
-		.replace(/æ/g, "ae")
-		.replace(/ø/g, "o")
-		.replace(/å/g, "a")
-		.normalize("NFD")
-		.replace(/\p{M}/gu, "")
+	return foldNorwegian(name)
 		.replace(/[^a-z0-9]+/g, "-")
 		.replace(/^-+|-+$/g, "")
 }
