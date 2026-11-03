@@ -44,7 +44,7 @@ describe("safety gate: person data", () => {
 	})
 
 	it("drops anything from a sole proprietorship", () => {
-		const ctx = context({ unit: { categories: ["rus"], isKrisesenter: false, orgForm: "ENK" } })
+		const ctx = context({ unit: { ...context().unit, orgForm: "ENK" } })
 		expect(safetyGate(candidate(), ctx)).toMatchObject({ pass: false, onFail: "drop" })
 	})
 
@@ -69,7 +69,9 @@ describe("safety gate: person data", () => {
 
 describe("safety gate: krisesenter, injection, Lavterskel", () => {
 	it("takes a krisesenter address only from the centre's own page", () => {
-		const ctx = context({ unit: { categories: ["vold-og-overgrep"], isKrisesenter: true } })
+		const ctx = context({
+			unit: { ...context().unit, categories: ["vold-og-overgrep"], isKrisesenter: true },
+		})
 		const own = candidate({
 			field: "address",
 			value: "Storgata 1, 2317 Hamar",
@@ -92,7 +94,9 @@ describe("safety gate: krisesenter, injection, Lavterskel", () => {
 	})
 
 	it("6. drops a krisesenter address from the contact field without a quote behind it", () => {
-		const ctx = context({ unit: { categories: ["vold-og-overgrep"], isKrisesenter: true } })
+		const ctx = context({
+			unit: { ...context().unit, categories: ["vold-og-overgrep"], isKrisesenter: true },
+		})
 		const c = candidate({
 			field: "address",
 			value: "Storgata 1, 2317 Hamar",

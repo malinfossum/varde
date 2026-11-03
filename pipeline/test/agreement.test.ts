@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { agreementGate } from "../src/gates/agreement.ts"
+import { agreementGate, sourceKey } from "../src/gates/agreement.ts"
 import { comparable } from "../src/gates/compare.ts"
 import type { Candidate } from "../src/gates/types.ts"
 import { candidate, context } from "./helpers.ts"
@@ -103,5 +103,32 @@ describe("agreement gate", () => {
 		// Written differently, same Kartverket id: only the id branch makes this pass.
 		const padded = brreg("Storgata 01, 2317 Hamar", { field: "address" })
 		expect(agreementGate(page, context({ peers: [padded], findAddress: split })).pass).toBe(true)
+	})
+})
+
+describe("sourceKey", () => {
+	const key = (sourceUrl: string) => sourceKey(candidate({ sourceUrl }))
+
+	it("treats hosts under one registrable domain as one source", () => {
+		expect(key("https://www.hamar.kommune.no/a/")).toBe(
+			key("https://tjenester.hamar.kommune.no/b/")
+		)
+		expect(key("https://hamar.frivilligsentral.no/")).toBe(
+			key("https://gjovik.frivilligsentral.no/")
+		)
+	})
+
+	it("keeps two kommuner apart, since kommune.no is a public suffix", () => {
+		expect(key("https://www.hamar.kommune.no/")).not.toBe(key("https://www.stange.kommune.no/"))
+	})
+})
+
+describe("agreement gate: registrable domains", () => {
+	it("counts another host of the same kommune as the same source", () => {
+		const peers = [candidate({ sourceUrl: "https://tjenester.hamar.kommune.no/rus/" })]
+		expect(agreementGate(candidate(), context({ peers }))).toMatchObject({
+			pass: true,
+			reason: "single source",
+		})
 	})
 })

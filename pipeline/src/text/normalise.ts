@@ -94,3 +94,12 @@ export function quoteHasText(quote: string, value: string): boolean {
 	}
 	return false
 }
+
+// A URL's host as the gates compare it: lower case, without a leading "www.".
+export function siteHost(url: string): string | undefined {
+	try {
+		return new URL(url).hostname.toLowerCase().replace(/^www\./, "")
+	} catch {
+		return undefined
+	}
+}
