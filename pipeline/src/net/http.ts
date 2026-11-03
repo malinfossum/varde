@@ -1,6 +1,6 @@
 import { lookup as dnsLookup } from "node:dns/promises"
 import { request } from "node:https"
-import { guardedLookup } from "./address.ts"
+import { guardedLookup, isIpLiteralHost } from "./address.ts"
 import { decode, readCapped } from "./body.ts"
 import {
 	MAX_BYTES,
@@ -20,13 +20,17 @@ function toNetError(err: unknown): NetError {
 }
 
 // The only code in the pipeline that opens a socket. One GET, no redirect followed (the
-// crawler checks every hop), HTTPS only, private addresses refused at connect time, 30
-// seconds for the whole exchange and 5 MB for the body, packed or unpacked. Tests never
+// crawler checks every hop), HTTPS only, IP-literal hosts refused up front, a host name that
+// resolves to a private address refused at connect time, 30 seconds for the whole exchange and 5 MB for the body, packed or unpacked. Tests never
 // import this file; they use a fake transport.
 export const httpsTransport: Transport = (url, accept) =>
 	new Promise<RawResponse>((resolve, reject) => {
 		if (url.protocol !== "https:") {
 			reject(new NetError("network"))
+			return
+		}
+		if (isIpLiteralHost(url)) {
+			reject(new NetError("privateAddress"))
 			return
 		}
 		let timedOut = false

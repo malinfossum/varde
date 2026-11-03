@@ -67,3 +67,10 @@ export function guardedLookup(resolve: Resolve): LookupFunction {
 		)
 	}
 }
+
+// Node calls the lookup only for a hostname; an IP literal in the URL is connected to directly
+// and would skip the guard above. Every provider has a DNS name, so a literal host (public or
+// private, IPv4 or bracketed IPv6) is refused outright.
+export function isIpLiteralHost(url: URL): boolean {
+	return isIP(url.hostname.replace(/^\[(.*)\]$/, "$1")) !== 0
+}

@@ -32,6 +32,12 @@ describe("decode", () => {
 		await expect(decode(bomb, "gzip", 100_000)).rejects.toMatchObject({ kind: "tooLarge" })
 	})
 
+	it("passes an empty body through whatever the encoding header says", async () => {
+		for (const encoding of ["gzip", "br", "deflate"]) {
+			expect((await decode(Buffer.alloc(0), encoding, 100)).length, encoding).toBe(0)
+		}
+	})
+
 	it("refuses an encoding it does not know", async () => {
 		await expect(decode(Buffer.from("x"), "compress", 100)).rejects.toMatchObject({
 			kind: "network",

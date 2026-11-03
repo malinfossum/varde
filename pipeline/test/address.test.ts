@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { guardedLookup, isPrivateAddress } from "../src/net/address.ts"
+import { guardedLookup, isIpLiteralHost, isPrivateAddress } from "../src/net/address.ts"
 
 describe("isPrivateAddress", () => {
 	it("refuses private, loopback, link-local and other non-public addresses", () => {
@@ -66,5 +66,26 @@ describe("guardedLookup", () => {
 		expect((await lookup([{ address: "151.101.1.1", family: 4 }], true)).address).toEqual([
 			{ address: "151.101.1.1", family: 4 },
 		])
+	})
+})
+
+describe("isIpLiteralHost", () => {
+	it("flags an IPv4 or bracketed IPv6 literal, public or private", () => {
+		for (const url of [
+			"https://169.254.169.254/",
+			"https://10.0.0.1/",
+			"https://151.101.1.1/",
+			"https://[::1]/",
+			"https://[2a02:c7f::1]/",
+			"https://2130706433/",
+		]) {
+			expect(isIpLiteralHost(new URL(url)), url).toBe(true)
+		}
+	})
+
+	it("lets a host name through", () => {
+		for (const url of ["https://www.eksempel.no/", "https://eksempel.no:8443/x"]) {
+			expect(isIpLiteralHost(new URL(url)), url).toBe(false)
+		}
 	})
 })

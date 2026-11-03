@@ -26,6 +26,8 @@ export async function decode(
 	contentEncoding: string | undefined,
 	max: number
 ): Promise<Buffer> {
+	// A redirect or a 204 can carry Content-Encoding with no body to unpack.
+	if (body.length === 0) return body
 	const encoding = (contentEncoding ?? "").trim().toLowerCase()
 	const gzipMagic = body[0] === 0x1f && body[1] === 0x8b
 	let unpack: Transform | undefined
