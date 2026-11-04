@@ -1,11 +1,15 @@
+import { getDomain } from "tldts"
 import { comparable } from "./compare.ts"
 import { type Candidate, type Gate, pass, review } from "./types.ts"
 
-// Two sources are independent when they are different registers, or different hosts.
+// Two sources are independent when they are different registers, or different registrable
+// domains (the Public Suffix List): www.hamar.kommune.no and tjenester.hamar.kommune.no are
+// one source, hamar.kommune.no and stange.kommune.no are two.
 export function sourceKey(c: Candidate): string {
 	if (c.evidence.kind === "register") return `register:${c.evidence.register}`
 	try {
-		return `host:${new URL(c.sourceUrl).hostname.replace(/^www\./, "")}`
+		const host = new URL(c.sourceUrl).hostname.toLowerCase()
+		return `domain:${getDomain(host) ?? host}`
 	} catch {
 		return `url:${c.sourceUrl}`
 	}

@@ -10,9 +10,12 @@ export type Origin =
 	| "article"
 	| "jsonLdAuthor"
 
-// nlod: open register data. ownPage: the provider's own site. granted: a catalogue owner
-// said yes. pending: a catalogue without a yes yet, usable to find and cross-check only.
-export type LicenceStatus = "nlod" | "ownPage" | "granted" | "pending"
+// nlod: open register data (NLOD 2.0). ccBy: CC BY 4.0 (Kartverket, KLASS), reused like nlod
+// with a credit line under "Kilder og lisenser". ownPage: the provider's own site. granted: a
+// catalogue owner said yes. pending: a catalogue without a yes yet, usable to find and
+// cross-check only.
+export const LICENCE_STATUSES = ["nlod", "ccBy", "ownPage", "granted", "pending"] as const
+export type LicenceStatus = (typeof LICENCE_STATUSES)[number]
 
 export type Candidate = {
 	kommune: string
@@ -35,6 +38,9 @@ export type UnitFacts = {
 	isKrisesenter: boolean
 	orgForm?: string
 	cost?: Cost
+	// Hosts of the unit's own pages, lower case and without "www.". A value with a unitPage or
+	// unitContact origin must come from one of them.
+	ownHosts: ReadonlySet<string>
 }
 
 // Every lookup that needs the network in production. A missing answer counts against the

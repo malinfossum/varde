@@ -87,7 +87,7 @@ export function context(over: Partial<GateContext> = {}): GateContext {
 		urlStatus: () => 200,
 		findAddress: () => ({ addressId: "3403-0001", kommune: "3403" }),
 		validKommuner: new Set(["3403", "0301"]),
-		unit: { categories: ["rus"], isKrisesenter: false },
+		unit: { categories: ["rus"], isKrisesenter: false, ownHosts: new Set(["hamar.kommune.no"]) },
 		peers: [],
 		...over,
 	}

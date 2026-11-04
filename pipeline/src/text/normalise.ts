@@ -1,6 +1,8 @@
 // Text helpers shared by the gates and the scorer. Every comparison in the pipeline goes
 // through these, so a page and a model answer that differ only in typography still match.
 
+import { getDomain } from "tldts"
+
 const SOFT_HYPHEN = /\u00AD/g
 const ODD_SPACES = /[\u00A0\u2007\u2009\u202F]/g
 const DASHES = /[\u2010-\u2015\u2212]/g
@@ -62,7 +64,10 @@ export function normaliseUrl(url: string): string {
 	}
 }
 
-const URL_TOKEN = /(?:https?:\/\/)?[a-z0-9æøå-]+(?:\.[a-z0-9æøå-]+)+(?:\/[^\s"'<>()]*)?/g
+// A link never starts right after a letter, a digit, "@", a dot, "_" or a hyphen, so the
+// domain of "post@hamar.kommune.no" is not read as a link to hamar.kommune.no.
+const URL_TOKEN =
+	/(?<![\p{L}\p{N}@._-])(?:https?:\/\/)?[a-z0-9æøå-]+(?:\.[a-z0-9æøå-]+)+(?:\/[^\s"'<>()]*)?/gu
 
 export function quoteHasUrl(quote: string, url: string): boolean {
 	const target = normaliseUrl(url)
@@ -90,4 +95,62 @@ export function quoteHasText(quote: string, value: string): boolean {
 		if (!LETTER_OR_DIGIT.test(before) && !LETTER_OR_DIGIT.test(after)) return true
 	}
 	return false
+}
+
+// A URL's host as the gates compare it: lower case, without a leading "www.".
+export function siteHost(url: string): string | undefined {
+	try {
+		return new URL(url).hostname.toLowerCase().replace(/^www\./, "")
+	} catch {
+		return undefined
+	}
+}
+
+// A site's front page: a URL with no path on one of the sites named, as siteHost gives them.
+// Every kommune site is discovered whole, so its front page points to no one service.
+export function isFrontPage(url: string, siteHosts: ReadonlySet<string>): boolean {
+	const host = siteHost(url)
+	if (host === undefined || !siteHosts.has(host)) return false
+	return new URL(url).pathname.replace(/\/+$/, "") === ""
+}
+
+// The lower-case host of a plain https URL whose host has a registrable domain. Anything
+// else (http, a port, user info, an IP address, a bare public suffix) gives undefined.
+export function httpsHost(url: string): string | undefined {
+	let parsed: URL
+	try {
+		parsed = new URL(url)
+	} catch {
+		return undefined
+	}
+	if (
+		parsed.protocol !== "https:" ||
+		parsed.port !== "" ||
+		parsed.username !== "" ||
+		parsed.password !== ""
+	) {
+		return undefined
+	}
+	const host = parsed.hostname.toLowerCase()
+	return getDomain(host) === null ? undefined : host
+}
+
+// A web address the way Brreg writes it ("www.hamar.kommune.no/"), as an https URL. The
+// fetcher is HTTPS only, so an http address is tried as https.
+export function asHttpsUrl(raw: string): string | undefined {
+	const rest = raw.trim().replace(/^https?:\/\//i, "")
+	if (rest === "" || /\s/.test(rest)) return undefined
+	const url = `https://${rest}`
+	return httpsHost(url) === undefined ? undefined : new URL(url).href
+}
+
+// Lower case with æ, ø and å spelt the way URLs and Brreg's capitals often spell them.
+export function foldNorwegian(text: string): string {
+	return text
+		.toLowerCase()
+		.replace(/æ/g, "ae")
+		.replace(/ø/g, "o")
+		.replace(/å/g, "a")
+		.normalize("NFD")
+		.replace(/\p{M}/gu, "")
 }

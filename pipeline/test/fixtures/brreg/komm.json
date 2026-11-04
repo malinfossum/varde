@@ -1,0 +1,31 @@
+{
+	"_embedded": {
+		"enheter": [
+			{
+				"organisasjonsnummer": "999999981",
+				"navn": "LILLEHAMMER KOMMUNE",
+				"organisasjonsform": { "kode": "KOMM" },
+				"forretningsadresse": {
+					"adresse": ["Postboks 986"],
+					"postnummer": "2626",
+					"poststed": "LILLEHAMMER",
+					"kommunenummer": "3405"
+				},
+				"hjemmeside": "www.lillehammer.kommune.no/"
+			},
+			{
+				"organisasjonsnummer": "999999982",
+				"navn": "OSLO KOMMUNE",
+				"organisasjonsform": { "kode": "KOMM" },
+				"forretningsadresse": {
+					"adresse": ["Postboks 1"],
+					"postnummer": "0030",
+					"poststed": "OSLO",
+					"kommunenummer": "0301"
+				},
+				"hjemmeside": "https://www.oslo.kommune.no"
+			}
+		]
+	},
+	"page": { "size": 100, "totalElements": 2, "totalPages": 1, "number": 0 }
+}

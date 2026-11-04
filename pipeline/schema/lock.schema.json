@@ -29,7 +29,9 @@
 									"enum": [
 										"brreg",
 										"nav",
+										"klass",
 										"nklm",
+										"kartverket",
 										"page"
 									]
 								},

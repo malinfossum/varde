@@ -13,5 +13,6 @@ provider's own page and to cross-check, and takes the facts from that page or a 
 | Norges Frivilligsentraler | The frivilligsentral register | [norges-frivilligsentraler.md](norges-frivilligsentraler.md) | 03.11.2026 | |
 | Kirkens Bymisjon | The tilbud list | [kirkens-bymisjon.md](kirkens-bymisjon.md) | 03.11.2026 | |
 
-When an answer comes, I record it here and set the host's licence status in the pipeline
-(`granted`, or leave it `pending`).
+When an answer comes, I record it here and set the host's licence status in the pipeline:
+`pipeline/src/sources/hosts.ts` for catalogues, `pipeline/src/sources/registers.ts` for
+registers (`granted`, or leave it `pending`).
