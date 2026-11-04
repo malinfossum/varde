@@ -211,7 +211,7 @@ public class SeedDataTests
             .ToListAsync();
 
         Assert.Equal(recorded, flagged);          // flag ⇔ recorded verbatim hours, both directions
-        Assert.Equal(13, flagged.Count); // 10 + rows 23-25 (nødnumre), source-verified 2026-09-09
+        Assert.Equal(16, flagged.Count); // 13 + rows 16, 222 and 236 (acute re-check, 2026-11-04)
     }
 
     [DbFact]
