@@ -1,6 +1,7 @@
 # Domain stories
 
-Varde as five short domain stories: who does what, with what, in what order. Each `.story` is
+Varde as one overview and six short domain stories: who does what, with what, in what order.
+Story 0 puts every part on one board, one sentence each; stories 1 to 6 zoom in. Each `.story` is
 the source and each `.egn` is generated from it for [Egon.io](https://egon.io/app) (Import).
 Regenerate after an edit with the `domain-story` generator:
 `node ~/.claude/loadout/skills/domain-story/scripts/story-to-egn.mjs <name>.story`.
@@ -13,7 +14,8 @@ Regenerate after an edit with the `domain-story` generator:
 ```
 
 Stories 1 to 5 are as-is. Story 6 is to-be: the rest of the design in
-`docs/superpowers/specs/2026-10-28-varde-national-data-design.md`.
+`docs/superpowers/specs/2026-10-28-varde-national-data-design.md`. Story 0 is as-is with the
+planned pipeline steps marked "(planned)".
 
 **Keep them current.** A PR that changes the structure (a workflow, a pipeline stage, a data
 store, who runs what) updates the story that tells it, regenerates the `.egn`, and fixes this
@@ -21,6 +23,7 @@ README in the same PR.
 
 | Story | Scope | Replay |
 |---|---|---|
+| [0 The whole project at a glance](00-varde-overview.story) | coarse, as-is + planned | [Egon.io](https://egon.io/app?storyUrl=https://raw.githubusercontent.com/malinfossum/varde/main/docs/domain-stories/00-varde-overview.egn&startReplay=true) |
 | [1 A visitor finds help](01-visitor-finds-help.story) | coarse, as-is | [Egon.io](https://egon.io/app?storyUrl=https://raw.githubusercontent.com/malinfossum/varde/main/docs/domain-stories/01-visitor-finds-help.egn&startReplay=true) |
 | [2 A service row is curated by hand](02-hand-curated-row.story) | medium, as-is | [Egon.io](https://egon.io/app?storyUrl=https://raw.githubusercontent.com/malinfossum/varde/main/docs/domain-stories/02-hand-curated-row.egn&startReplay=true) |
 | [3 A change passes the gates](03-pr-gates.story) | medium, as-is | [Egon.io](https://egon.io/app?storyUrl=https://raw.githubusercontent.com/malinfossum/varde/main/docs/domain-stories/03-pr-gates.egn&startReplay=true) |
@@ -29,6 +32,17 @@ README in the same PR.
 | [6 The pipeline extracts, checks and publishes a kommune](06-pipeline-extract-review.story) | medium, to-be | [Egon.io](https://egon.io/app?storyUrl=https://raw.githubusercontent.com/malinfossum/varde/main/docs/domain-stories/06-pipeline-extract-review.egn&startReplay=true) |
 
 ## Where each sentence lives
+
+**0 The whole project at a glance**
+
+| # | Told in full by |
+|---|---|
+| 1-3 | Story 2, curated by hand |
+| 4-7 | Story 3, the gates |
+| 8-11 | Story 4, rebuild and deploy |
+| 12-14 | Story 1, a visitor finds help |
+| 15-18 | Story 5, discover and fetch |
+| 19-22 | Story 6, extract and review (planned) |
 
 **1 A visitor finds help**
 
