@@ -304,6 +304,9 @@ public class SeedDataTests
 
         var root = SeedDocs.RepoRoot();
         Dictionary<int, string> Read(string doc) => SeedDocs.ReferralQuotes(File.ReadAllText(Path.Combine(root, doc)));
+        // A renamed "Referral quote" header would parse the override doc to nothing and skip
+        // every override silently, so pin it to the 48 rows it settles.
+        Assert.Equal(48, Read(SeedDocs.Reconcile).Count);
         var quotes = SeedDocs.MergeQuotes(
             SeedDocs.WithReferralQuotes.Select(Read),
             SeedDocs.Overrides.Select(Read));
