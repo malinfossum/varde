@@ -145,7 +145,11 @@ describe("crawler: 429 and 503", () => {
 		const results = await Promise.all(
 			[`${A}/a/`, `${A}/b/`, `${A}/c/`, `${A}/d/`, bare].map((url) => crawler.get(url, "html"))
 		)
-		expect(calls.filter((c) => c.startsWith(A))).toEqual([`${A}/robots.txt`, `${A}/a/`, `${A}/b/`])
+		expect(calls.filter((c) => new URL(c).host === new URL(A).host)).toEqual([
+			`${A}/robots.txt`,
+			`${A}/a/`,
+			`${A}/b/`,
+		])
 		expect(results.slice(0, 4).map((r) => !r.ok && r.reason)).toEqual(Array(4).fill("hostSkipped"))
 		// The bare domain shares the server's queue with www and is not held up by its stop.
 		expect(results[4]?.ok).toBe(true)
