@@ -39,12 +39,12 @@ independent verification passes, with conflicts resolved by source hierarchy (a 
 own site outranks a re-listing) and unconfirmable details left empty rather than guessed.
 The full audit trail is in [docs/verification/](docs/verification/). Phone numbers
 belonging to named individuals are never published, and shelters that withhold their
-address for safety are listed without one by design. Every row is re-verified against its
-source: acute lines (krisesentre, legevakt and nødtjenester) every three months, every other
-row every six months. The date shown as "Sist bekreftet" is the date of that check.
+address for safety are listed without one by design. Acute lines (krisesentre, legevakt and
+nødtjenester) are re-verified against their source every three months, and every other row
+every six months. The date shown as "Sist bekreftet" is the date of that check.
 The four numbers on the acute strip live in `web/src/services/emergency.ts` as constants
-(the landing page fetches nothing) and are re-verified in the three-month pass with the other
-acute lines; a test keeps them identical to seed rows 3 and 23–25. Once the national pipeline
+(the landing page fetches nothing) and are re-verified in the same three-month pass as the
+acute rows; a test keeps them identical to seed rows 3 and 23–25. Once the national pipeline
 takes a kommune over, its own schedule replaces the manual pass there.
 
 **Report an error.** Every resource page has a "report wrong information" `mailto:` link

@@ -2,6 +2,8 @@
 
 **Status: VERIFICATION GATE CLOSED 2026-10-27.** I resolved every item below on 2026-10-27; rows marked NOT SEEDED keep their number and are not seeded.
 
+**Lavterskel reconcile (04.11.2026):** rows 301 to 318, 320 to 324 and 326 to 346 were read again for their topic categories and referral quote in docs/seed-data-lavterskel-reconcile.md. That doc wins for the Referral quote and the categories of those rows.
+
 Meeting places and activity providers in Hamar, Lillehammer, Gjøvik, Ringsaker, Stange, Løten
 and Elverum, researched on 2026-10-27 on the kommune sites, the local frivilligsentraler and the
 national sites of the organisations behind them. Every row is a candidate for category 10

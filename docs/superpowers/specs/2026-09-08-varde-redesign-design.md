@@ -167,7 +167,8 @@ re-open control.
 
 The four numbers are constants in `src/services/emergency.ts`, not fetched, because the
 landing fetches nothing. Each constant carries the source URL it was copied from and the date.
-They fall under the six-month re-verification pass like every seeded row (the verification
+They fall under the six-month re-verification pass like every seeded row *(amended 2026-11-04:
+the three-month pass for acute lines, see the base spec)* (the verification
 ledger gets a line for them). The same four services also exist as seeded rows so they are
 searchable and browsable; a test asserts that the constants and the seed agree, by reading the
 seed file's strings, so the two cannot drift silently.

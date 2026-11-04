@@ -488,6 +488,11 @@ scheduled pass: 2027-02-17. *(Corrected 2026-09-09: this line originally read 20
 is seven months before the decision was recorded. The seeded rows carry `LastVerified`
 2026-08-13/08-17, so six months out is 2027-02-17. The year was a typo, not a changed decision.)*
 
+*Amended 2026-11-04:* acute lines (krisesentre, legevakt and nødtjenester) are re-verified every
+three months, and every other row every six months. An acute row older than three months counts
+as stale, so the acute rows verified 2026-08-13 are due 2026-11-13. The four acute-strip constants
+follow the three-month pass.
+
 **Phase 2 authentication:** ASP.NET Core Identity or Microsoft Entra ID. Decided in the phase 2
 spec, not here.
 
