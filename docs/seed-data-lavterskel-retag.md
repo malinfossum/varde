@@ -3,6 +3,8 @@
 **Status: VERIFICATION GATE CLOSED 2026-10-26.** Every item under "Verify these first" is resolved, and
 the seed follows these resolutions.
 
+**Lavterskel reconcile (04.11.2026):** rows 115, 227, 228 and 247 were read again for their topic categories and referral quote in docs/seed-data-lavterskel-reconcile.md. That doc wins for the Referral quote and the categories of those rows.
+
 Every live row (1-25, 101-122, 201-247) was read again on 2026-10-26 against the page its seed doc
 cites, for the referral statement and the price wording only. This pass sets `IsLowThreshold`,
 `Cost`, `CostNote` and category 10 membership; any other difference from the seed is listed

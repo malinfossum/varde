@@ -5,6 +5,7 @@ using Varde.Core;
 using Varde.Core.Dtos;
 using Varde.Core.Models;
 using Varde.Data;
+using Varde.Data.Seed;
 using Varde.Tests.Infrastructure;
 
 namespace Varde.Tests.Integration;
@@ -302,15 +303,43 @@ public class SeedDataTests
         var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
 
         var root = SeedDocs.RepoRoot();
-        var quotes = new Dictionary<int, string>();
-        foreach (var doc in SeedDocs.WithReferralQuotes)
-            foreach (var (row, quote) in SeedDocs.ReferralQuotes(File.ReadAllText(Path.Combine(root, doc))))
-                Assert.True(quotes.TryAdd(row, quote), $"row {row} appears in two seed docs");
+        Dictionary<int, string> Read(string doc) => SeedDocs.ReferralQuotes(File.ReadAllText(Path.Combine(root, doc)));
+        // A renamed "Referral quote" header would parse the override doc to nothing and skip
+        // every override silently, so pin it to the 48 rows it settles.
+        Assert.Equal(48, Read(SeedDocs.Reconcile).Count);
+        var quotes = SeedDocs.MergeQuotes(
+            SeedDocs.WithReferralQuotes.Select(Read),
+            SeedDocs.Overrides.Select(Read));
 
         var seeded = await db.Resources.Select(r => r.Id).ToListAsync();
         var badged = (await db.Resources.Where(r => r.IsLowThreshold).Select(r => r.Id).ToListAsync()).ToHashSet();
 
         Assert.Empty(SeedDocs.BadgeProblems(seeded, badged, quotes));
+    }
+
+    [DbFact]
+    public async Task Every_category_10_row_carries_the_topics_its_reconcile_doc_records()
+    {
+        // The /sok filter reaches category 10 rows only through their topic categories and the
+        // Lavterskel flag (filter spec, "Data contract"), so the topics are settled per row in
+        // docs/seed-data-lavterskel-reconcile.md and the seed must follow it exactly.
+        using var factory = new VardeApiFactory { KeepSeedData = true };
+        using var scope = factory.NewScope();
+        var db = scope.ServiceProvider.GetRequiredService<VardeDbContext>();
+
+        var slugById = Categories.All.ToDictionary(c => c.Id, c => c.Slug);
+        var category10 = (await db.Resources.Include(r => r.ResourceCategories).ToListAsync())
+            .Where(r => r.ResourceCategories.Any(rc => rc.CategoryId == Categories.Lavterskeltilbud))
+            .ToDictionary(
+                r => r.Id,
+                r => (IReadOnlySet<string>)r.ResourceCategories
+                    .Where(rc => rc.CategoryId != Categories.Lavterskeltilbud)
+                    .Select(rc => slugById[rc.CategoryId])
+                    .ToHashSet());
+        var cells = SeedDocs.Topics(File.ReadAllText(Path.Combine(SeedDocs.RepoRoot(), SeedDocs.Reconcile)));
+
+        Assert.Equal(48, category10.Count);
+        Assert.Empty(SeedDocs.TopicProblems(category10, cells));
     }
 
     [DbFact]
