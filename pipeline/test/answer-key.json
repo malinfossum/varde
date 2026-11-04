@@ -1,5 +1,5 @@
 {
-	"frozenOn": "2026-10-30",
+	"frozenOn": "2026-11-04",
 	"source": "https://varde.pages.dev/data/resources.nb.json",
 	"rows": [
 		{
@@ -988,7 +988,6 @@
 			"nameEn": "Lavterskel rus- og psykisk helsehjelp (Annekset og Grip), Elverum kommune",
 			"categories": [
 				"lavterskeltilbud",
-				"psykisk-helse",
 				"rus"
 			],
 			"fields": {
@@ -1853,7 +1852,6 @@
 			"name": "Fyrlyset, Oslo (Frelsesarmeen)",
 			"nameEn": "Fyrlyset, Oslo (Frelsesarmeen)",
 			"categories": [
-				"bolig",
 				"lavterskeltilbud",
 				"rus"
 			],
@@ -2350,9 +2348,8 @@
 			"name": "Bymisjonssenteret, Oslo (Kirkens Bymisjon)",
 			"nameEn": "Bymisjonssenteret, Oslo (Kirkens Bymisjon)",
 			"categories": [
-				"lavterskeltilbud",
-				"psykisk-helse",
-				"rus"
+				"bolig",
+				"lavterskeltilbud"
 			],
 			"fields": {
 				"phone": "22 66 67 80",
@@ -2376,6 +2373,7 @@
 			"name": "Sagatun Brukerstyrt Senter",
 			"nameEn": "Sagatun Brukerstyrt Senter",
 			"categories": [
+				"arbeid",
 				"lavterskeltilbud",
 				"psykisk-helse"
 			],
@@ -2401,7 +2399,11 @@
 			"name": "Hamar Frivilligsentral",
 			"nameEn": "Hamar Frivilligsentral",
 			"categories": [
-				"lavterskeltilbud"
+				"arbeid",
+				"familie-og-barn",
+				"juridisk-hjelp",
+				"lavterskeltilbud",
+				"psykisk-helse"
 			],
 			"fields": {
 				"phone": "62 51 00 96",
@@ -2425,6 +2427,7 @@
 			"name": "Høbben, et sted for ungdom",
 			"nameEn": "Høbben, et sted for ungdom",
 			"categories": [
+				"familie-og-barn",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -2451,7 +2454,10 @@
 			"name": "CRUX Arbeideren",
 			"nameEn": "CRUX Arbeideren",
 			"categories": [
+				"arbeid",
+				"juridisk-hjelp",
 				"lavterskeltilbud",
+				"psykisk-helse",
 				"rus"
 			],
 			"fields": {
@@ -2502,7 +2508,9 @@
 			"nameEn": "Blå Kors barnas stasjon Hamar",
 			"categories": [
 				"familie-og-barn",
-				"lavterskeltilbud"
+				"lavterskeltilbud",
+				"psykisk-helse",
+				"rus"
 			],
 			"fields": {
 				"phone": "990 93 994",
@@ -2526,7 +2534,8 @@
 			"name": "Støttesenter for pårørende, Hospice Sangen",
 			"nameEn": "Støttesenter for pårørende, Hospice Sangen",
 			"categories": [
-				"lavterskeltilbud"
+				"lavterskeltilbud",
+				"psykisk-helse"
 			],
 			"fields": {
 				"phone": "62 54 20 90",
@@ -2550,7 +2559,9 @@
 			"name": "Hamar Røde Kors",
 			"nameEn": "Hamar Røde Kors",
 			"categories": [
-				"lavterskeltilbud"
+				"familie-og-barn",
+				"lavterskeltilbud",
+				"okonomi"
 			],
 			"fields": {
 				"phone": "918 21 211",
@@ -2574,6 +2585,7 @@
 			"name": "BUA Hamar",
 			"nameEn": "BUA Hamar",
 			"categories": [
+				"arbeid",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -2623,6 +2635,7 @@
 			"name": "Prestrud ungdomsklubb",
 			"nameEn": "Prestrud ungdomsklubb",
 			"categories": [
+				"familie-og-barn",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -2647,6 +2660,7 @@
 			"name": "Fritidsklubb Wiik",
 			"nameEn": "Fritidsklubb Wiik",
 			"categories": [
+				"familie-og-barn",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -2769,7 +2783,9 @@
 			"name": "Lillehammer Frivilligsentral",
 			"nameEn": "Lillehammer Frivilligsentral",
 			"categories": [
-				"lavterskeltilbud"
+				"familie-og-barn",
+				"lavterskeltilbud",
+				"psykisk-helse"
 			],
 			"fields": {
 				"phone": "992 69 600",
@@ -2793,6 +2809,8 @@
 			"name": "Lillehammer Røde Kors",
 			"nameEn": "Lillehammer Røde Kors",
 			"categories": [
+				"familie-og-barn",
+				"juridisk-hjelp",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -2817,7 +2835,9 @@
 			"name": "Blå Kors gatenært Gjøvik (Kafe Kampen)",
 			"nameEn": "Blå Kors gatenært Gjøvik (Kafe Kampen)",
 			"categories": [
+				"bolig",
 				"lavterskeltilbud",
+				"okonomi",
 				"rus"
 			],
 			"fields": {
@@ -2849,6 +2869,7 @@
 			"name": "Fontenehuset Gjøvik",
 			"nameEn": "Fontenehuset Gjøvik",
 			"categories": [
+				"arbeid",
 				"lavterskeltilbud",
 				"psykisk-helse"
 			],
@@ -2874,6 +2895,8 @@
 			"name": "Gjøvik frivilligsentral avd. Sentrum",
 			"nameEn": "Gjøvik frivilligsentral avd. Sentrum",
 			"categories": [
+				"familie-og-barn",
+				"juridisk-hjelp",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -2922,6 +2945,7 @@
 			"name": "PULS - ditt værested (Frelsesarmeen Gjøvik og Toten)",
 			"nameEn": "PULS - ditt værested (Frelsesarmeen Gjøvik og Toten)",
 			"categories": [
+				"arbeid",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -2946,6 +2970,7 @@
 			"name": "Ung i Gjøvik (Ungdommens hus)",
 			"nameEn": "Ung i Gjøvik (Ungdommens hus)",
 			"categories": [
+				"familie-og-barn",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -2970,6 +2995,7 @@
 			"name": "Hverdag - Mat & Mening",
 			"nameEn": "Hverdag - Mat & Mening",
 			"categories": [
+				"arbeid",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -3069,7 +3095,8 @@
 			"name": "Brumunddal frivilligsentral",
 			"nameEn": "Brumunddal frivilligsentral",
 			"categories": [
-				"lavterskeltilbud"
+				"lavterskeltilbud",
+				"psykisk-helse"
 			],
 			"fields": {
 				"phone": "973 47 717",
@@ -3213,6 +3240,7 @@
 			"name": "Ungdomshuset i Ottestad",
 			"nameEn": "Ungdomshuset i Ottestad",
 			"categories": [
+				"familie-og-barn",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -3261,6 +3289,7 @@
 			"name": "Løten Frivilligsentral",
 			"nameEn": "Løten Frivilligsentral",
 			"categories": [
+				"familie-og-barn",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -3285,6 +3314,7 @@
 			"name": "Ungdommens hus",
 			"nameEn": "Ungdommens hus",
 			"categories": [
+				"familie-og-barn",
 				"lavterskeltilbud"
 			],
 			"fields": {
@@ -3310,7 +3340,8 @@
 			"nameEn": "Felles aktivitet i Løtenhallen",
 			"categories": [
 				"lavterskeltilbud",
-				"psykisk-helse"
+				"psykisk-helse",
+				"rus"
 			],
 			"fields": {
 				"phone": "62 56 40 00",
@@ -3382,7 +3413,8 @@
 			"name": "Møteplassen Elverum",
 			"nameEn": "Møteplassen Elverum",
 			"categories": [
-				"lavterskeltilbud"
+				"lavterskeltilbud",
+				"psykisk-helse"
 			],
 			"fields": {
 				"phone": "911 84 893",
@@ -3431,6 +3463,7 @@
 			"name": "Ungdommens hus",
 			"nameEn": "Ungdommens hus",
 			"categories": [
+				"familie-og-barn",
 				"lavterskeltilbud"
 			],
 			"fields": {
