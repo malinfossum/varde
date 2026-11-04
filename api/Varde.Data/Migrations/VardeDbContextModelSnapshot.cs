@@ -1002,7 +1002,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 7,
                             Name = "Lavterskel rus- og psykisk helsehjelp (Annekset og Grip), Elverum kommune",
                             Phone = "993 72 609",
@@ -1516,7 +1516,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 8,
                             Name = "Fyrlyset, Oslo (Frelsesarmeen)",
                             Phone = "23 03 66 80",
@@ -1819,7 +1819,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 8,
                             Name = "Bymisjonssenteret, Oslo (Kirkens Bymisjon)",
                             Phone = "22 66 67 80",
@@ -1835,7 +1835,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 1,
                             Name = "Sagatun Brukerstyrt Senter",
                             Phone = "62 50 97 55",
@@ -1851,7 +1851,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 1,
                             Name = "Hamar Frivilligsentral",
                             Phone = "62 51 00 96",
@@ -1867,7 +1867,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 1,
                             Name = "Høbben, et sted for ungdom",
                             Phone = "477 86 203",
@@ -1883,7 +1883,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 1,
                             Name = "CRUX Arbeideren",
                             UpdatedAt = new DateTime(2026, 10, 27, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -1915,7 +1915,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 1,
                             Name = "Blå Kors barnas stasjon Hamar",
                             Phone = "990 93 994",
@@ -1931,7 +1931,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 1,
                             Name = "Støttesenter for pårørende, Hospice Sangen",
                             Phone = "62 54 20 90",
@@ -1947,7 +1947,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 1,
                             Name = "Hamar Røde Kors",
                             Phone = "918 21 211",
@@ -1964,7 +1964,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 1,
                             Name = "BUA Hamar",
                             Phone = "477 76 977",
@@ -1995,7 +1995,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 1,
                             Name = "Prestrud ungdomsklubb",
                             Phone = "950 39 833",
@@ -2010,7 +2010,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 1,
                             Name = "Fritidsklubb Wiik",
                             Phone = "950 39 833",
@@ -2056,7 +2056,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 2,
                             Name = "Lavterskeltilbud Storgata 9B",
                             Phone = "949 74 618",
@@ -2089,7 +2089,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 2,
                             Name = "Lillehammer Frivilligsentral",
                             Phone = "992 69 600",
@@ -2105,7 +2105,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 2,
                             Name = "Lillehammer Røde Kors",
                             Phone = "415 80 011",
@@ -2120,7 +2120,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 3,
                             Name = "Blå Kors gatenært Gjøvik (Kafe Kampen)",
                             Phone = "61 17 04 80",
@@ -2137,7 +2137,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 3,
                             Name = "Fontenehuset Gjøvik",
                             Phone = "977 30 330",
@@ -2153,7 +2153,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 3,
                             Name = "Gjøvik frivilligsentral avd. Sentrum",
                             Phone = "61 15 85 55",
@@ -2185,7 +2185,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 3,
                             Name = "PULS - ditt værested (Frelsesarmeen Gjøvik og Toten)",
                             Phone = "409 12 050",
@@ -2200,7 +2200,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 3,
                             Name = "Ung i Gjøvik (Ungdommens hus)",
                             UpdatedAt = new DateTime(2026, 10, 27, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -2215,7 +2215,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 3,
                             Name = "Hverdag - Mat & Mening",
                             Phone = "929 29 994",
@@ -2278,7 +2278,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 4,
                             Name = "Brumunddal frivilligsentral",
                             Phone = "973 47 717",
@@ -2372,7 +2372,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 5,
                             Name = "Ungdomshuset i Ottestad",
                             UpdatedAt = new DateTime(2026, 10, 27, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -2402,7 +2402,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 6,
                             Name = "Løten Frivilligsentral",
                             Phone = "481 41 769",
@@ -2418,7 +2418,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 6,
                             Name = "Ungdommens hus",
                             Phone = "62 56 40 00",
@@ -2434,7 +2434,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 6,
                             Name = "Felles aktivitet i Løtenhallen",
                             Phone = "62 56 40 00",
@@ -2483,7 +2483,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 7,
                             Name = "Møteplassen Elverum",
                             Phone = "911 84 893",
@@ -2498,7 +2498,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 7,
                             Name = "Treffpunktet (Møteplassen Elverum)",
                             Phone = "942 02 575",
@@ -2514,7 +2514,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 27),
+                            LastVerified = new DateOnly(2026, 11, 3),
                             MunicipalityId = 7,
                             Name = "Ungdommens hus",
                             Phone = "489 57 545",
@@ -2887,11 +2887,6 @@ namespace Varde.Data.Migrations
                         {
                             ResourceId = 115,
                             CategoryId = 4
-                        },
-                        new
-                        {
-                            ResourceId = 115,
-                            CategoryId = 3
                         },
                         new
                         {
@@ -3295,11 +3290,6 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
-                            ResourceId = 227,
-                            CategoryId = 2
-                        },
-                        new
-                        {
                             ResourceId = 228,
                             CategoryId = 3
                         },
@@ -3465,16 +3455,6 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
-                            ResourceId = 247,
-                            CategoryId = 3
-                        },
-                        new
-                        {
-                            ResourceId = 247,
-                            CategoryId = 4
-                        },
-                        new
-                        {
                             ResourceId = 115,
                             CategoryId = 10
                         },
@@ -3495,8 +3475,18 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
+                            ResourceId = 247,
+                            CategoryId = 2
+                        },
+                        new
+                        {
                             ResourceId = 301,
                             CategoryId = 10
+                        },
+                        new
+                        {
+                            ResourceId = 301,
+                            CategoryId = 7
                         },
                         new
                         {
@@ -3510,13 +3500,53 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
+                            ResourceId = 302,
+                            CategoryId = 3
+                        },
+                        new
+                        {
+                            ResourceId = 302,
+                            CategoryId = 6
+                        },
+                        new
+                        {
+                            ResourceId = 302,
+                            CategoryId = 7
+                        },
+                        new
+                        {
+                            ResourceId = 302,
+                            CategoryId = 8
+                        },
+                        new
+                        {
                             ResourceId = 303,
                             CategoryId = 10
                         },
                         new
                         {
+                            ResourceId = 303,
+                            CategoryId = 6
+                        },
+                        new
+                        {
                             ResourceId = 304,
                             CategoryId = 10
+                        },
+                        new
+                        {
+                            ResourceId = 304,
+                            CategoryId = 3
+                        },
+                        new
+                        {
+                            ResourceId = 304,
+                            CategoryId = 7
+                        },
+                        new
+                        {
+                            ResourceId = 304,
+                            CategoryId = 8
                         },
                         new
                         {
@@ -3537,6 +3567,16 @@ namespace Varde.Data.Migrations
                         {
                             ResourceId = 306,
                             CategoryId = 10
+                        },
+                        new
+                        {
+                            ResourceId = 306,
+                            CategoryId = 3
+                        },
+                        new
+                        {
+                            ResourceId = 306,
+                            CategoryId = 4
                         },
                         new
                         {
@@ -3550,13 +3590,33 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
+                            ResourceId = 307,
+                            CategoryId = 3
+                        },
+                        new
+                        {
                             ResourceId = 308,
                             CategoryId = 10
                         },
                         new
                         {
+                            ResourceId = 308,
+                            CategoryId = 1
+                        },
+                        new
+                        {
+                            ResourceId = 308,
+                            CategoryId = 6
+                        },
+                        new
+                        {
                             ResourceId = 309,
                             CategoryId = 10
+                        },
+                        new
+                        {
+                            ResourceId = 309,
+                            CategoryId = 7
                         },
                         new
                         {
@@ -3575,8 +3635,18 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
+                            ResourceId = 311,
+                            CategoryId = 6
+                        },
+                        new
+                        {
                             ResourceId = 312,
                             CategoryId = 10
+                        },
+                        new
+                        {
+                            ResourceId = 312,
+                            CategoryId = 6
                         },
                         new
                         {
@@ -3615,13 +3685,43 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
+                            ResourceId = 317,
+                            CategoryId = 3
+                        },
+                        new
+                        {
+                            ResourceId = 317,
+                            CategoryId = 6
+                        },
+                        new
+                        {
                             ResourceId = 318,
                             CategoryId = 10
                         },
                         new
                         {
+                            ResourceId = 318,
+                            CategoryId = 6
+                        },
+                        new
+                        {
+                            ResourceId = 318,
+                            CategoryId = 8
+                        },
+                        new
+                        {
                             ResourceId = 320,
                             CategoryId = 10
+                        },
+                        new
+                        {
+                            ResourceId = 320,
+                            CategoryId = 1
+                        },
+                        new
+                        {
+                            ResourceId = 320,
+                            CategoryId = 2
                         },
                         new
                         {
@@ -3636,12 +3736,27 @@ namespace Varde.Data.Migrations
                         new
                         {
                             ResourceId = 321,
+                            CategoryId = 7
+                        },
+                        new
+                        {
+                            ResourceId = 321,
                             CategoryId = 3
                         },
                         new
                         {
                             ResourceId = 322,
                             CategoryId = 10
+                        },
+                        new
+                        {
+                            ResourceId = 322,
+                            CategoryId = 6
+                        },
+                        new
+                        {
+                            ResourceId = 322,
+                            CategoryId = 8
                         },
                         new
                         {
@@ -3655,13 +3770,28 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
+                            ResourceId = 324,
+                            CategoryId = 7
+                        },
+                        new
+                        {
                             ResourceId = 326,
                             CategoryId = 10
                         },
                         new
                         {
+                            ResourceId = 326,
+                            CategoryId = 6
+                        },
+                        new
+                        {
                             ResourceId = 327,
                             CategoryId = 10
+                        },
+                        new
+                        {
+                            ResourceId = 327,
+                            CategoryId = 7
                         },
                         new
                         {
@@ -3700,6 +3830,11 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
+                            ResourceId = 331,
+                            CategoryId = 3
+                        },
+                        new
+                        {
                             ResourceId = 332,
                             CategoryId = 10
                         },
@@ -3730,6 +3865,11 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
+                            ResourceId = 337,
+                            CategoryId = 6
+                        },
+                        new
+                        {
                             ResourceId = 338,
                             CategoryId = 10
                         },
@@ -3740,13 +3880,28 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
+                            ResourceId = 339,
+                            CategoryId = 6
+                        },
+                        new
+                        {
                             ResourceId = 340,
                             CategoryId = 10
                         },
                         new
                         {
+                            ResourceId = 340,
+                            CategoryId = 6
+                        },
+                        new
+                        {
                             ResourceId = 341,
                             CategoryId = 10
+                        },
+                        new
+                        {
+                            ResourceId = 341,
+                            CategoryId = 4
                         },
                         new
                         {
@@ -3770,6 +3925,11 @@ namespace Varde.Data.Migrations
                         },
                         new
                         {
+                            ResourceId = 344,
+                            CategoryId = 3
+                        },
+                        new
+                        {
                             ResourceId = 345,
                             CategoryId = 10
                         },
@@ -3782,6 +3942,11 @@ namespace Varde.Data.Migrations
                         {
                             ResourceId = 346,
                             CategoryId = 10
+                        },
+                        new
+                        {
+                            ResourceId = 346,
+                            CategoryId = 6
                         });
                 });
 
