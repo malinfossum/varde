@@ -8,13 +8,16 @@ Regenerate after an edit with the `domain-story` generator:
 ## How they fit together
 
 ```text
-2 a row is curated by hand ──┐
-                             ├─> 3 the change passes the gates ─> 4 the site is rebuilt ─> 1 a visitor finds help
-5 the national pipeline ─────┘   (to-be; publishing waits for spec B)
+2 curated by hand ───────────────────────────────────┐
+5 discover and fetch ─> 6 extract and review (to-be) ┴─> 3 the gates ─> 4 rebuild and deploy ─> 1 a visitor finds help
 ```
 
-Stories 1 to 4 are as-is. Story 5 is to-be: the design in
-`docs/superpowers/specs/2026-10-28-varde-national-data-design.md`, partly built.
+Stories 1 to 5 are as-is. Story 6 is to-be: the rest of the design in
+`docs/superpowers/specs/2026-10-28-varde-national-data-design.md`.
+
+**Keep them current.** A PR that changes the structure (a workflow, a pipeline stage, a data
+store, who runs what) updates the story that tells it, regenerates the `.egn`, and fixes this
+README in the same PR.
 
 | Story | Scope | Replay |
 |---|---|---|
@@ -22,7 +25,8 @@ Stories 1 to 4 are as-is. Story 5 is to-be: the design in
 | [2 A service row is curated by hand](02-hand-curated-row.story) | medium, as-is | [Egon.io](https://egon.io/app?storyUrl=https://raw.githubusercontent.com/malinfossum/varde/main/docs/domain-stories/02-hand-curated-row.egn&startReplay=true) |
 | [3 A change passes the gates](03-pr-gates.story) | medium, as-is | [Egon.io](https://egon.io/app?storyUrl=https://raw.githubusercontent.com/malinfossum/varde/main/docs/domain-stories/03-pr-gates.egn&startReplay=true) |
 | [4 The site is rebuilt and deployed](04-daily-deploy.story) | medium, as-is | [Egon.io](https://egon.io/app?storyUrl=https://raw.githubusercontent.com/malinfossum/varde/main/docs/domain-stories/04-daily-deploy.egn&startReplay=true) |
-| [5 The national pipeline refreshes a kommune](05-national-pipeline.story) | medium, to-be | [Egon.io](https://egon.io/app?storyUrl=https://raw.githubusercontent.com/malinfossum/varde/main/docs/domain-stories/05-national-pipeline.egn&startReplay=true) |
+| [5 The pipeline discovers and fetches a kommune](05-pipeline-discover-fetch.story) | medium, as-is | [Egon.io](https://egon.io/app?storyUrl=https://raw.githubusercontent.com/malinfossum/varde/main/docs/domain-stories/05-pipeline-discover-fetch.egn&startReplay=true) |
+| [6 The pipeline extracts, checks and publishes a kommune](06-pipeline-extract-review.story) | medium, to-be | [Egon.io](https://egon.io/app?storyUrl=https://raw.githubusercontent.com/malinfossum/varde/main/docs/domain-stories/06-pipeline-extract-review.egn&startReplay=true) |
 
 ## Where each sentence lives
 
@@ -46,7 +50,7 @@ Stories 1 to 4 are as-is. Story 5 is to-be: the design in
 | 4-5 | `docs/verification/*-check.md` |
 | 6 | `docs/verification/call-list.md` |
 | 8 | `api/Varde.Data/Seed/SeedData.cs`, a migration in `api/Varde.Data/Migrations/`, and a row in `web/data/places.json` for a new kommune |
-| 7, 11 | No artifact: the ruling and the six-month re-check live in the docs above and in "Sist bekreftet" |
+| 7, 11 | No artifact: the ruling and the re-check (three months for acute lines, six for the rest) live in the docs above and in "Sist bekreftet" |
 
 **3 A change passes the gates**
 
@@ -66,24 +70,35 @@ Stories 1 to 4 are as-is. Story 5 is to-be: the design in
 | 6 | `web/scripts/export-data.mjs` (`npm run data`) |
 | 7 | `npm run build:site`, `web/scripts/prerender.mjs` |
 
-**5 The national pipeline refreshes a kommune**
+**5 The pipeline discovers and fetches a kommune**
+
+| # | Code |
+|---|---|
+| 1, 8, 11 | `pipeline/src/cli/discover.ts`, `fetch.ts`, `recall-report.ts` (`npm run discover`, `fetch`, `recall-report`) |
+| 2 | `pipeline/src/registers/klass.ts` |
+| 3 | `pipeline/src/registers/brreg.ts`, unit codes in `sn2025.ts` |
+| 4 | `pipeline/src/net/robots.ts`, `pipeline/src/discover/sitemap.ts` |
+| 5 | `pipeline/src/discover/catalogues.ts` |
+| 6 | `pipeline/src/registers/nav.ts` |
+| 7 | `pipeline/src/discover/files.ts` (`kommuner/<number>.json`, `national.json`, `hosts.json`, `report.json` in the cache) |
+| 9 | `pipeline/src/fetch/fetchPages.ts`, `pipeline/src/net/crawler.ts` (allow-list, crawl delay) |
+| 10 | `pipeline/src/io/pageCache.ts` (`pages/manifest.json`, `pages/report.json`) |
+| 12 | `pipeline/src/recall/`, scored against `pipeline/src/answerKey/` |
+
+**6 The pipeline extracts, checks and publishes a kommune**
 
 | # | Code | Built |
 |---|---|---|
-| 1 | `pipeline/src/registers/` (Brreg, Nav, KLASS, Kartverket), `pipeline/src/discover/` | PR 2 |
-| 2 | `pipeline/src/discover/sitemap.ts`, `pipeline/src/net/` (robots, allow-list) | PR 2 |
-| 3 | `pipeline/src/fetch/fetchPages.ts`, `pipeline/src/io/pageCache.ts` | PR 2 |
-| 4-5 | Extract stage | PR 3 |
-| 6 | `pipeline/src/gates/` (source, grounding, validity, agreement, safety) | gates PR 1, the verify stage PR 3 |
-| 7 | `pipeline/src/schema/lock.ts`; writing `data/lock/` | schema PR 1, writing PR 3 |
-| 8 | `pipeline/src/recall/`, `pipeline/src/answerKey/` | PR 1-2 |
-| 9-10 | Review command; `pipeline/src/schema/curated.ts` | schema PR 1, command PR 3 |
-| 11-13 | Scheduled workflows, `check-refresh-only`, bot token | PR 5 |
+| 1-2 | Extract stage (Haiku batch; a local model for kommuner that block ClaudeBot) | PR 3 |
+| 3 | `pipeline/src/gates/` (source, grounding, validity, agreement, safety) | gates PR 1, the verify stage PR 3 |
+| 4 | `pipeline/src/schema/lock.ts`; writing `data/lock/` | schema PR 1, writing PR 3 |
+| 5-7 | Review command; `pipeline/src/schema/curated.ts` | schema PR 1, command PR 3 |
+| 8-10 | Scheduled workflows, `check-refresh-only`, bot token | PR 5 |
 
 ## Gaps
 
-- The two stories that feed the site do not meet yet. Story 4 reads rows from Neon, which the
-  C# seed fills; story 5 writes `data/` files the site never reads. Spec B decides the join
+- The stories that feed the site do not meet yet. Story 4 reads rows from Neon, which the
+  C# seed fills; story 6 will write `data/` files the site never reads. Spec B decides the join
   (storage decided 2026-10-30: JSON in git).
 - No workflow runs the pipeline yet. Discover and fetch run by hand from `pipeline/`.
 - Story 2 has no trace of sentence 7 (settling the final values) beyond the check reports.

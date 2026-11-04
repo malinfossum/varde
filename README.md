@@ -40,10 +40,12 @@ own site outranks a re-listing) and unconfirmable details left empty rather than
 The full audit trail is in [docs/verification/](docs/verification/). Phone numbers
 belonging to named individuals are never published, and shelters that withhold their
 address for safety are listed without one by design. Every row is re-verified against its
-source every six months, and the date shown as "Sist bekreftet" is the date of that check.
+source: acute lines (krisesentre, legevakt and nødtjenester) every three months, every other
+row every six months. The date shown as "Sist bekreftet" is the date of that check.
 The four numbers on the acute strip live in `web/src/services/emergency.ts` as constants
-(the landing page fetches nothing) and are re-verified in the same six-month pass as the
-rows; a test keeps them identical to seed rows 3 and 23–25.
+(the landing page fetches nothing) and are re-verified in the three-month pass with the other
+acute lines; a test keeps them identical to seed rows 3 and 23–25. Once the national pipeline
+takes a kommune over, its own schedule replaces the manual pass there.
 
 **Report an error.** Every resource page has a "report wrong information" `mailto:` link
 that goes to a forwarding alias, `varde.purely709@passmail.com`, so a stale number or
