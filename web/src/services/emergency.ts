@@ -17,28 +17,28 @@ export const emergencyLines: readonly EmergencyLine[] = [
 		seedId: 23,
 		phone: "110",
 		source: "https://www.dsb.no/brannsikkerhet/nodmelding/110-sentralene/",
-		verified: "2026-09-09",
+		verified: "2026-11-04",
 	},
 	{
 		id: "politi",
 		seedId: 24,
 		phone: "112",
 		source: "https://www.politiet.no/kontakt-politiet/ring-politiet",
-		verified: "2026-09-09",
+		verified: "2026-11-04",
 	},
 	{
 		id: "ambulanse",
 		seedId: 25,
 		phone: "113",
 		source: "https://www.helsenorge.no/forstehjelp",
-		verified: "2026-09-09",
+		verified: "2026-11-04",
 	},
 	{
 		id: "legevakt",
 		seedId: 3,
 		phone: "116 117",
-		source: "https://www.helsenorge.no/legevakt/",
-		verified: "2026-09-07",
+		source: "https://www.helsenorge.no/hjelpetilbud-i-kommunene/legevakt/",
+		verified: "2026-11-04",
 	},
 ]
 

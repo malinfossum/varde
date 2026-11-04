@@ -458,11 +458,11 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = true,
                             IsLowThreshold = false,
                             IsNational = true,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             Name = "Legevakt",
                             Phone = "116 117",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://www.helsenorge.no/legevakt/"
+                            Website = "https://www.helsenorge.no/hjelpetilbud-i-kommunene/legevakt/"
                         },
                         new
                         {
@@ -473,7 +473,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = true,
                             IsLowThreshold = false,
                             IsNational = true,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             Name = "Alarmtelefonen for barn og unge",
                             Phone = "116 111",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -488,7 +488,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = true,
                             IsLowThreshold = false,
                             IsNational = true,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             Name = "VO-linjen",
                             Phone = "116 006",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -590,12 +590,12 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = true,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             MunicipalityId = 1,
                             Name = "Hamar interkommunale krisesenter",
                             Phone = "62 56 18 30",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://www.hamar.kommune.no/familiehjelp-oversikt-over-tilbud/krisesenter/"
+                            Website = "https://www.hamar.kommune.no/krisesenter/"
                         },
                         new
                         {
@@ -619,12 +619,12 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 8, 13),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             MunicipalityId = 1,
                             Name = "Ringsaker interkommunale barnevernvakt",
                             Phone = "404 04 015",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://www.hamar.kommune.no/familiehjelp-oversikt-over-tilbud/hjelpetelefoner-for-familier-og-barn-unge/"
+                            Website = "https://www.ringsaker.kommune.no/tjenester/barn-oppvekst-og-laering/barnevern/melding-til-barneverntjenesten"
                         },
                         new
                         {
@@ -647,10 +647,10 @@ namespace Varde.Data.Migrations
                             Address = "Skoletorget 6 D, 2609 Lillehammer",
                             Cost = 1,
                             CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsAlwaysOpen = false,
+                            IsAlwaysOpen = true,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             MunicipalityId = 2,
                             Name = "Gudbrandsdal Krisesenter IKS",
                             Phone = "414 81 220",
@@ -694,7 +694,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 8, 13),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             MunicipalityId = 2,
                             Name = "Mottak for seksuelle overgrep, Lillehammer",
                             Phone = "61 27 22 16",
@@ -724,7 +724,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = true,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             MunicipalityId = 3,
                             Name = "Gjøvik Krisesenter IKS",
                             Phone = "61 17 55 60",
@@ -751,7 +751,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = true,
                             IsLowThreshold = false,
                             IsNational = true,
-                            LastVerified = new DateOnly(2026, 9, 9),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             Name = "Brannvesen (nødnummer)",
                             Phone = "110",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -764,7 +764,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = true,
                             IsLowThreshold = false,
                             IsNational = true,
-                            LastVerified = new DateOnly(2026, 9, 9),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             Name = "Politi (nødnummer)",
                             Phone = "112",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -777,7 +777,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = true,
                             IsLowThreshold = false,
                             IsNational = true,
-                            LastVerified = new DateOnly(2026, 9, 9),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             Name = "Ambulanse (medisinsk nødhjelp)",
                             Phone = "113",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -1346,7 +1346,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = true,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             MunicipalityId = 8,
                             Name = "Oslo Krisesenter",
                             Phone = "22 48 03 80",
@@ -1376,12 +1376,12 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = true,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             MunicipalityId = 8,
                             Name = "Overgrepsmottaket, Legevakten i Oslo",
                             Phone = "23 04 05 00",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://www.oslo.kommune.no"
+                            Website = "https://www.oslo.kommune.no/helse-og-omsorg/akutt-helsehjelp-og-legevakt/legevakt-oslo/overgrepsmottaket/"
                         },
                         new
                         {
@@ -1423,12 +1423,12 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = true,
                             IsLowThreshold = true,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             MunicipalityId = 8,
                             Name = "Psykososial akuttjeneste, Legevakten i Oslo",
                             Phone = "23 04 05 00",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://www.oslo.kommune.no"
+                            Website = "https://www.oslo.kommune.no/helse-og-omsorg/akutt-helsehjelp-og-legevakt/psykososial-akuttjeneste/"
                         },
                         new
                         {
@@ -1436,15 +1436,15 @@ namespace Varde.Data.Migrations
                             Address = "Trondheimsveien 233 (Aker sykehus)",
                             Cost = 2,
                             CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsAlwaysOpen = false,
+                            IsAlwaysOpen = true,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 10, 26),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             MunicipalityId = 8,
                             Name = "Legevakten i Oslo",
                             Phone = "116 117",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://www.oslo.kommune.no"
+                            Website = "https://www.oslo.kommune.no/helse-og-omsorg/akutt-helsehjelp-og-legevakt/legevakt-oslo/"
                         },
                         new
                         {
@@ -1652,16 +1652,17 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 236,
+                            Address = "Grønlandsleiret 44 (Politihuset i Oslo), 0190 Oslo",
                             CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsAlwaysOpen = false,
+                            IsAlwaysOpen = true,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 8, 13),
+                            LastVerified = new DateOnly(2026, 11, 4),
                             MunicipalityId = 8,
                             Name = "Barnevernvakten i Oslo",
                             Phone = "40 42 77 77",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://www.oslo.kommune.no"
+                            Website = "https://www.barnevernvakten.no/kommuner/oslo-kommune"
                         },
                         new
                         {
@@ -4313,7 +4314,7 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 27,
-                            Description = "Barnevernets akuttberedskap på kveld, natt, helg og helligdager for barn og unge i akutte situasjoner. Både barn selv og voksne som er bekymret kan ringe.",
+                            Description = "Barnevernvakt for henvendelser utenfor alminnelig kontortid. Du kan ringe for generelle råd og veiledning eller for å melde en bekymring.",
                             LanguageCode = "nb",
                             OpeningHours = "Kveld og natt 15:30–08:00, samt helger og helligdager",
                             ResourceId = 14
@@ -4321,7 +4322,7 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 28,
-                            Description = "The child welfare emergency service, staffed evenings, nights, weekends and public holidays for children and young people in urgent situations. Both children themselves and worried adults can call.",
+                            Description = "The child welfare out-of-hours service, for enquiries outside normal office hours. You can call for general advice and guidance or to report a concern.",
                             LanguageCode = "en",
                             OpeningHours = "Evenings and nights 15:30–08:00 plus weekends and holidays",
                             ResourceId = 14
@@ -4347,15 +4348,17 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 31,
-                            Description = "Krisesenter for kvinner, menn og barn som er utsatt for vold eller trusler om vold i nære relasjoner. Tilbudet er gratis, og du trenger ingen henvisning.",
+                            Description = "Krisesenter for kvinner, menn og barn som er utsatt for vold i nære relasjoner. Tilbudet er gratis.",
                             LanguageCode = "nb",
+                            OpeningHours = "Døgnåpent",
                             ResourceId = 16
                         },
                         new
                         {
                             Id = 32,
-                            Description = "A crisis centre for women, men and children affected by violence or threats of violence in close relationships. The service is free and needs no referral.",
+                            Description = "A crisis centre for women, men and children affected by violence in close relationships. The service is free.",
                             LanguageCode = "en",
+                            OpeningHours = "Open 24 hours",
                             ResourceId = 16
                         },
                         new
@@ -4428,7 +4431,7 @@ namespace Varde.Data.Migrations
                         {
                             Id = 41,
                             CostNote = "Tilbudet er gratis.",
-                            Description = "Gratis døgnåpent tilbud til kvinner, menn og barn som er utsatt for vold i nære relasjoner, voldtekt eller tvangsekteskap. Adressen oppgis først når du tar kontakt, av hensyn til sikkerheten.",
+                            Description = "Gratis døgnåpent tilbud til kvinner, menn og barn som er utsatt for vold i nære relasjoner. Adressen oppgis først når du tar kontakt, av hensyn til sikkerheten.",
                             LanguageCode = "nb",
                             OpeningHours = "Døgnåpent",
                             ResourceId = 21
@@ -4437,7 +4440,7 @@ namespace Varde.Data.Migrations
                         {
                             Id = 42,
                             CostNote = "The service is free.",
-                            Description = "A free 24-hour service for women, men and children affected by violence in close relationships, rape or forced marriage. The address is only given when you make contact, for safety reasons.",
+                            Description = "A free 24-hour service for women, men and children affected by violence in close relationships. The address is only given when you make contact, for safety reasons.",
                             LanguageCode = "en",
                             OpeningHours = "Open 24 hours",
                             ResourceId = 21
@@ -5168,7 +5171,7 @@ namespace Varde.Data.Migrations
                             CostNote = "Du må som hovedregel betale egenandel for behandling på legevakten. Det er ulike priser for behandling på allmennlegevakten, skadelegevakten og psykiatrisk legevakt.",
                             Description = "Legevakten i Oslo er åpen hele døgnet for deg som trenger rask helsehjelp når fastlegen er stengt. Ved fare for liv og helse skal du ringe 113.",
                             LanguageCode = "nb",
-                            OpeningHours = "Åpent 00–24",
+                            OpeningHours = "Døgnåpent",
                             ResourceId = 222
                         },
                         new
@@ -5383,15 +5386,17 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 159,
-                            Description = "Barnevernets akuttberedskap for barn og unge i akutte situasjoner. Både barn selv og voksne som er bekymret for et barn kan ta kontakt.",
+                            Description = "Barnevernets akuttberedskap for barn og unge. Du kan ta kontakt hvis du selv blir utsatt for vold, seksuelle overgrep eller omsorgssvikt, eller kjenner til at barn eller unge blir det.",
                             LanguageCode = "nb",
+                            OpeningHours = "Døgnåpent",
                             ResourceId = 236
                         },
                         new
                         {
                             Id = 160,
-                            Description = "The child welfare emergency service for children and young people in urgent situations. Both children themselves and adults worried about a child can get in touch.",
+                            Description = "The child welfare emergency service for children and young people. You can get in touch if you are exposed to violence, sexual abuse or neglect yourself, or know of children or young people who are.",
                             LanguageCode = "en",
+                            OpeningHours = "Open 24 hours",
                             ResourceId = 236
                         },
                         new

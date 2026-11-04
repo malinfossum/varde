@@ -59,14 +59,16 @@ namespace Varde.Data.Seed;
 /// categories and Lavterskel flag: docs/seed-data-lavterskel-reconcile.md, checked in
 /// docs/verification/seed-data-lavterskel-reconcile-check.md. That doc overrides the referral
 /// quote of its rows; rows it changed carry VerifiedReconcile.
+///
+/// The three-month re-check of the acute rows (category nodtjenester) re-read every seeded field
+/// of rows 3, 4, 5, 12, 14, 16, 19, 21, 23, 24, 25, 216, 218, 221, 222 and 236:
+/// docs/seed-data-acute-recheck.md, checked in docs/verification/seed-data-acute-recheck-check.md.
+/// All 16 rows carry VerifiedAcuteRecheck.
 /// </summary>
 public static class SeedData
 {
     private static readonly DateTime SeededAt = new(2026, 8, 17, 0, 0, 0, DateTimeKind.Utc);
     private static readonly DateOnly Verified = new(2026, 8, 13);
-
-    // Rows 23-25 (nødnumre) were added and verified 2026-09-09 — see docs/seed-data.md.
-    private static readonly DateOnly VerifiedRows23To25 = new(2026, 9, 9);
 
     // Rows the C1 re-read changed (docs/seed-data-lavterskel-retag.md, gate closed 2026-10-26)
     // carry the date the page was read. Rows the re-read left alone keep their own date.
@@ -79,6 +81,11 @@ public static class SeedData
     // Rows the lavterskel reconcile changed (docs/seed-data-lavterskel-reconcile.md, gate closed
     // 03.11.2026) carry the date their pages were read. Unchanged rows keep their own date.
     private static readonly DateOnly VerifiedReconcile = new(2026, 11, 3);
+
+    // The three-month re-check of the 16 acute rows (docs/seed-data-acute-recheck.md, gate closed
+    // 2026-11-04) re-read every seeded field of every acute row, so all 16 carry this date,
+    // changed or not.
+    private static readonly DateOnly VerifiedAcuteRecheck = new(2026, 11, 4);
 
     // Municipality ids — county = Innlandet for 1-7, Oslo for 8.
     private const int Hamar = 1;
@@ -144,8 +151,8 @@ public static class SeedData
                 Cost = ResourceCost.Paid,
                 MunicipalityId = null,
                 Phone = "116 117",
-                Website = "https://www.helsenorge.no/legevakt/",
-                LastVerified = VerifiedRetag,
+                Website = "https://www.helsenorge.no/hjelpetilbud-i-kommunene/legevakt/",
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -160,7 +167,7 @@ public static class SeedData
                 Phone = "116 111",
                 Website = "https://www.116111.no",
                 ChatUrl = "https://www.116111.no",
-                LastVerified = VerifiedRetag,
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -175,7 +182,7 @@ public static class SeedData
                 Phone = "116 006",
                 Website = "https://www.volinjen.no",
                 ChatUrl = "https://www.volinjen.no",
-                LastVerified = VerifiedRetag,
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -267,8 +274,8 @@ public static class SeedData
                 MunicipalityId = Hamar,
                 Address = "Kronborgvegen 23, 2318 Hamar",
                 Phone = "62 56 18 30",
-                Website = "https://www.hamar.kommune.no/familiehjelp-oversikt-over-tilbud/krisesenter/",
-                LastVerified = VerifiedRetag,
+                Website = "https://www.hamar.kommune.no/krisesenter/",
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -290,8 +297,8 @@ public static class SeedData
                 Name = "Ringsaker interkommunale barnevernvakt",
                 MunicipalityId = Hamar,
                 Phone = "404 04 015",
-                Website = "https://www.hamar.kommune.no/familiehjelp-oversikt-over-tilbud/hjelpetelefoner-for-familier-og-barn-unge/",
-                LastVerified = Verified,
+                Website = "https://www.ringsaker.kommune.no/tjenester/barn-oppvekst-og-laering/barnevern/melding-til-barneverntjenesten",
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -312,12 +319,13 @@ public static class SeedData
             {
                 Id = 16,
                 Name = "Gudbrandsdal Krisesenter IKS",
+                IsAlwaysOpen = true,
                 Cost = ResourceCost.Free,
                 MunicipalityId = Lillehammer,
                 Address = "Skoletorget 6 D, 2609 Lillehammer",
                 Phone = "414 81 220",
                 Website = "https://gudbrandsdal-krisesenter.no",
-                LastVerified = VerifiedRetag,
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -354,7 +362,7 @@ public static class SeedData
                 MunicipalityId = Lillehammer,
                 Phone = "61 27 22 16",
                 Website = "https://lillehammer.kommune.no/om-kommunen/kontakt-oss/nod-og-vakttelefoner/",
-                LastVerified = Verified,
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -383,7 +391,7 @@ public static class SeedData
                 Address = null,
                 Phone = "61 17 55 60",
                 Website = "https://www.krisesenteret-gjovik.no",
-                LastVerified = VerifiedRetag,
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -410,7 +418,7 @@ public static class SeedData
                 MunicipalityId = null,
                 Phone = "110",
                 Website = "https://www.dsb.no/brannsikkerhet/nodmelding/110-sentralene/",
-                LastVerified = VerifiedRows23To25,
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -423,7 +431,7 @@ public static class SeedData
                 MunicipalityId = null,
                 Phone = "112",
                 Website = "https://www.politiet.no/kontakt-politiet/ring-politiet",
-                LastVerified = VerifiedRows23To25,
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -436,7 +444,7 @@ public static class SeedData
                 MunicipalityId = null,
                 Phone = "113",
                 Website = "https://www.helsenorge.no/forstehjelp",
-                LastVerified = VerifiedRows23To25,
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -926,7 +934,7 @@ public static class SeedData
                 Address = null,
                 Phone = "22 48 03 80",
                 Website = "https://www.oslokrisesenter.no",
-                LastVerified = VerifiedRetag,
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -957,8 +965,8 @@ public static class SeedData
                 // and barnemottaket (22 98 91 40) are named in the doc's Notes but deliberately
                 // not seeded: staff-only / a different service.
                 Phone = "23 04 05 00",
-                Website = "https://www.oslo.kommune.no",
-                LastVerified = VerifiedRetag,
+                Website = "https://www.oslo.kommune.no/helse-og-omsorg/akutt-helsehjelp-og-legevakt/legevakt-oslo/overgrepsmottaket/",
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -999,8 +1007,8 @@ public static class SeedData
                 Address = "Trondheimsveien 233 (Aker sykehus), 0587 Oslo",
                 // Same number as row 218 — see that row's note.
                 Phone = "23 04 05 00",
-                Website = "https://www.oslo.kommune.no",
-                LastVerified = VerifiedRetag,
+                Website = "https://www.oslo.kommune.no/helse-og-omsorg/akutt-helsehjelp-og-legevakt/psykososial-akuttjeneste/",
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1008,6 +1016,7 @@ public static class SeedData
             {
                 Id = 222,
                 Name = "Legevakten i Oslo",
+                IsAlwaysOpen = true,
                 Cost = ResourceCost.Paid,
                 MunicipalityId = Oslo,
                 Address = "Trondheimsveien 233 (Aker sykehus)",
@@ -1015,8 +1024,8 @@ public static class SeedData
                 // service's own page. A second Oslo-specific number (23 48 72 00) is
                 // note-only, not seeded. Overlaps with national row 3 in seed-data.md.
                 Phone = "116 117",
-                Website = "https://www.oslo.kommune.no",
-                LastVerified = VerifiedRetag,
+                Website = "https://www.oslo.kommune.no/helse-og-omsorg/akutt-helsehjelp-og-legevakt/legevakt-oslo/",
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1203,11 +1212,15 @@ public static class SeedData
             {
                 Id = 236,
                 Name = "Barnevernvakten i Oslo",
+                IsAlwaysOpen = true,
                 MunicipalityId = Oslo,
-                // Address and hours NOT FOUND per the doc — no dedicated service page found.
+                // Address and hours from barnevernvakten.no, the service page Oslo kommune links as
+                // "Kontakt Barnevernvakten" (docs/seed-data-acute-recheck.md items 12 and 13). The
+                // page's functional email is deliberately not seeded.
+                Address = "Grønlandsleiret 44 (Politihuset i Oslo), 0190 Oslo",
                 Phone = "40 42 77 77",
-                Website = "https://www.oslo.kommune.no",
-                LastVerified = Verified,
+                Website = "https://www.barnevernvakten.no/kommuner/oslo-kommune",
+                LastVerified = VerifiedAcuteRecheck,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -2173,7 +2186,7 @@ public static class SeedData
                 Id = 27,
                 ResourceId = 14,
                 LanguageCode = "nb",
-                Description = "Barnevernets akuttberedskap på kveld, natt, helg og helligdager for barn og unge i akutte situasjoner. Både barn selv og voksne som er bekymret kan ringe.",
+                Description = "Barnevernvakt for henvendelser utenfor alminnelig kontortid. Du kan ringe for generelle råd og veiledning eller for å melde en bekymring.",
                 OpeningHours = "Kveld og natt 15:30–08:00, samt helger og helligdager",
             },
             new ResourceTranslation
@@ -2181,7 +2194,7 @@ public static class SeedData
                 Id = 28,
                 ResourceId = 14,
                 LanguageCode = "en",
-                Description = "The child welfare emergency service, staffed evenings, nights, weekends and public holidays for children and young people in urgent situations. Both children themselves and worried adults can call.",
+                Description = "The child welfare out-of-hours service, for enquiries outside normal office hours. You can call for general advice and guidance or to report a concern.",
                 OpeningHours = "Evenings and nights 15:30–08:00 plus weekends and holidays",
             },
             new ResourceTranslation
@@ -2207,14 +2220,16 @@ public static class SeedData
                 Id = 31,
                 ResourceId = 16,
                 LanguageCode = "nb",
-                Description = "Krisesenter for kvinner, menn og barn som er utsatt for vold eller trusler om vold i nære relasjoner. Tilbudet er gratis, og du trenger ingen henvisning.",
+                Description = "Krisesenter for kvinner, menn og barn som er utsatt for vold i nære relasjoner. Tilbudet er gratis.",
+                OpeningHours = "Døgnåpent",
             },
             new ResourceTranslation
             {
                 Id = 32,
                 ResourceId = 16,
                 LanguageCode = "en",
-                Description = "A crisis centre for women, men and children affected by violence or threats of violence in close relationships. The service is free and needs no referral.",
+                Description = "A crisis centre for women, men and children affected by violence in close relationships. The service is free.",
+                OpeningHours = "Open 24 hours",
             },
             new ResourceTranslation
             {
@@ -2287,7 +2302,7 @@ public static class SeedData
                 Id = 41,
                 ResourceId = 21,
                 LanguageCode = "nb",
-                Description = "Gratis døgnåpent tilbud til kvinner, menn og barn som er utsatt for vold i nære relasjoner, voldtekt eller tvangsekteskap. Adressen oppgis først når du tar kontakt, av hensyn til sikkerheten.",
+                Description = "Gratis døgnåpent tilbud til kvinner, menn og barn som er utsatt for vold i nære relasjoner. Adressen oppgis først når du tar kontakt, av hensyn til sikkerheten.",
                 OpeningHours = "Døgnåpent",
                 CostNote = "Tilbudet er gratis.",
             },
@@ -2296,7 +2311,7 @@ public static class SeedData
                 Id = 42,
                 ResourceId = 21,
                 LanguageCode = "en",
-                Description = "A free 24-hour service for women, men and children affected by violence in close relationships, rape or forced marriage. The address is only given when you make contact, for safety reasons.",
+                Description = "A free 24-hour service for women, men and children affected by violence in close relationships. The address is only given when you make contact, for safety reasons.",
                 OpeningHours = "Open 24 hours",
                 CostNote = "The service is free.",
             },
@@ -3031,7 +3046,7 @@ public static class SeedData
                 ResourceId = 222,
                 LanguageCode = "nb",
                 Description = "Legevakten i Oslo er åpen hele døgnet for deg som trenger rask helsehjelp når fastlegen er stengt. Ved fare for liv og helse skal du ringe 113.",
-                OpeningHours = "Åpent 00–24",
+                OpeningHours = "Døgnåpent",
                 CostNote = "Du må som hovedregel betale egenandel for behandling på legevakten. Det er ulike priser for behandling på allmennlegevakten, skadelegevakten og psykiatrisk legevakt.",
             },
             new ResourceTranslation
@@ -3248,14 +3263,16 @@ public static class SeedData
                 Id = 159,
                 ResourceId = 236,
                 LanguageCode = "nb",
-                Description = "Barnevernets akuttberedskap for barn og unge i akutte situasjoner. Både barn selv og voksne som er bekymret for et barn kan ta kontakt.",
+                Description = "Barnevernets akuttberedskap for barn og unge. Du kan ta kontakt hvis du selv blir utsatt for vold, seksuelle overgrep eller omsorgssvikt, eller kjenner til at barn eller unge blir det.",
+                OpeningHours = "Døgnåpent",
             },
             new ResourceTranslation
             {
                 Id = 160,
                 ResourceId = 236,
                 LanguageCode = "en",
-                Description = "The child welfare emergency service for children and young people in urgent situations. Both children themselves and adults worried about a child can get in touch.",
+                Description = "The child welfare emergency service for children and young people. You can get in touch if you are exposed to violence, sexual abuse or neglect yourself, or know of children or young people who are.",
+                OpeningHours = "Open 24 hours",
             },
             new ResourceTranslation
             {

@@ -10,6 +10,8 @@ no-calls policy: two independent machine passes against sources (zero transcript
 mismatches), every flagged conflict resolved by documented decision or source hierarchy.
 Phone numbers are never dial-tested; the service's own page wins over re-listings.
 
+**Acute re-check (04.11.2026):** rows 3, 4, 5, 12, 14, 16, 19, 21, 23, 24 and 25 were read again field by field in docs/seed-data-acute-recheck.md. That doc wins for the Website, opening hours, IsAlwaysOpen and descriptions it changed on those rows.
+
 ## Categories
 
 Ten categories (decided 2026-08-17: `nodtjenester` added on my request — supersedes the

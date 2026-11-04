@@ -3,6 +3,8 @@
 **Status: VERIFICATION GATE CLOSED 2026-08-17** — bulk-accepted by me under the no-calls
 policy (see seed-data.md's status block for the full rule).
 
+**Acute re-check (04.11.2026):** rows 216, 218, 221, 222 and 236 were read again field by field in docs/seed-data-acute-recheck.md. That doc wins for the Website, address, opening hours, IsAlwaysOpen and descriptions it changed on those rows.
+
 Row numbers continue from **201**, so this file does not collide with `docs/seed-data.md` (rows 1–22).
 
 Oslo is one municipality in this database. Bydeler are not municipalities — a bydel service is a
