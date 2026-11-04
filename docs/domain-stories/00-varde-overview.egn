@@ -20,127 +20,127 @@
       "type": "domainStory:workObjectDocument",
       "name": "Service facts",
       "id": "shape_1000",
-      "x": 560,
-      "y": 300,
+      "x": 2055,
+      "y": 1100,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectDocument",
       "name": "Check reports",
       "id": "shape_1001",
-      "x": 1250,
-      "y": 300,
+      "x": 1785,
+      "y": 1100,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectDocument",
       "name": "Seed row",
       "id": "shape_1002",
-      "x": 1480,
-      "y": 700,
+      "x": 1515,
+      "y": 900,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectDocument",
       "name": "Version bump",
       "id": "shape_1003",
-      "x": 1250,
-      "y": 1100,
+      "x": 975,
+      "y": 700,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectDocument",
       "name": "Pull request",
       "id": "shape_1004",
-      "x": 1046,
-      "y": 1160,
+      "x": 1180,
+      "y": 700,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectInfo",
       "name": "Check results",
       "id": "shape_1005",
-      "x": 994,
-      "y": 1040,
+      "x": 1310,
+      "y": 700,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectFolder",
       "name": "API image",
       "id": "shape_1006",
-      "x": 330,
-      "y": 1300,
+      "x": 1245,
+      "y": 300,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectInfo",
       "name": "Deploy run",
       "id": "shape_1007",
-      "x": 1480,
-      "y": 1100,
+      "x": 705,
+      "y": 700,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectDocument",
       "name": "Seed rows",
       "id": "shape_1008",
-      "x": 1710,
-      "y": 1235,
+      "x": 100,
+      "y": 300,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectFolder",
       "name": "JSON data",
       "id": "shape_1009",
-      "x": 1710,
-      "y": 1365,
+      "x": 230,
+      "y": 300,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectFolder",
       "name": "Prerendered site",
       "id": "shape_1010",
-      "x": 1710,
-      "y": 1100,
+      "x": 435,
+      "y": 700,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectDocument",
       "name": "Prerendered page",
       "id": "shape_1011",
-      "x": 1875,
-      "y": 700,
+      "x": 1014,
+      "y": 1048,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectDocument",
       "name": "JSON index",
       "id": "shape_1012",
-      "x": 2005,
-      "y": 700,
+      "x": 936,
+      "y": 1152,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectEmail",
       "name": "Error report",
       "id": "shape_1013",
-      "x": 1710,
-      "y": 500,
+      "x": 1515,
+      "y": 1100,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectInfo",
       "name": "Run command",
       "id": "shape_1014",
-      "x": 1250,
-      "y": 565,
+      "x": 1720,
+      "y": 700,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectDocument",
       "name": "Units and sitemaps",
       "id": "shape_1015",
-      "x": 1020,
+      "x": 2325,
       "y": 700,
       "pickedColor": "black"
     },
@@ -148,15 +148,15 @@
       "type": "domainStory:workObjectFolder",
       "name": "Unit pages",
       "id": "shape_1016",
-      "x": 560,
-      "y": 500,
+      "x": 2055,
+      "y": 700,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectFolder",
       "name": "Unit pages",
       "id": "shape_1017",
-      "x": 872,
+      "x": 1637,
       "y": 352,
       "pickedColor": "black"
     },
@@ -164,15 +164,15 @@
       "type": "domainStory:workObjectDocument",
       "name": "Page text",
       "id": "shape_1018",
-      "x": 560,
-      "y": 700,
+      "x": 2055,
+      "y": 300,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectInfo",
       "name": "Five gates",
       "id": "shape_1019",
-      "x": 1020,
+      "x": 1785,
       "y": 290,
       "pickedColor": "black"
     },
@@ -180,15 +180,15 @@
       "type": "domainStory:workObjectInfo",
       "name": "Review items",
       "id": "shape_1020",
-      "x": 1250,
-      "y": 435,
+      "x": 1850,
+      "y": 700,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:workObjectDocument",
       "name": "Data PR",
       "id": "shape_1021",
-      "x": 1250,
+      "x": 1515,
       "y": 700,
       "pickedColor": "black"
     },
@@ -196,31 +196,31 @@
       "type": "domainStory:actorSystem",
       "name": "Researchers",
       "id": "shape_1022",
-      "x": 1020,
-      "y": 100,
+      "x": 1785,
+      "y": 1300,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:actorGroup",
       "name": "Sources",
       "id": "shape_1023",
-      "x": 100,
-      "y": 500,
+      "x": 2325,
+      "y": 900,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:actorPerson",
       "name": "Malin",
       "id": "shape_1024",
-      "x": 1480,
-      "y": 500,
+      "x": 1785,
+      "y": 900,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:actorSystem",
       "name": "GitHub",
       "id": "shape_1025",
-      "x": 1480,
+      "x": 1245,
       "y": 900,
       "pickedColor": "black"
     },
@@ -228,47 +228,47 @@
       "type": "domainStory:actorSystem",
       "name": "Dependabot",
       "id": "shape_1026",
-      "x": 1020,
-      "y": 1300,
+      "x": 705,
+      "y": 500,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:actorSystem",
       "name": "Checks",
       "id": "shape_1027",
-      "x": 560,
-      "y": 1300,
+      "x": 1245,
+      "y": 500,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:actorSystem",
       "name": "GHCR",
       "id": "shape_1028",
-      "x": 100,
-      "y": 1300,
+      "x": 1245,
+      "y": 100,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:actorSystem",
       "name": "DeployWeb",
       "id": "shape_1029",
-      "x": 1480,
-      "y": 1300,
+      "x": 165,
+      "y": 500,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:actorSystem",
       "name": "Neon",
       "id": "shape_1030",
-      "x": 1940,
-      "y": 1300,
+      "x": 165,
+      "y": 100,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:actorSystem",
       "name": "Pages",
       "id": "shape_1031",
-      "x": 1940,
+      "x": 705,
       "y": 900,
       "pickedColor": "black"
     },
@@ -276,15 +276,15 @@
       "type": "domainStory:actorPerson",
       "name": "Visitor",
       "id": "shape_1032",
-      "x": 1940,
-      "y": 500,
+      "x": 1245,
+      "y": 1300,
       "pickedColor": "black"
     },
     {
       "type": "domainStory:actorSystem",
       "name": "Pipeline",
       "id": "shape_1033",
-      "x": 1020,
+      "x": 1785,
       "y": 500,
       "pickedColor": "black"
     },
@@ -292,7 +292,7 @@
       "type": "domainStory:actorSystem",
       "name": "Registers",
       "id": "shape_1034",
-      "x": 1020,
+      "x": 2865,
       "y": 900,
       "pickedColor": "black"
     },
@@ -300,8 +300,8 @@
       "type": "domainStory:actorSystem",
       "name": "Model",
       "id": "shape_1035",
-      "x": 100,
-      "y": 900,
+      "x": 2325,
+      "y": 100,
       "pickedColor": "black"
     },
     {
@@ -312,19 +312,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1020,
-            "y": 154
+            "x": 1860,
+            "y": 1310
           },
-          "x": 1020,
-          "y": 154
+          "x": 1860,
+          "y": 1310
         },
         {
           "original": {
-            "x": 635,
-            "y": 321
+            "x": 2055,
+            "y": 1165
           },
-          "x": 635,
-          "y": 321
+          "x": 2055,
+          "y": 1165
         }
       ],
       "source": "shape_1022",
@@ -339,19 +339,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 560,
-            "y": 353
+            "x": 2130,
+            "y": 1110
           },
-          "x": 560,
-          "y": 353
+          "x": 2130,
+          "y": 1110
         },
         {
           "original": {
-            "x": 175,
-            "y": 512
+            "x": 2325,
+            "y": 965
           },
-          "x": 175,
-          "y": 512
+          "x": 2325,
+          "y": 965
         }
       ],
       "source": "shape_1000",
@@ -366,19 +366,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1095,
-            "y": 170
+            "x": 1823,
+            "y": 1300
           },
-          "x": 1095,
-          "y": 170
+          "x": 1823,
+          "y": 1300
         },
         {
           "original": {
-            "x": 1250,
-            "y": 305
+            "x": 1823,
+            "y": 1179
           },
-          "x": 1250,
-          "y": 305
+          "x": 1823,
+          "y": 1179
         }
       ],
       "source": "shape_1022",
@@ -393,19 +393,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1325,
-            "y": 368
+            "x": 1823,
+            "y": 1100
           },
-          "x": 1325,
-          "y": 368
+          "x": 1823,
+          "y": 1100
         },
         {
           "original": {
-            "x": 1489,
-            "y": 500
+            "x": 1823,
+            "y": 979
           },
-          "x": 1489,
-          "y": 500
+          "x": 1823,
+          "y": 979
         }
       ],
       "source": "shape_1001",
@@ -420,19 +420,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1547,
-            "y": 575
+            "x": 1785,
+            "y": 934
           },
-          "x": 1547,
-          "y": 575
+          "x": 1785,
+          "y": 934
         },
         {
           "original": {
-            "x": 1524,
-            "y": 700
+            "x": 1590,
+            "y": 937
           },
-          "x": 1524,
-          "y": 700
+          "x": 1590,
+          "y": 937
         }
       ],
       "source": "shape_1024",
@@ -447,19 +447,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1524,
-            "y": 775
+            "x": 1515,
+            "y": 940
           },
-          "x": 1524,
-          "y": 775
+          "x": 1515,
+          "y": 940
         },
         {
           "original": {
-            "x": 1544,
-            "y": 900
+            "x": 1320,
+            "y": 955
           },
-          "x": 1544,
-          "y": 900
+          "x": 1320,
+          "y": 955
         }
       ],
       "source": "shape_1002",
@@ -474,19 +474,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1095,
-            "y": 1305
+            "x": 780,
+            "y": 565
           },
-          "x": 1095,
-          "y": 1305
+          "x": 780,
+          "y": 565
         },
         {
           "original": {
-            "x": 1250,
-            "y": 1170
+            "x": 975,
+            "y": 710
           },
-          "x": 1250,
-          "y": 1170
+          "x": 975,
+          "y": 710
         }
       ],
       "source": "shape_1026",
@@ -501,19 +501,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1325,
-            "y": 1107
+            "x": 1050,
+            "y": 766
           },
-          "x": 1325,
-          "y": 1107
+          "x": 1050,
+          "y": 766
         },
         {
           "original": {
-            "x": 1485,
-            "y": 975
+            "x": 1245,
+            "y": 914
           },
-          "x": 1485,
-          "y": 975
+          "x": 1245,
+          "y": 914
         }
       ],
       "source": "shape_1003",
@@ -528,19 +528,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1480,
-            "y": 944
+            "x": 1267,
+            "y": 900
           },
-          "x": 1480,
-          "y": 944
+          "x": 1267,
+          "y": 900
         },
         {
           "original": {
-            "x": 1121,
-            "y": 1174
+            "x": 1230,
+            "y": 779
           },
-          "x": 1121,
-          "y": 1174
+          "x": 1230,
+          "y": 779
         }
       ],
       "source": "shape_1025",
@@ -555,19 +555,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1046,
-            "y": 1209
+            "x": 1229,
+            "y": 700
           },
-          "x": 1046,
-          "y": 1209
+          "x": 1229,
+          "y": 700
         },
         {
           "original": {
-            "x": 635,
-            "y": 1339
+            "x": 1265,
+            "y": 579
           },
-          "x": 635,
-          "y": 1339
+          "x": 1265,
+          "y": 579
         }
       ],
       "source": "shape_1004",
@@ -582,19 +582,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 635,
-            "y": 1303
+            "x": 1301,
+            "y": 579
           },
-          "x": 635,
-          "y": 1303
+          "x": 1301,
+          "y": 579
         },
         {
           "original": {
-            "x": 994,
-            "y": 1099
+            "x": 1336,
+            "y": 700
           },
-          "x": 994,
-          "y": 1099
+          "x": 1336,
+          "y": 700
         }
       ],
       "source": "shape_1027",
@@ -609,19 +609,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1069,
-            "y": 1063
+            "x": 1336,
+            "y": 779
           },
-          "x": 1069,
-          "y": 1063
+          "x": 1336,
+          "y": 779
         },
         {
           "original": {
-            "x": 1480,
-            "y": 908
+            "x": 1303,
+            "y": 900
           },
-          "x": 1480,
-          "y": 908
+          "x": 1303,
+          "y": 900
         }
       ],
       "source": "shape_1005",
@@ -636,19 +636,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 560,
-            "y": 1338
+            "x": 1283,
+            "y": 500
           },
-          "x": 560,
-          "y": 1338
+          "x": 1283,
+          "y": 500
         },
         {
           "original": {
-            "x": 405,
-            "y": 1338
+            "x": 1283,
+            "y": 379
           },
-          "x": 405,
-          "y": 1338
+          "x": 1283,
+          "y": 379
         }
       ],
       "source": "shape_1027",
@@ -663,19 +663,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 330,
-            "y": 1338
+            "x": 1283,
+            "y": 300
           },
-          "x": 330,
-          "y": 1338
+          "x": 1283,
+          "y": 300
         },
         {
           "original": {
-            "x": 175,
-            "y": 1338
+            "x": 1283,
+            "y": 179
           },
-          "x": 175,
-          "y": 1338
+          "x": 1283,
+          "y": 179
         }
       ],
       "source": "shape_1006",
@@ -690,19 +690,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1550,
-            "y": 975
+            "x": 1245,
+            "y": 950
           },
-          "x": 1550,
-          "y": 975
+          "x": 1245,
+          "y": 950
         },
         {
           "original": {
-            "x": 1525,
-            "y": 1100
+            "x": 780,
+            "y": 753
           },
-          "x": 1525,
-          "y": 1100
+          "x": 780,
+          "y": 753
         }
       ],
       "source": "shape_1025",
@@ -717,19 +717,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1516,
-            "y": 1175
+            "x": 705,
+            "y": 723
           },
-          "x": 1516,
-          "y": 1175
+          "x": 705,
+          "y": 723
         },
         {
           "original": {
-            "x": 1512,
-            "y": 1300
+            "x": 240,
+            "y": 540
           },
-          "x": 1512,
-          "y": 1300
+          "x": 240,
+          "y": 540
         }
       ],
       "source": "shape_1007",
@@ -744,19 +744,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1555,
-            "y": 1329
+            "x": 185,
+            "y": 500
           },
-          "x": 1555,
-          "y": 1329
+          "x": 185,
+          "y": 500
         },
         {
           "original": {
-            "x": 1710,
-            "y": 1284
+            "x": 150,
+            "y": 379
           },
-          "x": 1710,
-          "y": 1284
+          "x": 150,
+          "y": 379
         }
       ],
       "source": "shape_1029",
@@ -771,19 +771,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1785,
-            "y": 1282
+            "x": 149,
+            "y": 300
           },
-          "x": 1785,
-          "y": 1282
+          "x": 149,
+          "y": 300
         },
         {
           "original": {
-            "x": 1940,
-            "y": 1320
+            "x": 185,
+            "y": 179
           },
-          "x": 1940,
-          "y": 1320
+          "x": 185,
+          "y": 179
         }
       ],
       "source": "shape_1008",
@@ -798,19 +798,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1555,
-            "y": 1365
+            "x": 221,
+            "y": 500
           },
-          "x": 1555,
-          "y": 1365
+          "x": 221,
+          "y": 500
         },
         {
           "original": {
-            "x": 1710,
-            "y": 1395
+            "x": 256,
+            "y": 379
           },
-          "x": 1710,
-          "y": 1395
+          "x": 256,
+          "y": 379
         }
       ],
       "source": "shape_1029",
@@ -825,19 +825,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1785,
-            "y": 1393
+            "x": 256,
+            "y": 300
           },
-          "x": 1785,
-          "y": 1393
+          "x": 256,
+          "y": 300
         },
         {
           "original": {
-            "x": 1940,
-            "y": 1356
+            "x": 221,
+            "y": 179
           },
-          "x": 1940,
-          "y": 1356
+          "x": 221,
+          "y": 179
         }
       ],
       "source": "shape_1009",
@@ -852,19 +852,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1548,
-            "y": 1300
+            "x": 240,
+            "y": 576
           },
-          "x": 1548,
-          "y": 1300
+          "x": 240,
+          "y": 576
         },
         {
           "original": {
-            "x": 1710,
-            "y": 1168
+            "x": 435,
+            "y": 711
           },
-          "x": 1710,
-          "y": 1168
+          "x": 435,
+          "y": 711
         }
       ],
       "source": "shape_1029",
@@ -879,19 +879,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1785,
-            "y": 1105
+            "x": 510,
+            "y": 765
           },
-          "x": 1785,
-          "y": 1105
+          "x": 510,
+          "y": 765
         },
         {
           "original": {
-            "x": 1940,
-            "y": 970
+            "x": 705,
+            "y": 910
           },
-          "x": 1940,
-          "y": 970
+          "x": 705,
+          "y": 910
         }
       ],
       "source": "shape_1010",
@@ -906,19 +906,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1945,
-            "y": 575
+            "x": 1255,
+            "y": 1300
           },
-          "x": 1945,
-          "y": 575
+          "x": 1255,
+          "y": 1300
         },
         {
           "original": {
-            "x": 1920,
-            "y": 700
+            "x": 1089,
+            "y": 1125
           },
-          "x": 1920,
-          "y": 700
+          "x": 1089,
+          "y": 1125
         }
       ],
       "source": "shape_1032",
@@ -933,19 +933,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1923,
-            "y": 775
+            "x": 1014,
+            "y": 1067
           },
-          "x": 1923,
-          "y": 775
+          "x": 1014,
+          "y": 1067
         },
         {
           "original": {
-            "x": 1960,
-            "y": 900
+            "x": 780,
+            "y": 949
           },
-          "x": 1960,
-          "y": 900
+          "x": 780,
+          "y": 949
         }
       ],
       "source": "shape_1011",
@@ -960,19 +960,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 2010,
-            "y": 575
+            "x": 1245,
+            "y": 1327
           },
-          "x": 2010,
-          "y": 575
+          "x": 1245,
+          "y": 1327
         },
         {
           "original": {
-            "x": 2035,
-            "y": 700
+            "x": 1011,
+            "y": 1208
           },
-          "x": 2035,
-          "y": 700
+          "x": 1011,
+          "y": 1208
         }
       ],
       "source": "shape_1032",
@@ -987,19 +987,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 2032,
-            "y": 775
+            "x": 938,
+            "y": 1152
           },
-          "x": 2032,
-          "y": 775
+          "x": 938,
+          "y": 1152
         },
         {
           "original": {
-            "x": 1996,
-            "y": 900
+            "x": 775,
+            "y": 979
           },
-          "x": 1996,
-          "y": 900
+          "x": 775,
+          "y": 979
         }
       ],
       "source": "shape_1012",
@@ -1014,19 +1014,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1940,
-            "y": 538
+            "x": 1320,
+            "y": 1310
           },
-          "x": 1940,
-          "y": 538
+          "x": 1320,
+          "y": 1310
         },
         {
           "original": {
-            "x": 1785,
-            "y": 538
+            "x": 1515,
+            "y": 1165
           },
-          "x": 1785,
-          "y": 538
+          "x": 1515,
+          "y": 1165
         }
       ],
       "source": "shape_1032",
@@ -1041,19 +1041,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1710,
-            "y": 538
+            "x": 1590,
+            "y": 1110
           },
-          "x": 1710,
-          "y": 538
+          "x": 1590,
+          "y": 1110
         },
         {
           "original": {
-            "x": 1555,
-            "y": 538
+            "x": 1785,
+            "y": 970
           },
-          "x": 1555,
-          "y": 538
+          "x": 1785,
+          "y": 970
         }
       ],
       "source": "shape_1013",
@@ -1068,19 +1068,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1480,
-            "y": 563
+            "x": 1805,
+            "y": 900
           },
-          "x": 1480,
-          "y": 563
+          "x": 1805,
+          "y": 900
         },
         {
           "original": {
-            "x": 1325,
-            "y": 595
+            "x": 1770,
+            "y": 779
           },
-          "x": 1325,
-          "y": 595
+          "x": 1770,
+          "y": 779
         }
       ],
       "source": "shape_1024",
@@ -1095,19 +1095,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1250,
-            "y": 585
+            "x": 1770,
+            "y": 700
           },
-          "x": 1250,
-          "y": 585
+          "x": 1770,
+          "y": 700
         },
         {
           "original": {
-            "x": 1095,
-            "y": 513
+            "x": 1811,
+            "y": 579
           },
-          "x": 1095,
-          "y": 513
+          "x": 1811,
+          "y": 579
         }
       ],
       "source": "shape_1014",
@@ -1122,19 +1122,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1090,
-            "y": 575
+            "x": 1860,
+            "y": 521
           },
-          "x": 1090,
-          "y": 575
+          "x": 1860,
+          "y": 521
         },
         {
           "original": {
-            "x": 1065,
-            "y": 700
+            "x": 2325,
+            "y": 721
           },
-          "x": 1065,
-          "y": 700
+          "x": 2325,
+          "y": 721
         }
       ],
       "source": "shape_1033",
@@ -1149,19 +1149,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1058,
-            "y": 775
+            "x": 2400,
+            "y": 751
           },
-          "x": 1058,
-          "y": 775
+          "x": 2400,
+          "y": 751
         },
         {
           "original": {
-            "x": 1058,
-            "y": 900
+            "x": 2865,
+            "y": 924
           },
-          "x": 1058,
-          "y": 900
+          "x": 2865,
+          "y": 924
         }
       ],
       "source": "shape_1015",
@@ -1176,19 +1176,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1020,
-            "y": 546
+            "x": 1860,
+            "y": 557
           },
-          "x": 1020,
-          "y": 546
+          "x": 1860,
+          "y": 557
         },
         {
           "original": {
-            "x": 635,
-            "y": 538
+            "x": 2055,
+            "y": 708
           },
-          "x": 635,
-          "y": 538
+          "x": 2055,
+          "y": 708
         }
       ],
       "source": "shape_1033",
@@ -1203,19 +1203,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 560,
-            "y": 538
+            "x": 2130,
+            "y": 765
           },
-          "x": 560,
-          "y": 538
+          "x": 2130,
+          "y": 765
         },
         {
           "original": {
-            "x": 175,
-            "y": 548
+            "x": 2325,
+            "y": 910
           },
-          "x": 175,
-          "y": 548
+          "x": 2325,
+          "y": 910
         }
       ],
       "source": "shape_1016",
@@ -1230,19 +1230,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1020,
+            "x": 1785,
             "y": 513
           },
-          "x": 1020,
+          "x": 1785,
           "y": 513
         },
         {
           "original": {
-            "x": 943,
-            "y": 427
+            "x": 1712,
+            "y": 431
           },
-          "x": 943,
-          "y": 427
+          "x": 1712,
+          "y": 431
         }
       ],
       "source": "shape_1033",
@@ -1257,19 +1257,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1025,
-            "y": 575
+            "x": 1845,
+            "y": 500
           },
-          "x": 1025,
-          "y": 575
+          "x": 1845,
+          "y": 500
         },
         {
           "original": {
-            "x": 635,
-            "y": 723
+            "x": 2055,
+            "y": 362
           },
-          "x": 635,
-          "y": 723
+          "x": 2055,
+          "y": 362
         }
       ],
       "source": "shape_1033",
@@ -1284,19 +1284,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 560,
-            "y": 754
+            "x": 2130,
+            "y": 310
           },
-          "x": 560,
-          "y": 754
+          "x": 2130,
+          "y": 310
         },
         {
           "original": {
-            "x": 175,
-            "y": 921
+            "x": 2325,
+            "y": 165
           },
-          "x": 175,
-          "y": 921
+          "x": 2325,
+          "y": 165
         }
       ],
       "source": "shape_1018",
@@ -1311,19 +1311,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1041,
+            "x": 1809,
             "y": 500
           },
-          "x": 1041,
+          "x": 1809,
           "y": 500
         },
         {
           "original": {
-            "x": 1054,
-            "y": 365
+            "x": 1819,
+            "y": 369
           },
-          "x": 1054,
-          "y": 365
+          "x": 1819,
+          "y": 369
         }
       ],
       "source": "shape_1033",
@@ -1338,19 +1338,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1074,
-            "y": 500
+            "x": 1847,
+            "y": 579
           },
-          "x": 1074,
-          "y": 500
+          "x": 1847,
+          "y": 579
         },
         {
           "original": {
-            "x": 1250,
-            "y": 477
+            "x": 1878,
+            "y": 700
           },
-          "x": 1250,
-          "y": 477
+          "x": 1878,
+          "y": 700
         }
       ],
       "source": "shape_1033",
@@ -1365,19 +1365,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1325,
-            "y": 483
+            "x": 1876,
+            "y": 779
           },
-          "x": 1325,
-          "y": 483
+          "x": 1876,
+          "y": 779
         },
         {
           "original": {
-            "x": 1480,
-            "y": 527
+            "x": 1841,
+            "y": 900
           },
-          "x": 1480,
-          "y": 527
+          "x": 1841,
+          "y": 900
         }
       ],
       "source": "shape_1020",
@@ -1392,19 +1392,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1095,
-            "y": 546
+            "x": 1785,
+            "y": 569
           },
-          "x": 1095,
-          "y": 546
+          "x": 1785,
+          "y": 569
         },
         {
           "original": {
-            "x": 1250,
-            "y": 700
+            "x": 1590,
+            "y": 710
           },
-          "x": 1250,
-          "y": 700
+          "x": 1590,
+          "y": 710
         }
       ],
       "source": "shape_1033",
@@ -1419,19 +1419,19 @@
       "waypoints": [
         {
           "original": {
-            "x": 1325,
-            "y": 765
+            "x": 1515,
+            "y": 767
           },
-          "x": 1325,
-          "y": 765
+          "x": 1515,
+          "y": 767
         },
         {
           "original": {
-            "x": 1508,
-            "y": 900
+            "x": 1320,
+            "y": 919
           },
-          "x": 1508,
-          "y": 900
+          "x": 1320,
+          "y": 919
         }
       ],
       "source": "shape_1021",
