@@ -3,6 +3,8 @@
 **Status: VERIFICATION GATE CLOSED 2026-10-26.** Every item under "Verify these first" is resolved, and
 the seed follows these resolutions.
 
+**LastVerified (04.11.2026):** this pass read only the referral statement and the price wording, so it no longer moves LastVerified. Its rows keep the date of their last full read; see the SeedData summary.
+
 **Lavterskel reconcile (04.11.2026):** rows 115, 227, 228 and 247 were read again for their topic categories and referral quote in docs/seed-data-lavterskel-reconcile.md. That doc wins for the Referral quote and the categories of those rows.
 
 Every live row (1-25, 101-122, 201-247) was read again on 2026-10-26 against the page its seed doc

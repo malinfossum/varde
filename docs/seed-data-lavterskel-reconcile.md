@@ -3,6 +3,8 @@
 **Status: VERIFICATION GATE CLOSED 03.11.2026.** I resolved every item under "Verify these first",
 so the rows below are ready to seed.
 
+**LastVerified (04.11.2026):** this pass read only topic categories and the referral quote, so it no longer moves LastVerified. Its rows keep the date of their last full read; see the SeedData summary.
+
 Accepted badge phrases: "ikke krav om henvisning", "ingen formell henvisning"
 
 **Follow-up data PR (soon, not part of this PR):**
