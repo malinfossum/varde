@@ -27,6 +27,8 @@ Cloudflare Pages 2026-09-18.
 
 **Live:** https://varde.pages.dev
 
+How the parts fit together, as five domain stories: [docs/domain-stories/](docs/domain-stories/).
+
 The site is static. Every page is prerendered from the database once a day and on every
 push, so nothing waits on a server. Search runs in the browser over a small JSON index.
 
@@ -227,7 +229,7 @@ Five GitHub Actions workflows drive the repo:
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `ci.yml` | every pull request | API integration tests against Postgres (`api-tests`, a required merge check) and Playwright layout checks (`web-e2e`); the web unit tests, lint and build moved to `ward.yml` |
+| `ci.yml` | every pull request | API integration tests against Postgres (`api-tests`, a required merge check) Playwright layout checks (`web-e2e`) and the pipeline's lint, types, tests and data check (`pipeline`); the web unit tests, lint and build moved to `ward.yml` |
 | `build-test.yml` | pull request and push to `main` | format check, API build and tests, vulnerable-package report; on `main` it also pushes the API image to GHCR |
 | `deploy-web.yml` | push to `main`, daily cron, manual dispatch | run the API against Neon, export data, build, prerender, deploy to Cloudflare Pages |
 | `ward.yml` | pull request, push to `main`, weekly cron, manual dispatch | shared CI and security checks via `malinfossum/ward`; auto-merges Dependabot PRs |
