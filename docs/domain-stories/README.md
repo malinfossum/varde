@@ -6,6 +6,11 @@ the source and each `.egn` is generated from it for [Egon.io](https://egon.io/ap
 Regenerate after an edit with the `domain-story` generator:
 `node ~/.claude/loadout/skills/domain-story/scripts/story-to-egn.mjs <name>.story`.
 
+![All seven stories on one board: the overview on top, stories 1 to 6 below](board.png)
+
+`board.png` is drawn by Egon.io itself: `node docs/domain-stories/render-board.mjs` from the repo root
+(needs `npm ci` in `web/`, uses its Playwright).
+
 ## How they fit together
 
 ```text
@@ -18,7 +23,7 @@ Stories 1 to 5 are as-is. Story 6 is to-be: the rest of the design in
 planned pipeline steps marked "(planned)".
 
 **Keep them current.** A PR that changes the structure (a workflow, a pipeline stage, a data
-store, who runs what) updates the story that tells it, regenerates the `.egn`, and fixes this
+store, who runs what) updates the story that tells it, regenerates the `.egn`, re-runs `render-board.mjs`, and fixes this
 README in the same PR.
 
 | Story | Scope | Replay |
