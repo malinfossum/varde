@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Varde.Data.Seed;
 
 namespace Varde.Tests.Infrastructure;
 
@@ -19,6 +20,25 @@ public static partial class SeedDocs
         "docs/seed-data-lavterskel-retag.md",
         "docs/seed-data-lavterskel-innlandet.md",
     ];
+
+    /// <summary>The lavterskel reconcile doc: one row per category 10 row, with its Topic and Referral quote.</summary>
+    public const string Reconcile = "docs/seed-data-lavterskel-reconcile.md";
+
+    /// <summary>
+    /// Docs that re-settle rows an earlier doc in WithReferralQuotes already lists. Their Referral
+    /// quote cell replaces the earlier one, an empty cell included. A doc joins this list in the
+    /// task that seeds its rows, never earlier.
+    /// </summary>
+    public static readonly string[] Overrides = [];
+
+    /// <summary>
+    /// The categories a category 10 row may carry as its topic: every category except
+    /// lavterskeltilbud itself and nodtjenester, which is for acute services only.
+    /// </summary>
+    public static readonly string[] TopicSlugs = Categories.All
+        .Select(c => c.Slug)
+        .Where(slug => slug is not "lavterskeltilbud" and not "nodtjenester")
+        .ToArray();
 
     /// <summary>
     /// The spec's badge rule: a referral quote must name one of these (case-insensitive). The last
@@ -46,11 +66,21 @@ public static partial class SeedDocs
     /// header has both a "#" and a "Referral quote" column. Columns are found by header name,
     /// never by position. An empty cell maps to "". A row listed twice throws.
     /// </summary>
-    public static Dictionary<int, string> ReferralQuotes(string markdown)
+    public static Dictionary<int, string> ReferralQuotes(string markdown) => Column(markdown, "Referral quote");
+
+    /// <summary>Row number to raw Topic cell, read like ReferralQuotes. TopicProblems judges the cell.</summary>
+    public static Dictionary<int, string> Topics(string markdown) => Column(markdown, "Topic");
+
+    /// <summary>
+    /// Row number to the cell under <paramref name="header"/>, for every table in
+    /// <paramref name="markdown"/> whose header has both a "#" and that column. Columns are found
+    /// by header name, never by position. An empty cell maps to "". A row listed twice throws.
+    /// </summary>
+    private static Dictionary<int, string> Column(string markdown, string header)
     {
-        var quotes = new Dictionary<int, string>();
+        var values = new Dictionary<int, string>();
         var inTable = false;
-        int rowColumn = -1, quoteColumn = -1;
+        int rowColumn = -1, valueColumn = -1;
         foreach (var raw in markdown.Split('\n'))
         {
             var line = raw.Trim();
@@ -66,18 +96,18 @@ public static partial class SeedDocs
                 // The first line of a table is its header.
                 inTable = true;
                 rowColumn = cells.IndexOf("#");
-                quoteColumn = cells.IndexOf("Referral quote");
+                valueColumn = cells.IndexOf(header);
                 continue;
             }
 
-            if (rowColumn < 0 || quoteColumn < 0 || rowColumn >= cells.Count) continue;
+            if (rowColumn < 0 || valueColumn < 0 || rowColumn >= cells.Count) continue;
             if (!int.TryParse(cells[rowColumn], out var row)) continue; // the |---| separator line
-            var quote = quoteColumn < cells.Count ? cells[quoteColumn] : "";
-            if (!quotes.TryAdd(row, quote))
+            var value = valueColumn < cells.Count ? cells[valueColumn] : "";
+            if (!values.TryAdd(row, value))
                 throw new InvalidOperationException($"Row {row} appears twice in one seed doc.");
         }
 
-        return quotes;
+        return values;
     }
 
     /// <summary>
@@ -108,6 +138,78 @@ public static partial class SeedDocs
         }
 
         return problems;
+    }
+
+    /// <summary>
+    /// Every category 10 row's topics (its categories besides category 10) must equal its Topic
+    /// cell in the reconcile doc, compared as sets. The doc and category 10 must list the same
+    /// rows. "none" is the only way to say "no topic"; an empty cell means not settled.
+    /// </summary>
+    public static List<string> TopicProblems(
+        IReadOnlyDictionary<int, IReadOnlySet<string>> category10,
+        IReadOnlyDictionary<int, string> topicCells)
+    {
+        var problems = new List<string>();
+        foreach (var id in category10.Keys.Union(topicCells.Keys).Order())
+        {
+            if (!topicCells.TryGetValue(id, out var cell))
+            {
+                problems.Add($"row {id}: in category 10 but not in the reconcile doc");
+                continue;
+            }
+
+            if (!category10.TryGetValue(id, out var seeded))
+            {
+                problems.Add($"row {id}: in the reconcile doc but not in category 10");
+                continue;
+            }
+
+            if (cell.Length == 0)
+            {
+                problems.Add($"row {id}: topic cell is empty; write the slugs or none");
+                continue;
+            }
+
+            string[] slugs = cell == "none" ? [] : cell.Split(',').Select(s => s.Trim()).ToArray();
+            var unknown = slugs.FirstOrDefault(s => !TopicSlugs.Contains(s));
+            if (unknown is not null)
+            {
+                problems.Add($"row {id}: topic \"{unknown}\" is not a topic category");
+                continue;
+            }
+
+            if (!seeded.SetEquals(slugs))
+                problems.Add(
+                    $"row {id}: seeded topics [{string.Join(", ", seeded.Order(StringComparer.Ordinal))}] differ from the doc's [{string.Join(", ", slugs.Order(StringComparer.Ordinal))}]");
+        }
+
+        return problems;
+    }
+
+    /// <summary>
+    /// One quote per row: the base docs may not share a row, and an override doc replaces the
+    /// base doc's cell for each row it lists (an empty cell included). An override row that no
+    /// base doc lists throws, so a typo cannot add a row nobody seeded.
+    /// </summary>
+    public static Dictionary<int, string> MergeQuotes(
+        IEnumerable<IReadOnlyDictionary<int, string>> bases,
+        IEnumerable<IReadOnlyDictionary<int, string>> overrides)
+    {
+        var quotes = new Dictionary<int, string>();
+        foreach (var doc in bases)
+            foreach (var (row, quote) in doc)
+                if (!quotes.TryAdd(row, quote))
+                    throw new InvalidOperationException($"row {row} appears in two seed docs");
+
+        foreach (var doc in overrides)
+            foreach (var (row, quote) in doc)
+            {
+                if (!quotes.ContainsKey(row))
+                    throw new InvalidOperationException($"row {row} is in an override doc but in no earlier seed doc");
+                quotes[row] = quote;
+            }
+
+        return quotes;
     }
 
     private static bool IsBadgeQuote(string cell) =>
