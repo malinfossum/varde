@@ -69,6 +69,7 @@ async function footerControls(page: Page): Promise<Box[]> {
 			.map((el) => {
 				const r = el.getBoundingClientRect()
 				return {
+					// biome-ignore lint/performance/useDomNodeTextContent: the label is the rendered text, so innerText is the point
 					label: el.innerText.trim() || el.querySelector(".visually-hidden")?.textContent || "",
 					top: r.top,
 					bottom: r.bottom,
