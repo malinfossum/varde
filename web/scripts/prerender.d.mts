@@ -1,4 +1,4 @@
-// Sibling declaration for prerender.mjs — this project carries no allowJs/@types/node, so a
+// Sibling declaration for prerender.mjs. This project carries no allowJs/@types/node, so a
 // plain .mjs import has no type on its own. tests/prerender.test.ts is the only TS consumer.
 // Types stay loose (string/object rather than "nb" | "en" literal unions) because the test's
 // fixtures build head/data objects with no contextual type, which TS would otherwise widen.

@@ -1,5 +1,5 @@
 // This project carries no @types/node. tokens.test.ts needs to read tokens.css from disk, which
-// takes three Node built-ins — declaring just those here avoids pulling in the full package.
+// takes three Node built-ins. Declaring just those here avoids pulling in the full package.
 // fonts.test.ts adds existsSync/statSync (fs) and createHash (crypto) for its byte-identity check.
 // exportData.test.ts adds mkdtempSync/rmSync (fs) and node:os's tmpdir to stage a scratch
 // directory outside the repo for the export script's file-writing test.

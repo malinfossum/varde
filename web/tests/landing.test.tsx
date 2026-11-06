@@ -24,7 +24,7 @@ function stubCatalog(fail = false) {
 		return fetchMock
 	}
 	stubDataFiles({ municipalities, categories })
-	// stubDataFiles installs its own vi.fn() — hand it back so callers here can still count
+	// stubDataFiles installs its own vi.fn(). Hand it back so callers here can still count
 	// calls the way the API-era stub let them (fetchSpy.toHaveBeenCalledTimes(2), etc.).
 	return fetch as ReturnType<typeof vi.fn>
 }

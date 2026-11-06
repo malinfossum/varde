@@ -47,7 +47,7 @@ const row = {
 const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet", number: "3403" }
 
 // prerenderSite takes a required `split` option (the server bundle's splitForKommune) instead
-// of computing the kommune local/national split itself — this stub mirrors its shape.
+// of computing the kommune local/national split itself. This stub mirrors its shape.
 const stubSplit = (entry: object, resources: object[]) => ({
 	entry,
 	local: resources,
@@ -187,7 +187,7 @@ test("rejects a page whose render() output carries an outlined Suspense boundary
 })
 
 // Important (review round 1): String.replace's second argument treats `$&`, `` $` ``, `$'` and
-// `$$` as substitution patterns when it's a plain string — `$&` re-inserts the whole matched
+// `$$` as substitution patterns when it's a plain string. `$&` re-inserts the whole matched
 // marker, `` $` ``/`$'` splice in the template text before/after the match. A resource's
 // free-text description can contain any of these, so fillTemplate must pass a function to every
 // `.replace` instead of a string, which is used verbatim with no pattern parsing.
@@ -227,7 +227,7 @@ test("a $-replacement-pattern sequence in a resource's description renders uncha
 })
 
 // Route components are lazy(), so without a hint the browser learns about a page's chunk only
-// after the entry has run — one extra round-trip before anything on /sok can render. With
+// after the entry has run, which is one extra round-trip before anything on /sok can render. With
 // Vite's build manifest the prerender can announce the chunk (and the chunks it imports) in
 // the head. The entry and what it already pulls in are left out: they are loaded regardless.
 test("a prerendered route page preloads its lazy chunk and that chunk's imports, never the entry", async () => {

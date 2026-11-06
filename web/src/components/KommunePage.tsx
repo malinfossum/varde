@@ -20,7 +20,7 @@ type State =
 	| { kind: "notFound" }
 	| { kind: "ready"; data: Data }
 
-// Own resources and served resources both belong in "local" — a shared krisesenter must appear
+// Own resources and served resources both belong in "local". A shared krisesenter must appear
 // in every kommune it serves, not only the one holding its address (mirrors query.ts's
 // applyFilters, which does the same for the ?municipality= filter).
 export function splitForKommune(entry: KommuneEntry, resources: ResourceDto[]): Data {
