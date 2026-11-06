@@ -13,6 +13,8 @@ for (const path of [
 	"/en/kommune/hamar",
 	"/om",
 	"/en/om",
+	"/kommune",
+	"/en/kommune",
 ]) {
 	test(`${path} keeps its prerendered heading through hydration`, async ({ page }) => {
 		await page.addInitScript(() => {
