@@ -107,6 +107,7 @@
 	"kommuneIndex.countOne": "1 tjeneste",
 	"kommuneIndex.countOther": "{n} tjenester",
 	"kommuneIndex.national": "{n} nasjonale tjenester gjelder i hele landet.",
+	"kommuneIndex.nationalOne": "1 nasjonal tjeneste gjelder i hele landet.",
 	"kommuneIndex.nationalLink": "Se alle tjenester",
 	"banner.fastlege": "Trenger du helsehjelp på dagtid? Kontakt fastlegen din.",
 	"banner.fastlegeLink": "Fastlegen din på Helsenorge",

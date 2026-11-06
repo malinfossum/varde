@@ -78,7 +78,9 @@ export function KommuneIndexPage({ arrival }: { arrival: number }) {
 			))}
 			{national > 0 && (
 				<p>
-					{fill(t("kommuneIndex.national"), { n: national })}{" "}
+					{national === 1
+						? t("kommuneIndex.nationalOne")
+						: fill(t("kommuneIndex.national"), { n: national })}{" "}
 					<Link to="/sok">{t("kommuneIndex.nationalLink")}</Link>
 				</p>
 			)}

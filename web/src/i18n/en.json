@@ -107,6 +107,7 @@
 	"kommuneIndex.countOne": "1 service",
 	"kommuneIndex.countOther": "{n} services",
 	"kommuneIndex.national": "{n} national services cover the whole country.",
+	"kommuneIndex.nationalOne": "1 national service covers the whole country.",
 	"kommuneIndex.nationalLink": "See all services",
 	"banner.fastlege": "Need healthcare during business hours? Contact your GP.",
 	"banner.fastlegeLink": "Your GP on Helsenorge",

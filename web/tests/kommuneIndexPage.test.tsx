@@ -63,7 +63,7 @@ test("lists each fylke as a region with its kommuner, counts and the national li
 	expect(within(innlandet).getByRole("link", { name: "Elverum 0 tjenester" })).toBeInTheDocument()
 	expect(within(innlandet).getByRole("list")).toBeInTheDocument()
 	expect(screen.getByRole("region", { name: "Oslo" })).toBeInTheDocument()
-	expect(screen.getByText(/1 nasjonale tjenester gjelder i hele landet\./)).toBeInTheDocument()
+	expect(screen.getByText(/1 nasjonal tjeneste gjelder i hele landet\./)).toBeInTheDocument()
 	expect(screen.getByRole("link", { name: "Se alle tjenester" })).toHaveAttribute("href", "/sok")
 	expect(container.querySelectorAll("h1")).toHaveLength(1)
 	await waitFor(() => expect(document.title).toBe("Hjelpetjenester per kommune – Varde"))
@@ -82,6 +82,28 @@ test("one service says tjeneste, and the English page says service and services"
 	)
 	// No national rows: the line is left out.
 	expect(screen.queryByText(/national services cover/)).toBeNull()
+})
+
+test("two national services say tjenester, and one English national service says service", async () => {
+	const twoNational = [
+		...rows,
+		{ ...base, id: 4, name: "Kirkens SOS", municipalityId: null, isNational: true },
+	] as unknown as ResourceDto[]
+	stubDataFiles({ resources: twoNational, kommuner: [hamar] })
+	window.history.pushState(null, "", "/kommune")
+	const { unmount } = render(<App />)
+	expect(
+		await screen.findByText(/2 nasjonale tjenester gjelder i hele landet\./)
+	).toBeInTheDocument()
+	unmount()
+
+	clearIndexCache()
+	stubDataFiles({ resources: rows, kommuner: [hamar] })
+	window.history.pushState(null, "", "/en/kommune")
+	render(<App />)
+	expect(
+		await screen.findByText(/1 national service covers the whole country\./)
+	).toBeInTheDocument()
 })
 
 test("a failed index load shows the error state, and Prøv igjen loads it", async () => {

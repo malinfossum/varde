@@ -45,7 +45,7 @@ PR.
 | `/kommune` h1 | Hjelpetjenester per kommune | Help services by municipality |
 | Header link | Kommuner | Municipalities |
 | Count label | 1 tjeneste / {n} tjenester | 1 service / {n} services |
-| National line | {n} nasjonale tjenester gjelder i hele landet. Se alle tjenester | {n} national services cover the whole country. See all services |
+| National line | 1 nasjonal tjeneste / {n} nasjonale tjenester gjelder i hele landet. Se alle tjenester | 1 national service / {n} national services cover the whole country. See all services |
 
 `/om` and the kommune pages keep their titles. The landing page's visible subtitle stays as it
 is; only the meta description changes, through its own key `landing.description`.
