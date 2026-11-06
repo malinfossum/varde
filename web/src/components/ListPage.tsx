@@ -25,7 +25,6 @@ import { useAnnounce } from "./StatusRegion.tsx"
 import { Suggestions } from "./Suggestions.tsx"
 import { WayfindingHint } from "./WayfindingHint.tsx"
 
-const titles = { nb: "Søk – Varde", en: "Search – Varde" }
 const descriptions = {
 	nb: "Varde – finn riktig hjelpetjeneste der du bor. Offentlig katalog over sosiale tjenester i Norge.",
 	en: "Varde – find the right help service where you live. Public directory of social services in Norway.",
@@ -70,9 +69,9 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 		navigate("/sok", buildSearch(applyPatch(resolved, patch)))
 
 	// The pager sits under the whole list. After "Neste" the new cards render above the
-	// viewport and focus stays on the button — the user sees nothing change. Only the pager
+	// viewport and focus stays on the button. The user sees nothing change. Only the pager
 	// asks for this: a search or filter change must never pull focus out of the search box.
-	// `settled` covers "error" too — an error settles the request just as much as a result does,
+	// `settled` covers "error" too. An error settles the request just as much as a result does,
 	// and a pending flag left dangling on an errored or empty page would fire on a later,
 	// unrelated load instead (say, the user typing a new search after a retry). `state` as the
 	// token: a page change answered from the already-cached index never flips ready/settled at
@@ -92,12 +91,12 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	}
 
 	// Typing in the search box fires on every keystroke; pushing a history entry per keystroke
-	// would flood back/forward with useless states. Replace the current entry instead — every
+	// would flood back/forward with useless states. Replace the current entry instead. Every
 	// other filter change (picker, suggestions, pager, clear, toggle) still pushes normally.
 	const applySearch = (patch: Partial<Filters>) =>
 		navigate("/sok", buildSearch(applyPatch(resolved, patch)), { replace: true })
 
-	// suggest() re-scans the whole catalog on every call — memoize so it only re-runs when the
+	// suggest() re-scans the whole catalog on every call. Memoize so it only re-runs when the
 	// search text or the catalog itself actually changes, not on every ListPage render.
 	const suggestions: Suggestion[] = useMemo(
 		() => (catalog && filters.search ? suggest(filters.search, catalog) : []),
@@ -135,7 +134,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 
 	return (
 		<div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-			<PageHead title={titles[lang]} description={descriptions[lang]} path="/sok" />
+			<PageHead title={t("list.pageTitle")} description={descriptions[lang]} path="/sok" />
 			{/* min-h reserves room for FilterBar's catalog-gated rows (the municipality combobox and
 			    the category chips only render once `catalog` resolves; see FilterBar.tsx).
 			    Below lg, aside sits stacked above the results, so that mount-time growth is what
@@ -143,18 +142,18 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 			    raw layout-shift trace: the results container's position, not its own size, was
 			    what moved). 28rem is the measured full-height of the loaded filter column at a
 			    360-412px width, rounded up for a small margin. At lg+, aside is a side column next
-			    to results that are already taller, so the reservation is dropped — nothing to fix
+			    to results that are already taller, so the reservation is dropped. Nothing to fix
 			    there.
 			    It is lifted on a catalog failure, though. Then FilterBar renders the search box
 			    and the national toggle and nothing else, and an unconditional 28rem leaves a
 			    screenful of nothing above "Noe gikk galt": measured at 375x812, the error
-			    heading sat at y=782 and the Legevakt fallback number inside it at y=920 — below
+			    heading sat at y=782 and the Legevakt fallback number inside it at y=920, below
 			    the fold, during exactly the outage that panel exists for. Without the
 			    reservation they land at 442 and 580.
 			    Lifting it as soon as the catalog *resolves* instead costs CLS and buys nothing:
 			    the loaded column measures 430px against the 448px floor, so releasing it is its
 			    own small shift (/sok CLS 0.0103 -> 0.0309, measured), and a resolved catalog
-			    means the column is full anyway — the empty state never had blank space to
+			    means the column is full anyway. The empty state never had blank space to
 			    reclaim. On for loading and ready, off for error, holds both. */}
 			<aside
 				aria-label={t("filter.heading")}
@@ -173,13 +172,13 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 				<WayfindingHint query={filters.search} />
 				{/* useCatalog and useResources both resolve from the one shared loadIndex(lang)
 				    promise in services/data.ts, so a catalog error and a resources error always
-				    coincide — there's no state where one fails without the other. One ErrorState
+				    coincide: there's no state where one fails without the other. One ErrorState
 				    at the default level 1 covers both; retryFailed refetches everything that
 				    failed. */}
 				{catalogState.kind === "error" && <ErrorState onRetry={retryFailed} />}
 				{state.kind === "loading" && <LoadingState />}
 				{/* Covers both the genuine zero-results case and a page past the last one (e.g. a
-				    stale ?page= after filters narrowed the result set) — the API returns an empty
+				    stale ?page= after filters narrowed the result set). The API returns an empty
 				    items array either way, and both deserve the same recovery UI rather than a
 				    blank list. */}
 				{state.kind === "ready" && state.data.items.length === 0 && (
@@ -192,7 +191,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 				)}
 				{state.kind === "ready" && state.data.items.length > 0 && (
 					<>
-						{/* /sok's only <h1> — it doubles as the arrival-focus target after paging. */}
+						{/* /sok's only <h1>. It doubles as the arrival-focus target after paging. */}
 						<h1 ref={resultsHeading} tabIndex={-1} className="text-lg leading-snug">
 							{state.data.totalCount} {t("status.results")}
 						</h1>

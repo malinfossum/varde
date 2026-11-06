@@ -4,6 +4,7 @@ export type Route =
 	| { kind: "landing" }
 	| { kind: "list" }
 	| { kind: "about" }
+	| { kind: "kommuneIndex" }
 	| { kind: "detail"; id: number }
 	| { kind: "kommune"; slug: string }
 	| { kind: "notFound" }
@@ -20,6 +21,7 @@ export function parseRoute(pathname: string): Route {
 	if (pathname === "/") return { kind: "landing" }
 	if (pathname === "/sok") return { kind: "list" }
 	if (pathname === "/om") return { kind: "about" }
+	if (pathname === "/kommune") return { kind: "kommuneIndex" }
 	const detail = pathname.match(/^\/resources\/(\d+)$/)
 	if (detail) return { kind: "detail", id: Number(detail[1]) }
 	const slug = pathname.match(/^\/kommune\/([a-z0-9-]+)$/)?.[1]
@@ -52,6 +54,8 @@ export function routePath(route: Route): string {
 			return "/om"
 		case "detail":
 			return `/resources/${route.id}`
+		case "kommuneIndex":
+			return "/kommune"
 		case "kommune":
 			return `/kommune/${route.slug}`
 		case "notFound":
@@ -94,11 +98,11 @@ export function legacyRedirect(
 		const target = query ? `${path}?${query}` : path
 		// An explicit ?lang= choice always wins, even over a stored preference for the other
 		// language. Stripping ?lang=nb from the bare landing page lands back on "/" with no
-		// query — exactly the shape the stored-preference rule below is watching for. Redirecting
+		// query, which is exactly the shape the stored-preference rule below is watching for. Redirecting
 		// there would reload it as a fresh navigation, on which that rule would then fire and
 		// bounce the explicit "nb" choice straight to /en/. Nothing else this function returns
 		// can land back on "/" (an /en path only ever grows a prefix, /sok only from legacyList),
-		// so this is the one case that needs skipping — leave the query string in place instead.
+		// so this is the one case that needs skipping. Leave the query string in place instead.
 		if (target === "/") return null
 		return target
 	}

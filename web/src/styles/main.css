@@ -159,6 +159,52 @@
 	.nav-link:hover {
 		text-decoration: underline;
 	}
+	/* /kommune (spec 2026-11-06): one whole-row link per kommune, mobile-first 1 to 4 columns.
+	   The name may wrap, the count never does. A border, not only a background, so the row edge
+	   survives forced colours. */
+	.kommune-grid {
+		display: grid;
+		gap: 0.75rem;
+	}
+	@media (min-width: 768px) {
+		.kommune-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	@media (min-width: 1024px) {
+		.kommune-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+	@media (min-width: 1600px) {
+		.kommune-grid {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+	.kommune-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		min-height: 44px;
+		height: 100%;
+		padding: 0.5rem 1rem;
+		border: 1px solid var(--border);
+		border-radius: 0.5rem;
+		color: var(--text);
+		text-decoration: none;
+	}
+	.kommune-name {
+		min-width: 0;
+		overflow-wrap: anywhere;
+		font-weight: 500;
+	}
+	.kommune-row:hover .kommune-name {
+		text-decoration: underline;
+	}
+	.kommune-count {
+		white-space: nowrap;
+	}
 	/* From 1024 px the landing's vertical gaps grow with the window height (decided 2026-10-16).
 	   Below 900 px tall --air is 0 (English needs 892 px without it), so the page keeps its
 	   one-screen fit at 950; on a taller window the extra height opens the gaps instead of

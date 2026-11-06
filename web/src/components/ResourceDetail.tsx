@@ -7,6 +7,7 @@ import { clearIndexCache, loadIndex } from "../services/data.ts"
 import { type Family, familyOf, NO_FAMILY } from "../services/family.ts"
 import { safeChatUrl } from "../services/helplines.ts"
 import { metaDescription } from "../services/site.ts"
+import { serviceTitle } from "../services/titles.ts"
 import type { ResourceDto } from "../types/api.ts"
 import { ContactTiles } from "./ContactTiles.tsx"
 import { DetailActions } from "./DetailActions.tsx"
@@ -112,7 +113,7 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 	return (
 		<div className="grid gap-6">
 			<PageHead
-				title={`${resource.name} – Varde`}
+				title={serviceTitle(resource)}
 				description={metaDescription(resource.description)}
 				path={`/resources/${resource.id}`}
 			/>

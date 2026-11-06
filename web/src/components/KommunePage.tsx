@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
+import { fill } from "../i18n/fill.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { usePageData } from "../pageData.ts"
 import { type KommuneEntry, loadIndex } from "../services/data.ts"
@@ -19,7 +20,7 @@ type State =
 	| { kind: "notFound" }
 	| { kind: "ready"; data: Data }
 
-// Own resources and served resources both belong in "local" — a shared krisesenter must appear
+// Own resources and served resources both belong in "local". A shared krisesenter must appear
 // in every kommune it serves, not only the one holding its address (mirrors query.ts's
 // applyFilters, which does the same for the ?municipality= filter).
 export function splitForKommune(entry: KommuneEntry, resources: ResourceDto[]): Data {
@@ -28,10 +29,6 @@ export function splitForKommune(entry: KommuneEntry, resources: ResourceDto[]): 
 		.sort(compareResources)
 	const national = resources.filter((r) => r.isNational).sort(compareResources)
 	return { entry, local, national }
-}
-
-function fill(template: string, values: Record<string, string | number>): string {
-	return template.replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""))
 }
 
 export function KommunePage({ slug, arrival }: { slug: string; arrival: number }) {

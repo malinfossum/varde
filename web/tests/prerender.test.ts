@@ -1,10 +1,13 @@
+import { createHash } from "node:crypto"
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, expect, test, vi } from "vitest"
-import { escapeJson, prerenderSite, urlList } from "../scripts/prerender.mjs"
+import { escapeJson, pageHash, prerenderSite, urlList, websiteLd } from "../scripts/prerender.mjs"
+import { splitForKommune } from "../src/components/KommunePage.tsx"
 import type { PageData } from "../src/pageData.ts"
 import { familyOf } from "../src/services/family.ts"
+import { buildKommuneIndex } from "../src/services/kommuneIndex.ts"
 import type { ResourceDto } from "../src/types/api.ts"
 
 const dirs: string[] = []
@@ -44,7 +47,7 @@ const row = {
 const hamar = { id: 1, slug: "hamar", name: "Hamar", county: "Innlandet", number: "3403" }
 
 // prerenderSite takes a required `split` option (the server bundle's splitForKommune) instead
-// of computing the kommune local/national split itself — this stub mirrors its shape.
+// of computing the kommune local/national split itself. This stub mirrors its shape.
 const stubSplit = (entry: object, resources: object[]) => ({
 	entry,
 	local: resources,
@@ -53,6 +56,7 @@ const stubSplit = (entry: object, resources: object[]) => ({
 
 // prerenderSite takes the server bundle's familyOf the same way; pages in these older tests
 // have no parents or children.
+const stubIndex = () => ({ groups: [], national: 0 })
 const noFamily = () => ({ parent: null, children: [] })
 const realFamily = (resource: object, resources: object[]) =>
 	familyOf(resource as ResourceDto, resources as ResourceDto[])
@@ -68,11 +72,13 @@ test("urlList covers landing, search, every resource and kommune in both languag
 		"/",
 		"/sok",
 		"/om",
+		"/kommune",
 		"/resources/5",
 		"/kommune/hamar",
 		"/en/",
 		"/en/sok",
 		"/en/om",
+		"/en/kommune",
 		"/en/resources/5",
 		"/en/kommune/hamar",
 	])
@@ -94,12 +100,13 @@ test("writes every page as a file (except / and /en/) with head, data block, lan
 		distDir,
 		render,
 		split: stubSplit,
+		kommuneIndex: stubIndex,
 		pickHelplines: () => [],
 		family: noFamily,
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
-	expect(result.pages).toHaveLength(10)
+	expect(result.pages).toHaveLength(12)
 	const detail = readFileSync(join(distDir, "en/resources/5.html"), "utf8")
 	expect(detail).toContain('<html lang="en">')
 	expect(detail).toContain("<title>T /en/resources/5</title>")
@@ -140,6 +147,7 @@ test("a trailing slash on siteOrigin never doubles up in a canonical URL", async
 		distDir,
 		render,
 		split: stubSplit,
+		kommuneIndex: stubIndex,
 		pickHelplines: () => [],
 		family: noFamily,
 		siteOrigin: "https://varde.pages.dev/",
@@ -169,6 +177,7 @@ test("rejects a page whose render() output carries an outlined Suspense boundary
 			distDir,
 			render,
 			split: stubSplit,
+			kommuneIndex: stubIndex,
 			pickHelplines: () => [],
 			family: noFamily,
 			siteOrigin: "https://varde.pages.dev",
@@ -178,7 +187,7 @@ test("rejects a page whose render() output carries an outlined Suspense boundary
 })
 
 // Important (review round 1): String.replace's second argument treats `$&`, `` $` ``, `$'` and
-// `$$` as substitution patterns when it's a plain string — `$&` re-inserts the whole matched
+// `$$` as substitution patterns when it's a plain string. `$&` re-inserts the whole matched
 // marker, `` $` ``/`$'` splice in the template text before/after the match. A resource's
 // free-text description can contain any of these, so fillTemplate must pass a function to every
 // `.replace` instead of a string, which is used verbatim with no pattern parsing.
@@ -199,6 +208,7 @@ test("a $-replacement-pattern sequence in a resource's description renders uncha
 		distDir,
 		render,
 		split: stubSplit,
+		kommuneIndex: stubIndex,
 		pickHelplines: () => [],
 		family: noFamily,
 		siteOrigin: "https://varde.pages.dev",
@@ -217,7 +227,7 @@ test("a $-replacement-pattern sequence in a resource's description renders uncha
 })
 
 // Route components are lazy(), so without a hint the browser learns about a page's chunk only
-// after the entry has run — one extra round-trip before anything on /sok can render. With
+// after the entry has run, which is one extra round-trip before anything on /sok can render. With
 // Vite's build manifest the prerender can announce the chunk (and the chunks it imports) in
 // the head. The entry and what it already pulls in are left out: they are loaded regardless.
 test("a prerendered route page preloads its lazy chunk and that chunk's imports, never the entry", async () => {
@@ -238,6 +248,7 @@ test("a prerendered route page preloads its lazy chunk and that chunk's imports,
 		distDir,
 		render: async () => ({ html: "<main></main>", head: null }),
 		split: stubSplit,
+		kommuneIndex: stubIndex,
 		pickHelplines: () => [],
 		family: noFamily,
 		siteOrigin: "https://varde.pages.dev",
@@ -272,12 +283,13 @@ test("every page carries the share-card tags, absolute and escaped", async () =>
 		distDir,
 		render,
 		split: stubSplit,
+		kommuneIndex: stubIndex,
 		pickHelplines: () => [],
 		family: noFamily,
 		siteOrigin: "https://varde.pages.dev",
 		log: () => {},
 	})
-	expect(pages).toHaveLength(10)
+	expect(pages).toHaveLength(12)
 	for (const url of pages) {
 		const file = url.endsWith("/") ? join(distDir, url, "index.html") : `${join(distDir, url)}.html`
 		const html = readFileSync(file, "utf8")
@@ -317,6 +329,7 @@ test("rejects a page whose markup carries a style attribute, which the CSP would
 			distDir,
 			render,
 			split: stubSplit,
+			kommuneIndex: stubIndex,
 			pickHelplines: () => [],
 			family: noFamily,
 			siteOrigin: "https://varde.pages.dev",
@@ -333,6 +346,7 @@ test("the landing pages bake their helplines, in their own language", async () =
 		distDir,
 		render,
 		split: stubSplit,
+		kommuneIndex: stubIndex,
 		pickHelplines: () => [{ id: 1, name: "Hjelpetelefonen", phone: "116 123", chatUrl: null }],
 		family: noFamily,
 		siteOrigin: "https://varde.pages.dev",
@@ -356,6 +370,7 @@ test("a helpline id missing from the export fails the whole build", async () => 
 			distDir,
 			render,
 			split: stubSplit,
+			kommuneIndex: stubIndex,
 			pickHelplines: () => {
 				throw new Error("helpline id 121 is missing from the data")
 			},
@@ -378,6 +393,7 @@ test("each landing page bakes the helplines from its own language's export", asy
 		distDir,
 		render,
 		split: stubSplit,
+		kommuneIndex: stubIndex,
 		pickHelplines: (rows) =>
 			(rows as { id: number; name: string }[]).map((r) => ({
 				id: r.id,
@@ -407,6 +423,7 @@ test("a detail page bakes its parent and children from its own language's export
 		distDir,
 		render,
 		split: stubSplit,
+		kommuneIndex: stubIndex,
 		pickHelplines: () => [],
 		family: realFamily,
 		siteOrigin: "https://varde.pages.dev",
@@ -422,4 +439,141 @@ test("a detail page bakes its parent and children from its own language's export
 		})
 	}
 	expect(dataFor("/")?.family).toBeUndefined()
+})
+
+const echoRender = async (url: string, data: object) => ({
+	html: `<main>${url} ${JSON.stringify(data)}</main>`,
+	head: {
+		title: `T ${url}`,
+		description: "D",
+		path: url.replace(/^\/en/, "") || "/",
+		lang: url.startsWith("/en") ? "en" : "nb",
+	},
+})
+
+test("/kommune is written as kommune.html with its baked index, beside the kommune folder", async () => {
+	const { dataDir, distDir } = setup([row], [hamar])
+	await prerenderSite({
+		dataDir,
+		distDir,
+		render: echoRender,
+		split: stubSplit,
+		kommuneIndex: (kommuner: object[], resources: object[]) => ({
+			groups: [{ county: "Innlandet", kommuner }],
+			national: resources.length,
+		}),
+		pickHelplines: () => [],
+		family: noFamily,
+		siteOrigin: "https://varde.pages.dev",
+		log: () => {},
+	})
+	const page = readFileSync(join(distDir, "kommune.html"), "utf8")
+	expect(page).toContain('"kommuneIndex":{"groups":[{"county":"Innlandet"')
+	expect(existsSync(join(distDir, "kommune", "hamar.html"))).toBe(true)
+	expect(existsSync(join(distDir, "en", "kommune.html"))).toBe(true)
+	const sitemap = readFileSync(join(distDir, "sitemap.xml"), "utf8")
+	expect(sitemap).toContain("<loc>https://varde.pages.dev/kommune</loc>")
+	expect(sitemap).toContain("<loc>https://varde.pages.dev/en/kommune</loc>")
+})
+
+test("only the two front pages carry WebSite JSON-LD", async () => {
+	const { dataDir, distDir } = setup([row], [hamar])
+	await prerenderSite({
+		dataDir,
+		distDir,
+		render: echoRender,
+		split: stubSplit,
+		kommuneIndex: stubIndex,
+		pickHelplines: () => [],
+		family: noFamily,
+		siteOrigin: "https://varde.pages.dev",
+		log: () => {},
+	})
+	expect(websiteLd("en", "https://varde.pages.dev")).toEqual({
+		"@context": "https://schema.org",
+		"@type": "WebSite",
+		name: "Varde",
+		url: "https://varde.pages.dev/en/",
+		inLanguage: "en",
+	})
+	const front = readFileSync(join(distDir, "index.html"), "utf8")
+	expect(front).toContain('"@type":"WebSite"')
+	expect(front).toContain('"url":"https://varde.pages.dev/"')
+	expect(readFileSync(join(distDir, "en", "index.html"), "utf8")).toContain('"inLanguage":"en"')
+	for (const file of ["sok.html", "om.html", "kommune.html", "resources/5.html"])
+		expect(readFileSync(join(distDir, file), "utf8")).not.toContain('"@type":"WebSite"')
+})
+
+test("pageHash is a sha256 of the page's own content", () => {
+	const parts = { head: "<title>T</title>", html: "<main>x</main>", data: { a: 1 }, ld: null }
+	const expected = createHash("sha256")
+		.update(JSON.stringify([parts.head, parts.html, parts.data, parts.ld]))
+		.digest("hex")
+	expect(pageHash(parts)).toBe(expected)
+	expect(pageHash({ ...parts, html: "<main>y</main>" })).not.toBe(expected)
+})
+
+async function manifestFor(
+	resources: object[],
+	kommuner: object[],
+	options: { template?: string; manifest?: object } = {}
+) {
+	const { dataDir, distDir } = setup(resources, kommuner)
+	if (options.template) writeFileSync(join(distDir, "index.html"), options.template)
+	await prerenderSite({
+		dataDir,
+		distDir,
+		render: echoRender,
+		split: splitForKommune as never,
+		kommuneIndex: buildKommuneIndex as never,
+		pickHelplines: () => [],
+		family: realFamily,
+		siteOrigin: "https://varde.pages.dev",
+		manifest: (options.manifest ?? null) as never,
+		log: () => {},
+	})
+	return JSON.parse(readFileSync(join(distDir, "page-hashes.json"), "utf8")) as Record<
+		string,
+		string
+	>
+}
+
+const rowB = { ...row, id: 6, name: "Krisesenteret", municipalityId: 9, servedMunicipalityIds: [1] }
+
+test("the manifest lists every page once, keys sorted, values sha256 hex, no 404", async () => {
+	const hashes = await manifestFor([row, rowB], [hamar])
+	const keys = Object.keys(hashes)
+	expect(keys).toEqual([...keys].sort())
+	expect(keys).toHaveLength(14)
+	expect(keys).toContain("/kommune")
+	expect(keys).not.toContain("/404")
+	for (const value of Object.values(hashes)) expect(value).toMatch(/^[a-f0-9]{64}$/)
+})
+
+test("the same data in another order gives the same manifest", async () => {
+	const a = await manifestFor([row, rowB], [hamar])
+	const b = await manifestFor([rowB, row], [hamar])
+	expect(b).toEqual(a)
+})
+
+test("a changed asset link or template keeps every hash", async () => {
+	const a = await manifestFor([row], [hamar])
+	const b = await manifestFor([row], [hamar], {
+		template: template.replace("/assets/main.js", "/assets/main-NEWHASH.js"),
+		manifest: {
+			"src/main.tsx": { file: "assets/main-NEWHASH.js", isEntry: true },
+			"src/components/KommuneIndexPage.tsx": { file: "assets/KommuneIndexPage-NEW.js" },
+		},
+	})
+	expect(b).toEqual(a)
+})
+
+test("changed content changes only that page's hash", async () => {
+	const a = await manifestFor([row], [hamar])
+	const b = await manifestFor([{ ...row, description: "new text" }], [hamar])
+	const changed = Object.keys(a).filter((k) => a[k] !== b[k])
+	// The row shows on its own page and on the kommune pages; nothing else moved.
+	expect(changed.sort()).toEqual(
+		["/en/kommune/hamar", "/en/resources/5", "/kommune/hamar", "/resources/5"].sort()
+	)
 })

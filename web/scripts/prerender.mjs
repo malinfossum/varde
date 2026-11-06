@@ -2,8 +2,9 @@
 // `vite build --ssr` (server); reads public/data/ written by export-data.mjs. No shebang here
 // (unlike export-data.mjs): this file's CLI block does a non-literal `import()`, and Vite's
 // vitest transform mis-parses a leading `#!` on any file whose dynamic import it can't
-// statically resolve — confirmed by bisection. It only ever runs as `node scripts/prerender.mjs`
+// statically resolve. Confirmed by bisection. It only ever runs as `node scripts/prerender.mjs`
 // (see package.json's `prerender` script), never `./prerender.mjs`, so the shebang added nothing.
+import { createHash } from "node:crypto"
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
@@ -35,8 +36,29 @@ export function jsonLd(resource, lang, siteOrigin) {
 	return out
 }
 
+// The front page tells search engines the site's name (spec 2026-11-06). No SearchAction:
+// Google retired the sitelinks search box, and /sok? is blocked in robots.txt.
+export function websiteLd(lang, siteOrigin) {
+	return {
+		"@context": "https://schema.org",
+		"@type": "WebSite",
+		name: "Varde",
+		url: `${siteOrigin}${prefix(lang)}/`,
+		inLanguage: lang,
+	}
+}
+
+// A page's own content, hashed for IndexNow (spec 2026-11-06): head tags, markup, baked data and
+// JSON-LD. The template and the hashed asset links are left out, so a code-only deploy changes
+// no hash and pings nothing.
+export function pageHash({ head, html, data, ld }) {
+	return createHash("sha256")
+		.update(JSON.stringify([head, html, data, ld ?? null]))
+		.digest("hex")
+}
+
 // The kommune local/national split lives only in src/components/KommunePage.tsx
-// (splitForKommune), re-exported by entry-server.tsx — no MJS copy of it here. urlList stays
+// (splitForKommune), re-exported by entry-server.tsx. No MJS copy of it here. urlList stays
 // pure and hands back the raw kommune entry; prerenderSite calls the caller's `split` (the
 // server bundle's splitForKommune) to build the actual page data.
 // The lazy() route components of src/App.tsx, keyed the way Vite's build manifest keys them.
@@ -46,11 +68,12 @@ const CHUNKS = {
 	detail: "src/components/ResourceDetail.tsx",
 	kommune: "src/components/KommunePage.tsx",
 	about: "src/components/AboutPage.tsx",
+	kommuneIndex: "src/components/KommuneIndexPage.tsx",
 }
 
 // A route page names its lazy chunk (and the chunks that one imports) up front, so the browser
 // fetches them alongside the entry instead of one round-trip after it has run. Whatever the
-// entry already pulls in is skipped — it is on its way regardless.
+// entry already pulls in is skipped. It is on its way regardless.
 export function modulepreloadTags(manifest, key) {
 	if (!manifest || !key) return ""
 	const collect = (k, into) => {
@@ -75,6 +98,13 @@ export function urlList(kommuner, resourcesByLang) {
 		out.push({ url: `${p}/`, data: {}, lang, landing: true })
 		out.push({ url: `${p}/sok`, data: {}, lang, chunk: CHUNKS.list })
 		out.push({ url: `${p}/om`, data: {}, lang, chunk: CHUNKS.about })
+		out.push({
+			url: `${p}/kommune`,
+			data: {},
+			lang,
+			kommuneIndex: true,
+			chunk: CHUNKS.kommuneIndex,
+		})
 		for (const r of resourcesByLang[lang])
 			out.push({ url: `${p}/resources/${r.id}`, data: { resource: r }, lang, chunk: CHUNKS.detail })
 		for (const k of kommuner)
@@ -134,8 +164,8 @@ function fillTemplate(template, { lang, head, html, data, ld }) {
 	const dataBlock = blocks.join("\n\t\t")
 	// Every value below can carry free-text database fields (names, descriptions) that a real
 	// resource can put anything into, including `$&`, `` $` ``, `$'` or `$$`. String.replace's
-	// SECOND argument treats those as substitution patterns when it's a string — `$&` re-inserts
-	// the whole matched marker, `` $` `` and `$'` splice in everything before/after the match —
+	// SECOND argument treats those as substitution patterns when it's a string. `$&` re-inserts
+	// the whole matched marker, `` $` `` and `$'` splice in everything before/after the match,
 	// so a resource description containing one could silently duplicate or corrupt the page.
 	// Passing a function instead means the replacement is used verbatim, no pattern parsing.
 	return template
@@ -163,8 +193,8 @@ function sitemap(pages, siteOrigin) {
 	return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${entries.join("\n")}\n</urlset>\n`
 }
 
-// react-dom/static's prerender() can "outline" a Suspense boundary that DOES resolve —
-// written out-of-band as a completion <template> plus an inline <script>$RC(...)</script> that
+// react-dom/static's prerender() can "outline" a Suspense boundary that DOES resolve.
+// It is written out-of-band as a completion <template> plus an inline <script>$RC(...)</script> that
 // moves it into place. index.html's CSP hashes exactly one inline script (the theme init), so an
 // outlined boundary would sit inert until React hydrates client-side: exactly the SEO/first-
 // paint regression prerendering exists to avoid. Fail the whole build rather than ship it.
@@ -191,6 +221,7 @@ export async function prerenderSite({
 	distDir,
 	render,
 	split,
+	kommuneIndex,
 	pickHelplines,
 	family,
 	siteOrigin,
@@ -198,7 +229,7 @@ export async function prerenderSite({
 	log = console.log,
 }) {
 	// A trailing slash would double up with every path concatenated onto it below (canonical,
-	// hreflang, sitemap, robots' Sitemap: line) — `${siteOrigin}/sok` becoming `https://host//sok`.
+	// hreflang, sitemap, robots' Sitemap: line), with `${siteOrigin}/sok` becoming `https://host//sok`.
 	siteOrigin = siteOrigin.replace(/\/$/, "")
 	const read = (name) => JSON.parse(readFileSync(join(dataDir, name), "utf8"))
 	const kommuner = read("kommuner.json")
@@ -208,33 +239,40 @@ export async function prerenderSite({
 		if (!template.includes(marker)) throw new Error(`index.html lacks ${marker}`)
 	}
 	const pages = urlList(kommuner, resourcesByLang)
+	const hashes = {}
 	for (const page of pages) {
 		const content = page.kommune
 			? { kommune: split(page.kommune, resourcesByLang[page.lang]) }
-			: page.landing
-				? { helplines: pickHelplines(resourcesByLang[page.lang]) }
-				: page.data.resource
-					? { ...page.data, family: family(page.data.resource, resourcesByLang[page.lang]) }
-					: page.data
+			: page.kommuneIndex
+				? { kommuneIndex: kommuneIndex(kommuner, resourcesByLang[page.lang]) }
+				: page.landing
+					? { helplines: pickHelplines(resourcesByLang[page.lang]) }
+					: page.data.resource
+						? { ...page.data, family: family(page.data.resource, resourcesByLang[page.lang]) }
+						: page.data
 		// Tagged with the page's language so the browser drops it after a switch (issue #79). A
 		// page with nothing baked stays empty, so it writes no data block at all.
 		const data = Object.keys(content).length ? { lang: page.lang, ...content } : content
 		const { html, head } = await render(page.url, data)
 		assertNoOutlinedBoundary(html, page.url)
 		assertNoStyleAttribute(html, page.url)
-		const ld = data.resource ? jsonLd(data.resource, page.lang, siteOrigin) : null
+		const ld = data.resource
+			? jsonLd(data.resource, page.lang, siteOrigin)
+			: page.landing
+				? websiteLd(page.lang, siteOrigin)
+				: null
+		const pageHead = headTags(head, siteOrigin)
+		hashes[page.url] = pageHash({ head: pageHead, html, data, ld })
 		const file = fillTemplate(template, {
 			lang: page.lang,
-			head: [headTags(head, siteOrigin), modulepreloadTags(manifest, page.chunk)]
-				.filter(Boolean)
-				.join("\n\t\t"),
+			head: [pageHead, modulepreloadTags(manifest, page.chunk)].filter(Boolean).join("\n\t\t"),
 			html,
 			data,
 			ld,
 		})
 		// File form, not folder form: Cloudflare Pages' asset server 308s a folder-form request
 		// (`/resources/12` -> `/resources/12/`) when only `resources/12/index.html` exists, and
-		// the strict router parses the slashed URL as notFound — every deep link 404s. File form
+		// the strict router parses the slashed URL as notFound, so every deep link 404s. File form
 		// (`resources/12.html`) serves `/resources/12` directly and 308s the slashed form back to
 		// it, which the router accepts. `/` and `/en/` keep index.html since they ARE folder
 		// roots already.
@@ -256,6 +294,8 @@ export async function prerenderSite({
 	)
 	writeFileSync(join(distDir, "404.html"), notFound)
 	writeFileSync(join(distDir, "sitemap.xml"), sitemap(pages, siteOrigin))
+	const sorted = Object.fromEntries(Object.entries(hashes).sort(([a], [b]) => (a < b ? -1 : 1)))
+	writeFileSync(join(distDir, "page-hashes.json"), `${JSON.stringify(sorted, null, "\t")}\n`)
 	writeFileSync(
 		join(distDir, "robots.txt"),
 		`User-agent: *\nAllow: /\nDisallow: /sok?\nDisallow: /en/sok?\nDisallow: /data/\nSitemap: ${siteOrigin}/sitemap.xml\n`
@@ -278,6 +318,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 		distDir: join(webDir, "dist"),
 		render: server.render,
 		split: server.splitForKommune,
+		kommuneIndex: server.buildKommuneIndex,
 		pickHelplines: server.pickHelplines,
 		family: server.familyOf,
 		siteOrigin,

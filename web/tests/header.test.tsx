@@ -58,3 +58,40 @@ test("the English brand link is named in English", () => {
 	render(<App />)
 	expect(screen.getByRole("link", { name: "Varde, home page" })).toHaveAttribute("href", "/en/")
 })
+
+test("the header nav links to the kommune index right after all services", () => {
+	stubDataFiles()
+	render(<App />)
+	const nav = screen.getAllByRole("navigation", { name: "Hovedmeny" })[0] as HTMLElement
+	const names = within(nav)
+		.getAllByRole("link")
+		.map((a) => a.textContent)
+	expect(names[0]).toBe("Alle tjenester")
+	expect(names[1]).toBe("Kommuner")
+	expect(within(nav).getByRole("link", { name: "Kommuner" })).toHaveAttribute("href", "/kommune")
+})
+
+test("the current page's header link carries aria-current, the other does not", () => {
+	stubDataFiles()
+	window.history.pushState(null, "", "/kommune")
+	render(<App />)
+	const nav = screen.getAllByRole("navigation", { name: "Hovedmeny" })[0] as HTMLElement
+	expect(within(nav).getByRole("link", { name: "Kommuner" })).toHaveAttribute(
+		"aria-current",
+		"page"
+	)
+	expect(within(nav).getByRole("link", { name: "Alle tjenester" })).not.toHaveAttribute(
+		"aria-current"
+	)
+})
+
+test("the English header says Municipalities and keeps the prefix", () => {
+	stubDataFiles()
+	window.history.pushState(null, "", "/en/")
+	render(<App />)
+	const nav = screen.getAllByRole("navigation", { name: "Main menu" })[0] as HTMLElement
+	expect(within(nav).getByRole("link", { name: "Municipalities" })).toHaveAttribute(
+		"href",
+		"/en/kommune"
+	)
+})

@@ -1,7 +1,18 @@
 import { expect, test } from "@playwright/test"
 import { noHorizontalScroll, setTheme, THEMES } from "./helpers.ts"
 
-const paths = ["/", "/en/", "/sok", "/en/sok", "/resources/1", "/en/resources/1", "/om", "/en/om"]
+const paths = [
+	"/",
+	"/en/",
+	"/sok",
+	"/en/sok",
+	"/resources/1",
+	"/en/resources/1",
+	"/om",
+	"/en/om",
+	"/kommune",
+	"/en/kommune",
+]
 
 test.use({ viewport: { width: 320, height: 700 } })
 

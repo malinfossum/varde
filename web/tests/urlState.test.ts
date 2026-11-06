@@ -11,7 +11,7 @@ import {
 	systemLang,
 } from "../src/services/urlState.ts"
 
-// "/" is the landing now that results live at /sok — see the dedicated route test below for
+// "/" is the landing now that results live at /sok. See the dedicated route test below for
 // the full landing/list/detail/notFound matrix. This one keeps covering detail and not-found.
 test("detail and not-found routes", () => {
 	expect(parseRoute("/resources/42")).toEqual({ kind: "detail", id: 42 })
@@ -68,7 +68,7 @@ describe("legacyRedirect", () => {
 	})
 	test("?lang=nb is stripped and never redirected by the stored preference", () => {
 		// "/" used to return "/" (the stripped path), which then had to reload as a fresh
-		// navigation just to drop the query string — a navigation on which the stored-preference
+		// navigation just to drop the query string, a navigation on which the stored-preference
 		// rule below would fire and bounce the explicit "nb" choice to /en/. Returning null here
 		// means the explicit choice is honoured with no second hop at all. /resources/5 was never
 		// at risk (the stored-preference rule only ever fires on a bare "/"), so it still gets
@@ -114,7 +114,7 @@ test.each([
 })
 
 // /sok is prerendered once, as the no-query page. A results URL like /sok?search=nav must not
-// hydrate that markup — the client's first render is the filtered list, and React would
+// hydrate that markup. The client's first render is the filtered list, and React would
 // throw a hydration mismatch (#418) against the unfiltered HTML. Every other route's
 // prerender matches its client render exactly, including /sok with no query.
 test.each([
@@ -135,4 +135,12 @@ test("/om is the About page in both languages", () => {
 	expect(parseRoute("/om")).toEqual({ kind: "about" })
 	expect(parseUrl("/en/om")).toEqual({ lang: "en", route: { kind: "about" } })
 	expect(routePath({ kind: "about" })).toBe("/om")
+})
+
+test("/kommune is the kommune index in both languages, and a slashed form is not", () => {
+	expect(parseUrl("/kommune")).toEqual({ lang: "nb", route: { kind: "kommuneIndex" } })
+	expect(parseUrl("/en/kommune")).toEqual({ lang: "en", route: { kind: "kommuneIndex" } })
+	expect(parseUrl("/kommune/")).toEqual({ lang: "nb", route: { kind: "notFound" } })
+	expect(routePath({ kind: "kommuneIndex" })).toBe("/kommune")
+	expect(switchLangPath("/kommune", "en")).toBe("/en/kommune")
 })

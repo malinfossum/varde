@@ -24,7 +24,7 @@ function stubCatalog(fail = false) {
 		return fetchMock
 	}
 	stubDataFiles({ municipalities, categories })
-	// stubDataFiles installs its own vi.fn() — hand it back so callers here can still count
+	// stubDataFiles installs its own vi.fn(). Hand it back so callers here can still count
 	// calls the way the API-era stub let them (fetchSpy.toHaveBeenCalledTimes(2), etc.).
 	return fetch as ReturnType<typeof vi.fn>
 }
@@ -43,7 +43,7 @@ test("the landing renders without a single request", () => {
 	)
 	expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/Finn riktig hjelp/)
 	expect(fetchSpy).not.toHaveBeenCalled()
-	expect(document.title).toBe("Varde – finn riktig hjelpetjeneste")
+	expect(document.title).toBe("Varde – finn riktig hjelpetjeneste der du bor")
 })
 
 test("focusing the search box prefetches the catalog; Enter submits the text to /sok", async () => {

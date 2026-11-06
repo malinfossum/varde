@@ -6,13 +6,15 @@ import { UrlContext } from "./navigation.ts"
 import { type PageData, PageDataContext } from "./pageData.ts"
 
 // Re-exported so scripts/prerender.mjs can compute a kommune's local/national split from
-// dist-server/entry-server.mjs without importing KommunePage.tsx directly — that file pulls in
+// dist-server/entry-server.mjs without importing KommunePage.tsx directly. That file pulls in
 // react-aria-components' ComboBox tree, which the prerender script has no use for.
 export { splitForKommune } from "./components/KommunePage.tsx"
 // The prerender finds a detail page's parent and children with the same function the browser uses.
 export { familyOf } from "./services/family.ts"
 // The prerender picks the landing page's helplines with the same function the browser uses.
 export { pickHelplines } from "./services/helplines.ts"
+// The prerender bakes /kommune with the same builder the browser uses.
+export { buildKommuneIndex } from "./services/kommuneIndex.ts"
 
 // Called once per URL by scripts/prerender.mjs. prerender() waits for lazy chunks and
 // Suspense, so the code splitting in App.tsx stays. Nothing here may touch window/document.
@@ -39,12 +41,12 @@ export async function render(
 			</HeadContext.Provider>
 		</StrictMode>,
 		// Found while writing the hydration guard: a Suspense boundary that DOES resolve still
-		// gets "outlined" — written out-of-band with a completion <template> plus an inline
-		// <script>$RC(...)</script> that moves it into place — whenever the shell plus that
+		// gets "outlined": written out-of-band with a completion <template> plus an inline
+		// <script>$RC(...)</script> that moves it into place whenever the shell plus that
 		// boundary's bytes cross progressiveChunkSize (default ~12.8 KB), or the boundary has
 		// what Fizz calls "suspensey content". index.html's CSP is script-src 'self' with no
 		// inline scripts, so an outlined boundary's real content would sit inert in the page,
-		// never moved into place, until React hydrates and replaces it client-side — exactly
+		// never moved into place, until React hydrates and replaces it client-side. That is exactly
 		// the SEO/first-paint regression prerendering exists to avoid. Raising the byte budget
 		// past any real page's size rules out the size-triggered case (confirmed on /sok, whose
 		// header/strip/footer shell crossed the default ~12.8 KB); the hydration guard's

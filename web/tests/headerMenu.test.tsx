@@ -22,12 +22,13 @@ async function openMenu(user: ReturnType<typeof userEvent.setup>) {
 	await waitFor(() => expect(menuDetails().open).toBe(true))
 }
 
-test("the Meny holds the three links, then Språk and Tema as named groups", () => {
+test("the Meny holds the four links, then Språk and Tema as named groups", () => {
 	stubDataFiles()
 	render(<App />)
 	expect(trigger()).toHaveAccessibleName("Meny")
 	const m = menu()
 	expect(m.getByRole("link", { name: "Alle tjenester" })).toHaveAttribute("href", "/sok")
+	expect(m.getByRole("link", { name: "Kommuner" })).toHaveAttribute("href", "/kommune")
 	const helsenorge = m.getByRole("link", { name: "Helsenorge (ekstern side, åpnes i ny fane)" })
 	expect(helsenorge).toHaveAttribute("href", HELSENORGE_URL)
 	expect(helsenorge).toHaveAttribute("target", "_blank")
@@ -96,7 +97,7 @@ test("the arrows move through all three groups, skip the group labels and wrap",
 	expect(menu().getByRole("button", { name: "System" })).toHaveFocus()
 	await user.keyboard("{ArrowDown}")
 	expect(menu().getByRole("link", { name: "Alle tjenester" })).toHaveFocus()
-	await user.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}")
+	await user.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}")
 	expect(menu().getByRole("link", { name: "Norsk" })).toHaveFocus()
 })
 
