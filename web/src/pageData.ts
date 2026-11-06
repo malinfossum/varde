@@ -3,6 +3,7 @@ import { useLanguage } from "./i18n/LanguageProvider.tsx"
 import type { KommuneEntry } from "./services/data.ts"
 import type { Family } from "./services/family.ts"
 import type { HelplineGroup } from "./services/helplines.ts"
+import type { KommuneIndex } from "./services/kommuneIndex.ts"
 import type { Lang } from "./services/urlState.ts"
 import type { ResourceDto } from "./types/api.ts"
 
@@ -16,6 +17,8 @@ export type PageData = {
 	// Belongs to `resource`: its parent and its children, found in the same language's export.
 	family?: Family
 	kommune?: { entry: KommuneEntry; local: ResourceDto[]; national: ResourceDto[] }
+	// The /kommune page: every kommune grouped by fylke, with counts.
+	kommuneIndex?: KommuneIndex
 	helplines?: HelplineGroup[]
 }
 

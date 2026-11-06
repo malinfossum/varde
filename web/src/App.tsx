@@ -43,6 +43,9 @@ const KommunePage = lazy(() =>
 const AboutPage = lazy(() =>
 	import("./components/AboutPage.tsx").then((m) => ({ default: m.AboutPage }))
 )
+const KommuneIndexPage = lazy(() =>
+	import("./components/KommuneIndexPage.tsx").then((m) => ({ default: m.KommuneIndexPage }))
+)
 
 export function App() {
 	const { lang, route, filters, arrival, via, restore, navigate, historyEvents } = useUrlState()
@@ -115,6 +118,8 @@ const Page = memo(function Page({
 			{route.kind === "detail" && (
 				<ResourceDetail key={`${lang}-${route.id}`} id={route.id} arrival={arrival} />
 			)}
+			{/* Keyed by language: the baked index belongs to the loaded language only. */}
+			{route.kind === "kommuneIndex" && <KommuneIndexPage key={lang} arrival={arrival} />}
 			{route.kind === "kommune" && (
 				<KommunePage key={`${lang}-${route.slug}`} slug={route.slug} arrival={arrival} />
 			)}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
+import { fill } from "../i18n/fill.ts"
 import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
 import { usePageData } from "../pageData.ts"
 import { type KommuneEntry, loadIndex } from "../services/data.ts"
@@ -28,10 +29,6 @@ export function splitForKommune(entry: KommuneEntry, resources: ResourceDto[]): 
 		.sort(compareResources)
 	const national = resources.filter((r) => r.isNational).sort(compareResources)
 	return { entry, local, national }
-}
-
-function fill(template: string, values: Record<string, string | number>): string {
-	return template.replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""))
 }
 
 export function KommunePage({ slug, arrival }: { slug: string; arrival: number }) {
