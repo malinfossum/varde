@@ -632,8 +632,11 @@ phone number or an address on its own: those must agree with the legevakt's own 
 
 Builds the real `GateContext` from the cache, the registers and the NKLM data
 (`verify/context.ts`, the assembly left over from #114). Runs the five gates and writes the lock
-file. Unit inclusion lives in `curate/include.ts`: a clear match gets `include: true`, anything
-unclear becomes one review question.
+file. Unit inclusion lives in `curate/include.ts`. A match is clear when exactly one register
+unit and exactly one fetched page belong together (by org number, or by normalised name plus
+Kartverket address id) and the category is known (from the SN2025 code or a known service
+path). A clear match gets `include: true`. Anything else (two units for one page, two pages for
+one unit, no category) becomes one review question.
 
 #### review
 
@@ -647,6 +650,16 @@ Every rule reads the adapter's text for the page, plus the contact block when on
 Fallback pages (a bare `<main>`) run the same rules, but only the heading rule can find a
 contact block on them. Each rule hands the verify stage a value, its verbatim quote and its
 origin. The gates then decide; no rule accepts a value itself.
+
+**A page shared by several units** (a kommune page such as "Helsestasjoner i Gjøvik" that
+lists three services) can put a real number on the wrong unit, and no gate catches that. When
+one page is the source for two or more units, its phone, email and address values go to
+review, unless the contact block's own heading names the unit (decided 06.11.2026). PR 4
+measures what this costs in review share.
+
+Page text comes from sites I do not control, so every rule pattern runs in linear time: no
+nested or overlapping quantifiers, and a line longer than 2,000 characters is skipped as not a
+contact line.
 
 #### Phone
 
@@ -662,24 +675,38 @@ A number is any run that `phoneDigits` turns into a valid Nkom number. Two cases
 The phone order from the main spec decides which number the unit gets:
 
 1. **Service phone:** a number in the contact block next to "Telefon", "Tlf", "Vakttelefon" or
-   the unit's name, with no person name on the line. A time range on the same line or the line
+   the unit's name, with no person name on the line. A landline with a person name on its line
+   is not a service phone: it follows rank 2 (role word needed, name never stored) or goes to
+   review. A time range on the same line or the line
    after becomes `phoneHours` (through the formatter). "Døgnåpen" or "hele døgnet" sets
-   `alwaysOpen`.
+   `alwaysOpen` only when the phrase stands alone on its line or next to the number. Any other
+   word on that line ("ikke", "unntatt", "i helgene", a day name) sends it to review. A wrong
+   `alwaysOpen` on an acute line tells someone at night that a closed place is open.
 2. **Role mobile:** a mobile in the contact block with a role word on the same line or the line
    above. The role words live in one list in code ("Avdelingsleder", "Enhetsleder" and so on),
    and each word is added from a fetched page, never from memory. A mobile with no known role
    word goes to review, as the safety gate already says.
 3. **Sentralbord:** the kommune switchboard, labelled "Sentralbord", only when ranks 1 and 2
-   are empty.
+   are empty. It is read once per kommune: from the kommune's own record in brreg (register
+   evidence), or from the kommune's own contact page where the number sits next to
+   "Sentralbord" or "Servicetorg" (a quote).
 
 Two different numbers on the same rank with no label that tells them apart: review.
 
 #### Person names (ruling 28)
 
-`personName` becomes `personNames`, a list. Every capitalised word pair on a role-mobile line
-that is not a role word, a place name from KLASS or the unit's own name counts as a possible
-name. All of them are redacted from the stored quote. Redaction happens after the grounding
-gate, which matches the raw quote, so the gate still works. Names are never stored, as today.
+Lock files and PR bodies are public, so a missed name is a leak. Two rules:
+
+- **A role mobile stores no line at all.** Its quotes are just two verbatim pieces of the page:
+  the role word and the number (for example "Avdelingsleder" and "912 34 567"). Nothing else
+  from that line is stored, so no name can slip through, whatever its shape.
+- **Every other quote** (hours lines, Lavterskel sentences) runs the name redaction.
+  `personName` becomes `personNames`, a list. Every capitalised word, and every run of them,
+  that is not a role word, a place name from KLASS, a day or month name, or a word of the unit's
+  own name counts as a possible name and is redacted. It redacts too much on purpose.
+
+Redaction happens after the grounding gate, which matches the raw quote, so the gate still
+works. Names are never stored, as today.
 
 #### Email and website
 
@@ -694,7 +721,9 @@ gate, which matches the raw quote, so the gate still works. Names are never stor
 - **"1 A" and "1A":** `pickAddress` compares street numbers with the space between the number
   and the letter removed, so `Storgata 1 A` matches Kartverket's `Storgata 1A`. The stored value
   is Kartverket's own address text. Before writing this rule I check Kartverket's form against a
-  recorded API answer in the test fixtures.
+  recorded API answer in the test fixtures. That answer is for a public building (a rådhus),
+  and the fixtures README lists it as its second real-data exception, under CC BY 4.0 with
+  Kartverket's credit.
 - Krisesenter addresses keep the safety gate's rule: only from a quote on the centre's own page.
 
 #### Opening hours
@@ -704,6 +733,9 @@ gate, which matches the raw quote, so the gate still works. Names are never stor
 - The formatter rewrites times only: `13.00-18.00`, `13-18` and `kl 13.00 - 18.00` all become
   `kl. 13:00–18:00`. Day names and other words stay as the page wrote them. A time the
   formatter cannot read sends the field to review rather than storing it half tidied.
+- A time is hours 0 to 24 and minutes 0 to 59. An end before the start is allowed, because an
+  overnight legevakt runs `kl. 15:00–08:00`. A bare range without minutes (`13-18`) counts as
+  times only when its line also holds "kl" or a day name, so "1-2 ganger i uka" stays text.
 - **Length:** counted in characters (Unicode code points) on the final stored text, after the
   formatter and after runs of whitespace collapse to one space. Over 200: review.
 
@@ -716,7 +748,8 @@ collects the quotes; the Lavterskel rule in the safety gate decides the badge.
 ### Review command and curated answers
 
 `npm run review` is a local command. It never runs in CI. `--kommune <number>` limits it to
-one kommune.
+one kommune; the number must be a valid KLASS kommune number, checked before it is used in any
+file path. With nothing open it says "Nothing to review" and exits.
 
 #### What it asks
 
@@ -732,11 +765,20 @@ Each item shows, in this order:
 - the source link
 - why it is in review (the gate's reason)
 
-Page text can hold terminal control codes. Every quote, value and link has control characters
-and escape sequences stripped before it is printed, so a page cannot recolour, clear or rewrite
-my terminal.
+Page text can hold terminal control codes. Every quote, value and link has control characters,
+escape sequences (including OSC 8 links, whose text can differ from their target), Unicode
+bidi controls and zero-width characters stripped before it is printed. So a page cannot
+recolour, clear or rewrite my terminal, or make a quote or link read differently from what it
+is. The link's host is also printed on its own line.
+
+Meaning never rests on colour. The frame is plain ASCII, every item lists its keys in text, and
+`NO_COLOR` turns colour off.
 
 #### My answers
+
+Each answer is a key followed by Enter, so a stray or repeated key press never commits
+anything. A wrong answer is still easy to take back: the curated file is tracked in git, so
+`git diff` shows every answer before I commit, and a changed answer is one line to edit.
 
 | Key | Does | Stored as |
 |---|---|---|
@@ -765,6 +807,9 @@ fails is refused on the spot with the gate's reason, and the same item is asked 
   the quote leaves the page, the monthly quote check drops the value, as for any other.
 - Each answer is written at once: the curated file is checked against its schema, written to a
   temporary file, then renamed over the old one. A crash mid-write leaves the old file whole.
+  On Windows a rename can fail for a moment while another program holds the file (an editor, a
+  virus scanner). The write retries a few times, then stops with a clear message and keeps
+  the temporary file, so no answer is lost.
 
 ### Errors
 
@@ -778,11 +823,16 @@ fails is refused on the spot with the gate's reason, and the same item is asked 
   - It is read only when its date or hash differs from the last one seen. The raw file is never
     committed. The Sources list links NKLM's file page. The plan checks that the page serves
     the 01.01.2026 file; if it does not, the reader takes a local path I set.
+  - The permission I have covers the 01.01.2026 file. A new edition stops the NKLM step with
+    "new NKLM edition: licence check needed", and nothing from it is used until I record in
+    `docs/licence-requests/README.md` that the permission covers it too.
   - The reader checks the column headers first. A missing or renamed column fails the NKLM step
     with a clear message, and no NKLM fact is used that run. Legevakter are still found through
     the other sources.
   - The zip is read with limits: at most 20 MB unpacked, and only the workbook, the shared
-    strings and the first sheet. `cheerio` reads the XML in XML mode and never resolves an
+    strings and the first sheet. The limit counts the real bytes while they are unpacked and
+    stops at 20 MB. The size a zip entry declares is never trusted, because a zip bomb lies
+    about it. `cheerio` reads the XML in XML mode and never resolves an
     external entity.
   - NKLM facts enter the lock as register evidence: register `nklm`, record id = file date plus
     row number.
@@ -798,10 +848,20 @@ fails is refused on the spot with the gate's reason, and the same item is asked 
 - **Per rule:** one test file per field rule, plus a table test for the hours formatter (each
   input style and its house-style output, and the unreadable cases that must go to review).
 - **NKLM:** the test builds a tiny `.xlsx` in memory with `fflate`, with fictional rows, a
-  renamed column and an oversized entry.
+  renamed column, an oversized entry, an entry that declares a small size but unpacks past the
+  limit, and a new edition date that must stop the step.
+- **Must-fail fixtures for the stress-test fixes:** a role-mobile line holding a single name, a
+  three-part name and a hyphenated name (none of them in any stored quote); a landline next to
+  a name (not rank 1); "ikke døgnåpen" and "døgnåpen i helgene" (review, never `alwaysOpen`);
+  `25.00`, `13.75` and "1-2 ganger" (review or text, never a time); a page matched by two
+  register units (review, not included); a page listing three services, where only the block
+  whose heading names the unit is accepted; a 1 MB line of repeated digits and dots that every
+  rule must finish within a second.
 - **Review command:** driven by fake input and output streams in a temporary folder. Tests cover
-  each key, the escape-code stripping, the refused edit, the atomic write and the non-terminal
-  refusal.
+  each key, a key without Enter (nothing saved), the stripping of escape codes, OSC 8 links and
+  bidi controls, `NO_COLOR` output with no escape code in it, `--kommune ../x` (refused), an
+  empty queue, the refused edit, the atomic write with a rename that fails once, and the
+  non-terminal refusal.
 - **Golden test:** unchanged. It still expects no lock files; PR 4 commits the pilot's.
 - **Network boundary test** covers every new file.
 - **Before the PR:** `npm test`, `typecheck` and `lint` in `pipeline/`, and the web suites
@@ -857,6 +917,16 @@ Dependabot. It unzips the NKLM `.xlsx`, and `cheerio` reads the sheet XML.
 - **An AI model for extraction in PR 3.** Rules give the verbatim quote by construction, need
   no account and no bill, and keep page text on the runner. PR 4 measures whether a model is
   worth adding, against the 1-in-10 review target.
+- **A lock between `verify` and `review`.** Both run on my PC, one after the other. A lock
+  file would guard a race that one person does not create.
+- **An undo key in the review command.** Key plus Enter stops stray presses, and `git diff` on
+  the curated file shows every answer before I commit it.
+- **Decision keys that survive a formatter change.** If the hours formatter changes its output,
+  those questions come back once. That costs a few answers and is never wrong.
+- **A checksum for the NKLM file.** NKLM publishes none to compare against. HTTPS from an
+  allow-listed host and the column check are what the reader can verify.
+- **Screen-reader tuning of the review command beyond plain text.** I am its only user. Plain
+  ASCII, keys in text and `NO_COLOR` keep it readable without colour or graphics.
 - **Community MCP servers for brreg or Kartverket.** Unvetted code with my user rights, and
   name-squat risk. The pipeline calls the public APIs directly.
 
@@ -884,4 +954,4 @@ Dependabot. It unzips the NKLM `.xlsx`, and `cheerio` reads the sheet XML.
 - Ollama structured outputs: https://docs.ollama.com/capabilities/structured-outputs
 - NorMistral-11B: https://huggingface.co/ltg/normistral-11b-thinking
 
-> Stress-tested 2026-10-28 (skill 1b85fca): 15 applied, 3 adapted, 2 decided by me.
+> Stress-tested 2026-11-06 (skill a217382), PR 3 section: 14 applied, 2 adapted, 1 decided by me. Earlier run 2026-10-28 (skill 1b85fca), whole spec: 15 applied, 3 adapted, 2 decided by me.
