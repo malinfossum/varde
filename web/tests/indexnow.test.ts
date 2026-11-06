@@ -8,6 +8,8 @@ import {
 	changedUrls,
 	ENDPOINT,
 	findKey,
+	KEY_TRIES,
+	keyServed,
 	main,
 	ping,
 	readManifest,
@@ -26,6 +28,8 @@ const tmp = () => {
 	return d
 }
 const noWait = async () => {}
+const key = findKey(publicDir)
+const keyUrl = `${origin}/${key}.txt`
 
 test("public/ holds exactly one key file, and it contains its own name", () => {
 	const key = findKey(publicDir)
@@ -165,7 +169,9 @@ test("main never throws and reports a warning when it cannot run", async () => {
 	const next = join(d, "next.json")
 	writeFileSync(next, '{"/":"a"}')
 	const log = vi.fn()
-	const fetchImpl = vi.fn(async () => new Response(null, { status: 200 }))
+	const fetchImpl = vi.fn(async (url: string) =>
+		url === ENDPOINT ? new Response(null, { status: 200 }) : new Response(key, { status: 200 })
+	)
 	// No SITE_ORIGIN: skipped with a warning, nothing sent.
 	await expect(
 		main({ argv: [join(d, "live.json"), next], env: {}, fetchImpl, log, wait: noWait, publicDir })
@@ -198,9 +204,99 @@ test("main never throws and reports a warning when it cannot run", async () => {
 		wait: noWait,
 		publicDir,
 	})
-	expect(fetchImpl).toHaveBeenCalledTimes(1)
+	// The key check runs first, then the ping.
+	expect(fetchImpl).toHaveBeenCalledTimes(2)
+	expect(fetchImpl.mock.calls[1]?.[0]).toBe(ENDPOINT)
 	const body = JSON.parse(
-		String((fetchImpl.mock.calls[0] as unknown as [string, RequestInit])[1].body)
+		String((fetchImpl.mock.calls[1] as unknown as [string, RequestInit])[1].body)
 	)
 	expect(body.urlList).toEqual(["https://varde.pages.dev/"])
+})
+
+test("keyServed is true at once when the live key file holds the key", async () => {
+	// The live file ends in a newline when an editor saved it; that still counts.
+	const fetchImpl = vi.fn(async (_url: string) => new Response(`${key}\n`, { status: 200 }))
+	const wait = vi.fn(noWait)
+	await expect(keyServed({ origin, key, fetchImpl, wait })).resolves.toBe(true)
+	expect(fetchImpl).toHaveBeenCalledTimes(1)
+	expect(fetchImpl.mock.calls[0]?.[0]).toBe(keyUrl)
+	expect(wait).not.toHaveBeenCalled()
+})
+
+test("keyServed retries until a fresh deploy serves the key file", async () => {
+	const answers = [
+		() => new Response(null, { status: 404 }),
+		() => {
+			throw new TypeError("fetch failed")
+		},
+		() => new Response(key, { status: 200 }),
+	]
+	const fetchImpl = vi.fn(async () => (answers.shift() as () => Response)())
+	const wait = vi.fn(noWait)
+	await expect(keyServed({ origin, key, fetchImpl, wait })).resolves.toBe(true)
+	expect(fetchImpl).toHaveBeenCalledTimes(3)
+	expect(wait).toHaveBeenCalledTimes(2)
+	expect(wait).toHaveBeenCalledWith(5_000)
+})
+
+test("keyServed gives up after its tries when the file never holds the key", async () => {
+	const fetchImpl = vi.fn(async () => new Response("someone-else", { status: 200 }))
+	await expect(keyServed({ origin, key, fetchImpl, wait: noWait })).resolves.toBe(false)
+	expect(fetchImpl).toHaveBeenCalledTimes(KEY_TRIES)
+})
+
+test("main waits for the key file, then pings; a key never served warns and still pings", async () => {
+	const d = tmp()
+	const next = join(d, "next.json")
+	writeFileSync(next, '{"/om":"a"}')
+	const served = [404, 404, 200]
+	const fetchImpl = vi.fn(async (url: string) =>
+		url === ENDPOINT
+			? new Response(null, { status: 200 })
+			: new Response(key, { status: served.shift() ?? 200 })
+	)
+	const log = vi.fn()
+	await main({
+		argv: [join(d, "live.json"), next],
+		env: { SITE_ORIGIN: origin },
+		fetchImpl,
+		log,
+		wait: noWait,
+		publicDir,
+	})
+	expect(fetchImpl.mock.calls.map((c) => c[0])).toEqual([keyUrl, keyUrl, keyUrl, ENDPOINT])
+	expect(log.mock.calls.map((c) => c[0])).toEqual(["IndexNow: 1 URLs, status 200"])
+
+	const never = vi.fn(async (url: string) =>
+		url === ENDPOINT ? new Response(null, { status: 403 }) : new Response(null, { status: 404 })
+	)
+	const log2 = vi.fn()
+	await main({
+		argv: [join(d, "live.json"), next],
+		env: { SITE_ORIGIN: origin },
+		fetchImpl: never,
+		log: log2,
+		wait: noWait,
+		publicDir,
+	})
+	expect(never).toHaveBeenCalledTimes(KEY_TRIES + 1)
+	expect(String(log2.mock.calls.at(0))).toMatch(/^::warning::IndexNow key file not served/)
+})
+
+test("main skips the key check when nothing changed", async () => {
+	const d = tmp()
+	const manifest = join(d, "same.json")
+	writeFileSync(manifest, '{"/":"a"}')
+	const fetchImpl = vi.fn()
+	const log = vi.fn()
+	await main({
+		argv: [manifest, manifest],
+		env: { SITE_ORIGIN: origin },
+		fetchImpl,
+		log,
+		wait: noWait,
+		publicDir,
+	})
+	expect(fetchImpl).not.toHaveBeenCalled()
+	expect(log.mock.calls.map((c) => c[0])).toEqual(["IndexNow: 0 changed URLs, nothing sent"])
 })

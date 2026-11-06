@@ -55,6 +55,27 @@ export function changedUrls(live, next, origin) {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+export const KEY_TRIES = 6
+
+// The engines fetch the key file the moment a ping arrives. On the deploy that first publishes
+// it, a ping sent right after "Deployment complete" got 403 for every URL, so check that the
+// live file serves the key before pinging. Six tries, five seconds apart, stay well inside the
+// step's three-minute timeout.
+export async function keyServed({ origin, key, fetchImpl = fetch, wait = sleep }) {
+	for (let attempt = 1; attempt <= KEY_TRIES; attempt++) {
+		try {
+			const response = await fetchImpl(`${origin}/${key}.txt`, {
+				signal: AbortSignal.timeout(5_000),
+			})
+			if (response.ok && (await response.text()).trim() === key) return true
+		} catch {
+			// A network error counts as not served yet.
+		}
+		if (attempt < KEY_TRIES) await wait(5_000)
+	}
+	return false
+}
+
 export async function ping({
 	urls,
 	origin,
@@ -115,6 +136,8 @@ export async function main({
 		}
 		const key = findKey(publicDir)
 		const urls = changedUrls(readManifest(livePath), next, origin)
+		if (urls.length > 0 && !(await keyServed({ origin, key, fetchImpl, wait })))
+			log(`::warning::IndexNow key file not served after ${KEY_TRIES} tries; pinging anyway`)
 		await ping({ urls, origin, key, fetchImpl, log, wait })
 	} catch (error) {
 		log(`::warning::IndexNow failed: ${error instanceof Error ? error.message : "unknown error"}`)
