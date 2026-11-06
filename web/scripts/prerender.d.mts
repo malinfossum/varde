@@ -8,6 +8,7 @@ export type PrerenderPage = {
 	data: Record<string, unknown>
 	kommune?: object
 	landing?: boolean
+	kommuneIndex?: boolean
 	chunk?: string
 }
 // The shape of dist/.vite/manifest.json that modulepreloadTags reads (Vite writes more).
@@ -17,6 +18,7 @@ export type HeadEntry = { title: string; description: string; path: string; lang
 export type RenderResult = { html: string; head: HeadEntry | null }
 export type RenderFn = (url: string, data: Record<string, unknown>) => Promise<RenderResult>
 export type SplitFn = (entry: object, resources: object[]) => unknown
+export type KommuneIndexFn = (kommuner: object[], resources: object[]) => unknown
 export type PickHelplinesFn = (resources: object[]) => unknown
 export type FamilyFn = (resource: object, resources: object[]) => unknown
 
@@ -25,6 +27,7 @@ export type PrerenderOptions = {
 	distDir: string
 	render: RenderFn
 	split: SplitFn
+	kommuneIndex: KommuneIndexFn
 	pickHelplines: PickHelplinesFn
 	family: FamilyFn
 	siteOrigin: string
@@ -39,6 +42,13 @@ export declare function jsonLd(
 	lang: string,
 	siteOrigin: string
 ): object
+export declare function websiteLd(lang: string, siteOrigin: string): object
+export declare function pageHash(parts: {
+	head: string
+	html: string
+	data: unknown
+	ld: unknown
+}): string
 export declare function modulepreloadTags(manifest: Manifest | null, key?: string): string
 export declare function urlList(
 	kommuner: object[],

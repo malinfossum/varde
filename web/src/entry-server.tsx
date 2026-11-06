@@ -13,6 +13,8 @@ export { splitForKommune } from "./components/KommunePage.tsx"
 export { familyOf } from "./services/family.ts"
 // The prerender picks the landing page's helplines with the same function the browser uses.
 export { pickHelplines } from "./services/helplines.ts"
+// The prerender bakes /kommune with the same builder the browser uses.
+export { buildKommuneIndex } from "./services/kommuneIndex.ts"
 
 // Called once per URL by scripts/prerender.mjs. prerender() waits for lazy chunks and
 // Suspense, so the code splitting in App.tsx stays. Nothing here may touch window/document.
