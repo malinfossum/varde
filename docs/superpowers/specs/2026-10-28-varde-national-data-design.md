@@ -38,12 +38,15 @@ asks me when a machine cannot be sure. Two requirements govern it:
    with paid extras (`Cost` Partly) counts.
 8. **Frivillige organisasjoner are a provider type**, not an 11th category.
 9. **The 11 kommuner that block ClaudeBot** are fetched with Varde's own user agent and
-   extracted by a local model, so their text never reaches an AI company.
+   extracted by a local model, so their text never reaches an AI company. (Amended
+   06.11.2026: PR 3 extracts with rules, so no page text leaves the runner for any kommune.
+   The local model returns only with an AI fallback, decided after PR 4 (see "PR 3: extract, verify, review").)
 10. **It runs in scheduled GitHub Actions.** Refresh-only PRs merge themselves. Visible changes
     wait for me in one weekly PR.
 11. **Publishing waits for spec B.** The pilot is scored, not published.
 12. **Descriptions are AI drafts, labelled.** The model drafts them from the quotes only, a gate
     rejects any fact that is not in the lock file, and the site says they were written with AI.
+   (Amended 06.11.2026: postponed. PR 3 drafts no descriptions.)
 
 ## Sub-project map
 
@@ -118,7 +121,7 @@ renumbered kommune becomes a review item that maps the old files to the new numb
 file is orphaned silently.
 
 The Zod schema is the single source of truth. It validates both files in CI, and its JSON
-Schema export is the structured-output schema for the model.
+Schema export would be the structured-output schema for a model, if an AI fallback is added.
 
 ### Stages
 
@@ -126,8 +129,9 @@ Each stage is its own command, reads the previous stage's output and can be re-r
 
 1. **discover:** list candidate units per kommune from registers and sitemaps.
 2. **fetch:** download each candidate's page into the cache. Obeys robots.txt and crawl delay.
-3. **extract:** turn cached page text into field values with quotes (Haiku 5.5 batch; Ollama
-   for the 11 blocking kommuner; Sonnet 5.5 only for pages Haiku fails on).
+3. **extract:** turn cached page text into field values with quotes, by rules (amended
+   06.11.2026; the field rules are in "PR 3: extract, verify, review"). No AI model, unless
+   PR 4's review share calls for a fallback.
 4. **verify:** run the five gates on every field and write the lock file.
 5. **review:** a local command that walks me through open review items one at a time, shows
    the quote and the source link, and writes my decision into the curated file.
@@ -135,7 +139,7 @@ Each stage is its own command, reads the previous stage's output and can be re-r
 
 **Failing halfway fails closed.** Each stage writes a kommune's output to a temporary file and
 replaces the old one only when that kommune is complete. A run that crashes, times out or hits
-the spend limit leaves the previous lock files untouched, opens no PR, and says in its summary
+the spend limit (only with an AI fallback) leaves the previous lock files untouched, opens no PR, and says in its summary
 which kommuner it did not finish. Re-running a stage on the same input gives the same output.
 
 ## Verification gates
@@ -200,6 +204,9 @@ golden test lists today's badge rows that cost money, so I decide those once.
 
 ### Descriptions
 
+**Postponed (06.11.2026).** PR 3 drafts no descriptions, and rows go without one until a later
+decision. The rules below stand for when descriptions return.
+
 Writing nb and en descriptions for every row in 357 kommuner by hand is not realistic, so the
 extract stage drafts them.
 
@@ -231,7 +238,7 @@ extract stage drafts them.
 |---|---|---|
 | Enhetsregisteret (brreg), SN2025 codes | Units, addresses, org numbers, update feed | Nav 88.995, barnevern 88.991, frivilligsentral 88.996, helsestasjon 86.942, rus 88.994, krisesenter in practice 87.999. Legevakt by name only (shares 86.210 with GPs). Phone is often the switchboard. NLOD |
 | nav.no/kontor pages | Office hours, `kunTimeavtale` | JSON embedded in each office page |
-| NKLM legevakt list | Legevakter and legevaktsentraler | Licence request |
+| NKLM legevakt list | Legevakter and legevaktsentraler | `granted` 05.11.2026. Credit: «Oversikt over legevakter i Norge, NKLM (NORCE), per 01.01.2026» |
 | SSB KLASS | Kommune numbers, area tables | Classification 131; correspondence tables 2873 to 2876 |
 | Kartverket adresse API | Address check | Validity gate |
 | dinutvei.no | Help services for violence and abuse | WordPress API, 253 entries. Licence request |
@@ -271,9 +278,10 @@ training crawler, and these kommuner have said they do not want AI on their cont
   which robots.txt allows. The URL follows the domain if it changes, and the UI follow-up adds
   the Om Varde section it points to. The fetcher never spoofs a browser, and it honours each
   site's crawl delay with a 5-second floor (seen: 1, 5, 7 and 30 seconds).
-- Their pages are extracted by a local model through Ollama (NorMistral-11B or a Gemma or Qwen
-  model, picked in the pilot), so the text never leaves the runner.
-- If the local model misses the pass mark, those kommuner are researched by hand.
+- PR 3 extracts every page with rules, so their text never leaves the runner. If PR 4 adds an
+  AI fallback, their pages go to a local model through Ollama (NorMistral-11B or a Gemma or
+  Qwen model, picked then), never to an AI company.
+- If that model misses the pass mark, those kommuner are researched by hand.
 - Om Varde explains how the pipeline works.
 
 ## Freshness, privacy and security
@@ -293,7 +301,7 @@ training crawler, and these kommuner have said they do not want AI on their cont
 Scheduled GitHub Actions on standard runners, which are free for public repositories. My PC is
 only for the first pilot run and for debugging.
 
-- **API key:** a GitHub secret I paste in myself, like the Cloudflare and Neon secrets today.
+- **API key (only with an AI fallback after PR 4):** a GitHub secret I paste in myself, like the Cloudflare and Neon secrets today.
   Claude never sees the value. It belongs to its own Console workspace with a monthly spend
   limit of $5 and an alert, so a bug cannot cost more. Opt-in data sharing in the Console stays
   off.
@@ -306,7 +314,7 @@ only for the first pilot run and for debugging.
   Third-party actions pinned to a full SHA. Scheduled jobs share a `concurrency` group, so two
   runs never write the same branch at once. Page text and quotes never pass inline through
   `run:`; they go through files.
-- **Ollama on the runner:** a pinned Ollama release with its checksum checked, never
+- **Ollama on the runner (same):** a pinned Ollama release with its checksum checked, never
   `curl | sh`, and the model pinned by digest. Only the model is cached with `actions/cache`
   (it is public data). The pilot measures whether a public runner (16 GB RAM) is fast enough.
 - **No page cache in Actions.** On a public repository, a fork's PR workflow can restore caches
@@ -344,7 +352,9 @@ only for the first pilot run and for debugging.
   Confirm before PR 3: that the Commercial Terms' data processing addendum applies to my
   Console account, and which transfer basis it names (SCCs or the Data Privacy Framework).
   If it does not hold, the 11-kommune setup (Ollama on the runner) becomes the setup for
-  everyone.
+  everyone. (Amended 06.11.2026: PR 3 sends nothing to any API, so this check moves to the
+  AI fallback decision after PR 4. What I found on 05.11.2026: the DPA is part of the
+  Commercial Terms, uses SCCs, and covers the API only, not a Pro or Max plan.)
 - Telemetry is off in every tool the pipeline runs (Ollama with `OLLAMA_NO_CLOUD=1`, Playwright
   and the rest).
 
@@ -424,6 +434,9 @@ Innlandet goes live.
 | Sonnet 5.5 | Only pages Haiku fails on |
 | Ceiling | $5 a month, enforced by the workspace spend limit |
 
+Amended 06.11.2026: PR 3 extracts with rules, so the pipeline costs $0. The model rows above
+apply only if PR 4 leads to an AI fallback.
+
 ## Delivery
 
 Each PR leaves `main` green. None of them changes what the site shows.
@@ -434,7 +447,8 @@ Each PR leaves `main` green. None of them changes what the site shows.
 2. **Discover and fetch:** registers (brreg, Nav, KLASS, Kartverket), sitemaps, the
    fetcher with robots and crawl delay, the CMS adapters. Detail in "PR 2: discover and
    fetch" below.
-3. **Extract, verify, review:** Haiku batch, Ollama, the review command.
+3. **Extract, verify, review:** the field rules, the NKLM reader and the review command. Detail
+   in "PR 3: extract, verify, review" below.
 4. **Pilot run:** Innlandet and Oslo scored against the pass mark, with a report in the PR. Not
    published.
 5. **Automation:** the scheduled workflows, the bot token, `check-refresh-only` and the
@@ -528,7 +542,8 @@ under "Kilder og lisenser".
 - PR 1's "no network" rule becomes: only `src/net/` touches the network, and no test does.
 
 Moved to PR 3: several person names per candidate (ruling 28), dot-grouped phone numbers, and
-how the length of opening hours is counted.
+how the length of opening hours is counted. Settled in "PR 3: extract, verify, review", under
+"Field rules".
 
 ### Dependencies
 
@@ -560,6 +575,265 @@ and no model.
 - A low number does not block PR 2. Each miss becomes a discover fix before the pilot run in
   PR 4.
 
+## PR 3: extract, verify, review
+
+Decided in the brainstorm on 05.11.2026 and 06.11.2026. Where this section and an earlier one
+disagree, this section wins.
+
+### What it delivers
+
+- The `extract`, `verify` and `review` commands, and the NKLM reader.
+- Nothing new is committed to `data/`. The local trial run writes to a temporary folder, and
+  PR 4 commits the pilot's lock files.
+- Done when every test passes and the PR body holds the trial run's counts (accepted, review,
+  dropped) for the kommuner it covered.
+
+### Decisions
+
+1. Extraction is rule-based. No AI model in PR 3, so no account, no bill, and no page text
+   leaves the machine or the runner. Descriptions are left out of PR 3.
+2. Units enter the curated file automatically when the match is clear. Anything unclear is one
+   review question: "include this unit?"
+3. Values from a bare `<main>` (the fallback adapter) pass all five gates like any value.
+4. The NKLM reader is part of PR 3. Licence granted by email on 05.11.2026.
+5. The NKLM file is read with `fflate` and the `cheerio` the pipeline already uses.
+6. The contact block is the CMS contact box where the adapter knows it, else the lines under a
+   Kontakt heading.
+7. Opening hours stay text. A tested formatter rewrites only the times into house style.
+8. The review command is a terminal walk-through, one item at a time.
+
+### Parts and data flow
+
+PR 3 adds three commands: `extract`, `verify` and `review`. Each reads the previous stage's
+files and writes its own.
+
+#### extract
+
+Reads each cached page (the raw HTML PR 2 stores) and runs the same adapter again. Then:
+
+- `extract/contactBlock.ts` finds the unit's contact block: the CMS contact box first
+  (selectors taken from fetched pages, never guessed), then the lines under a "Kontakt",
+  "Kontakt oss" or "Kontaktinformasjon" heading. Values inside it get origin `unitContact`.
+  Everything else stays `unitPage`.
+- `extract/fields/*.ts` holds one small rule file per field: phone (with role label and phone
+  order), email, address, opening hours, website and the Lavterskel quotes. Each rule returns
+  the value together with the exact page line it came from, so the quote is verbatim by
+  construction. A rule that cannot decide emits a review candidate, never a guess.
+- `text/hours.ts` is the time formatter: `13.00-18.00` becomes `kl. 13:00–18:00`.
+- Output: one extraction file per kommune (schema from PR 2).
+
+#### NKLM reader
+
+`xlsx/read.ts` (`fflate` plus `cheerio`) and `registers/nklm.ts`. The file is fetched only when
+its date changes. It finds legevakter and the kommuner each one covers. It never supplies a
+phone number or an address on its own: those must agree with the legevakt's own page.
+
+#### verify
+
+Builds the real `GateContext` from the cache, the registers and the NKLM data
+(`verify/context.ts`, the assembly left over from #114). Runs the five gates and writes the lock
+file. Unit inclusion lives in `curate/include.ts`: a clear match gets `include: true`, anything
+unclear becomes one review question.
+
+#### review
+
+The terminal walk-through. Each answer is written to the curated file at once.
+
+Network access stays in `src/net/` only, and no test touches the network.
+
+### Field rules
+
+Every rule reads the adapter's text for the page, plus the contact block when one is found.
+Fallback pages (a bare `<main>`) run the same rules, but only the heading rule can find a
+contact block on them. Each rule hands the verify stage a value, its verbatim quote and its
+origin. The gates then decide; no rule accepts a value itself.
+
+#### Phone
+
+A number is any run that `phoneDigits` turns into a valid Nkom number. Two cases are new:
+
+- **Dot-grouped numbers** such as `61.13.20.00` or `611.32.000`. Today `quoteHasPhone` blanks
+  every dotted run as a time or a date. A dotted run counts as a phone only when it has four
+  groups of two digits or the groups 3-2-3, which no time (`08.00`) or date (`27.10.2026`) has.
+  `quoteHasPhone` learns the same two shapes, so the grounding gate finds these numbers too.
+- **Mobile or not:** an 8-digit number starting with 4 or 9 is a mobile, so the safety gate
+  needs a role label for it.
+
+The phone order from the main spec decides which number the unit gets:
+
+1. **Service phone:** a number in the contact block next to "Telefon", "Tlf", "Vakttelefon" or
+   the unit's name, with no person name on the line. A time range on the same line or the line
+   after becomes `phoneHours` (through the formatter). "Døgnåpen" or "hele døgnet" sets
+   `alwaysOpen`.
+2. **Role mobile:** a mobile in the contact block with a role word on the same line or the line
+   above. The role words live in one list in code ("Avdelingsleder", "Enhetsleder" and so on),
+   and each word is added from a fetched page, never from memory. A mobile with no known role
+   word goes to review, as the safety gate already says.
+3. **Sentralbord:** the kommune switchboard, labelled "Sentralbord", only when ranks 1 and 2
+   are empty.
+
+Two different numbers on the same rank with no label that tells them apart: review.
+
+#### Person names (ruling 28)
+
+`personName` becomes `personNames`, a list. Every capitalised word pair on a role-mobile line
+that is not a role word, a place name from KLASS or the unit's own name counts as a possible
+name. All of them are redacted from the stored quote. Redaction happens after the grounding
+gate, which matches the raw quote, so the gate still works. Names are never stored, as today.
+
+#### Email and website
+
+- **Email:** `mailto:` links and plain addresses in the contact block first, then the rest of
+  the page. The safety gate's existing rule drops an address that may be a person's own.
+- **Website:** the unit's own page URL, which is already grounded by the fetch.
+
+#### Address
+
+- Lines in the contact block with a four-digit postcode. "Besøksadresse" wins over
+  "Postadresse", and a "Postboks" line is never a street address.
+- **"1 A" and "1A":** `pickAddress` compares street numbers with the space between the number
+  and the letter removed, so `Storgata 1 A` matches Kartverket's `Storgata 1A`. The stored value
+  is Kartverket's own address text. Before writing this rule I check Kartverket's form against a
+  recorded API answer in the test fixtures.
+- Krisesenter addresses keep the safety gate's rule: only from a quote on the centre's own page.
+
+#### Opening hours
+
+- Source, in this order: Nav's page JSON (nav.no offices), the CMS hours box, then the lines
+  under an "Åpningstider" heading until the next heading.
+- The formatter rewrites times only: `13.00-18.00`, `13-18` and `kl 13.00 - 18.00` all become
+  `kl. 13:00–18:00`. Day names and other words stay as the page wrote them. A time the
+  formatter cannot read sends the field to review rather than storing it half tidied.
+- **Length:** counted in characters (Unicode code points) on the final stored text, after the
+  formatter and after runs of whitespace collapse to one space. Over 200: review.
+
+#### Lavterskel quotes
+
+Sentences in the page text that hold a phrase from the existing phrase table
+(`gates/phrases.ts`), from the whole page rather than only the contact block. The rule only
+collects the quotes; the Lavterskel rule in the safety gate decides the badge.
+
+### Review command and curated answers
+
+`npm run review` is a local command. It never runs in CI. `--kommune <number>` limits it to
+one kommune.
+
+#### What it asks
+
+It reads every lock file, collects the fields with status `review` and the "include this unit?"
+questions, and drops every question the curated file already answers. The order is acute units
+first (nødtjenester, legevakt, krisesenter), then by kommune, unit and field.
+
+Each item shows, in this order:
+
+- progress ("3 of 17"), kommune, unit name, field
+- the value, and the role label for a role mobile
+- the quote, as plain text in a framed block
+- the source link
+- why it is in review (the gate's reason)
+
+Page text can hold terminal control codes. Every quote, value and link has control characters
+and escape sequences stripped before it is printed, so a page cannot recolour, clear or rewrite
+my terminal.
+
+#### My answers
+
+| Key | Does | Stored as |
+|---|---|---|
+| a | accept the value as shown | `decision: "accept"` |
+| r | reject it | `decision: "reject"`, the field is dropped |
+| e | type my own value | `decision: "edit"` plus `editedValue` (and `role` for a phone) |
+| s | skip, ask again next time | nothing |
+| q | quit | nothing; all earlier answers are already saved |
+
+For "include this unit?" the keys are y (include, then pick its categories from a numbered
+list) and n (leave out, then type the reason). That writes `include`, `categories` and
+`excludeReason` on the unit, which the schema already requires.
+
+An edited value runs the validity gate and the safety gate before it is saved. A value that
+fails is refused on the spot with the gate's reason, and the same item is asked again.
+
+#### How an answer is stored
+
+- `ReviewDecision` gains `"edit"` and an optional `editedValue` and `role`. A question is still
+  one value for one field from one page, so the key (`field`, `value`, `sourceUrl`) stays the
+  page's value, not mine.
+- `Evidence` gains a third kind, `decision`, with `decidedOn` and the original page quotes.
+  `verify` uses it for an accepted or edited answer, and the grounding gate passes it with the
+  reason "my decision of <date>". Validity and safety still run on every verify.
+- When the page's value changes, the key no longer matches and the question comes back. When
+  the quote leaves the page, the monthly quote check drops the value, as for any other.
+- Each answer is written at once: the curated file is checked against its schema, written to a
+  temporary file, then renamed over the old one. A crash mid-write leaves the old file whole.
+
+### Errors
+
+- **Per kommune, fail closed.** `extract` and `verify` write each kommune to a temporary file
+  and rename it over the old one only when that kommune is complete, as the main spec already
+  says for every stage.
+- **One bad page** (no adapter text, HTML the rules cannot read) gives its unit no values from
+  that page. The run goes on. The summary counts it by reason; reasons never hold a value, a
+  quote or a URL, because the summary ends up in public logs.
+- **NKLM file:**
+  - It is read only when its date or hash differs from the last one seen. The raw file is never
+    committed. The Sources list links NKLM's file page. The plan checks that the page serves
+    the 01.01.2026 file; if it does not, the reader takes a local path I set.
+  - The reader checks the column headers first. A missing or renamed column fails the NKLM step
+    with a clear message, and no NKLM fact is used that run. Legevakter are still found through
+    the other sources.
+  - The zip is read with limits: at most 20 MB unpacked, and only the workbook, the shared
+    strings and the first sheet. `cheerio` reads the XML in XML mode and never resolves an
+    external entity.
+  - NKLM facts enter the lock as register evidence: register `nklm`, record id = file date plus
+    row number.
+- **Review command:** Ctrl+C works like q. Without an interactive terminal (a pipe, CI) it
+  refuses to start, so it can never answer for me.
+
+### Testing
+
+- **Fixtures stay fictional**, as the fixtures README requires: shapes copied from live pages,
+  values like `62 00 00 00` and "Kari Nordmann". New fixtures: a contact box per CMS, a page
+  with a Kontakt heading, hours in each style, dot-grouped phones, a role mobile with two names
+  on the line, and a fallback page.
+- **Per rule:** one test file per field rule, plus a table test for the hours formatter (each
+  input style and its house-style output, and the unreadable cases that must go to review).
+- **NKLM:** the test builds a tiny `.xlsx` in memory with `fflate`, with fictional rows, a
+  renamed column and an oversized entry.
+- **Review command:** driven by fake input and output streams in a temporary folder. Tests cover
+  each key, the escape-code stripping, the refused edit, the atomic write and the non-terminal
+  refusal.
+- **Golden test:** unchanged. It still expects no lock files; PR 4 commits the pilot's.
+- **Network boundary test** covers every new file.
+- **Before the PR:** `npm test`, `typecheck` and `lint` in `pipeline/`, and the web suites
+  (`npm test` and the full `npm run e2e`). Then one local run of `extract` and `verify` on the
+  PR 2 page cache for a few kommuner, which prints counts only (accepted, review, dropped). It
+  is a first look at the review share. PR 4 owns the real measure.
+
+### What changed elsewhere in this spec
+
+- Decisions 9 and 12, "Stages" (with "Failing halfway"), the Zod schema line, "Descriptions",
+  "Kommuner that block ClaudeBot", "Where it runs", "Cost" and "Delivery" carry a short amendment note: PR 3 has no AI model, no key and
+  no spend. An AI fallback, with its key, spend limit and Ollama, is decided after PR 4
+  measures the review share against the 1-in-10 target.
+- The Sources table marks NKLM `granted`, with its credit line. PR 3 records the answer in
+  `docs/licence-requests/README.md` (a role, not a name). The credit line joins "Kilder og
+  lisenser" in the UI follow-up, before the first NKLM-backed row goes live.
+- "Moved to PR 3" under PR 2 points to "Field rules" above.
+- "Considered and rejected" gains an AI model for extraction in PR 3.
+- The Console DPA check under "Privacy" moves to the AI fallback decision.
+
+### Schema changes
+
+- `Register` gains `nklm`, and the source gate accepts `granted` as the licence for it.
+- `ReviewDecision` gains `edit`, plus optional `editedValue` and `role`.
+- `Evidence` gains the `decision` kind (`decidedOn` and the original page quotes).
+- `Candidate.personName` becomes `personNames`, a list.
+
+### Dependencies
+
+`fflate` joins `cheerio` and `tldts`: MIT, no dependencies of its own, pinned and covered by
+Dependabot. It unzips the NKLM `.xlsx`, and `cheerio` reads the sheet XML.
+
 ## Considered and rejected
 
 - **Running the pipeline on my PC.** Safer for the key, but it needs me every week. GitHub
@@ -580,6 +854,9 @@ and no model.
 - **A GitHub App instead of a fine-grained token.** Tokens that never expire and finer
   permissions, but more setup than one repository needs. Revisit if the yearly token renewal
   becomes a chore.
+- **An AI model for extraction in PR 3.** Rules give the verbatim quote by construction, need
+  no account and no bill, and keep page text on the runner. PR 4 measures whether a model is
+  worth adding, against the 1-in-10 review target.
 - **Community MCP servers for brreg or Kartverket.** Unvetted code with my user rights, and
   name-squat risk. The pipeline calls the public APIs directly.
 
