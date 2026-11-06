@@ -3,3 +3,9 @@
   Referrer-Policy: no-referrer
   X-Content-Type-Options: nosniff
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/page-hashes.json
+  X-Robots-Tag: noindex
+
+/3ef1f52b261dadd9da2511a1c50fdb1f.txt
+  X-Robots-Tag: noindex

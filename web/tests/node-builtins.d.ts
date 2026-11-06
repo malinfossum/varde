@@ -4,6 +4,7 @@
 // exportData.test.ts adds mkdtempSync/rmSync (fs) and node:os's tmpdir to stage a scratch
 // directory outside the repo for the export script's file-writing test.
 // prerender.test.ts adds mkdirSync/writeFileSync (fs) to build a scratch dist/data tree.
+// indexnow.test.ts and headers.test.ts add readdirSync (fs) to find the one IndexNow key file.
 // headers.test.ts hashes a string to base64 (crypto) for the CSP style-src drift check.
 declare module "node:fs" {
 	export function readFileSync(path: string, encoding: "utf8"): string
@@ -14,6 +15,7 @@ declare module "node:fs" {
 	export function rmSync(path: string, options?: { recursive?: boolean; force?: boolean }): void
 	export function mkdirSync(path: string, options?: { recursive?: boolean }): void
 	export function writeFileSync(path: string, data: string): void
+	export function readdirSync(path: string): string[]
 }
 declare module "node:path" {
 	export function dirname(path: string): string

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto"
-import { readFileSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { expect, test } from "vitest"
@@ -69,4 +69,15 @@ test("the style-src hash matches favicon.svg's <style> block", () => {
 	const css = svg.slice(open + "<style>".length, close)
 	const hash = `'sha256-${createHash("sha256").update(css).digest("base64")}'`
 	expect(hash).toBe(FAVICON_STYLE_HASH)
+})
+
+test("the IndexNow plumbing files are never indexed", () => {
+	const text = read("../public/_headers")
+	const key = readdirSync(join(here, "../public")).find((f) => /^[a-f0-9]{32}\.txt$/.test(f))
+	expect(key).toBeDefined()
+	for (const path of ["/page-hashes.json", `/${key}`]) {
+		expect(text).toMatch(
+			new RegExp(`^${path.replace(/\./g, "\\.")}\\r?\\n\\s+X-Robots-Tag: noindex`, "m")
+		)
+	}
 })
