@@ -106,7 +106,7 @@ test("two national services say tjenester, and one English national service says
 	).toBeInTheDocument()
 })
 
-test("a failed index load shows the error state, and Prøv igjen loads it", async () => {
+test("a failed index load shows the error state", async () => {
 	vi.stubGlobal(
 		"fetch",
 		vi.fn(async () => new Response("down", { status: 503 }))
