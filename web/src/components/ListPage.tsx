@@ -25,7 +25,6 @@ import { useAnnounce } from "./StatusRegion.tsx"
 import { Suggestions } from "./Suggestions.tsx"
 import { WayfindingHint } from "./WayfindingHint.tsx"
 
-const titles = { nb: "Søk – Varde", en: "Search – Varde" }
 const descriptions = {
 	nb: "Varde – finn riktig hjelpetjeneste der du bor. Offentlig katalog over sosiale tjenester i Norge.",
 	en: "Varde – find the right help service where you live. Public directory of social services in Norway.",
@@ -135,7 +134,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 
 	return (
 		<div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-			<PageHead title={titles[lang]} description={descriptions[lang]} path="/sok" />
+			<PageHead title={t("list.pageTitle")} description={descriptions[lang]} path="/sok" />
 			{/* min-h reserves room for FilterBar's catalog-gated rows (the municipality combobox and
 			    the category chips only render once `catalog` resolves; see FilterBar.tsx).
 			    Below lg, aside sits stacked above the results, so that mount-time growth is what

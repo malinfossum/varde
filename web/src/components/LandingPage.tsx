@@ -1,5 +1,5 @@
 import { useArrivalFocus } from "../hooks/useArrivalFocus.ts"
-import { useLanguage, useTranslation } from "../i18n/LanguageProvider.tsx"
+import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import { FEATURED_SLUGS, type FeaturedSlug, GRID_SLUGS } from "../services/categories.ts"
 import { emergencyLines, telHref } from "../services/emergency.ts"
 import { categorySearch } from "../services/filters.ts"
@@ -14,18 +14,12 @@ const FEATURED_CLASS: Record<FeaturedSlug, string> = {
 	lavterskeltilbud: "chip-featured",
 }
 
-const titles = {
-	nb: "Varde – finn riktig hjelpetjeneste",
-	en: "Varde – find the right help service",
-}
-
 export function LandingPage({ arrival }: { arrival: number }) {
-	const { lang } = useLanguage()
 	const t = useTranslation()
 	const { ref } = useArrivalFocus<HTMLHeadingElement>(arrival, true)
 	return (
 		<div className="landing">
-			<PageHead title={titles[lang]} description={t("landing.subtitle")} path="/" />
+			<PageHead title={t("landing.pageTitle")} description={t("landing.description")} path="/" />
 			{/* The phone layout scaled up (decided 2026-10-15, replaces the 10-02 two columns): the
 			    hero is centred at every width. Below it, calling for help and someone to talk to stack
 			    under 1024 px and sit side by side from 1024 px, split by a divider either way, since
