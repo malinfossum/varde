@@ -41,6 +41,7 @@ PR.
 | `/` meta description | Finn hjelpetjenester der du bor: hjelpetelefoner, lavterskeltilbud og kommunale tjenester, med telefon, adresse og åpningstider. Gratis og uten sporing. | Find help services where you live: helplines, low-threshold services and municipal services, with phone, address and opening hours. Free, no tracking. |
 | `/sok` title | Søk i alle hjelpetjenester – Varde | Search all help services – Varde |
 | `/kommune` title | Hjelpetjenester per kommune – Varde | Help services by municipality – Varde |
+| `/kommune` meta description (approved with the plan, 06.11.2026) | Velg kommunen din og finn hjelpetjenestene der, med telefon, adresse og åpningstider. Kommunene er gruppert etter fylke. | Pick your municipality and find its help services, with phone, address and opening hours. Municipalities are grouped by county. |
 | `/kommune` h1 | Hjelpetjenester per kommune | Help services by municipality |
 | Header link | Kommuner | Municipalities |
 | Count label | 1 tjeneste / {n} tjenester | 1 service / {n} services |
