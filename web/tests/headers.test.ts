@@ -75,9 +75,10 @@ test("the IndexNow plumbing files are never indexed", () => {
 	const text = read("../public/_headers")
 	const key = readdirSync(join(here, "../public")).find((f) => /^[a-f0-9]{32}\.txt$/.test(f))
 	expect(key).toBeDefined()
+	const lines = text.split(/\r?\n/)
 	for (const path of ["/page-hashes.json", `/${key}`]) {
-		expect(text).toMatch(
-			new RegExp(`^${path.replace(/\./g, "\\.")}\\r?\\n\\s+X-Robots-Tag: noindex`, "m")
-		)
+		const at = lines.indexOf(path)
+		expect(at, `${path} has a block in _headers`).toBeGreaterThan(-1)
+		expect(lines[at + 1]).toMatch(/^\s+X-Robots-Tag: noindex$/)
 	}
 })
