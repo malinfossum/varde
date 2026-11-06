@@ -4,14 +4,15 @@
 const SUFFIX = " – Varde"
 const MAX = 60
 
-function escapeRegExp(text: string): string {
-	return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-}
-
 // The place counts as present when it starts a word: "Stangehjelpa" has Stange, but Hol is not
 // found inside "Alkoholvern".
 function hasPlace(name: string, place: string): boolean {
-	return new RegExp(`(?<!\\p{L})${escapeRegExp(place)}`, "iu").test(name)
+	const haystack = name.toLowerCase()
+	const needle = place.toLowerCase()
+	for (let at = haystack.indexOf(needle); at !== -1; at = haystack.indexOf(needle, at + 1)) {
+		if (at === 0 || !/\p{L}/u.test(haystack[at - 1] ?? "")) return true
+	}
+	return false
 }
 
 export function serviceTitle(resource: { name: string; municipalityName: string | null }): string {

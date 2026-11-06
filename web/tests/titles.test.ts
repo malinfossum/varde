@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { expect, test } from "vitest"
 import { serviceTitle } from "../src/services/titles.ts"
 
@@ -44,4 +47,12 @@ test("exactly 60 characters keeps the suffix", () => {
 test("a place with regex characters is matched literally", () => {
 	expect(t("Senter (Hamar)", "Hamar")).toBe("Senter (Hamar) – Varde")
 	expect(t("Senter", "A.B")).toBe("Senter, A.B – Varde")
+})
+
+test("the source has no regex lookbehind (Safari before 16.4 throws on it)", () => {
+	const source = readFileSync(
+		join(dirname(fileURLToPath(import.meta.url)), "../src/services/titles.ts"),
+		"utf8"
+	)
+	expect(source).not.toContain("(?<")
 })
