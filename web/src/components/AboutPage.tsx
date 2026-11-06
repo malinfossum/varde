@@ -3,9 +3,16 @@ import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import { generalReportHref, REPORT_ADDRESS } from "../services/contactActions.ts"
 import { PageHead } from "./PageHead.tsx"
 
-// The day the about.* text last changed. Bump it in the same commit as any edit to those
-// strings, in both languages.
-export const ABOUT_UPDATED = "2026-10-16"
+// The day the about.* text last changed, as ISO. Bump it in the same commit as any edit to
+// those strings, in both languages. tests/about.test.tsx pins a hash of the text and fails
+// until the date and the hash are updated together.
+export const ABOUT_UPDATED = "2026-11-04"
+
+// 2026-11-04 → 04.11.2026, the date style the rest of Varde's UI uses.
+function displayDate(iso: string): string {
+	const [year, month, day] = iso.split("-")
+	return `${day}.${month}.${year}`
+}
 
 const plainSections = [
 	["what", "about.whatHeading", "about.whatBody"],
@@ -73,7 +80,9 @@ export function AboutPage({ arrival }: { arrival: number }) {
 					</a>
 				</p>
 			</section>
-			<p className="text-sm text-muted">{t("about.updated").replace("{date}", ABOUT_UPDATED)}</p>
+			<p className="text-sm text-muted">
+				{t("about.updated").replace("{date}", displayDate(ABOUT_UPDATED))}
+			</p>
 		</article>
 	)
 }
