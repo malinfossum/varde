@@ -15,6 +15,13 @@ export declare const BATCH: number
 export declare function findKey(publicDir: string): string
 export declare function readManifest(path: string): Manifest
 export declare function changedUrls(live: Manifest, next: Manifest, origin: string): string[]
+export declare const KEY_TRIES: number
+export declare function keyServed(options: {
+	origin: string
+	key: string
+	fetchImpl?: FetchLike
+	wait?: (ms: number) => Promise<void>
+}): Promise<boolean>
 export declare function ping(options: PingOptions): Promise<void>
 export declare function main(options: {
 	argv: string[]
