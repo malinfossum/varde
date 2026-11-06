@@ -4,6 +4,7 @@ export type Route =
 	| { kind: "landing" }
 	| { kind: "list" }
 	| { kind: "about" }
+	| { kind: "kommuneIndex" }
 	| { kind: "detail"; id: number }
 	| { kind: "kommune"; slug: string }
 	| { kind: "notFound" }
@@ -20,6 +21,7 @@ export function parseRoute(pathname: string): Route {
 	if (pathname === "/") return { kind: "landing" }
 	if (pathname === "/sok") return { kind: "list" }
 	if (pathname === "/om") return { kind: "about" }
+	if (pathname === "/kommune") return { kind: "kommuneIndex" }
 	const detail = pathname.match(/^\/resources\/(\d+)$/)
 	if (detail) return { kind: "detail", id: Number(detail[1]) }
 	const slug = pathname.match(/^\/kommune\/([a-z0-9-]+)$/)?.[1]
@@ -52,6 +54,8 @@ export function routePath(route: Route): string {
 			return "/om"
 		case "detail":
 			return `/resources/${route.id}`
+		case "kommuneIndex":
+			return "/kommune"
 		case "kommune":
 			return `/kommune/${route.slug}`
 		case "notFound":

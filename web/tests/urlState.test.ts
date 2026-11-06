@@ -136,3 +136,11 @@ test("/om is the About page in both languages", () => {
 	expect(parseUrl("/en/om")).toEqual({ lang: "en", route: { kind: "about" } })
 	expect(routePath({ kind: "about" })).toBe("/om")
 })
+
+test("/kommune is the kommune index in both languages, and a slashed form is not", () => {
+	expect(parseUrl("/kommune")).toEqual({ lang: "nb", route: { kind: "kommuneIndex" } })
+	expect(parseUrl("/en/kommune")).toEqual({ lang: "en", route: { kind: "kommuneIndex" } })
+	expect(parseUrl("/kommune/")).toEqual({ lang: "nb", route: { kind: "notFound" } })
+	expect(routePath({ kind: "kommuneIndex" })).toBe("/kommune")
+	expect(switchLangPath("/kommune", "en")).toBe("/en/kommune")
+})
