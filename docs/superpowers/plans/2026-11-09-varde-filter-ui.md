@@ -170,6 +170,8 @@ Facts 13 to 18 were found on 09.11.2026 by running this plan's code in a scratch
   200 % e2e checks look at the filter UI only (as written now). Alternative: fix the card
   reflow in this PR, which grows its scope past the spec's PR 2 list.
 
+**Rulings (Malin, 09.11.2026):** C1 reuse the badge strings. C2 and C3 as written. C4 a 45-minute hunt inside Task 10, then `test.fail()` on that one assertion plus a follow-up issue. C5 a follow-up PR for the cards; PR 2 keeps the scoped 200 % checks. Plan approved for a subagent-driven build on `feat/filter-ui`.
+
 ## Review Focus
 
 1. **Back and Forward after removing a chip:** the Sted chips and the checkboxes follow the URL,
