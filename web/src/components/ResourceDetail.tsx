@@ -110,8 +110,10 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 		resource.openingHours || resource.address || resource.website || resource.costNote
 	)
 
+	// One service has no columns to add, so the page keeps the width it had before the wide steps
+	// (70rem, main's old 72rem less its padding) and centres in the wider shell from 1600 px.
 	return (
-		<div className="grid gap-6">
+		<div className="mx-auto grid w-full max-w-[70rem] gap-6">
 			<PageHead
 				title={serviceTitle(resource)}
 				description={metaDescription(resource.description)}

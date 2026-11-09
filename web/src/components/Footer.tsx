@@ -24,7 +24,7 @@ export function Footer({ theme }: { theme: ThemeApi }) {
 		<footer className="mt-6 border-t border-border lg:mt-4">
 			<div
 				data-tips={tips.hidden ? "hidden" : undefined}
-				className="footer-row mx-auto grid max-w-6xl gap-3 px-4 py-3 text-sm text-muted lg:flex lg:flex-wrap lg:items-center lg:justify-between lg:gap-x-6"
+				className="footer-row mx-auto grid page-width gap-3 px-4 py-3 text-sm text-muted lg:flex lg:flex-wrap lg:items-center lg:justify-between lg:gap-x-6"
 			>
 				{/* The 113 link keeps the text tight (a normal word space each side) and gets its 44 x 44 px
 				    target from an ::after box centred on the number. py-3 below 1024 px leaves room for

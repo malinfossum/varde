@@ -31,9 +31,8 @@ async function tabTo(page: Page, target: Locator, max = 80): Promise<void> {
 	throw new Error("Tab never reached the target")
 }
 
-// The filter's own boxes end inside the viewport. At 200 % text on a phone the result cards are
-// still wider than the screen (their nowrap Ring button), which is the separate card reflow
-// follow-up, so the 200 % checks look at the filter UI only and not at the whole page.
+// The filter's own boxes end inside the viewport. The whole page is checked as well where the
+// test can; reflow.spec.ts pins the result cards at 320 px and 200 % text.
 async function filterFits(page: Page): Promise<boolean> {
 	return page.evaluate(() => {
 		const width = document.documentElement.clientWidth
@@ -169,7 +168,7 @@ for (const fontSize of ["100%", "200%"]) {
 		await expect(dialog(page)).toBeVisible()
 		expect(await dialog(page).evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true)
 		expect(await filterFits(page)).toBe(true)
-		if (fontSize === "100%") expect(await noHorizontalScroll(page)).toBe(true)
+		expect(await noHorizontalScroll(page)).toBe(true)
 	})
 }
 

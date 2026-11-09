@@ -75,3 +75,60 @@ for (const [label, width, fontSize, stacked] of [
 		expect(await noHorizontalScroll(page)).toBe(true)
 	})
 }
+
+// C5: at 200 % text on a phone each result card was as wide as its longest word or badge, so
+// /sok was 455 px wide at 320 px. The card grids and the card itself now use minmax(0, 1fr),
+// long words break, and the pager wraps.
+for (const path of ["/sok", "/en/sok", "/kommune/hamar"]) {
+	test(`result cards on ${path} reflow at 320 px and 200 % text`, async ({ page }) => {
+		await page.goto(path)
+		await page.addStyleTag({ content: "html { font-size: 200% }" })
+		await page.evaluate(() => document.fonts.ready)
+		await page.locator("main li.rounded-xl").first().waitFor()
+		expect(await noHorizontalScroll(page)).toBe(true)
+	})
+}
+
+// Wide steps: the shell widens at 1600 and 1920 px and the card grids add a fourth column,
+// instead of three columns inside 384 px gutters. Strip, header, main and footer keep one edge.
+for (const [width, columns] of [
+	[1280, 3],
+	[1600, 4],
+	[1920, 4],
+] as const) {
+	for (const path of ["/sok", "/kommune/hamar"]) {
+		test(`${path} has ${columns} card columns and one shell edge at ${width} px`, async ({
+			page,
+		}) => {
+			await page.setViewportSize({ width, height: 900 })
+			await page.goto(path)
+			await page.locator("main li.rounded-xl").first().waitFor()
+			const m = await page.evaluate(() => {
+				const lefts = [...document.querySelectorAll("main ul[role='list'] > li.rounded-xl")]
+					.slice(0, 8)
+					.map((li) => Math.round(li.getBoundingClientRect().left))
+				const edges = [".acute-strip", ".header-row", "main", ".footer-row"].map((s) => {
+					const r = (document.querySelector(s) as Element).getBoundingClientRect()
+					return [Math.round(r.left), Math.round(r.right)]
+				})
+				return { columns: new Set(lefts).size, edges }
+			})
+			expect(m.columns).toBe(columns)
+			for (const edge of m.edges) expect(edge).toEqual(m.edges[0])
+			expect(await noHorizontalScroll(page)).toBe(true)
+		})
+	}
+}
+
+// One service has nothing to put in more columns, so the detail page keeps its 1120 px and
+// centres in the wider shell rather than stretching its tiles across 1760 px.
+test("the detail page stays 1120 px wide and centred at 1920 px", async ({ page }) => {
+	await page.setViewportSize({ width: 1920, height: 900 })
+	await page.goto("/resources/1")
+	const card = await page.locator("article.detail-card").evaluate((el) => {
+		const r = el.getBoundingClientRect()
+		return { width: r.width, left: r.left, right: document.documentElement.clientWidth - r.right }
+	})
+	expect(Math.abs(card.width - 1120)).toBeLessThanOrEqual(1)
+	expect(Math.abs(card.left - card.right)).toBeLessThanOrEqual(1)
+})

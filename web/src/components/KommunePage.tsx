@@ -86,7 +86,7 @@ export function KommunePage({ slug, arrival }: { slug: string; arrival: number }
 				<ul
 					// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
 					role="list"
-					className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+					className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2 xl:grid-cols-3 min-[100rem]:grid-cols-4"
 				>
 					{local.map((r) => (
 						<ResourceCard key={r.id} resource={r} headingLevel={3} />
@@ -98,7 +98,7 @@ export function KommunePage({ slug, arrival }: { slug: string; arrival: number }
 				<ul
 					// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
 					role="list"
-					className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+					className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2 xl:grid-cols-3 min-[100rem]:grid-cols-4"
 				>
 					{national.map((r) => (
 						<ResourceCard key={r.id} resource={r} headingLevel={3} />

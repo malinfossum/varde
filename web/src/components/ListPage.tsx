@@ -233,7 +233,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 							<ul
 								// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
 								role="list"
-								className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+								className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2 xl:grid-cols-3 min-[100rem]:grid-cols-4"
 							>
 								{state.data.items.map((resource) => (
 									<ResourceCard

@@ -83,6 +83,23 @@
 		position: static;
 		align-self: flex-start;
 	}
+	/* The page width the strip, header, main and footer share, so their edges line up. It grows
+	   in two wide steps instead of leaving 384 px of empty gutter on each side at 1920 px: each
+	   step keeps 64 px outside the box. The card grids add a fourth column from 1600 px to use
+	   the width; prose keeps its own measure (max-w-prose) at every step. */
+	.page-width {
+		max-inline-size: 72rem;
+	}
+	@media (min-width: 1600px) {
+		.page-width {
+			max-inline-size: 92rem;
+		}
+	}
+	@media (min-width: 1920px) {
+		.page-width {
+			max-inline-size: 112rem;
+		}
+	}
 	.btn-primary {
 		display: inline-flex;
 		align-items: center;

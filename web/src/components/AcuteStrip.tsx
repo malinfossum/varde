@@ -26,7 +26,7 @@ export function AcuteStrip() {
 				// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
 				role="list"
 				data-tips={tips.hidden ? "hidden" : undefined}
-				className="acute-strip mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-1 text-sm md:justify-start md:gap-x-6"
+				className="acute-strip mx-auto flex page-width flex-wrap items-center justify-between gap-x-1 text-sm md:justify-start md:gap-x-6"
 			>
 				{emergencyLines.map((line) => {
 					const Icon = icons[line.id]
