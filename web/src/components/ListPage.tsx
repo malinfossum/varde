@@ -13,13 +13,15 @@ import {
 	suggestionPatch,
 } from "../services/filters.ts"
 import { type Suggestion, suggest } from "../services/match.ts"
+import { ActiveFilters } from "./ActiveFilters.tsx"
 import { EmptyState } from "./EmptyState.tsx"
 import { ErrorState } from "./ErrorState.tsx"
-import { FilterBar } from "./FilterBar.tsx"
+import { FacetDialog, FacetSidebar } from "./FacetPanel.tsx"
 import { HandoverBanner } from "./HandoverBanner.tsx"
 import { LoadingState } from "./LoadingState.tsx"
 import { PageHead } from "./PageHead.tsx"
 import { Pagination } from "./Pagination.tsx"
+import { PlaceBar } from "./PlaceBar.tsx"
 import { ResourceCard } from "./ResourceCard.tsx"
 import { useAnnounce } from "./StatusRegion.tsx"
 import { Suggestions } from "./Suggestions.tsx"
@@ -37,7 +39,11 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	const announce = useAnnounce()
 	const { state: catalogState, retry: retryCatalog } = useCatalog(lang)
 	const catalog = catalogState.kind === "ready" ? catalogState.catalog : null
+	const failed = catalogState.kind === "error"
 	const { state, retry } = useResources(filters, lang)
+	// Counts and the kommuner with rows exist only once rows have loaded (filter spec, Loading
+	// and failure).
+	const ready = state.kind === "ready" ? state : null
 	// Old ids and places without data resolve against the catalog; until it loads, the parsed
 	// filters stand (filter spec, Old links).
 	const resolved = useMemo(
@@ -79,7 +85,11 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	// object itself to know a new answer has actually arrived.
 	// An empty answer is ready too: the empty state's heading takes the ref then, so Back or
 	// Forward onto it lands focus on that heading and never leaves it on <body>.
-	const { ref: resultsHeading, requestFocus } = useArrivalFocus<HTMLHeadingElement>(
+	const {
+		ref: resultsHeading,
+		requestFocus,
+		focusAfterAnswer,
+	} = useArrivalFocus<HTMLHeadingElement>(
 		arrival,
 		state.kind === "ready",
 		state.kind !== "loading",
@@ -133,91 +143,117 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	}, [totalCount, filterKey, filters.page, suggestions])
 
 	return (
-		<div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+		<div className="sok-page grid gap-6">
 			<PageHead title={t("list.pageTitle")} description={descriptions[lang]} path="/sok" />
-			{/* min-h reserves room for FilterBar's catalog-gated rows (the municipality combobox and
-			    the category chips only render once `catalog` resolves; see FilterBar.tsx).
-			    Below lg, aside sits stacked above the results, so that mount-time growth is what
-			    was actually pushing the whole page down once data arrived (confirmed by reading the
-			    raw layout-shift trace: the results container's position, not its own size, was
-			    what moved). 28rem is the measured full-height of the loaded filter column at a
-			    360-412px width, rounded up for a small margin. At lg+, aside is a side column next
-			    to results that are already taller, so the reservation is dropped. Nothing to fix
-			    there.
-			    It is lifted on a catalog failure, though. Then FilterBar renders the search box
-			    and the national toggle and nothing else, and an unconditional 28rem leaves a
-			    screenful of nothing above "Noe gikk galt": measured at 375x812, the error
-			    heading sat at y=782 and the Legevakt fallback number inside it at y=920, below
-			    the fold, during exactly the outage that panel exists for. Without the
-			    reservation they land at 442 and 580.
-			    Lifting it as soon as the catalog *resolves* instead costs CLS and buys nothing:
-			    the loaded column measures 430px against the 448px floor, so releasing it is its
-			    own small shift (/sok CLS 0.0103 -> 0.0309, measured), and a resolved catalog
-			    means the column is full anyway. The empty state never had blank space to
-			    reclaim. On for loading and ready, off for error, holds both. */}
-			<aside
-				aria-label={t("filter.heading")}
-				className={catalogState.kind === "error" ? undefined : "min-h-[28rem] lg:min-h-0"}
-			>
-				<FilterBar
+			{/* .sok-top reserves the loaded height of everything above the results that waits for
+			    the catalog: Sted, the national choice and, outside the sidebar layout, the "Flere
+			    filtre" button. Before the catalog arrives only Søk is there, and that growth would
+			    push the results down once data lands: a layout shift, and a moved target for the
+			    scroll position Back restores. Since filter PR 2 the whole bar sits above the
+			    results at every width, so the floor holds from 1024 px too (the old side column
+			    needed none there). The values live in main.css under .sok-top: each is the loaded
+			    height measured on 09.11.2026 with e2e/measure-reserve.spec.ts (375x812, 768, 1024
+			    and 1280 px, 100 % text), rounded up to the next 0.25rem. They are in rem, so they
+			    grow with a larger text size, and the sidebar step uses the same media and container
+			    query as the sidebar itself, so the floor always matches the layout on screen.
+			    It is lifted on a catalog failure. Then only Søk renders, and a floor would leave a
+			    screenful of nothing above "Noe gikk galt" during exactly the outage that panel
+			    exists for (measured with the old filter at 375x812: the Legevakt number fell below
+			    the fold). It stays on once the catalog has loaded: lifting it then costs its own
+			    small shift and buys nothing, because the loaded bar fills it anyway. */}
+			<div className={failed ? "grid gap-4" : "sok-top grid gap-4"}>
+				<PlaceBar
 					catalog={catalog}
+					withRows={ready?.withRows ?? null}
+					counts={ready?.counts ?? null}
 					filters={resolved}
 					onPatch={apply}
 					onSearch={(value) => applySearch({ search: value })}
 				/>
-			</aside>
-			<div className="grid content-start gap-4">
-				<HandoverBanner />
-				<Suggestions suggestions={suggestions} onPick={onPick} />
-				<WayfindingHint query={filters.search} />
-				{/* useCatalog and useResources both resolve from the one shared loadIndex(lang)
-				    promise in services/data.ts, so a catalog error and a resources error always
-				    coincide: there's no state where one fails without the other. One ErrorState
-				    at the default level 1 covers both; retryFailed refetches everything that
-				    failed. */}
-				{catalogState.kind === "error" && <ErrorState onRetry={retryFailed} />}
-				{state.kind === "loading" && <LoadingState />}
-				{/* Covers both the genuine zero-results case and a page past the last one (e.g. a
-				    stale ?page= after filters narrowed the result set). The API returns an empty
-				    items array either way, and both deserve the same recovery UI rather than a
-				    blank list. */}
-				{state.kind === "ready" && state.data.items.length === 0 && (
-					<EmptyState
-						onClearFilters={() => apply(CLEAR_ALL)}
-						suggestions={suggestions}
-						onPick={onPick}
-						headingRef={resultsHeading}
+				{catalog && (
+					<FacetDialog
+						filters={resolved}
+						counts={ready?.counts ?? null}
+						totalCount={totalCount}
+						onPatch={apply}
 					/>
 				)}
-				{state.kind === "ready" && state.data.items.length > 0 && (
-					<>
-						{/* /sok's only <h1>. It doubles as the arrival-focus target after paging. */}
-						<h1 ref={resultsHeading} tabIndex={-1} className="text-lg leading-snug">
-							{state.data.totalCount} {t("status.results")}
-						</h1>
-						<ul
-							// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
-							role="list"
-							className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
-						>
-							{state.data.items.map((resource) => (
-								<ResourceCard
-									key={resource.id}
-									resource={resource}
-									kommuneSlug={
-										catalog?.kommuner.find((k) => k.id === resource.municipalityId)?.slug
-									}
-								/>
-							))}
-						</ul>
-						<Pagination
-							page={state.data.page}
-							pageSize={state.data.pageSize}
-							totalCount={state.data.totalCount}
-							onPage={goToPage}
-						/>
-					</>
+			</div>
+			<div className={failed ? "grid gap-4" : "sok-layout"}>
+				{!failed && (
+					<FacetSidebar
+						loaded={catalog !== null}
+						filters={resolved}
+						counts={ready?.counts ?? null}
+						onPatch={apply}
+					/>
 				)}
+				{/* minmax(0, 1fr): an auto column would take the widest chip's or card's
+				    min-content and push the chips row past a 375 px screen at 200 % text. */}
+				<div className="grid grid-cols-[minmax(0,1fr)] content-start gap-4">
+					<HandoverBanner />
+					<Suggestions suggestions={suggestions} onPick={onPick} />
+					<WayfindingHint query={filters.search} />
+					{catalog && (
+						<ActiveFilters
+							filters={resolved}
+							catalog={catalog}
+							onPatch={apply}
+							focusResults={focusAfterAnswer}
+						/>
+					)}
+					{/* useCatalog and useResources both resolve from the one shared loadIndex(lang)
+					    promise in services/data.ts, so a catalog error and a resources error always
+					    coincide: there's no state where one fails without the other. One ErrorState
+					    at the default level 1 covers both; retryFailed refetches everything that
+					    failed. */}
+					{failed && <ErrorState onRetry={retryFailed} />}
+					{state.kind === "loading" && <LoadingState />}
+					{/* Covers both the genuine zero-results case and a page past the last one (e.g. a
+					    stale ?page= after filters narrowed the result set). The API returns an empty
+					    items array either way, and both deserve the same recovery UI rather than a
+					    blank list. */}
+					{state.kind === "ready" && state.data.items.length === 0 && (
+						<EmptyState
+							onClearFilters={() => {
+								focusAfterAnswer()
+								apply(CLEAR_ALL)
+							}}
+							suggestions={suggestions}
+							onPick={onPick}
+							headingRef={resultsHeading}
+						/>
+					)}
+					{state.kind === "ready" && state.data.items.length > 0 && (
+						<>
+							{/* /sok's only <h1>. It doubles as the arrival-focus target after paging. */}
+							<h1 ref={resultsHeading} tabIndex={-1} className="text-lg leading-snug">
+								{state.data.totalCount} {t("status.results")}
+							</h1>
+							<ul
+								// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
+								role="list"
+								className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+							>
+								{state.data.items.map((resource) => (
+									<ResourceCard
+										key={resource.id}
+										resource={resource}
+										kommuneSlug={
+											catalog?.kommuner.find((k) => k.id === resource.municipalityId)?.slug
+										}
+									/>
+								))}
+							</ul>
+							<Pagination
+								page={state.data.page}
+								pageSize={state.data.pageSize}
+								totalCount={state.data.totalCount}
+								onPage={goToPage}
+							/>
+						</>
+					)}
+				</div>
 			</div>
 		</div>
 	)

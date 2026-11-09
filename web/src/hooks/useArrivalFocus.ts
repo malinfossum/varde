@@ -33,15 +33,21 @@ import { restoreSameRoute, returnToLink, takePressed } from "../services/returnF
 // on the same route is a "restore": the scroll comes back and focus stays. A page whose `token`
 // is its own (the results list) waits for its next answer before restoring; any other page
 // restores at once.
+//
+// focusAfterAnswer() is for a filter change that removes the control holding focus (the last
+// chip, Nullstill alt, the empty state's own clear button). Focusing the heading right away would
+// hit the old one: the new answer lands a render later, and when "Ingen treff" turns into a list,
+// that old heading unmounts and focus falls to <body>. So it waits for the answer like the pager,
+// then focuses whichever heading is on screen without moving the scroll.
 export function useArrivalFocus<T extends HTMLElement>(
 	arrival: number,
 	ready: boolean,
 	settled: boolean = ready,
 	token: unknown = settled
-): { ref: RefObject<T | null>; requestFocus: () => void } {
+): { ref: RefObject<T | null>; requestFocus: () => void; focusAfterAnswer: () => void } {
 	const ref = useRef<T>(null)
 	const { via, restore } = useArrival()
-	const pending = useRef<"arrival" | "return" | "restore" | "request" | null>(null)
+	const pending = useRef<"arrival" | "return" | "restore" | "request" | "focus" | null>(null)
 	// The restore count this page has already seen, so a page mounted later never replays one.
 	const restoreSeen = useRef(restore)
 
@@ -74,6 +80,10 @@ export function useArrivalFocus<T extends HTMLElement>(
 		}
 		if (!ready || !ref.current) return
 		if (reason === "return" && returnToLink(window.history.state)) return
+		if (reason === "focus") {
+			ref.current.focus({ preventScroll: true })
+			return
+		}
 		if (reason === "request") ref.current.scrollIntoView({ block: "start" })
 		else window.scrollTo({ top: 0 })
 		ref.current.focus({ preventScroll: true })
@@ -83,6 +93,9 @@ export function useArrivalFocus<T extends HTMLElement>(
 		ref,
 		requestFocus: () => {
 			pending.current = "request"
+		},
+		focusAfterAnswer: () => {
+			pending.current = "focus"
 		},
 	}
 }
