@@ -58,7 +58,7 @@ test("a failed fetch is announced in the live region instead of leaving 'Laster 
 	// "/" is the landing now, which loads no data — exercise the list at /sok instead.
 	window.history.pushState(null, "", "/sok")
 	render(<App />)
-	const region = document.querySelector("[aria-live]")
+	const region = document.querySelector("[data-live-announcer]")
 	expect(region).not.toBeNull()
 	await waitFor(() => expect(region).toHaveTextContent("Noe gikk galt"))
 })

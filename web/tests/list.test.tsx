@@ -276,6 +276,18 @@ test("once the index is cached, filtering (e.g. two keystrokes in the search box
 	expect(result.current.state.kind).toBe("ready")
 })
 
+test("the ready state carries the facet counts and the kommuner that have rows", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	const { result } = renderHook(() => useResources(EMPTY_FILTERS, "nb"))
+	await waitFor(() => expect(result.current.state.kind).toBe("ready"))
+	const state = result.current.state
+	if (state.kind !== "ready") throw new Error("not ready")
+	// The one row is a local Hamar Nødtjenester row.
+	expect(state.counts.categories.nodtjenester).toBe(1)
+	expect(state.counts.national).toEqual({ include: 1, exclude: 1, only: 0 })
+	expect([...state.withRows]).toEqual([1])
+})
+
 test("typing debounces the announced result count instead of announcing every keystroke", async () => {
 	const many = Array.from({ length: 3 }, (_, i) => ({
 		...resource,
@@ -286,7 +298,8 @@ test("typing debounces the announced result count instead of announcing every ke
 	window.history.pushState(null, "", "/sok")
 	render(<App />)
 	await screen.findByRole("heading", { level: 1, name: "3 treff" })
-	const region = document.querySelector("[aria-live]") as HTMLElement
+	// A chips grid carries aria-live too (react-aria's TagGroup), so find the status region itself.
+	const region = document.querySelector("[data-live-announcer]") as HTMLElement
 	const search = screen.getByLabelText("Søk etter tjeneste, kommune eller tema")
 
 	vi.useFakeTimers()
