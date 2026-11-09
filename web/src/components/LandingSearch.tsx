@@ -55,8 +55,13 @@ export function LandingSearch() {
 
 	return (
 		<search className="mx-auto w-full max-w-xl">
+			{/* At 200 % text on a phone the button left the input 11 to 57 px. The input now grows
+			    999 times faster than the button, so on one row the button keeps its width; when 8rem
+			    will not fit beside it, the button wraps to a full-width row of its own. The left inset
+			    sits on the input, so a wrapped button has the same inset on both sides. items-stretch
+			    and a 44 px input floor give both controls one height on a row at any text size. */}
 			<form
-				className="flex items-center gap-2 rounded-xl border border-border bg-surface p-1.5 pl-4"
+				className="flex flex-wrap items-stretch gap-2 rounded-xl border border-border bg-surface p-1.5"
 				onSubmit={(event) => {
 					event.preventDefault()
 					go({ search: value.trim() })
@@ -74,9 +79,9 @@ export function LandingSearch() {
 					onPointerEnter={warm}
 					placeholder={t("landing.searchPlaceholder")}
 					autoComplete="off"
-					className="min-h-11 min-w-0 flex-1 bg-transparent text-fg outline-none"
+					className="min-h-[44px] min-w-0 flex-[999_1_8rem] bg-transparent pl-2.5 text-ellipsis text-fg outline-none"
 				/>
-				<button type="submit" className="btn-primary">
+				<button type="submit" className="btn-primary flex-[1_0_auto]">
 					{t("landing.searchButton")}
 				</button>
 			</form>
