@@ -73,9 +73,18 @@ describe("source gate: register evidence", () => {
 		})
 	})
 
-	it("drops evidence from a register whose licence is still pending", () => {
-		const nklm = fromRegister("nklm", "https://nklm.norceresearch.no/legevakter")
-		expect(sourceGate(nklm, ctx)).toMatchObject({ pass: false, onFail: "drop" })
+	it("passes NKLM register evidence now that its licence is granted", () => {
+		const c = candidate({
+			sourceUrl:
+				"https://nklm.norceresearch.no/en/file/offisiell-oversikt-over-legevakter-og-legevaktsentraler-i-norge",
+			evidence: { kind: "register", register: "nklm", recordId: "2026-01-01#3" },
+			origin: "register",
+		})
+		expect(sourceGate(c, ctx)).toEqual({
+			gate: "source",
+			pass: true,
+			reason: "register nklm (granted)",
+		})
 	})
 
 	it("records Kartverket and KLASS as CC BY, Brreg as NLOD", () => {
