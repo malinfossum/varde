@@ -18,7 +18,7 @@ export function Header({ theme, atLanding }: { theme: ThemeApi; atLanding: boole
 			    one on screen. flex-wrap is a safety net only: the header check holds it to one row at
 			    default text size, and with text at 200 % it wraps rather than scrolling sideways
 			    (spec: The header row rule). */}
-			<div className="header-row mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-2">
+			<div className="header-row mx-auto flex page-width flex-wrap items-center gap-3 px-4 py-2">
 				<HistoryButtons layout="icons" atLanding={atLanding} />
 				<Link
 					to="/"

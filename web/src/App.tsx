@@ -81,7 +81,7 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 			<Header theme={theme} atLanding={route.kind === "landing"} />
 			<main
 				id="main"
-				className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 ${route.kind === "landing" ? "lg:py-3" : ""}`}
+				className={`mx-auto w-full page-width flex-1 px-4 py-6 ${route.kind === "landing" ? "lg:py-3" : ""}`}
 			>
 				<Page route={route} filters={filters} arrival={arrival} />
 			</main>

@@ -80,10 +80,8 @@ for (const width of [320, 360, 375, 767]) {
 					expect(overlaps, `"${a.name}" overlaps "${b.name}"`).toBe(false)
 				}
 			}
-			// The strip itself never reaches past the viewport. The page as a whole is not asserted:
-			// at this text size the result cards are still wider than a phone (their nowrap Ring
-			// button). The filter UI itself is pinned in filter.spec.ts ("the /sok filter never
-			// scrolls sideways at 375 px and 200% text").
+			// The strip itself never reaches past the viewport. The rest of the page is pinned
+			// elsewhere: the filter UI in filter.spec.ts, the result cards in reflow.spec.ts.
 			const stripScrolls = await page
 				.locator(".acute-strip")
 				.evaluate((ul) => ul.scrollWidth > ul.clientWidth)

@@ -18,7 +18,7 @@ export function Pagination({
 		.replace("{page}", String(page))
 		.replace("{pages}", String(pages))
 	return (
-		<nav className="flex items-center justify-between gap-3">
+		<nav className="flex flex-wrap items-center justify-between gap-3">
 			<button
 				type="button"
 				className="btn-secondary"

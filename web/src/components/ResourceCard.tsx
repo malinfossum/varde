@@ -18,7 +18,7 @@ export function ResourceCard({
 	// i {name}" / "Nasjonale tjenester" sections are already h2 — so heading levels never skip.
 	const Heading = headingLevel === 3 ? "h3" : "h2"
 	return (
-		<li className="grid content-start gap-3 rounded-xl border border-border bg-surface p-4">
+		<li className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-3 rounded-xl border border-border bg-surface p-4 break-words">
 			<Heading className="text-lg font-semibold leading-snug">
 				<Link to={`/resources/${resource.id}`} className="text-fg">
 					{resource.name}
