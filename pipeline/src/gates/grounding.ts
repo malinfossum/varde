@@ -1,5 +1,12 @@
 import { type FieldName, type FieldValue, MAX_QUOTE } from "../schema/common.ts"
-import { normaliseText, quoteHasPhone, quoteHasText, quoteHasUrl } from "../text/normalise.ts"
+import type { GateResult } from "../schema/lock.ts"
+import {
+	normaliseText,
+	normaliseUrl,
+	quoteHasPhone,
+	quoteHasText,
+	quoteHasUrl,
+} from "../text/normalise.ts"
 import {
 	alwaysOpenQualifiedIn,
 	classifyCost,
@@ -8,7 +15,17 @@ import {
 	plainlyFree,
 	readAlwaysOpen,
 } from "./phrases.ts"
-import { drop, type Gate, pass, review } from "./types.ts"
+import { type Candidate, drop, type Gate, pass, review } from "./types.ts"
+
+// "2026-11-06" as "06.11.2026": reasons are read in Norwegian date style.
+export const norwegianDate = (iso: string) => iso.split("-").reverse().join(".")
+
+// My answer in review settles what a gate only sends to review (decided 06.11.2026). A drop
+// still drops. Validity uses it, and the safety gate for its instruction review.
+export function settled(c: Candidate, result: GateResult): GateResult {
+	if (result.pass || result.onFail !== "review" || c.evidence.kind !== "decision") return result
+	return pass(result.gate, `my decision of ${norwegianDate(c.evidence.decidedOn)}`)
+}
 
 // Does this quote hold this value? Cost and the two booleans are judged by phrase rules
 // instead (below, and in the safety gate for lowThreshold).
@@ -22,6 +39,10 @@ export function quoteHasValue(field: FieldName, value: FieldValue, quote: string
 // Gate 2: a register record id, or verbatim quotes that are on the cached page and hold
 // the value. This is what stops an invented value.
 export const groundingGate: Gate = (c, ctx) => {
+	// My answer in review settles grounding; validity and safety still run.
+	if (c.evidence.kind === "decision") {
+		return pass("grounding", `my decision of ${norwegianDate(c.evidence.decidedOn)}`)
+	}
 	if (c.evidence.kind === "register") return pass("grounding", `register ${c.evidence.register}`)
 	const page = ctx.pageText(c.sourceUrl)
 	if (page === undefined) return drop("grounding", "no cached page text for the source URL")
@@ -74,6 +95,15 @@ export const groundingGate: Gate = (c, ctx) => {
 			}
 			return pass("grounding")
 		}
+		case "website":
+			// The unit's own page is its website, grounded by the fetch itself (spec, "Email and
+			// website"); any other address must be in a quote.
+			if (typeof c.value === "string" && normaliseUrl(c.value) === normaliseUrl(c.sourceUrl)) {
+				return pass("grounding", "the source page itself")
+			}
+			return quotes.some((q) => quoteHasValue(c.field, c.value, q))
+				? pass("grounding")
+				: drop("grounding", "no quote holds the value")
 		default:
 			return quotes.some((q) => quoteHasValue(c.field, c.value, q))
 				? pass("grounding")

@@ -1,3 +1,4 @@
+import { evidenceQuotes } from "../schema/lock.ts"
 import { phoneDigits } from "../text/normalise.ts"
 import { lavterskel } from "./lavterskel.ts"
 import { drop, type Gate, pass, review } from "./types.ts"
@@ -62,12 +63,14 @@ const INSTRUCTION =
 
 // Gate 5: person data out, krisesenter addresses to me, and the Lavterskel badge by rule.
 export const safetyGate: Gate = (c, ctx) => {
-	const quotes = c.evidence.kind === "quote" ? c.evidence.quotes : []
+	const quotes = evidenceQuotes(c.evidence)
 	const texts = typeof c.value === "string" ? [c.value, ...quotes] : quotes
 	if (c.origin === "jsonLdAuthor") return drop("safety", "a JSON-LD author is a person")
 	if (ctx.unit.orgForm === "ENK") return drop("safety", "a sole proprietorship (ENK)")
 	if (texts.some((t) => ACCOUNT_NUMBER.test(t))) return drop("safety", "holds an account number")
-	if (quotes.some((q) => INSTRUCTION.test(q))) {
+	// My decision settles a quote that only reads like an instruction; the rest of the gate still
+	// runs, so a mobile with no role stays in review whatever I answered.
+	if (c.evidence.kind !== "decision" && quotes.some((q) => INSTRUCTION.test(q))) {
 		return review("safety", "a quote reads like an instruction to a model")
 	}
 	switch (c.field) {
@@ -88,7 +91,9 @@ export const safetyGate: Gate = (c, ctx) => {
 			// So only the centre's own page decides whether Varde shows it.
 			if (!ctx.unit.isKrisesenter) return pass("safety")
 			// And only from a quote: a register record is not the centre's own page.
-			return c.evidence.kind === "quote" && (c.origin === "unitContact" || c.origin === "unitPage")
+			return (c.evidence.kind === "quote" || c.evidence.kind === "decision") &&
+				evidenceQuotes(c.evidence).length > 0 &&
+				(c.origin === "unitContact" || c.origin === "unitPage")
 				? pass("safety", "a krisesenter address the centre publishes itself")
 				: drop("safety", "a krisesenter address not from the centre's own page")
 		case "lowThreshold": {

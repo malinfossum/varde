@@ -72,6 +72,7 @@ export function candidate(over: Partial<Candidate> = {}): Candidate {
 		sourceUrl: PAGE_URL,
 		evidence: { kind: "quote", quotes: ["Telefon: 62 00 00 00"] },
 		origin: "unitContact",
+		personNames: [],
 		fetchedAt: T,
 		...over,
 	}

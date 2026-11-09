@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { groundingGate } from "../src/gates/grounding.ts"
 import { freeQualifiedIn } from "../src/gates/phrases.ts"
-import { candidate, context } from "./helpers.ts"
+import { candidate, context, PAGE_URL } from "./helpers.ts"
 
 describe("grounding gate", () => {
 	it("passes a register value by its record id", () => {
@@ -674,5 +674,35 @@ describe("final fixes 3 I2: a Lavterskel-vocabulary neighbour uses whole words f
 				onFail: "review",
 			})
 		}
+	})
+})
+
+describe("grounding: decisions and the page itself", () => {
+	it("passes my decision without reading the page, and says whose", () => {
+		const c = candidate({
+			value: "62 00 00 01",
+			evidence: {
+				kind: "decision",
+				decidedOn: "2026-11-06",
+				original: { kind: "quote", quotes: ["x"] },
+			},
+		})
+		expect(groundingGate(c, context({ pageText: () => undefined }))).toEqual({
+			gate: "grounding",
+			pass: true,
+			reason: "my decision of 06.11.2026",
+		})
+	})
+
+	it("passes a website that is the source page itself, once its quote is on the page", () => {
+		const c = candidate({
+			field: "website",
+			value: PAGE_URL,
+			evidence: { kind: "quote", quotes: ["Rusteamet Hamar"] },
+			origin: "unitPage",
+		})
+		expect(groundingGate(c, context()).pass).toBe(true)
+		const other = candidate({ ...c, value: "https://www.hamar.kommune.no/annet/" })
+		expect(groundingGate(other, context()).pass).toBe(false)
 	})
 })

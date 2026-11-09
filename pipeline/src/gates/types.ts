@@ -1,6 +1,5 @@
 import type { CategorySlug, Cost, FieldName, FieldValue, GateName } from "../schema/common.ts"
-import type { ExtractedEvidence } from "../schema/extraction.ts"
-import type { GateResult } from "../schema/lock.ts"
+import type { Evidence, GateResult } from "../schema/lock.ts"
 
 // Where on a page (or in which register) a value was found. Adapters set it in PR 2.
 export type Origin =
@@ -24,11 +23,12 @@ export type Candidate = {
 	field: FieldName
 	value: FieldValue
 	sourceUrl: string
-	evidence: ExtractedEvidence
+	evidence: Evidence
 	origin: Origin
 	role?: string
-	// Used to redact quotes, never stored.
-	personName?: string
+	// Possible person names in the quotes (text/names.ts), used to redact them. Never stored.
+	// Required, so a candidate built without the name check does not compile.
+	personNames: readonly string[]
 	fetchedAt: string
 }
 

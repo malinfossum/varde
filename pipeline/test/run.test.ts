@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { redact, runGates } from "../src/gates/run.ts"
+import { checkEdit, redact, runGates } from "../src/gates/run.ts"
+import type { Candidate } from "../src/gates/types.ts"
 import { LockField } from "../src/schema/lock.ts"
 import { candidate, context, PAGE, PAGE_URL, T } from "./helpers.ts"
 
@@ -37,7 +38,7 @@ describe("runGates", () => {
 			value: "900 00 000",
 			evidence: { kind: "quote", quotes: ["Avdelingsleder Kari Nordmann, tlf. 900 00 000"] },
 			role: "Avdelingsleder",
-			personName: "Kari Nordmann",
+			personNames: ["Kari Nordmann"],
 		})
 		const field = runGates(c, context({ pageText: () => MANAGER_PAGE }), T)
 		expect(field).toMatchObject({ status: "accepted", role: "Avdelingsleder" })
@@ -53,7 +54,7 @@ describe("runGates", () => {
 			value: "900 00 000",
 			evidence: { kind: "quote", quotes: ["Kari Nordmann, rådgiver, 900 00 000"] },
 			origin: "staffList",
-			personName: "Kari Nordmann",
+			personNames: ["Kari Nordmann"],
 		})
 		const field = runGates(c, context({ pageText: () => STAFF_PAGE }), T)
 		expect(field.status).toBe("dropped")
@@ -143,7 +144,7 @@ describe("person names", () => {
 			value: "900 00 000",
 			evidence: { kind: "quote", quotes: [quote] },
 			role: "Avdelingsleder",
-			personName: "Kari Nordmann",
+			personNames: ["Kari Nordmann"],
 			...over,
 		})
 	const run = (quote: string, over: Parameters<typeof candidate>[0] = {}) =>
@@ -187,7 +188,7 @@ describe("person names", () => {
 		const field = run(quote, {
 			value: "62 00 00 00",
 			role: undefined,
-			personName: "Ola Li",
+			personNames: ["Ola Li"],
 		})
 		expect(field).toMatchObject({ status: "accepted" })
 		expect(field.evidence).toEqual({ kind: "quote", quotes: [quote] })
@@ -201,7 +202,7 @@ describe("final fixes F4: hyphenated names", () => {
 				value: "900 00 000",
 				evidence: { kind: "quote", quotes: [quote] },
 				role: "Avdelingsleder",
-				personName: "Anne-Marie Nordmann",
+				personNames: ["Anne-Marie Nordmann"],
 			}),
 			context({
 				pageText: () => `${PAGE}
@@ -236,14 +237,14 @@ ${quote}`,
 	})
 
 	it("redacts the name with an ASCII or a typographic hyphen", () => {
-		expect(redact(["Ring Anne-Marie Nordmann nå"], "Anne-Marie Nordmann")).toEqual([
+		expect(redact(["Ring Anne-Marie Nordmann nå"], ["Anne-Marie Nordmann"])).toEqual([
 			"Ring [navn] nå",
 		])
-		expect(redact(["Ring Anne\u2011Marie Nordmann nå"], "Anne-Marie Nordmann")).toEqual([
+		expect(redact(["Ring Anne\u2011Marie Nordmann nå"], ["Anne-Marie Nordmann"])).toEqual([
 			"Ring [navn] nå",
 		])
 		// Without the surname the full-name pattern cannot match, so each part goes on its own.
-		expect(redact(["Ring Anne Marie nå"], "Anne\u2010Marie Nordmann")).toEqual([
+		expect(redact(["Ring Anne Marie nå"], ["Anne\u2010Marie Nordmann"])).toEqual([
 			"Ring [navn] [navn] nå",
 		])
 	})
@@ -256,7 +257,7 @@ describe("final fixes 2 R5: a hyphenated given name written as one word", () => 
 				value: "900 00 000",
 				evidence: { kind: "quote", quotes: [quote] },
 				role: "Avdelingsleder",
-				personName,
+				personNames: [personName],
 			}),
 			context({
 				pageText: () => `${PAGE}
@@ -270,7 +271,7 @@ ${quote}`,
 		expect(field).toMatchObject({ status: "accepted" })
 		expect(field.evidence).toEqual({ kind: "quote", quotes: ["Kontakt [navn] på 900 00 000"] })
 		expect(JSON.stringify(field)).not.toMatch(/annemarie/i)
-		expect(redact(["Ring Annemarie nå"], "Anne\u2011Marie Nordmann")).toEqual(["Ring [navn] nå"])
+		expect(redact(["Ring Annemarie nå"], ["Anne\u2011Marie Nordmann"])).toEqual(["Ring [navn] nå"])
 	})
 
 	// Redact cannot see through the soft hyphen inside "MA\u00ADRIE", so only nameSurvives,
@@ -301,7 +302,7 @@ describe("final fixes 3 O6: every joined, genitive or accented spelling of the n
 				value: "900 00 000",
 				evidence: { kind: "quote", quotes: [quote] },
 				role: "Avdelingsleder",
-				personName,
+				personNames: [personName],
 			}),
 			context({
 				pageText: () => `${PAGE}
@@ -319,7 +320,7 @@ ${quote}`,
 	it("joins every adjacent pair and the whole of a name with three or more parts", () => {
 		const name = "Anne-Marie-Louise Nordmann"
 		for (const joined of ["ANNEMARIE", "MARIELOUISE", "ANNEMARIELOUISE"]) {
-			expect(redact([`Kontakt ${joined} på 900 00 000`], name), joined).toEqual([
+			expect(redact([`Kontakt ${joined} på 900 00 000`], [name]), joined).toEqual([
 				"Kontakt [navn] på 900 00 000",
 			])
 			neverKept(`Kontakt ${joined} på 900 00 000`, name, new RegExp(joined, "i"))
@@ -327,29 +328,29 @@ ${quote}`,
 	})
 
 	it("joins space-separated given names", () => {
-		expect(redact(["Kontakt AnneMarie på 900 00 000"], "Anne Marie Nordmann")).toEqual([
+		expect(redact(["Kontakt AnneMarie på 900 00 000"], ["Anne Marie Nordmann"])).toEqual([
 			"Kontakt [navn] på 900 00 000",
 		])
 		neverKept("Kontakt AnneMarie på 900 00 000", "Anne Marie Nordmann", /annemarie/i)
 	})
 
 	it("redacts a name token with a trailing genitive s", () => {
-		expect(redact(["Ring ANNEMARIES kontor på 900 00 000"], "Anne-Marie Nordmann")).toEqual([
+		expect(redact(["Ring ANNEMARIES kontor på 900 00 000"], ["Anne-Marie Nordmann"])).toEqual([
 			"Ring [navn] kontor på 900 00 000",
 		])
-		expect(redact(["Ring Karis kontor"], "Kari Nordmann")).toEqual(["Ring [navn] kontor"])
+		expect(redact(["Ring Karis kontor"], ["Kari Nordmann"])).toEqual(["Ring [navn] kontor"])
 		neverKept("Ring ANNEMARIES kontor på 900 00 000", "Anne-Marie Nordmann", /annemarie/i)
 	})
 
 	it("matches the name ignoring accents, both ways", () => {
-		expect(redact(["Kontakt \u00C1nne-Mari\u00E9 Nordmann"], "Anne-Marie Nordmann")).toEqual([
+		expect(redact(["Kontakt \u00C1nne-Mari\u00E9 Nordmann"], ["Anne-Marie Nordmann"])).toEqual([
 			"Kontakt [navn]",
 		])
-		expect(redact(["Kontakt Anne-Marie Nordmann"], "\u00C1nne-Mari\u00E9 Nordmann")).toEqual([
+		expect(redact(["Kontakt Anne-Marie Nordmann"], ["\u00C1nne-Mari\u00E9 Nordmann"])).toEqual([
 			"Kontakt [navn]",
 		])
 		// A decomposed accent (e and a combining acute) is the same letter.
-		expect(redact(["Ring Marie\u0301 n\u00E5"], "Anne-Marie Nordmann")).toEqual([
+		expect(redact(["Ring Marie\u0301 n\u00E5"], ["Anne-Marie Nordmann"])).toEqual([
 			"Ring [navn] n\u00E5",
 		])
 		neverKept("Kontakt \u00C1nne på 900 00 000", "Anne-Marie Nordmann", /nne/i)
@@ -376,7 +377,7 @@ describe("final fixes 3 G5: ø, æ and å fold to o, ae and a before name matchi
 				value: "900 00 000",
 				evidence: { kind: "quote", quotes: [quote] },
 				role: "Avdelingsleder",
-				personName: name,
+				personNames: [name],
 			}),
 			context({
 				pageText: () => `${PAGE}
@@ -386,11 +387,11 @@ ${quote}`,
 		)
 
 	it("redacts a name written without ø", () => {
-		expect(redact(["Kontakt Kari Ovrebo på 900 00 000"], name)).toEqual([
+		expect(redact(["Kontakt Kari Ovrebo på 900 00 000"], [name])).toEqual([
 			"Kontakt [navn] på 900 00 000",
 		])
-		expect(redact(["Ring OVREBO nå"], name)).toEqual(["Ring [navn] nå"])
-		expect(redact(["Kontakt Kari Øvrebø"], name)).toEqual(["Kontakt [navn]"])
+		expect(redact(["Ring OVREBO nå"], [name])).toEqual(["Ring [navn] nå"])
+		expect(redact(["Kontakt Kari Øvrebø"], [name])).toEqual(["Kontakt [navn]"])
 		const field = named("Kontakt Ovrebo på 900 00 000")
 		expect(field.status).toBe("accepted")
 		expect(JSON.stringify(field)).not.toMatch(/ovrebo/i)
@@ -404,28 +405,133 @@ ${quote}`,
 	})
 
 	it("adds no definite forms", () => {
-		expect(redact(["Ring Kari ved Ovreboen"], name)).toEqual(["Ring [navn] ved Ovreboen"])
+		expect(redact(["Ring Kari ved Ovreboen"], [name])).toEqual(["Ring [navn] ved Ovreboen"])
 	})
 })
 
 describe("redact", () => {
 	it("replaces every spelling of the name", () => {
-		expect(redact(["KARI NORDMANN og Kari\u00A0Nordmann"], "Kari Nordmann")).toEqual([
+		expect(redact(["KARI NORDMANN og Kari\u00A0Nordmann"], ["Kari Nordmann"])).toEqual([
 			"[navn] og [navn]",
 		])
 	})
 
 	it("replaces a whole-word name part but not the same letters inside another word", () => {
-		expect(redact(["Nikolai ringer Ola Li, ikke Olav"], "Ola Li")).toEqual([
+		expect(redact(["Nikolai ringer Ola Li, ikke Olav"], ["Ola Li"])).toEqual([
 			"Nikolai ringer [navn], ikke Olav",
 		])
 	})
 
 	it("leaves quotes alone when the name is blank", () => {
-		expect(redact(["Telefon: 62 00 00 00"], "  ")).toEqual(["Telefon: 62 00 00 00"])
+		expect(redact(["Telefon: 62 00 00 00"], ["  "])).toEqual(["Telefon: 62 00 00 00"])
 	})
 
 	it("leaves quotes alone when there is no name", () => {
-		expect(redact(["Telefon: 62 00 00 00"], undefined)).toEqual(["Telefon: 62 00 00 00"])
+		expect(redact(["Telefon: 62 00 00 00"], [])).toEqual(["Telefon: 62 00 00 00"])
+	})
+})
+
+describe("runGates: several names and decisions", () => {
+	it("redacts every name in the list, longest first", () => {
+		expect(
+			redact(["Kari Nordmann og Ola Nordmann svarer"], ["Ola Nordmann", "Kari Nordmann"])
+		).toEqual(["[navn] og [navn] svarer"])
+	})
+
+	it("redacts the quotes a decision keeps", () => {
+		const page = `${PAGE}\nKari Nordmann svarer hverdager 08.00\u201315.30`
+		const c = candidate({
+			field: "phoneHours",
+			value: "Hverdager kl. 08:00\u201315:30",
+			evidence: {
+				kind: "decision",
+				decidedOn: "2026-11-06",
+				original: { kind: "quote", quotes: ["Kari Nordmann svarer hverdager 08.00\u201315.30"] },
+			},
+			personNames: ["Kari Nordmann"],
+		})
+		const field = runGates(c, context({ pageText: () => page }), T)
+		expect(JSON.stringify(field)).not.toContain("Kari")
+		expect(field.evidence).toEqual({
+			kind: "decision",
+			decidedOn: "2026-11-06",
+			original: { kind: "quote", quotes: ["[navn] svarer hverdager 08.00\u201315.30"] },
+		})
+	})
+
+	it("drops an hours value that holds a two-word capitalised run", () => {
+		// The value is verbatim here so this test does not depend on the hours grounding of Task 4.
+		const page = `${PAGE}\nÅpent hos Kari Nordmann mandag 10.00\u201312.00`
+		const c = candidate({
+			field: "openingHours",
+			value: "Åpent hos Kari Nordmann mandag 10.00\u201312.00",
+			evidence: { kind: "quote", quotes: ["Åpent hos Kari Nordmann mandag 10.00\u201312.00"] },
+			personNames: [],
+		})
+		const field = runGates(c, context({ pageText: () => page }), T)
+		expect(field).toMatchObject({
+			status: "dropped",
+			reason: "the hours text may hold a person name",
+		})
+	})
+
+	it("redacts a one-word name only as a whole word", () => {
+		expect(redact(["Du kan ringe oss. Dusjen er åpen."], ["Du"])).toEqual([
+			"[navn] kan ringe oss. Dusjen er åpen.",
+		])
+	})
+
+	it("drops hours that name one person inside a sentence, but not a word that opens one", () => {
+		const hours = (value: string, personNames: string[]) => {
+			const page = `${PAGE}\n${value}`
+			const c = candidate({
+				field: "openingHours",
+				value,
+				evidence: { kind: "quote", quotes: [value] },
+				origin: "unitPage",
+				personNames,
+			})
+			return runGates(c, context({ pageText: () => page }), T)
+		}
+		expect(hours("Åpent hos Kari mandag 10.00\u201312.00", ["Kari"])).toMatchObject({
+			status: "dropped",
+			reason: "the hours text may hold a person name",
+		})
+		expect(hours("Helsestasjonen er åpen mandag 10.00\u201312.00", ["Helsestasjonen"]).status).toBe(
+			"accepted"
+		)
+	})
+})
+
+describe("checkEdit: my own value gets the checks verify runs", () => {
+	const mine = (over: Partial<Candidate>) =>
+		candidate({
+			evidence: {
+				kind: "decision",
+				decidedOn: "2026-11-06",
+				original: { kind: "quote", quotes: ["Telefon: 62 00 00 00"] },
+			},
+			...over,
+		})
+
+	it("passes a number in the Nkom plan and refuses one outside it", () => {
+		expect(checkEdit(mine({ value: "62 00 00 01" }), context())).toEqual({ ok: true })
+		expect(checkEdit(mine({ value: "12" }), context()).ok).toBe(false)
+	})
+
+	it("refuses a mobile without a role, and passes it with one", () => {
+		expect(checkEdit(mine({ value: "900 00 000" }), context()).ok).toBe(false)
+		expect(checkEdit(mine({ value: "900 00 000", role: "Avdelingsleder" }), context())).toEqual({
+			ok: true,
+		})
+	})
+
+	it("refuses hours that may hold a name, and a value with an invisible character", () => {
+		const hours = {
+			field: "openingHours" as const,
+			value: "Åpent hos Kari Nordmann kl. 10:00\u201312:00",
+		}
+		expect(checkEdit(mine(hours), context()).ok).toBe(false)
+		expect(checkEdit(mine({ value: "62\u200B00 00 00" }), context()).ok).toBe(false)
 	})
 })

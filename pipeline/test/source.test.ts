@@ -114,3 +114,17 @@ describe("source gate: licences and the unit's own host", () => {
 		expect(sourceGate(article, context({ allowedHosts: HOSTS })).pass).toBe(true)
 	})
 })
+
+it("reads my decision's original evidence: a register value still comes from the register's host", () => {
+	const reg = { kind: "register", register: "brreg", recordId: "999999999" } as const
+	const c = candidate({
+		evidence: { kind: "decision", decidedOn: "2026-11-06", original: reg },
+		origin: "register",
+	})
+	expect(sourceGate(c, context())).toMatchObject({ pass: false, onFail: "drop" })
+	const atBrreg = {
+		...c,
+		sourceUrl: "https://data.brreg.no/enhetsregisteret/api/enheter/999999999",
+	}
+	expect(sourceGate(atBrreg, context()).pass).toBe(true)
+})
