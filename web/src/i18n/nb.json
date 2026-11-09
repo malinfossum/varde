@@ -42,6 +42,8 @@
 	"filter.noMatchLink": "Se nasjonale tjenester som gjelder hele landet",
 	"filter.clear": "Tøm",
 	"filter.heading": "Filtre",
+	"filter.chip.nationalExclude": "Skjul nasjonale",
+	"filter.chip.nationalOnly": "Bare nasjonale",
 	"badge.national": "Nasjonal",
 	"badge.akutt": "Akutt",
 	"badge.alwaysOpen": "Døgnåpent",

@@ -42,6 +42,8 @@
 	"filter.noMatchLink": "View national services available across the country",
 	"filter.clear": "Clear",
 	"filter.heading": "Filters",
+	"filter.chip.nationalExclude": "Hide national",
+	"filter.chip.nationalOnly": "National only",
 	"badge.national": "National",
 	"badge.akutt": "Emergency",
 	"badge.alwaysOpen": "Open 24/7",
