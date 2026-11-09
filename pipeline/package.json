@@ -17,6 +17,7 @@
 		"key:freeze": "node src/cli/freeze-key.ts",
 		"discover": "node src/cli/discover.ts",
 		"fetch": "node src/cli/fetch.ts",
+		"extract": "node src/cli/extract.ts",
 		"recall-report": "node src/cli/recall-report.ts"
 	},
 	"dependencies": {
