@@ -1042,7 +1042,8 @@
 		color: var(--accent);
 	}
 	/* A removable chip: the label, then a 44 px remove button. A border, not a shadow, so forced
-	   colours keep its edge. */
+	   colours keep its edge. The button overlaps that 1 px border (negative margin), so the chip
+	   is 44 px like Nullstill alt beside it, not 46, and the button keeps its full 44 px target. */
 	.filter-chip {
 		display: inline-flex;
 		align-items: center;
@@ -1071,6 +1072,8 @@
 		justify-content: center;
 		min-inline-size: 2.75rem;
 		min-block-size: 2.75rem;
+		margin-block: -1px;
+		margin-inline-end: -1px;
 		border-radius: 999px;
 		color: var(--muted);
 		cursor: pointer;
