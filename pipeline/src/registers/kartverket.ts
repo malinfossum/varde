@@ -65,6 +65,8 @@ export async function findAddress(
 ): Promise<AddressHit | undefined> {
 	const parts = splitAddress(wanted)
 	if (parts === undefined) return undefined
-	const records = parseAddressSearch(await readJson(get, addressQuery(parts.street, kommune)))
+	const records = parseAddressSearch(
+		await readJson(get, addressQuery(streetKey(parts.street), kommune))
+	)
 	return records === undefined ? undefined : pickAddress(records, wanted)
 }

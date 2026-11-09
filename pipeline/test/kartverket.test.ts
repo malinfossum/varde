@@ -99,4 +99,17 @@ describe("Kartverket address search", () => {
 			text: "Storgata 1",
 		})
 	})
+
+	it("asks Kartverket for the joined letter when the page spaces it", async () => {
+		const get = fakeGet({
+			[addressQuery("storgata 1a", "3405")]: {
+				body: JSON.stringify(search(record("a1", "Storgata 1A"))),
+			},
+		})
+		expect(await findAddress(get, "Storgata 1 A, 2609 Lillehammer", "3405")).toEqual({
+			addressId: "a1",
+			kommune: "3405",
+			text: "Storgata 1A",
+		})
+	})
 })
