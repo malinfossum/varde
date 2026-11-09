@@ -209,6 +209,35 @@ for (const width of [768, 1024, 1280, 1920]) {
 	})
 }
 
+// Guards c5516ec: the remove button overlapped no border then, so each chip was 46 px beside a
+// 44 px Nullstill alt. The row is bottom-aligned, so only the height check catches that.
+for (const width of [1280, 1920]) {
+	test(`chips and Nullstill alt are all 44 px with one bottom edge at ${width} px`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width, height: 900 })
+		await openSok(page, "/sok?municipality=3403&category=rus&cost=free")
+		const m = await page.evaluate(() => {
+			const box = (el: Element) => {
+				const r = el.getBoundingClientRect()
+				return { bottom: r.bottom, height: r.height }
+			}
+			const reset = document.querySelector(".active-filters > .btn-secondary")
+			if (!reset) throw new Error("no Nullstill alt")
+			return {
+				reset: box(reset),
+				chips: [...document.querySelectorAll(".active-filters .filter-chip")].map(box),
+			}
+		})
+		expect(m.chips.length).toBe(3)
+		expect(m.reset.height).toBeCloseTo(44, 0)
+		for (const chip of m.chips) {
+			expect(chip.height).toBeCloseTo(44, 0)
+			expect(Math.abs(chip.bottom - m.reset.bottom)).toBeLessThanOrEqual(1)
+		}
+	})
+}
+
 test("tabbing to the last checkbox in the dialog leaves it above the footer", async ({ page }) => {
 	await page.setViewportSize({ width: 375, height: 640 })
 	await openSok(page)
