@@ -960,4 +960,109 @@
 			outline: 3px solid Highlight;
 		}
 	}
+	/* A label over its control: smaller and heavier than the value, so it reads as a label. */
+	.field-label {
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		font-weight: 600;
+	}
+	/* The Sted field. The bordered group is the control: 2.75rem tall with no picks, the same as
+	   Søk, and it grows downwards as chips wrap, so it never scrolls sideways at 320 px. The input
+	   has no ring of its own; the group draws it, so the ring goes round the chips too. */
+	.place-group {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.25rem;
+		min-block-size: 2.75rem;
+		border: 1px solid var(--border);
+		border-radius: 0.75rem;
+		background: var(--surface);
+	}
+	.place-group:has(.filter-chip) {
+		padding: 0.25rem;
+	}
+	.place-group:has(input:focus-visible) {
+		outline: 3px solid var(--accent);
+		outline-offset: 2px;
+	}
+	.place-input {
+		flex: 1 1 10rem;
+		min-inline-size: 0;
+		min-block-size: calc(2.75rem - 2px);
+		padding-inline: 0.75rem;
+		background: transparent;
+		color: var(--text);
+		outline: none;
+	}
+	.place-option {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		min-block-size: 2.75rem;
+		padding-inline: 0.75rem;
+		border-radius: 0.5rem;
+		cursor: pointer;
+	}
+	.place-option[data-focused] {
+		background: var(--accent-soft);
+	}
+	.place-option[data-selected] {
+		font-weight: 600;
+	}
+	.place-check {
+		flex-shrink: 0;
+		color: var(--accent);
+	}
+	/* A removable chip: the label, then a 44 px remove button. A border, not a shadow, so forced
+	   colours keep its edge. */
+	.filter-chip {
+		display: inline-flex;
+		align-items: center;
+		max-inline-size: 100%;
+		min-block-size: 2.75rem;
+		padding-inline-start: 0.75rem;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		background: var(--ground);
+		color: var(--text);
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+	.filter-chip[data-focus-visible] {
+		outline: 3px solid var(--accent);
+		outline-offset: 2px;
+	}
+	.filter-chip-label {
+		min-inline-size: 0;
+		overflow-wrap: anywhere;
+	}
+	.filter-chip-remove {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		min-inline-size: 2.75rem;
+		min-block-size: 2.75rem;
+		border-radius: 999px;
+		color: var(--muted);
+		cursor: pointer;
+	}
+	.filter-chip-remove:hover {
+		color: var(--text);
+	}
+	@media (forced-colors: active) {
+		.place-option[data-focused] {
+			outline: 2px solid Highlight;
+			outline-offset: -2px;
+		}
+		.filter-chip {
+			border-color: CanvasText;
+		}
+		.place-group:has(input:focus-visible),
+		.filter-chip[data-focus-visible] {
+			outline-color: Highlight;
+		}
+	}
 }
