@@ -84,10 +84,10 @@ test("a category chip adds its slug, and clicking an active one removes it", asy
 test("Nullstill only appears once a filter is set, and clears every one of them", async () => {
 	const user = userEvent.setup()
 	const { onPatch, rerenderWith } = renderBar()
-	expect(screen.queryByRole("button", { name: "Nullstill" })).not.toBeInTheDocument()
+	expect(screen.queryByRole("button", { name: "Nullstill alt" })).not.toBeInTheDocument()
 
 	rerenderWith({ categories: ["bolig"] })
-	await user.click(screen.getByRole("button", { name: "Nullstill" }))
+	await user.click(screen.getByRole("button", { name: "Nullstill alt" }))
 	expect(onPatch).toHaveBeenCalledWith(CLEAR_ALL)
 })
 
@@ -97,7 +97,7 @@ test.each<[string, Partial<Filters>]>([
 	["national", { national: "only" }],
 ])("Nullstill appears when only %s is set", (_name, filters) => {
 	renderBar(filters)
-	expect(screen.getByRole("button", { name: "Nullstill" })).toBeInTheDocument()
+	expect(screen.getByRole("button", { name: "Nullstill alt" })).toBeInTheDocument()
 })
 
 test("the municipality field follows a filter change made outside it", async () => {

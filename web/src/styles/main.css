@@ -960,6 +960,14 @@
 			outline: 3px solid Highlight;
 		}
 	}
+	/* The chips row above the results, with Nullstill alt at the end of the last line. The chips
+	   and the button are both 44 px, and items-end puts the button on the chips' bottom edge. */
+	.active-filters {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 0.5rem 1rem;
+	}
 	/* A label over its control: smaller and heavier than the value, so it reads as a label. */
 	.field-label {
 		font-size: 0.875rem;
