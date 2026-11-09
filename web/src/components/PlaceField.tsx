@@ -46,7 +46,10 @@ function PlaceItem({ option }: { option: PlaceOption }) {
 // but its scroll event comes on the next frame, after focus has opened the list, and react-aria
 // closes an open combobox list on any scroll of the page around it. So for that one frame I stop
 // the page's scroll event before react-aria sees it. Any scroll after that still closes the list,
-// as react-aria means it to. Found by the e2e at 375 px and 200 % text on 09.11.2026.
+// as react-aria means it to. It works because onFocus runs before the list opens: my capture
+// listener is on the window before react-aria's close-on-scroll listener, and
+// stopImmediatePropagation keeps the event from every listener added after mine. Found by the e2e
+// at 375 px and 200 % text on 09.11.2026.
 function keepListOpenThroughFocusScroll(): void {
 	const swallow = (event: Event) => {
 		if (event.target === document) event.stopImmediatePropagation()
@@ -74,8 +77,8 @@ export function PlaceField({
 	const inputRef = useRef<HTMLInputElement>(null)
 	// What is typed, for my own matching. The field itself stays uncontrolled: with inputValue
 	// left to react-stately, multiple mode clears the text after every pick and on blur by
-	// itself. Passing inputValue would make both of those mine, the trap the old single combobox
-	// documented, and typed text that was never picked could linger looking like a filter.
+	// itself. Passing inputValue would make both of those mine, and typed text that was never picked
+	// could linger looking like a filter.
 	const [input, setInput] = useState("")
 	const picked = selectedPlaceKeys(filters)
 	// The picks are the URL's, never this field's own memory, so Back, Forward and every outside
@@ -102,8 +105,8 @@ export function PlaceField({
 			// the single source of truth for what is rendered. It also keeps the collection built
 			// from one set of node objects: without it, react-aria swaps its section nodes for
 			// plain clones the moment you type, and React 19.2's development-only render logger
-			// walks that diff into a `childNodes` getter that throws on purpose, which froze the
-			// old combobox in `npm run dev` only. defaultFilter stays as a pass-through in case a
+			// walks that diff into a `childNodes` getter that throws on purpose, which freezes the
+			// field in `npm run dev` only. defaultFilter stays as a pass-through in case a
 			// future version stops honouring `items`: ComboBox's own filter does not fold ø and æ
 			// the way matchesEitherWay does, and would drop matches I just decided to keep.
 			items={[...options.counties, ...options.municipalities]}

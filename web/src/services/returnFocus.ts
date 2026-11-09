@@ -17,7 +17,7 @@ export function takePressed(): HTMLButtonElement | null {
 
 // Safari before 17.4 has no checkVisibility. A link with no layout box (inside a closed <details>
 // or a display: none menu) has no client rects, which is the same answer.
-function isVisible(element: Element): boolean {
+export function isVisible(element: Element): boolean {
 	return element.checkVisibility?.() ?? element.getClientRects().length > 0
 }
 

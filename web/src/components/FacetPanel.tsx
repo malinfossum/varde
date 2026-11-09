@@ -5,6 +5,7 @@ import { useTranslation } from "../i18n/LanguageProvider.tsx"
 import { categoryLabelKey, costLabelKey, FEATURE_LABEL_KEYS } from "../services/activeFilters.ts"
 import type { FacetCounts } from "../services/facets.ts"
 import { COSTS, FEATURES, FILTER_CATEGORY_SLUGS, type Filters } from "../services/filters.ts"
+import { isVisible } from "../services/returnFocus.ts"
 import { FacetGroup } from "./FacetGroup.tsx"
 import { QuickExit } from "./QuickExit.tsx"
 
@@ -97,7 +98,7 @@ export function FacetDialog({ totalCount, ...panel }: PanelProps & { totalCount:
 		if (open) return
 		requestAnimationFrame(() =>
 			requestAnimationFrame(() => {
-				if (triggerRef.current?.checkVisibility()) return
+				if (triggerRef.current && isVisible(triggerRef.current)) return
 				document.querySelector<HTMLElement>(".facet-sidebar summary")?.focus()
 			})
 		)
