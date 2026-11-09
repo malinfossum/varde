@@ -27,6 +27,7 @@ export const CategorySlug = z.enum(CATEGORY_SLUGS)
 export type CategorySlug = z.infer<typeof CategorySlug>
 
 export const ProviderType = z.enum(["offentlig", "frivillig"])
+export type ProviderType = z.infer<typeof ProviderType>
 export const Cost = z.enum(["free", "paid", "partly"])
 export type Cost = z.infer<typeof Cost>
 

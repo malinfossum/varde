@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest"
 import { KommuneNumber, REGISTERS } from "../src/schema/common.ts"
-import { CuratedFile } from "../src/schema/curated.ts"
+import { CuratedFile, CuratedUnit, findDecision, ReviewDecision } from "../src/schema/curated.ts"
 import { unitId } from "../src/schema/ids.ts"
-import { Evidence, LockField, LockFile, SourceRef } from "../src/schema/lock.ts"
+import {
+	Evidence,
+	evidenceQuotes,
+	LockField,
+	LockFile,
+	LockUnit,
+	SourceRef,
+} from "../src/schema/lock.ts"
 import { acceptedField, allGatesPass, curatedUnit, lockUnit, T } from "./helpers.ts"
 
 describe("KommuneNumber", () => {
@@ -217,5 +224,141 @@ describe("register lists", () => {
 			SourceRef.safeParse({ kind: "page", ref: "https://www.hamar.kommune.no/" }).success
 		).toBe(true)
 		expect(SourceRef.safeParse({ kind: "dinutvei", ref: "x" }).success).toBe(false)
+	})
+})
+
+describe("Evidence: my decision", () => {
+	const decision = {
+		kind: "decision",
+		decidedOn: "2026-11-06",
+		original: { kind: "quote", quotes: ["Telefon: 62 00 00 00"] },
+	}
+
+	it("accepts a decision that keeps the page's quotes", () => {
+		expect(Evidence.safeParse(decision).success).toBe(true)
+		expect(evidenceQuotes(Evidence.parse(decision))).toEqual(["Telefon: 62 00 00 00"])
+	})
+
+	it("accepts a decision over a register value, which has no quote", () => {
+		const reg = {
+			...decision,
+			original: { kind: "register", register: "brreg", recordId: "999999999" },
+		}
+		expect(Evidence.safeParse(reg).success).toBe(true)
+		expect(evidenceQuotes(Evidence.parse(reg))).toEqual([])
+	})
+
+	it("refuses a decision without a date, or one nested in another", () => {
+		const { decidedOn: _d, ...noDate } = decision
+		expect(Evidence.safeParse(noDate).success).toBe(false)
+		expect(Evidence.safeParse({ ...decision, original: decision }).success).toBe(false)
+	})
+})
+
+describe("LockUnit: the inclusion question", () => {
+	it("keeps an open question with its suggested categories", () => {
+		const unit = lockUnit({
+			inclusion: {
+				status: "review",
+				reason: "two units share the page",
+				suggestedCategories: ["rus"],
+			},
+		})
+		expect(LockUnit.safeParse(unit).success).toBe(true)
+	})
+
+	it("refuses an unknown status or category", () => {
+		expect(
+			LockUnit.safeParse(
+				lockUnit({ inclusion: { status: "maybe", reason: "x", suggestedCategories: [] } as never })
+			).success
+		).toBe(false)
+		expect(
+			LockUnit.safeParse(
+				lockUnit({
+					inclusion: { status: "review", reason: "x", suggestedCategories: ["sport"] } as never,
+				})
+			).success
+		).toBe(false)
+	})
+
+	it("needs a category and a provider type before a unit is auto included", () => {
+		const auto = {
+			status: "auto" as const,
+			reason: "x",
+			suggestedCategories: ["rus" as const],
+			providerType: "offentlig" as const,
+		}
+		expect(LockUnit.safeParse(lockUnit({ inclusion: auto })).success).toBe(true)
+		expect(
+			LockUnit.safeParse(lockUnit({ inclusion: { ...auto, suggestedCategories: [] } })).success
+		).toBe(false)
+		const { providerType: _p, ...noType } = auto
+		expect(LockUnit.safeParse(lockUnit({ inclusion: noType })).success).toBe(false)
+	})
+})
+
+describe("ReviewDecision", () => {
+	const base = {
+		field: "phone",
+		value: "62 00 00 00",
+		sourceUrl: "https://www.eksempel.kommune.no/helsestasjon/",
+		decidedOn: "2026-11-06",
+	}
+
+	it("takes accept, reject and edit", () => {
+		for (const decision of ["accept", "reject"]) {
+			expect(ReviewDecision.safeParse({ ...base, decision }).success).toBe(true)
+		}
+		const edit = { ...base, decision: "edit", editedValue: "62 00 00 01", role: "Vakttelefon" }
+		expect(ReviewDecision.safeParse(edit).success).toBe(true)
+	})
+
+	it("refuses an edit without its value, and an edited value on anything but an edit", () => {
+		expect(ReviewDecision.safeParse({ ...base, decision: "edit" }).success).toBe(false)
+		expect(
+			ReviewDecision.safeParse({ ...base, decision: "accept", editedValue: "x" }).success
+		).toBe(false)
+		expect(ReviewDecision.safeParse({ ...base, decision: "reject", role: "Leder" }).success).toBe(
+			false
+		)
+	})
+
+	it("refuses a value or an edited value of the wrong kind for its field", () => {
+		expect(ReviewDecision.safeParse({ ...base, decision: "edit", editedValue: true }).success).toBe(
+			false
+		)
+		expect(ReviewDecision.safeParse({ ...base, decision: "accept", value: true }).success).toBe(
+			false
+		)
+		const open = { ...base, field: "alwaysOpen", value: true, decision: "edit", editedValue: "ja" }
+		expect(ReviewDecision.safeParse(open).success).toBe(false)
+	})
+
+	it("finds the answer to the same question, with the value compared as the gates compare it", () => {
+		const d = ReviewDecision.parse({ ...base, decision: "accept" })
+		expect(
+			findDecision([d], { field: "phone", value: "62000000", sourceUrl: base.sourceUrl })
+		).toEqual(d)
+		expect(
+			findDecision([d], { field: "phone", value: "62 00 00 01", sourceUrl: base.sourceUrl })
+		).toBeUndefined()
+		expect(
+			findDecision([d], {
+				field: "phone",
+				value: "62 00 00 00",
+				sourceUrl: "https://www.eksempel.kommune.no/x/",
+			})
+		).toBeUndefined()
+		expect(
+			findDecision([d], { field: "email", value: "62 00 00 00", sourceUrl: base.sourceUrl })
+		).toBeUndefined()
+	})
+
+	it("is part of a curated unit", () => {
+		const unit = curatedUnit({
+			decisions: [{ ...base, decision: "edit", editedValue: "62 00 00 01" } as never],
+		})
+		expect(CuratedUnit.safeParse(unit).success).toBe(true)
 	})
 })

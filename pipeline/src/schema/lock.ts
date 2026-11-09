@@ -1,5 +1,7 @@
 import { z } from "zod"
 import {
+	CalendarDate,
+	CategorySlug,
 	FIELD_NAMES,
 	FieldName,
 	FieldValue,
@@ -9,6 +11,7 @@ import {
 	KommuneNumber,
 	MAX_QUOTE,
 	NonBlank,
+	ProviderType,
 	REGISTERS,
 	Register,
 	UtcTimestamp,
@@ -16,15 +19,35 @@ import {
 } from "./common.ts"
 import { UnitId } from "./ids.ts"
 
+export const RegisterEvidence = z.strictObject({
+	kind: z.literal("register"),
+	register: Register,
+	recordId: NonBlank,
+})
+export const QuoteEvidence = z.strictObject({
+	kind: z.literal("quote"),
+	quotes: z.array(NonBlank.max(MAX_QUOTE)).min(1),
+})
+// My answer in review. It keeps the evidence the page or register gave, so safety and redaction
+// still read the page's quotes, and a register value I reviewed keeps its record id.
+export const DecisionEvidence = z.strictObject({
+	kind: z.literal("decision"),
+	decidedOn: CalendarDate,
+	original: z.discriminatedUnion("kind", [RegisterEvidence, QuoteEvidence]),
+})
 export const Evidence = z.discriminatedUnion("kind", [
-	z.strictObject({
-		kind: z.literal("register"),
-		register: Register,
-		recordId: NonBlank,
-	}),
-	z.strictObject({ kind: z.literal("quote"), quotes: z.array(NonBlank.max(MAX_QUOTE)).min(1) }),
+	RegisterEvidence,
+	QuoteEvidence,
+	DecisionEvidence,
 ])
 export type Evidence = z.infer<typeof Evidence>
+
+// The page quotes behind a value: a quote's own, a decision's original ones, none for a register.
+export function evidenceQuotes(e: Evidence): readonly string[] {
+	if (e.kind === "quote") return e.quotes
+	if (e.kind === "decision" && e.original.kind === "quote") return e.original.quotes
+	return []
+}
 
 export const GateResult = z.strictObject({
 	gate: GateName,
@@ -96,11 +119,35 @@ const LockFields = z.strictObject(
 	>
 )
 
+// "Include this unit?" A clear match is auto (verify writes include: true to the curated file);
+// anything else waits for my answer in review. Reasons never hold a value or a name.
+export const Inclusion = z
+	.strictObject({
+		status: z.enum(["auto", "review"]),
+		reason: NonBlank,
+		suggestedCategories: z.array(CategorySlug),
+		providerType: ProviderType.optional(),
+	})
+	.superRefine((inc, ctx) => {
+		// An auto inclusion becomes a curated unit, which needs both (CuratedUnit refuses either gap).
+		if (
+			inc.status === "auto" &&
+			(inc.suggestedCategories.length === 0 || inc.providerType === undefined)
+		) {
+			ctx.addIssue({
+				code: "custom",
+				message: "an auto inclusion needs a category and a provider type",
+			})
+		}
+	})
+export type Inclusion = z.infer<typeof Inclusion>
+
 export const LockUnit = z
 	.strictObject({
 		unitId: UnitId,
 		sources: z.array(SourceRef).min(1),
 		fields: LockFields,
+		inclusion: Inclusion.optional(),
 	})
 	.superRefine((unit, ctx) => {
 		for (const name of FieldName.options) {
