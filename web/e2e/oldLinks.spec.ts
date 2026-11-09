@@ -10,7 +10,12 @@ test("an old ?municipality=1 link lands on Hamar under its kommunenummer", async
 	await page.goto("/sok?municipality=1")
 	await hydrated(page)
 	await expect(page).toHaveURL(/\/sok\?municipality=3403$/)
-	await expect(page.getByRole("combobox", { name: "Kommune" })).toHaveValue("Hamar")
+	await expect(
+		page.getByRole("grid", { name: "Valgte filtre" }).getByRole("row").filter({ hasText: "Hamar" })
+	).toBeVisible()
+	await expect(
+		page.getByRole("grid", { name: "Sted" }).getByRole("row").filter({ hasText: "Hamar" })
+	).toBeVisible()
 })
 
 test("Back to a rewritten old link restores the scroll position", async ({ page }) => {

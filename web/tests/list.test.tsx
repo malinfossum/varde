@@ -10,6 +10,7 @@ import { useResources } from "../src/hooks/useResources.ts"
 import { LanguageProvider } from "../src/i18n/LanguageProvider.tsx"
 import { EMPTY_FILTERS, type Filters } from "../src/services/filters.ts"
 import type { ResourceDto } from "../src/types/api.ts"
+import { desktopTools } from "./scope.ts"
 import { stubDataFiles } from "./stubData.ts"
 
 const resource: ResourceDto = {
@@ -152,25 +153,18 @@ test("an unknown ?municipality= value doesn't crash the app and the list renders
 	// no place is picked and the list renders unfiltered rather than scoped to a municipality
 	// that doesn't exist.
 	expect(await screen.findByText("Krisesenteret i Hamar")).toBeInTheDocument()
-	// No phantom selection in the combobox either — its input stays empty rather than showing
-	// some municipality's name.
-	expect(screen.getByRole("combobox", { name: "Kommune" })).toHaveValue("")
+	// No phantom pick either: no chip names some kommune that doesn't exist.
+	expect(screen.queryByRole("grid", { name: "Sted" })).not.toBeInTheDocument()
 })
 
-test("Tøm clears both municipality and national selection from the URL", async () => {
+test("Nullstill alt clears places and the national choice from the URL", async () => {
 	stubCatalogAndResources()
-	// "/" is the landing now — the list lives at /sok.
-	window.history.pushState(null, "", "/sok?municipality=1")
+	window.history.pushState(null, "", "/sok?municipality=1&national=exclude")
 	const user = userEvent.setup()
 	render(<App />)
-	await waitFor(() =>
-		expect(screen.getByRole("combobox", { name: "Kommune" })).toHaveValue("Hamar")
-	)
-
-	await user.click(screen.getByRole("button", { name: "Tøm" }))
-
-	expect(window.location.search).not.toContain("municipality")
-	expect(window.location.search).not.toContain("national")
+	await screen.findByRole("grid", { name: "Valgte filtre" })
+	await user.click(screen.getByRole("button", { name: "Nullstill alt" }))
+	await waitFor(() => expect(window.location.search).toBe(""))
 })
 
 test("a category suggestion adds to the ticked categories instead of replacing them", async () => {
@@ -411,7 +405,8 @@ test("an old link is rewritten to its canonical URL once the catalog loads, keep
 	await waitFor(() => expect(window.location.search).toBe("?municipality=3403&feature=lavterskel"))
 	expect(window.history.length).toBe(length)
 	expect(window.history.state).toMatchObject({ idx: 4, scrollY: 120 })
-	expect(screen.getByRole("combobox", { name: "Kommune" })).toHaveValue("Hamar")
+	const chips = await screen.findByRole("grid", { name: "Valgte filtre" })
+	expect(within(chips).getByText("Hamar")).toBeInTheDocument()
 })
 
 test("search text the browser encoded differently is rewritten once, with no new entry", async () => {
@@ -451,4 +446,76 @@ test("with the catalog down, an old link stays exactly as typed", async () => {
 	render(<App />)
 	expect(await screen.findByRole("heading", { name: "Noe gikk galt" })).toBeInTheDocument()
 	expect(window.location.search).toBe("?municipality=1")
+})
+
+// Review Focus 1: Back restores the chip and the tick, because both read the URL.
+test("Back after removing a chip brings the chip and its box back", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	window.history.pushState(null, "", "/sok?municipality=3403&category=nodtjenester")
+	const user = userEvent.setup()
+	render(<App />)
+	const chips = await screen.findByRole("grid", { name: "Valgte filtre" })
+	await user.click(within(chips).getByRole("button", { name: "Fjern Nødtjenester" }))
+	await waitFor(() => expect(window.location.search).toBe("?municipality=3403"))
+	expect(screen.getByRole("checkbox", { name: /^Nødtjenester/ })).not.toBeChecked()
+	act(() => window.history.back())
+	await waitFor(() =>
+		expect(window.location.search).toBe("?municipality=3403&category=nodtjenester")
+	)
+	await waitFor(() => expect(screen.getByRole("checkbox", { name: /^Nødtjenester/ })).toBeChecked())
+	expect(
+		within(screen.getByRole("grid", { name: "Valgte filtre" })).getByText("Nødtjenester")
+	).toBeInTheDocument()
+})
+
+// Review Focus 2.
+test("removing the last chip on an empty list puts focus on the empty state's heading", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	window.history.pushState(null, "", "/sok?search=zzz&category=nodtjenester")
+	const user = userEvent.setup()
+	render(<App />)
+	await screen.findByRole("heading", { level: 1, name: "Ingen treff" })
+	await user.click(screen.getByRole("button", { name: "Fjern Nødtjenester" }))
+	await waitFor(() =>
+		expect(screen.getByRole("heading", { level: 1, name: "Ingen treff" })).toHaveFocus()
+	)
+	expect(document.body).not.toHaveFocus()
+})
+
+// Review Focus 4.
+test("switching to English keeps the filters and shows English chips and options", async () => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [] })
+	window.history.pushState(null, "", "/sok?category=nodtjenester&municipality=3403")
+	const user = userEvent.setup()
+	render(<App />)
+	await screen.findByRole("grid", { name: "Valgte filtre" })
+	await user.click(desktopTools().getByRole("link", { name: "English" }))
+	await waitFor(() =>
+		expect(window.location.pathname + window.location.search).toBe(
+			"/en/sok?municipality=3403&category=nodtjenester"
+		)
+	)
+	const chips = await screen.findByRole("grid", { name: "Selected filters" })
+	expect(within(chips).getByText("Emergency services")).toBeInTheDocument()
+	expect(within(chips).getByText("Hamar")).toBeInTheDocument()
+	expect(screen.getByRole("checkbox", { name: /^Emergency services/ })).toBeChecked()
+	expect(screen.getByRole("combobox", { name: "Place" })).toBeInTheDocument()
+})
+
+test("with the catalog down, only Søk and the error state show", async () => {
+	vi.stubGlobal(
+		"fetch",
+		vi.fn(async () => new Response("down", { status: 503 }))
+	)
+	window.history.pushState({ idx: 0 }, "", "/sok")
+	render(<App />)
+	expect(await screen.findByRole("heading", { name: "Noe gikk galt" })).toBeInTheDocument()
+	expect(
+		screen.getByRole("searchbox", { name: "Søk etter tjeneste, kommune eller tema" })
+	).toBeInTheDocument()
+	expect(screen.queryByRole("combobox", { name: "Sted" })).not.toBeInTheDocument()
+	expect(screen.queryAllByRole("radio")).toEqual([])
+	expect(screen.queryAllByRole("checkbox")).toEqual([])
+	expect(screen.queryByRole("button", { name: /^Flere filtre/ })).not.toBeInTheDocument()
+	expect(screen.queryByRole("complementary", { name: "Filtre" })).not.toBeInTheDocument()
 })

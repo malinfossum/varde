@@ -60,7 +60,7 @@ test("the landing's lists keep role=list: strip, featured row, chip grid, emerge
 	expect(listsWithoutRole()).toEqual([])
 })
 
-test("the results page's lists keep role=list: filter chips, result cards, badges", async () => {
+test("the results page's lists keep role=list: result cards, badges", async () => {
 	stubDataFiles({
 		resources: [resource],
 		municipalities: [
@@ -72,6 +72,9 @@ test("the results page's lists keep role=list: filter chips, result cards, badge
 	render(<App />)
 	const card = await screen.findByRole("heading", { level: 2, name: "Krisesenteret i Hamar" })
 	expect(card.closest("ul")).toHaveAttribute("role", "list")
-	expect(screen.getByText("Lavterskel").closest("ul")).toHaveAttribute("role", "list")
+	expect(screen.getByText("Lavterskel", { selector: ".badge" }).closest("ul")).toHaveAttribute(
+		"role",
+		"list"
+	)
 	expect(listsWithoutRole()).toEqual([])
 })

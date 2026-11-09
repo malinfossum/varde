@@ -968,6 +968,24 @@
 		align-items: flex-end;
 		gap: 0.5rem 1rem;
 	}
+	/* The /sok bar's reserved height while the catalog loads; the reasons are in ListPage.tsx.
+	   Each value is the loaded height of .sok-top at 100 % text, rounded up to the next 0.25rem.
+	   The sidebar step uses the sidebar's own media and container query. */
+	.sok-top {
+		min-height: 24rem;
+	}
+	@media (min-width: 768px) {
+		.sok-top {
+			min-height: 13.25rem;
+		}
+	}
+	@media (min-width: 1024px) {
+		@container sok (min-width: 39rem) {
+			.sok-top {
+				min-height: 9.5rem;
+			}
+		}
+	}
 	/* A label over its control: smaller and heavier than the value, so it reads as a label. */
 	.field-label {
 		font-size: 0.875rem;
