@@ -1,5 +1,6 @@
 import { type FieldName, type FieldValue, MAX_QUOTE } from "../schema/common.ts"
 import type { GateResult } from "../schema/lock.ts"
+import { quoteHasAddress } from "../text/address.ts"
 import { hoursGrounded } from "../text/hours.ts"
 import {
 	normaliseText,
@@ -34,6 +35,7 @@ export function quoteHasValue(field: FieldName, value: FieldValue, quote: string
 	if (typeof value === "boolean" || field === "cost") return true
 	if (field === "phone") return quoteHasPhone(quote, value)
 	if (field === "website" || field === "chatUrl") return quoteHasUrl(quote, value)
+	if (field === "address") return quoteHasAddress(quote, value)
 	return quoteHasText(quote, value)
 }
 

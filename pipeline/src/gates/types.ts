@@ -32,7 +32,8 @@ export type Candidate = {
 	fetchedAt: string
 }
 
-export type AddressHit = { addressId: string; kommune: string }
+// text is Kartverket's own address text ("Storgata 1A"), the form verify stores.
+export type AddressHit = { addressId: string; kommune: string; text?: string }
 
 export type UnitFacts = {
 	categories: readonly CategorySlug[]

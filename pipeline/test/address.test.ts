@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { guardedLookup, isIpLiteralHost, isPrivateAddress } from "../src/net/address.ts"
+import { quoteHasAddress, streetKey } from "../src/text/address.ts"
 
 describe("isPrivateAddress", () => {
 	it("refuses private, loopback, link-local and other non-public addresses", () => {
@@ -93,5 +94,37 @@ describe("isIpLiteralHost", () => {
 		for (const url of ["https://www.eksempel.no/", "https://eksempel.no:8443/x"]) {
 			expect(isIpLiteralHost(new URL(url)), url).toBe(false)
 		}
+	})
+})
+
+describe("streetKey and quoteHasAddress", () => {
+	it("joins a house letter to its number", () => {
+		expect(streetKey("Storgata 1 A")).toBe("storgata 1a")
+		expect(streetKey("Storgata 12")).toBe("storgata 12")
+		expect(streetKey("Storgata 1 og 2")).toBe("storgata 1 og 2")
+		expect(streetKey("Storgata 1 i 2. etasje")).toBe("storgata 1 i 2. etasje")
+	})
+
+	it("finds the street when the sentence goes on with i or å", () => {
+		const quote = "Kontoret ligger i Storgata 1 i 2. etasje, 2317 Hamar"
+		expect(quoteHasAddress(quote, "Storgata 1, 2317 Hamar")).toBe(true)
+	})
+
+	it("finds Kartverket's form in the page's quote, street and postcode", () => {
+		expect(
+			quoteHasAddress(
+				"Besøksadresse: Storgata 1 A, 2609 Lillehammer",
+				"Storgata 1A, 2609 Lillehammer"
+			)
+		).toBe(true)
+		expect(quoteHasAddress("Storgata 1 A\n2609 Lillehammer", "Storgata 1A, 2609 Lillehammer")).toBe(
+			true
+		)
+		expect(quoteHasAddress("Storgata 12, 2609 Lillehammer", "Storgata 1, 2609 Lillehammer")).toBe(
+			false
+		)
+		expect(quoteHasAddress("Storgata 1, 2610 Lillehammer", "Storgata 1, 2609 Lillehammer")).toBe(
+			false
+		)
 	})
 })

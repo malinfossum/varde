@@ -719,4 +719,14 @@ describe("grounding: decisions and the page itself", () => {
 		expect(groundingGate(c, context()).pass).toBe(true)
 		expect(groundingGate({ ...c, value: "kl. 08:00\u201316:00" }, context()).pass).toBe(false)
 	})
+
+	it("grounds Kartverket's address text in the page's own spelling", () => {
+		const c = candidate({
+			field: "address",
+			value: "Storgata 1A, 2317 Hamar",
+			evidence: { kind: "quote", quotes: ["Besøksadresse: Storgata 1 A, 2317 Hamar"] },
+		})
+		const page = "Besøksadresse: Storgata 1 A, 2317 Hamar"
+		expect(groundingGate(c, context({ pageText: () => page })).pass).toBe(true)
+	})
 })
