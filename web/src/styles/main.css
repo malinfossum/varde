@@ -1127,4 +1127,91 @@
 			column-gap: 1.5rem;
 		}
 	}
+
+	/* The /sok layout (filter spec, Layout 1). The page is a size container, so the facets can
+	   ask how wide the page really is. From 1024 px they sit in a 17.5rem column, but only while
+	   the results keep 20rem: 17.5rem + 1.5rem gap + 20rem = 39rem. In rem, so it follows the root
+	   font size: at 200 % text on a 1280 px window the page is 1216 px against 1248 px, and the
+	   facets fall back to the dialog. The rule sits after .btn-secondary on purpose, and the
+	   trigger selector has two classes, so display: none wins over the button's inline-flex. */
+	.sok-page {
+		grid-template-columns: minmax(0, 1fr);
+		container: sok / inline-size;
+	}
+	.sok-layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 1.5rem;
+	}
+	/* No scroll anchoring on /sok. react-aria renders a TagGroup's chips one commit after the
+	   rest, so on Back the saved scroll is restored first and the chip rows grow above it
+	   afterwards; Chrome's anchoring then moved the page by their height (38 px at 375 px with
+	   one Sted pick: e2e/oldLinks.spec.ts failed). The layout after that commit is the one the
+	   scroll was saved in, so the restored number is already right. */
+	html:has(.sok-page) {
+		overflow-anchor: none;
+	}
+	.facet-sidebar {
+		display: none;
+	}
+	.facet-groups {
+		display: grid;
+		gap: 0.5rem;
+	}
+	@media (min-width: 1024px) {
+		@container sok (min-width: 39rem) {
+			.sok-layout {
+				grid-template-columns: 17.5rem minmax(0, 1fr);
+				align-items: start;
+			}
+			.facet-sidebar {
+				display: block;
+			}
+			.sok-page .facet-trigger {
+				display: none;
+			}
+		}
+	}
+	/* The full-screen filter dialog: heading, a scroll area, and the footer below it. */
+	.facet-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 50;
+		background: var(--ground);
+	}
+	.facet-modal {
+		block-size: 100%;
+	}
+	.facet-dialog {
+		display: flex;
+		flex-direction: column;
+		block-size: 100%;
+		outline: none;
+	}
+	/* The heading and the dialog's own quick exit share one row, the exit at the end as in the
+	   header. */
+	.facet-dialog-header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem 1rem;
+		padding: 0.5rem 1rem;
+		border-block-end: 1px solid var(--border);
+	}
+	.facet-dialog-title {
+		font-size: 1.25rem;
+	}
+	.facet-dialog-body {
+		flex: 1;
+		min-block-size: 0;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		padding-inline: 1rem;
+	}
+	.facet-dialog-footer {
+		padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+		border-block-start: 1px solid var(--border);
+		background: var(--surface);
+	}
 }
