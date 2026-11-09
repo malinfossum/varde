@@ -684,6 +684,7 @@
 		font-weight: 500;
 		text-align: center;
 		text-decoration: none;
+		overflow-wrap: anywhere;
 	}
 	.chip-acute {
 		border-color: var(--accent);
@@ -708,6 +709,16 @@
 		gap: 0.5rem;
 		width: 100%;
 		justify-self: center;
+	}
+	/* The category grid and the emergency buttons below 768 and 1024 px: two columns, or one when
+	   the text is so large that half the width cannot hold a label (8 rem, the featured pair's
+	   floor, so at 200 % text from 320 px). The half-width floor (less a gap, for rounding) keeps
+	   it from ever showing three, so default text keeps the same two columns as before. */
+	.chip-grid {
+		grid-template-columns: repeat(auto-fit, minmax(max(min(100%, 8rem), calc(50% - 0.5rem)), 1fr));
+	}
+	.emergency-grid {
+		grid-template-columns: repeat(auto-fit, minmax(max(min(100%, 8rem), calc(50% - 0.75rem)), 1fr));
 	}
 	@media (min-width: 768px) {
 		.chip-featured-row {
@@ -816,7 +827,7 @@
 	   wrap to one per row. */
 	.detail-actions {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(5.5rem, 100%), 1fr));
 		gap: 0.5rem;
 	}
 	.action-btn {
