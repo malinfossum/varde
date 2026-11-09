@@ -50,7 +50,7 @@ export function ContactTiles({ tiles }: { tiles: ContactTile[] }) {
 								<span className="contact-tile-icon">
 									<Icon />
 								</span>
-								<span className="grid min-w-0">
+								<span className="contact-tile-text grid">
 									<span className="contact-tile-label block text-sm text-muted">
 										{tileLabel(tile, t)}
 										{tile.kind === "phone" && tile.alwaysOpen && (

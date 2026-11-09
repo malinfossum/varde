@@ -385,7 +385,8 @@ test("Mental Helse's contact block: its phone, Sidetmedord's chat, then Arbeidsl
 	expect(tiles[0]).not.toHaveAccessibleName(/·/)
 	expect(visibleText(tiles[0] as HTMLElement)).toContain("Ring · døgnåpen")
 	expect(tiles[1]).toHaveAccessibleName("Sidetmedord (Mental Helse), Åpne chatten")
-	expect(tiles[2]).toHaveAccessibleName("Arbeidslivstelefonen (Mental Helse), 116 123, tast 3")
+	// A no-break space keeps "tast 3" on one line; jsdom keeps it in the name, Chromium reads a space.
+	expect(tiles[2]).toHaveAccessibleName("Arbeidslivstelefonen (Mental Helse), 116 123, tast\u00a03")
 })
 
 test("døgnåpen sits on Kirkens SOS's phone tile and never on its chat tile", async () => {
@@ -404,7 +405,7 @@ test("in English the tiles say Call, open 24/7, Open the chat and press 3", asyn
 	const [phone, chat, work] = within(block).getAllByRole("link")
 	expect(phone).toHaveAccessibleName("Call, open 24/7, 116 123")
 	expect(chat).toHaveAccessibleName("Sidetmedord (Mental Helse), Open the chat")
-	expect(work).toHaveAccessibleName("Arbeidslivstelefonen (Mental Helse), 116 123, press 3")
+	expect(work).toHaveAccessibleName("Arbeidslivstelefonen (Mental Helse), 116 123, press\u00a03")
 })
 
 test("a child page says which service it belongs to, linking there", async () => {

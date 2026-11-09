@@ -136,8 +136,9 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 				</Link>
 			)}
 			{/* Everything about the service sits in this one card (spec: the detail page as one
-			    card). DOM order is the reading and focus order at every width. */}
-			<article className="detail-card grid gap-6 rounded-xl wrap-anywhere border border-border bg-surface p-5 md:p-8">
+			    card). DOM order is the reading and focus order at every width. The phone padding stops
+			    at 20 px so that at 200 % text the extra room goes to the text, not the padding. */}
+			<article className="detail-card grid gap-6 rounded-xl wrap-anywhere border border-border bg-surface p-[min(1.25rem,20px)] md:p-8">
 				<header className="detail-head">
 					<div className="detail-title grid min-w-0 gap-3">
 						<h1 ref={heading} tabIndex={-1} className="text-3xl wrap-anywhere md:text-5xl">

@@ -88,7 +88,7 @@
 	"detail.practicalHeading": "Praktisk informasjon",
 	"detail.tile.alwaysOpen": "døgnåpen",
 	"detail.tile.openChat": "Åpne chatten",
-	"detail.tile.menuOption": "tast {n}",
+	"detail.tile.menuOption": "tast\u00a0{n}",
 	"detail.partOf": "Del av {name}",
 	"report.link": "Meld feil i oppføringen",
 	"report.short": "Meld feil",
