@@ -22,32 +22,22 @@ function Wrapper({ lang = "nb", children }: { lang?: Lang; children: ReactNode }
 
 function renderRow(filters: Partial<Filters>, lang: Lang = "nb") {
 	const onPatch = vi.fn()
-	function Probe() {
-		const headingRef = useRef<HTMLHeadingElement>(null)
-		return (
-			<>
-				<h1 ref={headingRef} tabIndex={-1}>
-					Treff
-				</h1>
-				<ActiveFilters
-					filters={f(filters)}
-					catalog={catalog}
-					onPatch={onPatch}
-					headingRef={headingRef}
-				/>
-			</>
-		)
-	}
 	const view = render(
 		<Wrapper lang={lang}>
-			<Probe />
+			<ActiveFilters
+				filters={f(filters)}
+				catalog={catalog}
+				onPatch={onPatch}
+				focusResults={() => {}}
+			/>
 		</Wrapper>
 	)
 	return { onPatch, container: view.container }
 }
 
-// Stands in for ListPage: the heading is the empty state's, and every patch goes through
-// applyPatch as the URL would.
+// Stands in for ListPage: the heading is the empty state's, every patch goes through applyPatch
+// as the URL would, and a focus request is answered at once. The real ListPage waits for the
+// next answer first; list.test.tsx covers that against <App />.
 function Stateful({ initial }: { initial: Partial<Filters> }) {
 	const [filters, setFilters] = useState(f(initial))
 	const headingRef = useRef<HTMLHeadingElement>(null)
@@ -59,7 +49,7 @@ function Stateful({ initial }: { initial: Partial<Filters> }) {
 			<ActiveFilters
 				filters={filters}
 				catalog={catalog}
-				headingRef={headingRef}
+				focusResults={() => headingRef.current?.focus()}
 				onPatch={(patch) => setFilters((current) => applyPatch(current, patch))}
 			/>
 		</Wrapper>

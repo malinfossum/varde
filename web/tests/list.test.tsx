@@ -519,3 +519,24 @@ test("with the catalog down, only Søk and the error state show", async () => {
 	expect(screen.queryByRole("button", { name: /^Flere filtre/ })).not.toBeInTheDocument()
 	expect(screen.queryByRole("complementary", { name: "Filtre" })).not.toBeInTheDocument()
 })
+
+// Final review F1: when a filter change turns "Ingen treff" into a list, the empty state's
+// heading unmounts. Focus must land on the new results heading, never on <body>.
+const rus = { id: 4, slug: "rus", name: "Rus", isFallbackTranslation: false }
+
+test.each([
+	["removing the last chip", /^Fjern Rus/],
+	["Nullstill alt", "Nullstill alt"],
+	["the empty state's Fjern alle filtre", "Fjern alle filtre"],
+])("%s on an empty list that then fills puts focus on the results heading", async (_, name) => {
+	stubDataFiles({ resources: [resource], municipalities, categories: [rus] })
+	window.history.pushState(null, "", "/sok?category=rus")
+	const user = userEvent.setup()
+	render(<App />)
+	await screen.findByRole("heading", { level: 1, name: "Ingen treff" })
+	await user.click(screen.getByRole("button", { name }))
+	await waitFor(() =>
+		expect(screen.getByRole("heading", { level: 1, name: "1 treff" })).toHaveFocus()
+	)
+	expect(document.body).not.toHaveFocus()
+})

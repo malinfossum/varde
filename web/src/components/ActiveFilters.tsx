@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { Label, TagGroup, TagList } from "react-aria-components"
 import { useChipFocus } from "../hooks/useChipFocus.ts"
 import { useTranslation } from "../i18n/LanguageProvider.tsx"
@@ -10,27 +10,27 @@ import { FilterChip } from "./FilterChip.tsx"
 // The chips above the results (filter spec, ActiveFilters): one per active value, so every
 // filter, wherever it was set, can be seen and undone in one place. "Nullstill alt" clears every
 // filter and the search text, and shows whenever anything is set. When the last chip goes, or
-// Nullstill alt takes the whole row, focus moves to the results heading, which is the empty
-// state's heading when nothing matches. Never to <body>.
+// Nullstill alt takes the whole row, focusResults asks for focus on the results heading once the
+// new answer is on screen (the empty state's heading when nothing matches). Never to <body>.
 export function ActiveFilters({
 	filters,
 	catalog,
 	onPatch,
-	headingRef,
+	focusResults,
 }: {
 	filters: Filters
 	catalog: Pick<Catalog, "municipalities" | "counties">
 	onPatch: (patch: Partial<Filters>) => void
-	headingRef: RefObject<HTMLHeadingElement | null>
+	focusResults: () => void
 }) {
 	const t = useTranslation()
 	const chips = activeFilters(filters, catalog, t)
-	const { listRef, removing } = useChipFocus(chips.length, () => headingRef.current?.focus())
+	const { listRef, removing } = useChipFocus(chips.length, focusResults)
 	const active = hasFilters(filters)
 	const clearing = useRef(false)
 	// biome-ignore lint/correctness/useExhaustiveDependencies: active is the trigger; the refs are read
 	useEffect(() => {
-		if (!active && clearing.current) headingRef.current?.focus()
+		if (!active && clearing.current) focusResults()
 		clearing.current = false
 	}, [active])
 

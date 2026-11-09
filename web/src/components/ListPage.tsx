@@ -85,7 +85,11 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 	// object itself to know a new answer has actually arrived.
 	// An empty answer is ready too: the empty state's heading takes the ref then, so Back or
 	// Forward onto it lands focus on that heading and never leaves it on <body>.
-	const { ref: resultsHeading, requestFocus } = useArrivalFocus<HTMLHeadingElement>(
+	const {
+		ref: resultsHeading,
+		requestFocus,
+		focusAfterAnswer,
+	} = useArrivalFocus<HTMLHeadingElement>(
 		arrival,
 		state.kind === "ready",
 		state.kind !== "loading",
@@ -195,7 +199,7 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 							filters={resolved}
 							catalog={catalog}
 							onPatch={apply}
-							headingRef={resultsHeading}
+							focusResults={focusAfterAnswer}
 						/>
 					)}
 					{/* useCatalog and useResources both resolve from the one shared loadIndex(lang)
@@ -211,7 +215,10 @@ export function ListPage({ filters, arrival }: { filters: Filters; arrival: numb
 					    blank list. */}
 					{state.kind === "ready" && state.data.items.length === 0 && (
 						<EmptyState
-							onClearFilters={() => apply(CLEAR_ALL)}
+							onClearFilters={() => {
+								focusAfterAnswer()
+								apply(CLEAR_ALL)
+							}}
 							suggestions={suggestions}
 							onPick={onPick}
 							headingRef={resultsHeading}
