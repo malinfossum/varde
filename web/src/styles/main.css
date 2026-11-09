@@ -684,6 +684,7 @@
 		font-weight: 500;
 		text-align: center;
 		text-decoration: none;
+		overflow-wrap: anywhere;
 	}
 	.chip-acute {
 		border-color: var(--accent);
@@ -708,6 +709,16 @@
 		gap: 0.5rem;
 		width: 100%;
 		justify-self: center;
+	}
+	/* The category grid and the emergency buttons below 768 and 1024 px: two columns, or one when
+	   the text is so large that half the width cannot hold a label (8 rem, the featured pair's
+	   floor, so at 200 % text from 320 px). The half-width floor (less a gap, for rounding) keeps
+	   it from ever showing three, so default text keeps the same two columns as before. */
+	.chip-grid {
+		grid-template-columns: repeat(auto-fit, minmax(max(min(100%, 8rem), calc(50% - 0.5rem)), 1fr));
+	}
+	.emergency-grid {
+		grid-template-columns: repeat(auto-fit, minmax(max(min(100%, 8rem), calc(50% - 0.75rem)), 1fr));
 	}
 	@media (min-width: 768px) {
 		.chip-featured-row {
@@ -751,14 +762,19 @@
 	/* A contact tile on the detail page (spec C2a): the whole tile is one link. The 1 px border
 	   keeps its edge in forced-colors mode, where the accent-soft fill disappears. 69 px is the
 	   minimum: a long child name wraps inside the tile and makes it taller, never clipped.
-	   overflow-wrap: anywhere is what keeps a long name inside the tile at 200 % text. */
+	   overflow-wrap: anywhere is what keeps a long name inside the tile at 200 % text.
+	   At 200 % text on a phone the text column beside the icon was 44 px, so "116 123" broke every
+	   two characters. Now the text drops under the icon when 8rem will not fit beside it, and the
+	   padding is capped at its 100 % size, so large text gets the room instead of the padding.
+	   At default text both are the same as before. */
 	.contact-tile {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.75rem;
 		height: 100%;
 		min-height: 69px;
-		padding: 0.75rem 1rem;
+		padding: min(0.75rem, 12px) min(1rem, 16px);
 		border: 1px solid var(--border);
 		border-radius: 0.75rem;
 		background: var(--surface);
@@ -775,6 +791,10 @@
 		border-radius: 0.5rem;
 		background: var(--accent-soft);
 		color: var(--accent);
+	}
+	.contact-tile-text {
+		flex: 1 1 8rem;
+		min-width: 0;
 	}
 	/* The detail page card (spec: the detail page as one card). Each section after the head starts
 	   with a 1 px line: the card's gap-6 puts 1.5rem above it and this puts 1.5rem below. */
@@ -816,7 +836,7 @@
 	   wrap to one per row. */
 	.detail-actions {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(5.5rem, 100%), 1fr));
 		gap: 0.5rem;
 	}
 	.action-btn {

@@ -28,6 +28,58 @@ for (const theme of THEMES) {
 	}
 }
 
+// At 200 % text on a phone a single long word was wider than its column: the report address on
+// /om (page 505 px wide), the labels and description on the detail card (334 px) and the
+// letter-spaced eyebrow on the landing page (333 px). Long words now break instead, and on the
+// landing page no chip or emergency button label leaves its box either.
+for (const path of ["/", "/en/", "/om", "/en/om", "/resources/1", "/en/resources/1"]) {
+	test(`${path} reflows at 320 px and 200 % text`, async ({ page }) => {
+		await page.goto(path)
+		await page.addStyleTag({ content: "html { font-size: 200% }" })
+		await page.evaluate(() => document.fonts.ready)
+		await expect(page.getByRole("contentinfo")).toBeVisible()
+		expect(await noHorizontalScroll(page)).toBe(true)
+		const spilled = await page
+			.locator("main .chip, main a.btn-primary")
+			.evaluateAll((els) =>
+				els.filter((el) => el.scrollWidth > el.clientWidth).map((el) => el.textContent)
+			)
+		expect(spilled).toEqual([])
+	})
+}
+
+// At 200 % text on a phone the contact tiles left 44 px beside the icon, so "116 123" broke every
+// two characters. The text now drops under the icon, so each tile's value line is at least as
+// wide as its longest word and no phone number splits.
+for (const path of ["/resources/1", "/en/resources/1"]) {
+	test(`contact tiles on ${path} keep whole words at 320 px and 200 % text`, async ({ page }) => {
+		await page.goto(path)
+		await page.addStyleTag({ content: "html { font-size: 200% }" })
+		await page.evaluate(() => document.fonts.ready)
+		await page.locator(".contact-tile-value").first().waitFor()
+		const split = await page.locator(".contact-tile-value").evaluateAll((els) =>
+			els
+				.filter((el) => {
+					// The widest single word, measured in the value's own font.
+					const probe = document.createElement("span")
+					probe.style.whiteSpace = "nowrap"
+					el.append(probe)
+					const widest = Math.max(
+						...(el.firstChild?.textContent ?? "").split(/\s+/).map((word) => {
+							probe.textContent = word
+							return probe.getBoundingClientRect().width
+						})
+					)
+					probe.remove()
+					return el.getBoundingClientRect().width < widest - 0.5
+				})
+				.map((el) => el.textContent)
+		)
+		expect(split).toEqual([])
+		expect(await noHorizontalScroll(page)).toBe(true)
+	})
+}
+
 // Spec C2a: in a narrow column the helpline buttons stack at full width; with a larger text size
 // on a desktop window the rows use the phone layout instead of squeezing the names. Either way no
 // label leaves its button and the page never scrolls sideways.

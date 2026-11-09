@@ -88,7 +88,7 @@
 	"detail.practicalHeading": "Practical details",
 	"detail.tile.alwaysOpen": "open 24/7",
 	"detail.tile.openChat": "Open the chat",
-	"detail.tile.menuOption": "press {n}",
+	"detail.tile.menuOption": "press\u00a0{n}",
 	"detail.partOf": "Part of {name}",
 	"report.link": "Report an error in this listing",
 	"report.short": "Report",
