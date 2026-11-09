@@ -86,6 +86,11 @@ public static class SeedData
     // changed or not.
     private static readonly DateOnly VerifiedAcuteRecheck = new(2026, 11, 4);
 
+    // Row 211 (Nav Stovner) got a full re-read on 2026-11-09, the day its temporary "Kun
+    // timeavtale" notice ended (docs/seed-data-lavterskel-retag.md, Verify item 24). Every
+    // seeded field still matched the office page.
+    private static readonly DateOnly VerifiedRow211 = new(2026, 11, 9);
+
     // Municipality ids — county = Innlandet for 1-7, Oslo for 8.
     private const int Hamar = 1;
     private const int Lillehammer = 2;
@@ -867,7 +872,7 @@ public static class SeedData
                 Address = "Stovner Senter 17, 0985 Oslo",
                 Phone = "55 55 33 33",
                 Website = "https://www.nav.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRow211,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
