@@ -48,6 +48,47 @@ for (const path of ["/", "/en/", "/om", "/en/om", "/resources/1", "/en/resources
 	})
 }
 
+// At 200 % text on a phone the Søk button left the landing search 57 px (en: 11 px), so it showed
+// "Ha" of the placeholder. The input now gets 8rem or a whole row, the button wraps under it, and
+// on a shared row the input and button have one height (they were 88 and 50 px at 200 %).
+for (const [width, fontSize] of [
+	[320, "200%"],
+	[375, "200%"],
+	[768, "200%"],
+	[320, "100%"],
+] as const) {
+	for (const path of ["/", "/en/"]) {
+		test(`the landing search input has room at ${width} px and ${fontSize} text (${path})`, async ({
+			page,
+		}) => {
+			await page.setViewportSize({ width, height: 800 })
+			await page.goto(path)
+			await page.addStyleTag({ content: `html { font-size: ${fontSize} }` })
+			await page.evaluate(() => document.fonts.ready)
+			const m = await page.locator("search form").evaluate((form) => {
+				const style = getComputedStyle(form)
+				const inner =
+					form.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+				const rem = parseFloat(getComputedStyle(document.documentElement).fontSize)
+				const f = form.getBoundingClientRect()
+				const input = (form.querySelector("input") as Element).getBoundingClientRect()
+				const button = (form.querySelector("button") as Element).getBoundingClientRect()
+				return {
+					roomy: input.width >= Math.min(8 * rem, inner) - 1,
+					// On one row when they overlap vertically, whatever their alignment.
+					sameRow: input.top < button.bottom && button.top < input.bottom,
+					heights: [input.height, button.height],
+					inside: button.left >= f.left && button.right <= f.right,
+				}
+			})
+			expect(m.roomy).toBe(true)
+			expect(m.inside).toBe(true)
+			if (m.sameRow) expect(Math.abs(m.heights[0] - m.heights[1])).toBeLessThanOrEqual(0.5)
+			expect(await noHorizontalScroll(page)).toBe(true)
+		})
+	}
+}
+
 // At 200 % text on a phone the contact tiles left 44 px beside the icon, so "116 123" broke every
 // two characters. The text now drops under the icon, so each tile's value line is at least as
 // wide as its longest word and no phone number splits.
