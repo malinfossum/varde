@@ -209,6 +209,33 @@ for (const width of [768, 1024, 1280, 1920]) {
 	})
 }
 
+// With picks, Sted grows downwards. Søk keeps its 44 px and its top edge level with Sted's,
+// instead of stretching into an empty box as tall as the chip lines.
+for (const width of [768, 1280]) {
+	test(`Søk stays 44 px and level with the top of Sted when Sted has picks at ${width} px`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width, height: 900 })
+		await openSok(
+			page,
+			"/sok?municipality=3403&municipality=3405&municipality=3407&municipality=3411"
+		)
+		await stedChips(page).waitFor()
+		const m = await page.evaluate(() => {
+			const box = (selector: string) => {
+				const el = document.querySelector(selector)
+				if (!el) throw new Error(`no ${selector}`)
+				const r = el.getBoundingClientRect()
+				return { top: r.top, height: r.height }
+			}
+			return { search: box(".place-bar input[type='search']"), place: box(".place-group") }
+		})
+		expect(m.place.height).toBeGreaterThan(50)
+		expect(Math.abs(m.search.height - 44)).toBeLessThanOrEqual(1)
+		expect(Math.abs(m.search.top - m.place.top)).toBeLessThanOrEqual(1)
+	})
+}
+
 // Guards c5516ec: the remove button overlapped no border then, so each chip was 46 px beside a
 // 44 px Nullstill alt. The row is bottom-aligned, so only the height check catches that.
 for (const width of [1280, 1920]) {

@@ -1098,7 +1098,8 @@
 	   on a two-row subgrid: the labels share the first row and the controls the second, so the
 	   labels keep one baseline even when one wraps at a larger text size, and both controls start
 	   on one line. With no picks both are 2.75rem tall, so they share one bottom edge too. Picks
-	   make Sted grow downwards while Søk stays where it is. */
+	   make Sted grow downwards. Søk keeps its own height at the top of its row (align-self: start),
+	   because the subgrid row grows with Sted and would otherwise stretch Søk into an empty box. */
 	.place-bar {
 		display: grid;
 		gap: 1rem;
@@ -1149,6 +1150,9 @@
 		}
 		.place-bar .field-label {
 			align-self: end;
+		}
+		.place-bar .search-input {
+			align-self: start;
 		}
 		.national-options {
 			display: flex;
