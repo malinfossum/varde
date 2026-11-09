@@ -1,4 +1,5 @@
 import type { GateResult } from "../schema/lock.ts"
+import { hoursLength } from "../text/hours.ts"
 import { hasInvisible } from "../text/invisible.ts"
 import { phoneDigits } from "../text/normalise.ts"
 import { settled } from "./grounding.ts"
@@ -39,7 +40,7 @@ function fieldCheck(c: Candidate, ctx: GateContext): GateResult {
 		}
 		case "openingHours":
 		case "phoneHours":
-			return c.value.length <= MAX_HOURS
+			return hoursLength(c.value) <= MAX_HOURS
 				? pass("validity")
 				: review("validity", `hours are longer than ${MAX_HOURS} characters`)
 		default:

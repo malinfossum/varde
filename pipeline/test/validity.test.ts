@@ -95,4 +95,9 @@ describe("validity: my decision and invisible characters", () => {
 		const c = candidate({ field: "openingHours", value: "Mandag\u200B kl. 08:00" })
 		expect(validityGate(c, context())).toMatchObject({ pass: false, onFail: "drop" })
 	})
+
+	it("counts hours in code points: 200 emoji are 200, not 400", () => {
+		const c = candidate({ field: "openingHours", value: "\u{1F600}".repeat(200) })
+		expect(validityGate(c, context()).pass).toBe(true)
+	})
 })

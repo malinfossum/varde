@@ -705,4 +705,18 @@ describe("grounding: decisions and the page itself", () => {
 		const other = candidate({ ...c, value: "https://www.hamar.kommune.no/annet/" })
 		expect(groundingGate(other, context()).pass).toBe(false)
 	})
+
+	it("grounds opening hours by their times and words, not as a verbatim substring", () => {
+		const c = candidate({
+			field: "openingHours",
+			value: "kl. 08:00\u201315:30",
+			evidence: {
+				kind: "quote",
+				quotes: ["Telefon:\u00A062 00 00 00 (hverdager 08.00\u201315.30)"],
+			},
+			origin: "unitPage",
+		})
+		expect(groundingGate(c, context()).pass).toBe(true)
+		expect(groundingGate({ ...c, value: "kl. 08:00\u201316:00" }, context()).pass).toBe(false)
+	})
 })

@@ -1,5 +1,6 @@
 import { type FieldName, type FieldValue, MAX_QUOTE } from "../schema/common.ts"
 import type { GateResult } from "../schema/lock.ts"
+import { hoursGrounded } from "../text/hours.ts"
 import {
 	normaliseText,
 	normaliseUrl,
@@ -95,6 +96,11 @@ export const groundingGate: Gate = (c, ctx) => {
 			}
 			return pass("grounding")
 		}
+		case "openingHours":
+		case "phoneHours":
+			return typeof c.value === "string" && hoursGrounded(c.value, quotes)
+				? pass("grounding")
+				: drop("grounding", "no quote holds these hours")
 		case "website":
 			// The unit's own page is its website, grounded by the fetch itself (spec, "Email and
 			// website"); any other address must be in a quote.
