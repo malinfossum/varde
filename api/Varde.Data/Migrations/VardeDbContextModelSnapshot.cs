@@ -17,7 +17,7 @@ namespace Varde.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.13")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1271,7 +1271,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 8, 13),
+                            LastVerified = new DateOnly(2026, 11, 9),
                             MunicipalityId = 8,
                             Name = "Nav Stovner",
                             Phone = "55 55 33 33",
