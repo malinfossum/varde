@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react"
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { type ReactNode, useState } from "react"
 import { describe, expect, test, vi } from "vitest"
@@ -109,6 +109,21 @@ test("Escape closes the list without picking", async () => {
 	await user.keyboard("{Escape}")
 	await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument())
 	expect(onPatch).not.toHaveBeenCalled()
+})
+
+// Focusing an off-screen field scrolls the page, and the browser fires that scroll event a frame
+// later, once the list is open. The e2e at 375 px and 200 % text found it: the list closed again
+// at once. Here the scroll is fired by hand in the same frame as the focus, then in a later one.
+test("the scroll that focus causes keeps the list open, and a later scroll still closes it", async () => {
+	renderField({ municipalities: ["3403"] })
+	act(() => sted().focus())
+	expect(screen.getByRole("listbox")).toBeInTheDocument()
+	fireEvent.scroll(document)
+	expect(screen.getByRole("listbox")).toBeInTheDocument()
+	await new Promise((resolve) => requestAnimationFrame(resolve))
+	fireEvent.scroll(document)
+	await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument())
+	expect(sted()).toHaveFocus()
 })
 
 // Review Focus 5.

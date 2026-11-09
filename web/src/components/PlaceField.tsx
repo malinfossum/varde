@@ -41,6 +41,20 @@ function PlaceItem({ option }: { option: PlaceOption }) {
 	)
 }
 
+// Focusing the field while it is off-screen (Tab back up from far down the page, or the field
+// low on a phone at 200 % text) makes the browser scroll it into view. The page moves at once,
+// but its scroll event comes on the next frame, after focus has opened the list, and react-aria
+// closes an open combobox list on any scroll of the page around it. So for that one frame I stop
+// the page's scroll event before react-aria sees it. Any scroll after that still closes the list,
+// as react-aria means it to. Found by the e2e at 375 px and 200 % text on 09.11.2026.
+function keepListOpenThroughFocusScroll(): void {
+	const swallow = (event: Event) => {
+		if (event.target === document) event.stopImmediatePropagation()
+	}
+	window.addEventListener("scroll", swallow, true)
+	requestAnimationFrame(() => window.removeEventListener("scroll", swallow, true))
+}
+
 // The Sted field (filter spec, PlaceBar): one react-aria ComboBox in multiple mode for fylker and
 // kommuner. Keyboard, typeahead, group announcements and the popover come from the library; this
 // file decides what the options are. Picks show as chips inside the field, and the list stays
@@ -140,6 +154,7 @@ export function PlaceField({
 						</ComboBoxValue>
 						<Input
 							ref={inputRef}
+							onFocus={keepListOpenThroughFocusScroll}
 							placeholder={t("filter.placePlaceholder")}
 							className="place-input"
 						/>
