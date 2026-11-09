@@ -12,6 +12,8 @@ export const ROLE_WORDS: readonly RoleWord[] = [
 	{ word: "barnevernleder", label: "Barnevernleder" },
 	// docs/seed-data-lavterskel-innlandet.md (a frivilligsentral's contact block).
 	{ word: "daglig leder", label: "Daglig leder" },
+	// Seen next to a mobile on www.lillehammer.kommune.no, 09.11.2026.
+	{ word: "teamleder", label: "Teamleder" },
 ]
 
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
