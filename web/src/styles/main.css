@@ -888,4 +888,76 @@
 			display: none;
 		}
 	}
+	/* The /sok facets (filter spec, FacetGroup). Every option is a 44 px row: the control, its
+	   label in the text colour, and the count pushed right, muted and tabular, so a label and its
+	   count never read as one value. The summary is heavier than the options. */
+	.facet-group > summary {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-height: 2.75rem;
+		cursor: pointer;
+		font-weight: 600;
+		list-style: none;
+	}
+	.facet-group > summary::-webkit-details-marker {
+		display: none;
+	}
+	.facet-summary-end {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-inline-start: auto;
+	}
+	.facet-ticked {
+		color: var(--muted);
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+	.facet-chevron {
+		color: var(--muted);
+	}
+	.facet-group[open] .facet-chevron {
+		rotate: 180deg;
+	}
+	/* A fieldset is min-content wide by default and Preflight does not reset it, so one long
+	   label could push the page sideways at 200 % text. */
+	.facet-fieldset {
+		display: grid;
+		min-inline-size: 0;
+	}
+	.facet-option {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		min-height: 2.75rem;
+		cursor: pointer;
+	}
+	.facet-input {
+		flex-shrink: 0;
+		inline-size: 1.25rem;
+		block-size: 1.25rem;
+		accent-color: var(--accent);
+	}
+	.facet-label {
+		min-inline-size: 0;
+		color: var(--text);
+		overflow-wrap: anywhere;
+	}
+	.facet-count {
+		margin-inline-start: auto;
+		color: var(--muted);
+		font-size: 0.875rem;
+		font-variant-numeric: tabular-nums;
+	}
+	/* Forced colours drop fills and shadows. Native boxes and radios keep their system look, and
+	   the focus ring is an outline, which forced colours paints in a system colour. */
+	@media (forced-colors: active) {
+		.facet-input {
+			forced-color-adjust: auto;
+		}
+		.facet-input:focus-visible {
+			outline: 3px solid Highlight;
+		}
+	}
 }
