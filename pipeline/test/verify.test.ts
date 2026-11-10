@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { PassThrough } from "node:stream"
 import { describe, expect, it } from "vitest"
 import { checkData } from "../src/check/dataCheck.ts"
 import type { DiscoveredUnit, KommuneDiscovery } from "../src/discover/types.ts"
@@ -9,6 +10,8 @@ import { PageCache } from "../src/io/pageCache.ts"
 import { AllowList } from "../src/net/allowList.ts"
 import type { Fetched, Get } from "../src/net/crawler.ts"
 import { addressQuery } from "../src/registers/kartverket.ts"
+import { readKommuneFiles } from "../src/review/queue.ts"
+import { runReview } from "../src/review/session.ts"
 import type { CuratedFile } from "../src/schema/curated.ts"
 import {
 	formatVerifySummary,
@@ -741,5 +744,39 @@ describe("verifyAndWrite", () => {
 		writeFileSync(lockPath(data, "3405"), '{"kommune":"3405","units":[]}\n')
 		await expect(verifyAndWrite(data, input)).rejects.toThrow()
 		expect(readFileSync(lockPath(data, "3405"), "utf8")).toBe('{"kommune":"3405","units":[]}\n')
+	})
+})
+
+describe("review then verify", () => {
+	it("gives a lock data:check passes when verify reads the edit my review wrote", async () => {
+		const page = html(`${H1}<h2>Kontakt</h2><p>Telefon: 62 00 00 00</p><p>Telefon: 62 00 00 02</p>`)
+		const { dir, input } = setup({ pages: { [BV]: page }, units: [unit({ address: undefined })] })
+		const data = join(dir, "data")
+		await verifyAndWrite(data, input)
+		expect(
+			JSON.parse(readFileSync(lockPath(data, "3405"), "utf8")).units[0].fields.phone.status
+		).toBe("review")
+		const files = readKommuneFiles(data)
+		const stdin = new PassThrough()
+		const done = runReview(files, {
+			input: stdin,
+			output: { write: () => true },
+			isTTY: true,
+			color: false,
+			today: () => "2026-11-06",
+			checks: {
+				findAddress: async () => undefined,
+				urlStatus: async () => 200,
+				validKommuner: new Set(["3405"]),
+			},
+		})
+		stdin.end("e\n62 00 00 09\n\n")
+		expect(await done).toMatchObject({ outcome: "done", answered: 1 })
+		const curated = JSON.parse(readFileSync(files[0]?.curatedPath ?? "", "utf8")) as CuratedFile
+		await verifyAndWrite(data, { ...input, curated })
+		const phone = JSON.parse(readFileSync(lockPath(data, "3405"), "utf8")).units[0].fields.phone
+		expect(phone).toMatchObject({ status: "accepted", value: "62 00 00 09" })
+		expect(phone.evidence).toMatchObject({ kind: "decision", decidedOn: "2026-11-06" })
+		expect(checkData(dir)).toEqual([])
 	})
 })
