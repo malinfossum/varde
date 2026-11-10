@@ -83,5 +83,7 @@ The other badged rows rest on the unit's own page, or on a kommune page that nam
 - Row 15 (Rask psykisk helsehjelp, Lillehammer kommune) moves to Industrigata 17 in December: "Rask
   psykisk helsehjelp starter flyttingen i løpet av desember." Dated check then.
 - Row 17's Website still points to the department index; Housing First now has its own page.
+  DONE 10.11.2026 in docs/seed-data-audit-follow-ups.md.
 - Row 225's description says "Du trenger ikke henvisning for å komme", which also reads as
-  covering the akutt overnatting that needs a vedtak from the bydel.
+  covering the akutt overnatting that needs a vedtak from the bydel. DONE 10.11.2026 in
+  docs/seed-data-audit-follow-ups.md.

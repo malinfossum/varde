@@ -671,7 +671,7 @@ namespace Varde.Data.Migrations
                             Name = "Housing First, Lillehammer kommune",
                             Phone = "451 64 131",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/"
+                            Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/housing-first/"
                         },
                         new
                         {
@@ -5218,7 +5218,7 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 137,
-                            Description = "Lavterskeltilbud med helse- og sosialtjenester for deg med rusutfordringer, med brukerrom, feltpleie, lege og akutt overnatting. Du trenger ikke henvisning for å komme.",
+                            Description = "Lavterskeltilbud med helse- og sosialtjenester for deg med rusutfordringer, med brukerrom, feltpleie, lege og akutt overnatting. Feltpleien har gratis drop-in helsetjenester. For en akuttplass trenger du et vedtak: på hverdager kl. 09:00–15:00 kontakter du bydelen din, ellers Oslo legevakt eller psykososial akuttjeneste.",
                             LanguageCode = "nb",
                             OpeningHours = "Brukerrom mandag–søndag 09:00–22:00. Feltpleie mandag–fredag 09:00–22:00, lørdag–søndag 10:00–20:00",
                             ResourceId = 225
@@ -5226,7 +5226,7 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 138,
-                            Description = "A low-threshold centre with health and social services for people with substance use difficulties, offering a drug consumption room, field nursing, a doctor and emergency overnight accommodation. No referral is needed.",
+                            Description = "A low-threshold centre with health and social services for people with substance use difficulties, offering a drug consumption room, field nursing, a doctor and emergency overnight accommodation. Field nursing offers free drop-in health services. An emergency bed needs a formal decision (vedtak): on weekdays 09:00–15:00 contact your district (bydel), at other times Oslo legevakt or the psychosocial emergency service.",
                             LanguageCode = "en",
                             OpeningHours = "Consumption room Monday–Sunday 09:00–22:00. Field nursing Monday–Friday 09:00–22:00, Saturday–Sunday 10:00–20:00",
                             ResourceId = 225
