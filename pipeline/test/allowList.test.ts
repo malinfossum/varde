@@ -18,6 +18,15 @@ describe("AllowList", () => {
 		expect(list.licence("frivilligsentral.no")).toBe("pending")
 		expect(list.licence("kirkensbymisjon.no")).toBe("ownPage")
 		expect(list.has("api.aimcms.no")).toBe(false)
+		// NKLM's file link redirects to www.norceresearch.no; no other subdomain is allowed.
+		expect(list.get("www.norceresearch.no")).toEqual({
+			host: "www.norceresearch.no",
+			kind: "register",
+			licence: "granted",
+		})
+		expect(list.licence("nklm.norceresearch.no")).toBe("granted")
+		expect(list.has("norceresearch.no")).toBe(false)
+		expect(list.has("other.norceresearch.no")).toBe(false)
 	})
 
 	it("adds the www twin, since kommune sites redirect between the two", () => {

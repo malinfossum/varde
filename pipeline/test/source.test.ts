@@ -75,8 +75,7 @@ describe("source gate: register evidence", () => {
 
 	it("passes NKLM register evidence now that its licence is granted", () => {
 		const c = candidate({
-			sourceUrl:
-				"https://nklm.norceresearch.no/en/file/offisiell-oversikt-over-legevakter-og-legevaktsentraler-i-norge",
+			sourceUrl: "https://nklm.norceresearch.no/prosjekter/nasjonalt-legevaktregister",
 			evidence: { kind: "register", register: "nklm", recordId: "2026-01-01#3" },
 			origin: "register",
 		})
@@ -85,6 +84,26 @@ describe("source gate: register evidence", () => {
 			pass: true,
 			reason: "register nklm (granted)",
 		})
+	})
+
+	it("drops NKLM register evidence while its licence is pending", () => {
+		const c = candidate({
+			sourceUrl: "https://nklm.norceresearch.no/prosjekter/nasjonalt-legevaktregister",
+			evidence: { kind: "register", register: "nklm", recordId: "2026-01-01#3" },
+			origin: "register",
+		})
+		const granted = REGISTER_SOURCES.nklm.licence
+		try {
+			// REGISTER_SOURCES is only shallow Readonly, so the test can flip one licence.
+			;(REGISTER_SOURCES.nklm as { licence: string }).licence = "pending"
+			expect(sourceGate(c, ctx)).toMatchObject({
+				pass: false,
+				onFail: "drop",
+				reason: "the nklm licence is still pending",
+			})
+		} finally {
+			;(REGISTER_SOURCES.nklm as { licence: string }).licence = granted
+		}
 	})
 
 	it("records Kartverket and KLASS as CC BY, Brreg as NLOD", () => {

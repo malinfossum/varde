@@ -12,12 +12,14 @@ import { readFirstSheet } from "../xlsx/read.ts"
 // they must agree with the legevakt's own page, never stand alone.
 
 // The file's page, as the spec's Sources list names it: the source URL of every NKLM fact and
-// the page the credit links to. Checked 09.11.2026.
-export const NKLM_PAGE =
-	"https://nklm.norceresearch.no/en/file/offisiell-oversikt-over-legevakter-og-legevaktsentraler-i-norge"
-// The file itself, when a page serves the edition the licence covers (Step 7 writes it).
-// Without it, the file comes through --nklm-file.
-export const NKLM_FILE_URL: string | undefined = undefined
+// the page the credit links to. The old file page moved off nklm.norceresearch.no, so this is
+// the register's project page. Checked 10.11.2026.
+export const NKLM_PAGE = "https://nklm.norceresearch.no/prosjekter/nasjonalt-legevaktregister"
+// The file itself: the link on the project page, which redirects to www.norceresearch.no. Checked
+// 10.11.2026: it serves the 01.01.2026 file, by hash. Without it, the file comes through
+// --nklm-file.
+export const NKLM_FILE_URL: string | undefined =
+	"https://nklm.norceresearch.no/file/oversikt-over-legevakter-i-norge"
 
 export type NklmEdition = { date: string; sha256: string }
 // The editions the licence covers, by the file's own hash. Any other file stops the NKLM step,

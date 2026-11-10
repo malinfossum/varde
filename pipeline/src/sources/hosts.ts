@@ -22,6 +22,9 @@ export const FIXED_HOSTS: readonly HostEntry[] = [
 	{ host: "www.ssb.no", kind: "register", licence: "ccBy" },
 	register("nav"),
 	register("nklm"),
+	// NKLM's file link on nklm.norceresearch.no redirects to this host, which serves the xlsx.
+	// Exact host, so no other norceresearch.no subdomain is reachable.
+	{ host: "www.norceresearch.no", kind: "register", licence: REGISTER_SOURCES.nklm.licence },
 	// Finders only, until NKVTS and Norges Frivilligsentraler say yes.
 	{ host: "dinutvei.no", kind: "catalogue", licence: "pending" },
 	{ host: "frivilligsentral.no", kind: "catalogue", licence: "pending" },
