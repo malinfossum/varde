@@ -102,6 +102,28 @@ describe("runGates", () => {
 		expect(runGates(c, context(), T)).toMatchObject({ status: "accepted", addressId: "3403-0001" })
 	})
 
+	it("never redacts the value's own text out of its quote, and still redacts every other name", () => {
+		const quote = "Kari Nordmann, Storgata 1, 2317 Hamar"
+		const c = candidate({
+			field: "address",
+			value: "Storgata 1, 2317 Hamar",
+			evidence: { kind: "quote", quotes: [quote] },
+			personNames: ["Storgata", "Kari Nordmann"],
+		})
+		const field = runGates(
+			c,
+			context({
+				pageText: () => `${PAGE}
+${quote}`,
+			}),
+			T
+		)
+		expect(field).toMatchObject({
+			status: "accepted",
+			evidence: { kind: "quote", quotes: ["[navn], Storgata 1, 2317 Hamar"] },
+		})
+	})
+
 	it("never writes a value or quote into a gate reason", () => {
 		const c = candidate({ value: "1234", evidence: { kind: "quote", quotes: ["Ring 1234"] } })
 		const injected = `${PAGE}\nRing 1234`

@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
+import { checkData } from "../src/check/dataCheck.ts"
 import type { DiscoveredUnit, KommuneDiscovery } from "../src/discover/types.ts"
 import { extractScope } from "../src/extract/extract.ts"
 import { PageCache } from "../src/io/pageCache.ts"
@@ -474,6 +475,85 @@ describe("verifyKommune", () => {
 		expect(counts.answersUnsettled).toBe(1)
 	})
 
+	it("lets my accept settle a Lavterskel question the rule leaves open", async () => {
+		const page = html(
+			`${H1}<p>Du trenger ikke henvisning for å komme hit.</p><h2>Kontakt</h2><p>Telefon: 62 00 00 00</p>`
+		)
+		const asked = await verifyKommune(
+			setup({ pages: { [BV]: page }, units: [unit({ address: undefined })] }).input
+		)
+		expect(asked.lock.units[0]?.fields.lowThreshold).toMatchObject({
+			status: "review",
+			value: false,
+		})
+		const decisions = [
+			{
+				field: "lowThreshold" as const,
+				value: false,
+				sourceUrl: BV,
+				decision: "accept" as const,
+				decidedOn: "2026-11-06",
+			},
+		]
+		const curated: CuratedFile = {
+			kommune: "3405",
+			name: "Lillehammer",
+			units: [answer(decisions)],
+		}
+		const { input } = setup({
+			pages: { [BV]: page },
+			units: [unit({ address: undefined })],
+			curated,
+		})
+		const { lock, counts } = await verifyKommune(input)
+		expect(lock.units[0]?.fields.lowThreshold).toMatchObject({
+			status: "accepted",
+			value: false,
+			evidence: { kind: "decision" },
+		})
+		expect(counts.answersUnsettled).toBe(0)
+	})
+
+	it("keeps my edit in review when it contradicts the Lavterskel rule's own answer", async () => {
+		const page = html(
+			`${H1}<p>Du må ha henvisning fra fastlegen.</p><h2>Kontakt</h2><p>Telefon: 62 00 00 00</p>`
+		)
+		const asked = await verifyKommune(
+			setup({ pages: { [BV]: page }, units: [unit({ address: undefined })] }).input
+		)
+		expect(asked.lock.units[0]?.fields.lowThreshold).toMatchObject({
+			status: "accepted",
+			value: false,
+		})
+		const decisions = [
+			{
+				field: "lowThreshold" as const,
+				value: false,
+				sourceUrl: BV,
+				decision: "edit" as const,
+				editedValue: true,
+				decidedOn: "2026-11-06",
+			},
+		]
+		const curated: CuratedFile = {
+			kommune: "3405",
+			name: "Lillehammer",
+			units: [answer(decisions)],
+		}
+		const { input } = setup({
+			pages: { [BV]: page },
+			units: [unit({ address: undefined })],
+			curated,
+		})
+		const { lock, counts } = await verifyKommune(input)
+		expect(lock.units[0]?.fields.lowThreshold).toMatchObject({
+			status: "review",
+			value: true,
+			reason: expect.stringContaining("the Lavterskel rule says no"),
+		})
+		expect(counts.answersUnsettled).toBe(1)
+	})
+
 	it("takes no values from a page fetched again after extract ran, my accepted answer included", async () => {
 		const decisions = [
 			{
@@ -612,6 +692,43 @@ describe("verifyAndWrite", () => {
 		expect(
 			JSON.parse(readFileSync(join(dir, "data", "curated", "3405-lillehammer.json"), "utf8")).units
 		).toHaveLength(1)
+	})
+
+	it("writes files data:check passes for a plain accepted unit", async () => {
+		const { dir, input } = setup({ pages: { [BV]: UNIT_PAGE }, units: [unit()] })
+		const counts = await verifyAndWrite(join(dir, "data"), input)
+		expect(counts.accepted).toBeGreaterThan(0)
+		expect(checkData(dir)).toEqual([])
+	})
+
+	it("writes files data:check passes after my edit", async () => {
+		const page = html(`${H1}<h2>Kontakt</h2><p>Telefon: 62 00 00 00</p>`)
+		const decisions = [
+			{
+				field: "phone" as const,
+				value: "62 00 00 00",
+				sourceUrl: BV,
+				decision: "edit" as const,
+				editedValue: "62 00 00 09",
+				decidedOn: "2026-11-06",
+			},
+		]
+		const curated: CuratedFile = {
+			kommune: "3405",
+			name: "Lillehammer",
+			units: [answer(decisions)],
+		}
+		const { dir, input } = setup({
+			pages: { [BV]: page },
+			units: [unit({ address: undefined })],
+			curated,
+		})
+		await verifyAndWrite(join(dir, "data"), input)
+		expect(
+			JSON.parse(readFileSync(lockPath(join(dir, "data"), "3405"), "utf8")).units[0].fields.phone
+				.value
+		).toBe("62 00 00 09")
+		expect(checkData(dir)).toEqual([])
 	})
 
 	it("leaves the previous lock file byte for byte the same when the run stops halfway", async () => {

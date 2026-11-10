@@ -146,6 +146,16 @@ function stored(evidence: Evidence, personNames: readonly string[]): Evidence {
 	return evidence
 }
 
+// A possible name whose every part stands in the field's own value ("Storgata" in "Storgata 1").
+// The value is stored anyway, so redacting that text out of its quote protects nothing and only
+// cuts the value out of the quote that grounds it.
+function inValue(c: Candidate, personName: string): boolean {
+	if (typeof c.value !== "string") return false
+	const value = stripMarks(normaliseText(c.value))
+	const parts = nameParts(personName)
+	return parts.length > 0 && parts.every((p) => tokenPattern(normaliseText(p), "iu").test(value))
+}
+
 const HOURS_FIELDS: ReadonlySet<string> = new Set(["openingHours", "phoneHours"])
 const HOURS_NAME = "the hours text may hold a person name"
 
@@ -193,10 +203,12 @@ export function runGates(c: Candidate, ctx: GateContext, verifiedAt: string): Lo
 		c.field === "address" && typeof c.value === "string"
 			? ctx.findAddress(c.value)?.addressId
 			: undefined
-	const evidence = stored(c.evidence, c.personNames)
-	const role = c.role === undefined ? undefined : (redact([c.role], c.personNames)[0] ?? "")
+	// Every possible name is redacted, except one that is the value's own text.
+	const names = c.personNames.filter((n) => !inValue(c, n))
+	const evidence = stored(c.evidence, names)
+	const role = c.role === undefined ? undefined : (redact([c.role], names)[0] ?? "")
 	const left = [...evidenceQuotes(evidence), ...(role ? [role] : [])]
-	if (nameSurvives(left, c.personNames)) {
+	if (nameSurvives(left, names)) {
 		return { ...base, status: "dropped", reason: "person name left after redaction" }
 	}
 	const kept = {

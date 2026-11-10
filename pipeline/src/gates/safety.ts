@@ -1,5 +1,6 @@
 import { evidenceQuotes } from "../schema/lock.ts"
 import { phoneDigits } from "../text/normalise.ts"
+import { settled } from "./grounding.ts"
 import { lavterskel } from "./lavterskel.ts"
 import { drop, type Gate, pass, review } from "./types.ts"
 
@@ -98,7 +99,9 @@ export const safetyGate: Gate = (c, ctx) => {
 				: drop("safety", "a krisesenter address not from the centre's own page")
 		case "lowThreshold": {
 			const rule = lavterskel(quotes, ctx.unit.cost)
-			if (rule.outcome === "review") return review("safety", rule.reason)
+			// A question the rule leaves open (silent or unclear quotes) is mine to answer, so my
+			// decision settles it. A yes or no the rule gives itself is never overruled by my answer.
+			if (rule.outcome === "review") return settled(c, review("safety", rule.reason))
 			if ((rule.outcome === "yes") !== c.value) {
 				return review("safety", `the Lavterskel rule says ${rule.outcome}: ${rule.reason}`)
 			}
