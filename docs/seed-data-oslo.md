@@ -263,6 +263,7 @@ Conflicts, ambiguities and judgement calls. Deal with these before anything is s
 - **en:** Psychological help for people under 25, through the outreach service. You can get in touch yourself by phone or text, without a referral.
 
 ### 225. Prindsen mottakssenter
+*SUPERSEDED 10.11.2026: the description now comes from docs/seed-data-audit-follow-ups.md (the page has no referral sentence, and an akuttplass needs a vedtak). The lines below are the original text.*
 - **nb:** Lavterskeltilbud med helse- og sosialtjenester for deg med rusutfordringer, med brukerrom, feltpleie, lege og akutt overnatting. Du trenger ikke henvisning for å komme.
 - **en:** A low-threshold centre with health and social services for people with substance use difficulties, offering a drug consumption room, field nursing, a doctor and emergency overnight accommodation. No referral is needed.
 - **hours-nb:** Brukerrom mandag–søndag 09:00–22:00. Feltpleie mandag–fredag 09:00–22:00, lørdag–søndag 10:00–20:00

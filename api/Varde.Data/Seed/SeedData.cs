@@ -71,6 +71,11 @@ namespace Varde.Data.Seed;
 /// description and cost note from the unit's own page. That doc overrides the referral quote of
 /// its rows. It read only some fields, so LastVerified does not move.
 ///
+/// Two of its follow-ups (10.11.2026): row 17's Website now points to the Housing First page, and
+/// row 225's description no longer says no referral is needed (the akuttplass needs a vedtak):
+/// docs/seed-data-audit-follow-ups.md, checked in docs/verification/seed-data-audit-follow-ups-check.md.
+/// It read only those fields, so LastVerified does not move.
+///
 /// LastVerified moves only when a pass re-reads every seeded field of a row (04.11.2026). The C1
 /// re-read and the lavterskel reconcile read only some fields, so their rows keep the date of
 /// their last full read.
@@ -348,7 +353,7 @@ public static class SeedData
                 MunicipalityId = Lillehammer,
                 Address = "Industrigata 17, 3. etg., 2619 Lillehammer",
                 Phone = "451 64 131",
-                Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/",
+                Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/housing-first/",
                 LastVerified = Verified,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
@@ -3102,7 +3107,7 @@ public static class SeedData
                 Id = 137,
                 ResourceId = 225,
                 LanguageCode = "nb",
-                Description = "Lavterskeltilbud med helse- og sosialtjenester for deg med rusutfordringer, med brukerrom, feltpleie, lege og akutt overnatting. Du trenger ikke henvisning for å komme.",
+                Description = "Lavterskeltilbud med helse- og sosialtjenester for deg med rusutfordringer, med brukerrom, feltpleie, lege og akutt overnatting. Feltpleien har gratis drop-in helsetjenester. For en akuttplass trenger du et vedtak: på hverdager kl. 09:00–15:00 kontakter du bydelen din, ellers Oslo legevakt eller psykososial akuttjeneste.",
                 OpeningHours = "Brukerrom mandag–søndag 09:00–22:00. Feltpleie mandag–fredag 09:00–22:00, lørdag–søndag 10:00–20:00",
             },
             new ResourceTranslation
@@ -3110,7 +3115,7 @@ public static class SeedData
                 Id = 138,
                 ResourceId = 225,
                 LanguageCode = "en",
-                Description = "A low-threshold centre with health and social services for people with substance use difficulties, offering a drug consumption room, field nursing, a doctor and emergency overnight accommodation. No referral is needed.",
+                Description = "A low-threshold centre with health and social services for people with substance use difficulties, offering a drug consumption room, field nursing, a doctor and emergency overnight accommodation. Field nursing offers free drop-in health services. An emergency bed needs a formal decision (vedtak): on weekdays 09:00–15:00 contact your district (bydel), at other times Oslo legevakt or the psychosocial emergency service.",
                 OpeningHours = "Consumption room Monday–Sunday 09:00–22:00. Field nursing Monday–Friday 09:00–22:00, Saturday–Sunday 10:00–20:00",
             },
             new ResourceTranslation
