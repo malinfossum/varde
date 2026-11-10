@@ -72,6 +72,19 @@ describe("checkData", () => {
 		expect(problems[0]).not.toContain("900 00 000")
 	})
 
+	it("reads a decision's original quotes too, so a value they do not hold is flagged", () => {
+		const evidence = {
+			kind: "decision" as const,
+			decidedOn: "2026-11-06",
+			original: { kind: "quote" as const, quotes: ["Telefon: 62 00 00 00"] },
+		}
+		const bad = lockUnit({ fields: { phone: acceptedField({ value: "900 00 000", evidence }) } })
+		const problems = checkData(repo({ "lock/3403.json": { kommune: "3403", units: [bad] } }))
+		expect(problems).toEqual([
+			"lock/3403.json org:999999999 phone: no stored quote holds the value",
+		])
+	})
+
 	it("flags an accepted phone outside the number plan", () => {
 		const phone = lockUnit({
 			fields: {

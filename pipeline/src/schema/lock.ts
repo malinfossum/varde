@@ -57,11 +57,26 @@ export const GateResult = z.strictObject({
 })
 export type GateResult = z.infer<typeof GateResult>
 
+// Where a value was found. gates/types.ts reads its Origin type from here.
+// register: a register record. unitContact: the unit's own contact block on its own page.
+// unitPage: elsewhere on the unit's own page. staffList, article, jsonLdAuthor: a staff list, an
+// article or a JSON-LD author on a page.
+export const ORIGINS = [
+	"register",
+	"unitContact",
+	"unitPage",
+	"staffList",
+	"article",
+	"jsonLdAuthor",
+] as const
+
 export const LockField = z
 	.strictObject({
 		status: z.enum(["accepted", "review", "dropped"]),
 		value: FieldValue.optional(),
 		role: NonBlank.optional(),
+		// The origin verify used, so review checks my edit the way verify will (Task 18).
+		origin: z.enum(ORIGINS).optional(),
 		addressId: NonBlank.optional(),
 		sourceUrl: HttpsUrl,
 		evidence: Evidence.optional(),
@@ -82,9 +97,10 @@ export const LockField = z
 				field.value !== undefined ||
 				field.evidence !== undefined ||
 				field.role !== undefined ||
+				field.origin !== undefined ||
 				field.addressId !== undefined
 			) {
-				issue("a dropped field keeps no value, evidence, role or address id")
+				issue("a dropped field keeps no value, evidence, role, origin or address id")
 			}
 			if (field.reason === undefined) issue("a dropped field needs its reason")
 			return

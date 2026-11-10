@@ -76,6 +76,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -304,6 +315,17 @@
 									"role": {
 										"type": "string",
 										"pattern": "\\S"
+									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
 									},
 									"addressId": {
 										"type": "string",
@@ -534,6 +556,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -762,6 +795,17 @@
 									"role": {
 										"type": "string",
 										"pattern": "\\S"
+									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
 									},
 									"addressId": {
 										"type": "string",
@@ -992,6 +1036,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -1220,6 +1275,17 @@
 									"role": {
 										"type": "string",
 										"pattern": "\\S"
+									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
 									},
 									"addressId": {
 										"type": "string",
@@ -1450,6 +1516,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -1678,6 +1755,17 @@
 									"role": {
 										"type": "string",
 										"pattern": "\\S"
+									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
 									},
 									"addressId": {
 										"type": "string",
@@ -1908,6 +1996,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -2136,6 +2235,17 @@
 									"role": {
 										"type": "string",
 										"pattern": "\\S"
+									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
 									},
 									"addressId": {
 										"type": "string",
@@ -2366,6 +2476,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -2594,6 +2715,17 @@
 									"role": {
 										"type": "string",
 										"pattern": "\\S"
+									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
 									},
 									"addressId": {
 										"type": "string",

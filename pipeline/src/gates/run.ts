@@ -167,7 +167,8 @@ export type EditCheck = { ok: true } | { ok: false; reason: string }
 // The check my own value gets before review saves it: validity, safety and the hours name
 // guard, the gates verify runs on a value with my decision as its evidence (grounding and
 // agreement pass a decision). So a validity review I settle passes, a drop refuses, and a
-// mobile passes only with a role. Task 18's review and Task 16's verify call it.
+// mobile passes only with a role. Task 18's review calls it; verify runs runGates, which holds
+// the same checks.
 export function checkEdit(c: Candidate, ctx: GateContext): EditCheck {
 	for (const result of [validityGate(c, ctx), safetyGate(c, ctx)]) {
 		if (!result.pass) return { ok: false, reason: `${result.gate}: ${result.reason ?? "failed"}` }
@@ -200,6 +201,7 @@ export function runGates(c: Candidate, ctx: GateContext, verifiedAt: string): Lo
 	}
 	const kept = {
 		value: c.value,
+		origin: c.origin,
 		evidence,
 		...(role === undefined ? {} : { role }),
 		...(addressId === undefined ? {} : { addressId }),

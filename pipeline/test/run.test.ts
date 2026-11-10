@@ -21,6 +21,14 @@ describe("runGates", () => {
 		expect(LockField.safeParse(field).success).toBe(true)
 	})
 
+	it("keeps the origin on a field it stores, and none on a dropped one", () => {
+		expect(runGates(candidate(), context(), T)).toMatchObject({
+			status: "accepted",
+			origin: "unitContact",
+		})
+		expect(runGates(candidate({ value: "12" }), context(), T).origin).toBeUndefined()
+	})
+
 	it("accepts a switchboard number from brreg, labelled", () => {
 		const c = candidate({
 			value: "62 00 00 00",

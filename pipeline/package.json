@@ -18,6 +18,7 @@
 		"discover": "node src/cli/discover.ts",
 		"fetch": "node src/cli/fetch.ts",
 		"extract": "node src/cli/extract.ts",
+		"verify": "node src/cli/verify.ts",
 		"recall-report": "node src/cli/recall-report.ts"
 	},
 	"dependencies": {

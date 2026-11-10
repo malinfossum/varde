@@ -5,7 +5,7 @@ import { fitsNumberPlan, MAX_HOURS } from "../gates/validity.ts"
 import { readJsonDir } from "../io/files.ts"
 import { FieldName } from "../schema/common.ts"
 import { CuratedFile } from "../schema/curated.ts"
-import { LockFile } from "../schema/lock.ts"
+import { evidenceQuotes, LockFile } from "../schema/lock.ts"
 
 // Runs in CI on every PR: the schemas, the file names, and the gate checks that need no
 // page (a quote still holds its value, the phone plan, the hours limit, no account
@@ -60,10 +60,10 @@ export function checkData(root: string): string[] {
 				if (field === undefined || field.status === "dropped" || field.value === undefined) continue
 				const at = `lock/${file} ${unit.unitId} ${name}`
 				const value = field.value
-				if (
-					field.evidence?.kind === "quote" &&
-					!field.evidence.quotes.some((q) => quoteHasValue(name, value, q))
-				) {
+				// A decision keeps the page's quotes as its original evidence, so they are read too. A
+				// register value has no quote to read.
+				const quotes = field.evidence === undefined ? [] : evidenceQuotes(field.evidence)
+				if (quotes.length > 0 && !quotes.some((q) => quoteHasValue(name, value, q))) {
 					problems.push(`${at}: no stored quote holds the value`)
 				}
 				if (field.status !== "accepted" || typeof value !== "string") continue
