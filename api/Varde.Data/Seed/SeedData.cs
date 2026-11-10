@@ -64,6 +64,13 @@ namespace Varde.Data.Seed;
 /// docs/seed-data-acute-recheck.md, checked in docs/verification/seed-data-acute-recheck-check.md.
 /// All 16 rows carry VerifiedAcuteRecheck.
 ///
+/// The lavterskel badge audit (10.11.2026) re-read the nine badged rows whose quote came from an
+/// umbrella intro, a wider body or a "fra lege" sentence: docs/seed-data-lavterskel-audit.md,
+/// checked in docs/verification/seed-data-lavterskel-audit-check.md. It turns the badge off on
+/// rows 17, 18, 305 and 335, gives rows 17 and 18 their new address, and rewrites row 17's
+/// description and cost note from the unit's own page. That doc overrides the referral quote of
+/// its rows. It read only some fields, so LastVerified does not move.
+///
 /// LastVerified moves only when a pass re-reads every seeded field of a row (04.11.2026). The C1
 /// re-read and the lavterskel reconcile read only some fields, so their rows keep the date of
 /// their last full read.
@@ -337,9 +344,9 @@ public static class SeedData
             {
                 Id = 17,
                 Name = "Housing First, Lillehammer kommune",
-                IsLowThreshold = true,
                 Cost = ResourceCost.Free,
                 MunicipalityId = Lillehammer,
+                Address = "Industrigata 17, 3. etg., 2619 Lillehammer",
                 Phone = "451 64 131",
                 Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/",
                 LastVerified = Verified,
@@ -350,9 +357,9 @@ public static class SeedData
             {
                 Id = 18,
                 Name = "Oppfølgingsteamet, Lillehammer kommune",
-                IsLowThreshold = true,
                 Cost = ResourceCost.Free,
                 MunicipalityId = Lillehammer,
+                Address = "Industrigata 17, 3. etg., 2619 Lillehammer",
                 Phone = "902 43 733",
                 Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/",
                 LastVerified = Verified,
@@ -1435,7 +1442,6 @@ public static class SeedData
             {
                 Id = 305,
                 Name = "Evangeliesenteret kontaktsenter Hamar",
-                IsLowThreshold = true,
                 MunicipalityId = Hamar,
                 Address = "Torggata 71, Hamar",
                 Phone = "21 00 49 00",
@@ -1804,7 +1810,6 @@ public static class SeedData
             {
                 Id = 335,
                 Name = "Stangehjelpa aktivitetshus",
-                IsLowThreshold = true,
                 MunicipalityId = Stange,
                 Address = "Skolegata 13, 2335 Stange",
                 Phone = "911 65 956",
@@ -2240,18 +2245,18 @@ public static class SeedData
                 Id = 33,
                 ResourceId = 17,
                 LanguageCode = "nb",
-                Description = "Tilbud til bostedsløse med rus- eller psykiske helseutfordringer, der du først får en varig bolig og deretter oppfølging der du bor. Målet er en stabil bosituasjon uten krav om rusfrihet på forhånd.",
+                Description = "Støtte til å mestre eget boforhold for deg som er fylt 18 år og har langvarige utfordringer knyttet til rus og/eller psykisk lidelse. Teamet følger deg opp enten du bor i kommunal bolig, leier privat eller eier egen bolig. Teamet disponerer ikke boliger og tildeler ikke kommunale boliger. Søker du kommunal bolig, kan du skrive i søknaden at du ønsker vurdering av deltakelse i Housing First. Ta kontakt for en informasjonssamtale før du søker. Skal du delta, får du et vedtak.",
                 OpeningHours = "Hverdager 09:00–15:00",
-                CostNote = "Våre tjenester er gratis.",
+                CostNote = "Tilbudet er gratis.",
             },
             new ResourceTranslation
             {
                 Id = 34,
                 ResourceId = 17,
                 LanguageCode = "en",
-                Description = "A service for homeless people with substance use or mental health difficulties, where you first get permanent housing and then receive support where you live. The aim is a stable home without requiring sobriety first.",
+                Description = "Support to manage your own home for people aged 18 or over with long-term difficulties related to substance use and/or mental illness. The team follows you up whether you live in municipal housing, rent privately or own your home. The team does not hold or allocate municipal housing. If you apply for municipal housing, you can write in the application that you want to be assessed for Housing First. Get in touch for an information talk before you apply. If you join, you get a formal decision (vedtak).",
                 OpeningHours = "Weekdays 09:00–15:00",
-                CostNote = "Our services are free.",
+                CostNote = "The service is free.",
             },
             new ResourceTranslation
             {
