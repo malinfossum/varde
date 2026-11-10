@@ -1,6 +1,8 @@
 import { z } from "zod"
+import { fitsNumberPlan } from "../gates/validity.ts"
 import type { Get } from "../net/crawler.ts"
-import { asHttpsUrl } from "../text/normalise.ts"
+import { asHttpsUrl, phoneDigits } from "../text/normalise.ts"
+import { isMobileDigits } from "../text/phone.ts"
 import { readJson } from "./json.ts"
 
 export const BRREG_API = "https://data.brreg.no/enhetsregisteret/api"
@@ -19,10 +21,13 @@ export type BrregUnit = {
 	kommune?: string
 	website?: string
 	parent?: string
+	switchboard?: string
 	register: BrregRegister
 }
 
-// z.object drops every key it does not name, so telefon, mobil and epostadresse are never read.
+// z.object drops every key it does not name, so mobil and epostadresse are never read. telefon
+// is read, and kept only for the kommune's own record (KOMM): its switchboard, rank 3 of the
+// phone order. A mobile-shaped value is refused, since a switchboard is never a person's phone.
 const Address = z.object({
 	adresse: z.array(z.string()).optional(),
 	postnummer: z.string().optional(),
@@ -37,6 +42,7 @@ const Unit = z.object({
 	beliggenhetsadresse: Address.optional(),
 	forretningsadresse: Address.optional(),
 	hjemmeside: z.string().optional(),
+	telefon: z.string().optional(),
 	overordnetEnhet: z.string().optional(),
 	slettedato: z.string().optional(),
 	nedleggelsesdato: z.string().optional(),
@@ -92,6 +98,11 @@ export function parseBrregPage(
 		const website = u.hjemmeside === undefined ? undefined : asHttpsUrl(u.hjemmeside)
 		if (website !== undefined) unit.website = website
 		if (u.overordnetEnhet !== undefined) unit.parent = u.overordnetEnhet
+		const phone = u.telefon?.trim()
+		if (u.organisasjonsform.kode === "KOMM" && phone !== undefined) {
+			const digits = phoneDigits(phone)
+			if (fitsNumberPlan(digits) && !isMobileDigits(digits)) unit.switchboard = phone
+		}
 		units.push(unit)
 	}
 	return { units, totalPages: page.data.page.totalPages, skipped }
@@ -138,3 +149,19 @@ export function kommuneSites(units: readonly BrregUnit[]): Map<string, string> {
 	}
 	return sites
 }
+
+// Each kommune's switchboard, from its KOMM record, with the record's org number as evidence.
+export function kommuneSwitchboards(
+	units: readonly BrregUnit[]
+): Map<string, { phone: string; orgNumber: string }> {
+	const boards = new Map<string, { phone: string; orgNumber: string }>()
+	for (const u of units) {
+		if (u.orgForm === "KOMM" && u.kommune !== undefined && u.switchboard !== undefined) {
+			boards.set(u.kommune, { phone: u.switchboard, orgNumber: u.orgNumber })
+		}
+	}
+	return boards
+}
+
+export const brregRecordUrl = (register: BrregRegister, orgNumber: string) =>
+	`${BRREG_API}/${register}/${orgNumber}`

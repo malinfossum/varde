@@ -6,6 +6,7 @@ import {
 	type BrregUnit,
 	kommuneSites,
 	kommuneSitesQuery,
+	kommuneSwitchboards,
 	namedQuery,
 	readBrreg,
 	unitsQuery,
@@ -75,16 +76,19 @@ function sortPages(pages: readonly DiscoveredPage[]): DiscoveredPage[] {
 	return [...byUrl.values()].sort((a, b) => (a.url < b.url ? -1 : a.url > b.url ? 1 : 0))
 }
 
-function sortUnits(units: readonly BrregUnit[]): BrregUnit[] {
+function sortUnits(units: readonly BrregUnit[]): Omit<BrregUnit, "switchboard">[] {
 	const byOrg = new Map<string, BrregUnit>()
 	for (const u of units) if (!byOrg.has(u.orgNumber)) byOrg.set(u.orgNumber, u)
-	return [...byOrg.values()].sort((a, b) => (a.orgNumber < b.orgNumber ? -1 : 1))
+	return [...byOrg.values()]
+		.sort((a, b) => (a.orgNumber < b.orgNumber ? -1 : 1))
+		.map(({ switchboard: _switchboard, ...unit }) => unit)
 }
 
 async function discoverKommune(
 	o: DiscoverOptions,
 	kommune: KlassKommune,
-	site: string | undefined
+	site: string | undefined,
+	board: { phone: string; orgNumber: string } | undefined
 ): Promise<KommuneDiscovery> {
 	const reads = await Promise.all([
 		readBrreg(o.get, "underenheter", unitsQuery("underenheter", kommune.code, UNIT_CODES)),
@@ -136,6 +140,7 @@ async function discoverKommune(
 			truncated: sitemaps.truncated || service.length > kept.length,
 		}
 	}
+	if (board !== undefined) discovery.switchboard = board
 	return discovery
 }
 
@@ -162,6 +167,7 @@ export async function discover(o: DiscoverOptions): Promise<DiscoverRun> {
 	const komm = await readBrreg(o.get, "enheter", kommuneSitesQuery)
 	if (!komm.complete) problems.push("the Brreg list of kommune sites is incomplete")
 	const sites = kommuneSites(komm.units)
+	const boards = kommuneSwitchboards(komm.units)
 	for (const k of kommuner) {
 		const site = sites.get(k.code)
 		const host = site === undefined ? undefined : httpsHost(site)
@@ -180,7 +186,9 @@ export async function discover(o: DiscoverOptions): Promise<DiscoverRun> {
 	const navOffices = [...new Set(nav.urls.map((u) => u.loc).filter(isNavOfficeUrl))]
 	if (navOffices.length === 0) problems.push("nav.no's sitemap listed no office pages")
 
-	const results = await Promise.all(kommuner.map((k) => discoverKommune(o, k, sites.get(k.code))))
+	const results = await Promise.all(
+		kommuner.map((k) => discoverKommune(o, k, sites.get(k.code), boards.get(k.code)))
+	)
 	for (const r of results) {
 		if (!r.brregComplete) problems.push(`${r.kommune}: a Brreg read was incomplete`)
 		if (r.site?.sitemap === "none") problems.push(`${r.kommune}: no sitemap could be read`)
