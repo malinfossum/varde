@@ -5,6 +5,11 @@ the placeholder name "Kari Nordmann", org numbers starting `99999`. Their shapes
 names, tag names, ids and classes) were copied from live responses on 03.11.2026; no
 saved live page is stored here. No fixture comes from a kommune that blocks ClaudeBot.
 
+PR 3 adds `kontakt-heading.html`, `shared-page.html` and `test-box.html` (shapes every CMS
+shares: headings, paragraphs, a box after `<main>`) and the `.xlsx` workbooks the NKLM tests
+build in memory (`test/xlsxHelpers.ts`). No CMS box is recorded in `src/extract/cmsBoxes.ts`
+yet, so there are no per-CMS box fixtures. All values are fictional.
+
 Two exceptions hold real public data:
 
 - `klass/codes-at-2026-11-03.json`: real KLASS classification 131 codes for Innlandet and

@@ -32,6 +32,28 @@ describe("network boundary", () => {
 		expect(offenders).toEqual([])
 	})
 
+	it("scans the PR 3 folders and files", () => {
+		const scanned = tsFiles(join(ROOT, "src")).map(rel)
+		for (const dir of ["src/extract/", "src/curate/", "src/verify/", "src/review/", "src/xlsx/"]) {
+			expect(
+				scanned.some((f) => f.startsWith(dir)),
+				dir
+			).toBe(true)
+		}
+		for (const file of [
+			"src/registers/nklm.ts",
+			"src/text/hours.ts",
+			"src/text/phone.ts",
+			"src/text/names.ts",
+			"src/text/invisible.ts",
+			"src/cli/extract.ts",
+			"src/cli/verify.ts",
+			"src/cli/review.ts",
+		]) {
+			expect(scanned).toContain(file)
+		}
+	})
+
 	it("no test imports the real transport, a CLI or a network module", () => {
 		const offenders = tsFiles(join(ROOT, "test"))
 			.filter((f) => REAL_TRANSPORT.test(read(f)) || NETWORK.test(read(f)))
