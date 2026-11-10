@@ -159,6 +159,7 @@ Rows whose Notes flag a genuine conflict between two official sources, or an amb
 - **en:** A crisis centre for women, men and children affected by violence or threats of violence in close relationships. The service is free and needs no referral.
 
 ### 17. Housing First, Lillehammer kommune
+*SUPERSEDED 10.11.2026: the description and cost note now come from docs/seed-data-lavterskel-audit.md (the unit's own page says the team does not hold or allocate homes). The lines below are the original text.*
 - **nb:** Tilbud til bostedsløse med rus- eller psykiske helseutfordringer, der du først får en varig bolig og deretter oppfølging der du bor. Målet er en stabil bosituasjon uten krav om rusfrihet på forhånd.
 - **en:** A service for homeless people with substance use or mental health difficulties, where you first get permanent housing and then receive support where you live. The aim is a stable home without requiring sobriety first.
 - **hours-nb:** Hverdager 09:00–15:00
