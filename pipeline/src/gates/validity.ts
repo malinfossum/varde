@@ -48,7 +48,9 @@ function fieldCheck(c: Candidate, ctx: GateContext): GateResult {
 	}
 }
 
-function checks(c: Candidate, ctx: GateContext): GateResult {
+// Gate 3 before my decision settles it. Review shows me a review it gives on a value I typed,
+// since my decision would settle it unseen.
+export function unsettledValidity(c: Candidate, ctx: GateContext): GateResult {
 	// A hidden character changes what a reader sees. textLines strips them (Task 6), so one here
 	// came from somewhere else.
 	if (typeof c.value === "string" && hasInvisible(c.value)) {
@@ -66,4 +68,4 @@ function checks(c: Candidate, ctx: GateContext): GateResult {
 
 // Gate 3: the value has the right shape, and the lookups that can prove it do. My decision
 // settles a review it gives (a URL I checked myself, an address Kartverket does not know).
-export const validityGate: Gate = (c, ctx) => settled(c, checks(c, ctx))
+export const validityGate: Gate = (c, ctx) => settled(c, unsettledValidity(c, ctx))

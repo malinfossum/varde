@@ -366,6 +366,55 @@ describe("runReview", () => {
 			expect(curated.units[0]?.decisions).toMatchObject([{ decision: "reject" }])
 		})
 
+		const address = () =>
+			oneField("address", {
+				value: "Storgata 1, 2609 Lillehammer",
+				evidence: { kind: "quote", quotes: ["Besøksadresse: Storgata 1, 2609 Lillehammer"] },
+			})
+
+		it("shows why the validity gate doubts my edit, and saves it only on keep", async () => {
+			const { text, curated } = await session(
+				"e\nStorgata 9, 2609 Lillehammer\nkeep\n",
+				{},
+				address()
+			)
+			expect(text).toContain("validity: Kartverket does not know the address")
+			expect(text).toContain("Type keep")
+			expect(curated.units[0]?.decisions).toMatchObject([
+				{ decision: "edit", editedValue: "Storgata 9, 2609 Lillehammer" },
+			])
+		})
+
+		it("checks a value I type again instead of keep, and saves it when it passes", async () => {
+			const asked: string[] = []
+			const hit = { addressId: "a2", kommune: "3405", text: "Storgata 2" }
+			const findAddress = async (a: string) => {
+				asked.push(a)
+				return a.startsWith("Storgata 2") ? hit : undefined
+			}
+			const { text, curated } = await session(
+				"e\nStorgata 9, 2609 Lillehammer\nStorgata 2, 2609 Lillehammer\n",
+				{ checks: { ...checks, findAddress } },
+				address()
+			)
+			expect(asked).toEqual(["Storgata 9, 2609 Lillehammer", "Storgata 2, 2609 Lillehammer"])
+			expect(text.match(/Type keep/g)).toHaveLength(1)
+			expect(curated.units[0]?.decisions).toMatchObject([
+				{ decision: "edit", editedValue: "Storgata 2, 2609 Lillehammer" },
+			])
+		})
+
+		it("still refuses an edit the validity gate drops, with no keep offered", async () => {
+			const { text, curated } = await session(
+				"e\nStorgata 9\u200b, 2609 Lillehammer\nr\n",
+				{},
+				address()
+			)
+			expect(text).toContain("Refused: validity: the value holds an invisible character")
+			expect(text).not.toContain("Type keep")
+			expect(curated.units[0]?.decisions).toMatchObject([{ decision: "reject" }])
+		})
+
 		it("keys an address answer by the lock's stored value, never by the text I typed", async () => {
 			const stored = "Storgata 1, 2609 Lillehammer"
 			const dir = oneField("address", {

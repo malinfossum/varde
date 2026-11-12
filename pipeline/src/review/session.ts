@@ -1,7 +1,7 @@
 import { CuratedWriteError, writeCuratedFile } from "../curate/write.ts"
 import { checkEdit } from "../gates/run.ts"
 import type { AddressHit, Candidate, GateContext } from "../gates/types.ts"
-import { validityGate } from "../gates/validity.ts"
+import { unsettledValidity, validityGate } from "../gates/validity.ts"
 import {
 	CATEGORY_SLUGS,
 	type CategorySlug,
@@ -237,16 +237,9 @@ class Session {
 		return (await this.save(item.kommune, "left out")) ? "answered" : "stopped"
 	}
 
-	// My typed value as verify will see it: my decision as its evidence, the origin verify used
-	// (the strictest, unitPage, when an older lock has none), and the possible names in my own text
-	// for the hours name guard. Validity alone first for a phone, so a value that is no number is
-	// refused before the role is asked; then checkEdit (validity, safety, the hours name guard).
-	async refusal(
-		item: FieldItem,
-		value: FieldValue,
-		role: string | undefined,
-		validityOnly: boolean
-	): Promise<string | undefined> {
+	// The lookups for a value I typed, once per value: Kartverket for an address, the crawler for a
+	// website or chat URL.
+	async editContext(item: FieldItem, value: FieldValue): Promise<GateContext> {
 		const text = typeof value === "string" ? value : undefined
 		const hit =
 			item.field === "address" && text !== undefined
@@ -256,7 +249,7 @@ class Session {
 			(item.field === "website" || item.field === "chatUrl") && text !== undefined
 				? await this.#io.checks.urlStatus(text)
 				: undefined
-		const ctx: GateContext = {
+		return {
 			allowedHosts: new Set(),
 			robotsAllows: () => true,
 			licence: () => "ownPage",
@@ -268,8 +261,14 @@ class Session {
 			unit: { categories: item.categories, isKrisesenter: false, ownHosts: new Set() },
 			peers: [],
 		}
+	}
+
+	// My typed value as verify will see it: my decision as its evidence, the origin verify used
+	// (the strictest, unitPage, when an older lock has none), and the possible names in my own text
+	// for the hours name guard.
+	editCandidate(item: FieldItem, value: FieldValue, role: string | undefined): Candidate {
 		const original = item.evidence.kind === "decision" ? item.evidence.original : item.evidence
-		const c: Candidate = {
+		return {
 			kommune: item.kommune,
 			unitId: item.unitId,
 			field: item.field,
@@ -279,15 +278,64 @@ class Session {
 			origin: item.origin ?? "unitPage",
 			...(role === undefined ? {} : { role }),
 			personNames:
-				text === undefined ? [] : possibleNames(text, { unitName: item.unitName, places: [] }),
+				typeof value === "string"
+					? possibleNames(value, { unitName: item.unitName, places: [] })
+					: [],
 			fetchedAt: "1970-01-01T00:00:00Z",
 		}
-		if (validityOnly) {
-			const result = validityGate(c, ctx)
-			return result.pass ? undefined : `${result.gate}: ${result.reason ?? "failed"}`
+	}
+
+	// A value I type, checked the way verify will check it. Validity alone first, so a value that is
+	// no number is refused before a phone's role is asked; then checkEdit (validity, safety, the
+	// hours name guard). A drop refuses on the spot. A validity review (an address Kartverket does
+	// not know, a URL that does not answer 200) is one my decision would settle unseen, so it shows
+	// me the reason and saves only on keep. Typing the value again checks the new one from the top.
+	async edit(item: FieldItem): Promise<{ value: FieldValue; role?: string } | Step> {
+		const boolean = BOOLEAN_FIELDS.has(item.field)
+		let typed = await this.answer(
+			boolean
+				? "Your value, ja or nei, then Enter (q quits)\n> "
+				: "Your value, then Enter (q quits)\n> "
+		)
+		for (;;) {
+			if (typed === undefined) return "quit"
+			const value: FieldValue = boolean ? typed.toLowerCase() === "ja" : typed
+			if (typed === "" || (boolean && !["ja", "nei"].includes(typed.toLowerCase()))) {
+				this.out("Refused: that is not a value for this field\n")
+				return "again"
+			}
+			const ctx = await this.editContext(item, value)
+			const valid = validityGate(this.editCandidate(item, value, undefined), ctx)
+			if (!valid.pass) {
+				this.out(`Refused: ${valid.gate}: ${valid.reason ?? "failed"}\n`)
+				return "again"
+			}
+			let role: string | undefined
+			if (item.field === "phone") {
+				const typedRole = await this.freeText(
+					"Role label (for example Avdelingsleder), or Enter for none. It is public in the repo, so no names (q quits)\n> ",
+					item.unitName,
+					true
+				)
+				if (typedRole === undefined) return "quit"
+				role = typedRole === "" ? undefined : typedRole
+			}
+			const c = this.editCandidate(item, value, role)
+			const check = checkEdit(c, ctx)
+			if (!check.ok) {
+				this.out(`Refused: ${check.reason}\n`)
+				return "again"
+			}
+			const doubt = unsettledValidity(c, ctx)
+			if (doubt.pass) return role === undefined ? { value } : { value, role }
+			this.out(`Not confirmed: ${doubt.gate}: ${doubt.reason ?? "review"}\n`)
+			const confirm = await this.answer(
+				"Type keep and Enter to save it anyway, or type it again (q quits)\n> "
+			)
+			if (confirm === undefined) return "quit"
+			if (confirm.toLowerCase() === "keep") return role === undefined ? { value } : { value, role }
+			typed = confirm
 		}
-		const check = checkEdit(c, ctx)
-		return check.ok ? undefined : check.reason
 	}
 
 	async field(item: FieldItem): Promise<Step> {
@@ -307,43 +355,13 @@ class Session {
 		let decision: ReviewDecision
 		let what: string
 		if (k === "e") {
-			const boolean = BOOLEAN_FIELDS.has(item.field)
-			const typed = await this.answer(
-				boolean
-					? "Your value, ja or nei, then Enter (q quits)\n> "
-					: "Your value, then Enter (q quits)\n> "
-			)
-			if (typed === undefined) return "quit"
-			const value: FieldValue = boolean ? typed.toLowerCase() === "ja" : typed
-			if (typed === "" || (boolean && !["ja", "nei"].includes(typed.toLowerCase()))) {
-				this.out("Refused: that is not a value for this field\n")
-				return "again"
-			}
-			const invalid = await this.refusal(item, value, undefined, true)
-			if (invalid !== undefined) {
-				this.out(`Refused: ${invalid}\n`)
-				return "again"
-			}
-			let role: string | undefined
-			if (item.field === "phone") {
-				const typedRole = await this.freeText(
-					"Role label (for example Avdelingsleder), or Enter for none. It is public in the repo, so no names (q quits)\n> ",
-					item.unitName,
-					true
-				)
-				if (typedRole === undefined) return "quit"
-				role = typedRole === "" ? undefined : typedRole
-			}
-			const unsafe = await this.refusal(item, value, role, false)
-			if (unsafe !== undefined) {
-				this.out(`Refused: ${unsafe}\n`)
-				return "again"
-			}
+			const edited = await this.edit(item)
+			if (typeof edited === "string") return edited
 			decision = {
 				...base,
 				decision: "edit",
-				editedValue: value,
-				...(role === undefined ? {} : { role }),
+				editedValue: edited.value,
+				...(edited.role === undefined ? {} : { role: edited.role }),
 			}
 			what = `edited ${item.field}`
 		} else if (k === "a" && key.value !== item.value) {
