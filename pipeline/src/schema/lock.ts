@@ -2,6 +2,7 @@ import { z } from "zod"
 import {
 	CalendarDate,
 	CategorySlug,
+	Cost,
 	FIELD_NAMES,
 	FieldName,
 	FieldValue,
@@ -174,6 +175,15 @@ export const LockUnit = z
 		}
 	})
 export type LockUnit = z.infer<typeof LockUnit>
+
+// The unit's own cost, only when verify accepted it. The Lavterskel rule reads it (a partly free
+// unit can still be lavterskel); a cost in review or dropped counts as none.
+export function acceptedCost(fields: LockUnit["fields"]): Cost | undefined {
+	const cost = fields.cost
+	if (cost?.status !== "accepted") return undefined
+	const parsed = Cost.safeParse(cost.value)
+	return parsed.success ? parsed.data : undefined
+}
 
 // No file-level timestamp: the refresh-only check allows only verifiedAt and fetchedAt to move.
 export const LockFile = z

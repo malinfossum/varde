@@ -258,7 +258,12 @@ class Session {
 			findAddress: () => hit,
 			validKommuner: this.#io.checks.validKommuner,
 			// The real facts come back in verify, which runs the same gates again on my answer.
-			unit: { categories: item.categories, isKrisesenter: false, ownHosts: new Set() },
+			unit: {
+				categories: item.categories,
+				isKrisesenter: false,
+				ownHosts: new Set(),
+				...(item.cost === undefined ? {} : { cost: item.cost }),
+			},
 			peers: [],
 		}
 	}

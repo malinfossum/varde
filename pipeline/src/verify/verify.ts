@@ -20,9 +20,9 @@ import {
 } from "../schema/curated.ts"
 import type { ExtractedPage, ExtractionFile } from "../schema/extraction.ts"
 import { slugify } from "../schema/ids.ts"
-import { type LockField, LockFile, type LockUnit } from "../schema/lock.ts"
+import { acceptedCost, type LockField, LockFile, type LockUnit } from "../schema/lock.ts"
 import { normaliseText, siteHost } from "../text/normalise.ts"
-import { type Proposal, unitCandidates } from "./candidates.ts"
+import { type Proposal, unitCandidates, withCost } from "./candidates.ts"
 import {
 	buildLookups,
 	contextFor,
@@ -313,12 +313,19 @@ export async function verifyKommune(
 		}
 		const ctx = contextFor(lookups, facts, peers)
 		const fields: Partial<Record<FieldName, LockField>> = {}
-		for (const p of chosen) {
-			const { field, unsettled } = settle(p, ctx, answer?.decisions ?? [], input.now)
+		const settleInto = (p: Proposal, at: typeof ctx) => {
+			const { field, unsettled } = settle(p, at, answer?.decisions ?? [], input.now)
 			fields[p.candidate.field] = field
 			counts[field.status]++
 			if (unsettled) counts.answersUnsettled++
 		}
+		for (const p of chosen) if (p.candidate.field !== "lowThreshold") settleInto(p, ctx)
+		// The Lavterskel rule reads the unit's own accepted cost, so it runs after every other field,
+		// with that cost in its facts and in the value it proposes.
+		const cost = acceptedCost(fields)
+		const withUnitCost = cost === undefined ? ctx : { ...ctx, unit: { ...ctx.unit, cost } }
+		for (const p of chosen)
+			if (p.candidate.field === "lowThreshold") settleInto(withCost(p, cost), withUnitCost)
 		units.push({ unitId: g.unitId, sources: sourcesOf(g), fields, inclusion: g.inclusion })
 		counts.units++
 		if (g.inclusion.status === "auto") counts.auto++

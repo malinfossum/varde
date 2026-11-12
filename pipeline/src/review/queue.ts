@@ -5,13 +5,14 @@ import { isMobile } from "../gates/safety.ts"
 import type { Origin } from "../gates/types.ts"
 import {
 	type CategorySlug,
+	type Cost,
 	FIELD_NAMES,
 	type FieldName,
 	type FieldValue,
 	type ProviderType,
 } from "../schema/common.ts"
 import { CuratedFile, findDecision } from "../schema/curated.ts"
-import { type Evidence, LockFile } from "../schema/lock.ts"
+import { acceptedCost, type Evidence, LockFile } from "../schema/lock.ts"
 import { findCuratedPath } from "../verify/verify.ts"
 
 export class ReviewError extends Error {
@@ -36,6 +37,8 @@ export type FieldItem = {
 	reason: string
 	acute: boolean
 	categories: CategorySlug[]
+	// The unit's own accepted cost, which the Lavterskel rule reads, as verify gives it.
+	cost?: Cost
 	// The date of my earlier answer, when verify applied it and the field is still in review.
 	unsettled?: string
 	// The page value that earlier answer is keyed by. For an edit it differs from the value shown,
@@ -127,6 +130,7 @@ export function buildQueue(files: readonly KommuneFiles[]): ReviewItem[] {
 			if (mine?.include === false) continue
 			const categories = mine?.categories ?? unit.inclusion?.suggestedCategories ?? []
 			const acute = categories.includes(ACUTE)
+			const cost = acceptedCost(unit.fields)
 			const lockName = unit.fields.name?.value
 			const unitName = mine?.name ?? (typeof lockName === "string" ? lockName : unit.unitId)
 			const pending = mine === undefined && unit.inclusion?.status === "review"
@@ -184,6 +188,7 @@ export function buildQueue(files: readonly KommuneFiles[]): ReviewItem[] {
 							: `my answer of ${norwegianDate(unsettled)} did not settle it: ${reason}`,
 					acute,
 					categories,
+					...(cost === undefined ? {} : { cost }),
 					...(unsettled === undefined ? {} : { unsettled }),
 					...(earlier === undefined ? {} : { answerKey: earlier.value }),
 				})

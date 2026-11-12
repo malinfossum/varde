@@ -4,7 +4,7 @@ import type { Candidate } from "../gates/types.ts"
 import { namesMatch } from "../recall/match.ts"
 import { brregRecordUrl } from "../registers/brreg.ts"
 import { NKLM_PAGE, type NklmRow, nklmRecordId } from "../registers/nklm.ts"
-import { FIELD_NAMES, type FieldName } from "../schema/common.ts"
+import { type Cost, FIELD_NAMES, type FieldName } from "../schema/common.ts"
 import type { ExtractedCandidate, ExtractedPage } from "../schema/extraction.ts"
 import { possibleNames } from "../text/names.ts"
 import { phoneDigits } from "../text/normalise.ts"
@@ -101,6 +101,17 @@ const register = (
 export function switchboardPhone(raw: string): string {
 	const digits = phoneDigits(raw)
 	return digits.length === 8 ? digits.replace(/(\d{2})(?=\d)/g, "$1 ") : raw.trim()
+}
+
+// The Lavterskel proposal with its value read again under the unit's own accepted cost, which
+// verify knows only once every other field has settled. Any other proposal is returned as it is.
+export function withCost(p: Proposal, cost: Cost | undefined): Proposal {
+	const c = p.candidate
+	if (c.field !== "lowThreshold" || c.evidence.kind !== "quote") return p
+	return {
+		...p,
+		candidate: { ...c, value: lavterskel(c.evidence.quotes, cost).outcome === "yes" },
+	}
 }
 
 // One proposal per field for the unit, and every candidate the agreement gate compares it with.

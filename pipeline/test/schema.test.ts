@@ -3,6 +3,7 @@ import { KommuneNumber, REGISTERS } from "../src/schema/common.ts"
 import { CuratedFile, CuratedUnit, findDecision, ReviewDecision } from "../src/schema/curated.ts"
 import { unitId } from "../src/schema/ids.ts"
 import {
+	acceptedCost,
 	Evidence,
 	evidenceQuotes,
 	LockField,
@@ -360,5 +361,20 @@ describe("ReviewDecision", () => {
 			decisions: [{ ...base, decision: "edit", editedValue: "62 00 00 01" } as never],
 		})
 		expect(CuratedUnit.safeParse(unit).success).toBe(true)
+	})
+})
+
+describe("acceptedCost", () => {
+	it("gives the cost only when verify accepted it", () => {
+		const cost = (over: Partial<LockField>) =>
+			acceptedField({
+				value: "partly",
+				evidence: { kind: "quote", quotes: ["Delvis gratis"] },
+				...over,
+			})
+		expect(acceptedCost({ cost: cost({}) })).toBe("partly")
+		expect(acceptedCost({ cost: cost({ status: "review", reason: "x" }) })).toBeUndefined()
+		expect(acceptedCost({ cost: cost({ value: "kanskje" }) })).toBeUndefined()
+		expect(acceptedCost({})).toBeUndefined()
 	})
 })

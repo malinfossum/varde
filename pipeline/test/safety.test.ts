@@ -147,6 +147,30 @@ describe("safety gate: krisesenter, injection, Lavterskel", () => {
 		expect(safetyGate(c, context())).toMatchObject({ pass: false, onFail: "review" })
 	})
 
+	it("reads the unit's own accepted cost: free or partly with no referral earns the badge", () => {
+		const c = candidate({
+			field: "lowThreshold",
+			value: true,
+			evidence: quote("Du trenger ikke henvisning."),
+		})
+		const unit = context().unit
+		for (const cost of ["free", "partly"] as const) {
+			expect(safetyGate(c, context({ unit: { ...unit, cost } })), cost).toMatchObject({
+				pass: true,
+				reason: "free, and no vedtak or referral",
+			})
+		}
+		expect(safetyGate(c, context({ unit: { ...unit, cost: "paid" } }))).toMatchObject({
+			pass: false,
+			onFail: "review",
+		})
+		expect(safetyGate(c, context())).toMatchObject({
+			pass: false,
+			onFail: "review",
+			reason: "no quote on cost",
+		})
+	})
+
 	it("recognises a mobile", () => {
 		expect(isMobile("900 00 000")).toBe(true)
 		expect(isMobile("+47 900 00 000")).toBe(true)

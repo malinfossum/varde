@@ -6,7 +6,7 @@ import { readKommuneFiles } from "../src/review/queue.ts"
 import { namesInMyText, type ReviewIO, runReview } from "../src/review/session.ts"
 import type { CuratedFile } from "../src/schema/curated.ts"
 import type { LockFile } from "../src/schema/lock.ts"
-import { curatedUnit, lockUnit, PAGE_URL } from "./helpers.ts"
+import { acceptedField, curatedUnit, lockUnit, PAGE_URL } from "./helpers.ts"
 import { curatedWith, dataDir, lockWith, reviewField } from "./reviewHelpers.ts"
 
 const checks = {
@@ -354,6 +354,30 @@ describe("runReview", () => {
 			expect(curated.units[0]?.decisions).toMatchObject([
 				{ field: "lowThreshold", value: false, decision: "edit", editedValue: true },
 			])
+		})
+
+		it("reads the unit's own accepted cost from the lock, as verify does", async () => {
+			const dir = dataDir({
+				kommune: "3405",
+				units: [
+					lockUnit({
+						unitId: "org:999999991",
+						fields: {
+							cost: acceptedField({
+								value: "paid",
+								evidence: { kind: "quote", quotes: ["Egenandel kr 350."] },
+							}),
+							lowThreshold: reviewField({
+								value: false,
+								evidence: { kind: "quote", quotes: ["Du trenger ikke henvisning."] },
+							}),
+						},
+					}),
+				],
+			})
+			const { text, curated } = await session("e\nja\nr\n", {}, dir)
+			expect(text).toContain("Refused: safety: the Lavterskel rule says no")
+			expect(curated.units[0]?.decisions).toMatchObject([{ decision: "reject" }])
 		})
 
 		it("refuses an edit that contradicts a yes or no the Lavterskel rule gives itself", async () => {

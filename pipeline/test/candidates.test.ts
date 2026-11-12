@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { UnitGroup } from "../src/curate/include.ts"
 import type { ExtractedCandidate, ExtractedPage } from "../src/schema/extraction.ts"
-import { switchboardPhone, unitCandidates } from "../src/verify/candidates.ts"
+import { switchboardPhone, unitCandidates, withCost } from "../src/verify/candidates.ts"
 
 const URL_A = "https://www.eksempel.kommune.no/helsestasjon/"
 const phone = (value: string, rank: 1 | 2 | 3, block = 0, role?: string): ExtractedCandidate => ({
@@ -98,5 +98,33 @@ describe("unitCandidates: a shared page", () => {
 			"62 00 00 01",
 			"62 00 00 03",
 		])
+	})
+})
+
+describe("withCost", () => {
+	const lav = {
+		candidate: {
+			kommune: "3405",
+			unitId: "org:999999991",
+			field: "lowThreshold" as const,
+			value: false,
+			sourceUrl: "https://www.eksempel.kommune.no/tilbud/",
+			evidence: { kind: "quote" as const, quotes: ["Du trenger ikke henvisning."] },
+			origin: "unitPage" as const,
+			personNames: [],
+			fetchedAt: "2026-11-06T09:00:00Z",
+		},
+	}
+
+	it("reads the Lavterskel value again under the unit's own accepted cost", () => {
+		expect(withCost(lav, "free").candidate.value).toBe(true)
+		expect(withCost(lav, "partly").candidate.value).toBe(true)
+		expect(withCost(lav, "paid").candidate.value).toBe(false)
+		expect(withCost(lav, undefined).candidate.value).toBe(false)
+	})
+
+	it("returns any other proposal as it is", () => {
+		const phone = { candidate: { ...lav.candidate, field: "phone" as const, value: "62 00 00 00" } }
+		expect(withCost(phone, "free")).toBe(phone)
 	})
 })
