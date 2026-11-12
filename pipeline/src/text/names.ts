@@ -1,5 +1,5 @@
-import { ROLE_WORD_PARTS } from "../extract/roleWords.ts"
 import { foldNorwegian } from "./normalise.ts"
+import { ROLE_WORD_PARTS } from "./roleWords.ts"
 
 // Possible person names in a quote (ruling 28). Lock files and PR bodies are public, so a
 // missed name is a leak: every capitalised word, and every run of them, counts unless it is a

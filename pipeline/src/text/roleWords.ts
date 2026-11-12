@@ -1,4 +1,4 @@
-import { foldNorwegian } from "../text/normalise.ts"
+import { foldNorwegian } from "./normalise.ts"
 
 // Words that name a public role next to a number the kommune publishes as a unit's contact
 // (spec, "Phone order" rank 2). Each word is added from a fetched page or from Varde's own data,

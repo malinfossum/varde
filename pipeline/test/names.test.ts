@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { findRoleWord } from "../src/extract/roleWords.ts"
 import { capitalisedRuns, midSentenceWords, possibleNames } from "../src/text/names.ts"
+import { findRoleWord } from "../src/text/roleWords.ts"
 
 // "Gran" is a KLASS kommune name that is also a surname, which is why it is here.
 const ctx = {

@@ -3,7 +3,7 @@ import type { ContactBlock, ExtractedCandidate } from "../../schema/extraction.t
 import { splitAddress } from "../../text/address.ts"
 import { MAX_LINE } from "../../text/normalise.ts"
 import { findPhones } from "../../text/phone.ts"
-import { findRoleWord } from "../roleWords.ts"
+import { findRoleWord } from "../../text/roleWords.ts"
 import { dedupe } from "./phone.ts"
 
 type Kind = "visit" | "plain" | "post"

@@ -6,7 +6,7 @@ import { formatHours, hasTime } from "../../text/hours.ts"
 import { possibleNames } from "../../text/names.ts"
 import { MAX_LINE, quoteHasText } from "../../text/normalise.ts"
 import { findPhones, isMobileDigits, type PhoneHit } from "../../text/phone.ts"
-import { findRoleWord } from "../roleWords.ts"
+import { findRoleWord } from "../../text/roleWords.ts"
 
 export type RuleContext = { unitName?: string; places: readonly string[]; onKommuneSite: boolean }
 
