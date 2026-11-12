@@ -39,11 +39,11 @@ const ORIGIN_ORDER: Readonly<Record<string, number>> = { unitContact: 0, unitPag
 function toCandidate(input: CandidateInput, page: ExtractedPage, c: ExtractedCandidate): Candidate {
 	const quotes = c.evidence.kind === "quote" ? c.evidence.quotes : []
 	const ctx = { unitName: `${input.group.name} ${input.group.matchName}`, places: input.places }
-	// The h1 is the name Varde stores, so its quote is no person's name to redact.
+	// The h1 is the name Varde stores, so its quote is no person's name to redact. A website's quote
+	// is the h1 or, on a page with none, the first line (a byline, a breadcrumb), so it runs the
+	// redaction like every other quote: the website is grounded by its source URL, not the quote.
 	const personNames =
-		c.field === "name" || c.field === "website"
-			? []
-			: [...new Set(quotes.flatMap((q) => possibleNames(q, ctx)))]
+		c.field === "name" ? [] : [...new Set(quotes.flatMap((q) => possibleNames(q, ctx)))]
 	return {
 		kommune: input.kommune,
 		unitId: input.group.unitId,
