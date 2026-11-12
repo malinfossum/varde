@@ -243,6 +243,32 @@ describe("phone rule: phoneHours and alwaysOpen", () => {
 		])
 	})
 
+	it("reads a closure on a line that also holds a number, with the numbers taken out first", () => {
+		expect(
+			of(
+				"alwaysOpen",
+				block("Telefon 61 00 00 00", "Døgnåpent", "Stengt i helgene, ring 62 00 00 01")
+			)
+		).toMatchObject([
+			{
+				evidence: { quotes: ["Døgnåpent", "Stengt i helgene, ring 62 00 00 01"] },
+				review: "the block limits the always-open claim",
+			},
+		])
+	})
+
+	it("never reads a plain Telefon line as a limit", () => {
+		expect(of("alwaysOpen", block("Telefon 62 00 00 00", "Døgnåpent"))).toEqual([
+			{
+				field: "alwaysOpen",
+				value: true,
+				evidence: { kind: "quote", quotes: ["Døgnåpent"] },
+				origin: "unitContact",
+				block: 0,
+			},
+		])
+	})
+
 	it("keeps a review over a clean duplicate from another block", () => {
 		const two: ContactBlock[] = [
 			{ source: "cms", lines: ["Telefon: 62 00 00 00", "Døgnåpent"] },

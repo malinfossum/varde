@@ -149,10 +149,11 @@ function hoursAfter(
 // "Døgnåpent", read the way the grounding gate reads it. Plain only when every claim line is a
 // plain claim on its own, holds no number (ruling 35: a number beside it blocks a yes), and no
 // other line of the block limits it ("Stengt 24. desember", "Åpent mandag til fredag"). Those
-// lines join the quotes, so the gate reads them too. A line with a phone number is left out of
-// that check: the gate's digit rule would call every phone line a limit. Digits are taken out
-// before the check for the same reason, and the quote stays verbatim. Anything else goes to
-// review: a wrong alwaysOpen on an acute line tells someone at night that a closed place is open.
+// lines join the quotes, so the gate reads them too. A line is checked with its phone numbers and
+// digits taken out first: the gate's digit rule would call every "Telefon" line a limit, while
+// "Stengt i helgene, ring" is exactly the closure to catch. The quote stays verbatim. Anything
+// else goes to review: a wrong alwaysOpen on an acute line tells someone at night that a closed
+// place is open.
 function alwaysOpen(
 	lines: readonly string[],
 	hitsOf: readonly PhoneHit[][],
@@ -164,8 +165,7 @@ function alwaysOpen(
 	const limits = usable.filter(
 		({ l, j }) =>
 			!ALWAYS.test(l) &&
-			(hitsOf[j]?.length ?? 0) === 0 &&
-			alwaysOpenQualifiedIn([l.replace(DIGIT, " ")])
+			alwaysOpenQualifiedIn([withoutNumbers(l, hitsOf[j] ?? []).replace(DIGIT, " ")])
 	)
 	const c: ExtractedCandidate = {
 		field: "alwaysOpen",
