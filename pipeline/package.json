@@ -25,11 +25,11 @@
 	"dependencies": {
 		"cheerio": "1.2.0",
 		"fflate": "0.8.3",
-		"tldts": "7.4.19",
+		"tldts": "7.4.26",
 		"zod": "4.6.7"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.6.6",
+		"@biomejs/biome": "2.6.7",
 		"@types/node": "26.6.6",
 		"typescript": "7.0.2",
 		"vitest": "5.1.0"
