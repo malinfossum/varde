@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs"
 import { join } from "node:path"
-import { MAX_AGE_DAYS, type ManifestEntry, type PageCache } from "../io/pageCache.ts"
+import { DAY_MS, MAX_AGE_DAYS, type ManifestEntry, type PageCache } from "../io/pageCache.ts"
 import { isNavOfficeUrl, parseNavOffice } from "../registers/nav.ts"
 import {
 	type ExtractedCandidate,
@@ -16,7 +16,7 @@ import { emailCandidates } from "./fields/email.ts"
 import { navHoursCandidate, pageHoursCandidate } from "./fields/hours.ts"
 import { lavterskelQuotes } from "./fields/lavterskel.ts"
 import { nameCandidate } from "./fields/name.ts"
-import { dedupe, phoneCandidates } from "./fields/phone.ts"
+import { dedupe, LOST_TO_NAME, phoneCandidates } from "./fields/phone.ts"
 import { websiteCandidate } from "./fields/website.ts"
 import { allLines, readUnitPage } from "./page.ts"
 
@@ -118,9 +118,6 @@ export type ExtractSummary = {
 	// Phone candidates sent to review as "a number next to a possible name, with no role word". A count only.
 	lostToName: number
 }
-
-// The review reason phoneCandidates gives a number whose line holds a possible name and no role word.
-const LOST_TO_NAME = "a number next to a possible name, with no role word"
 
 const bump = <K extends string>(counts: Partial<Record<K, number>>, key: K) => {
 	counts[key] = (counts[key] ?? 0) + 1
@@ -229,8 +226,6 @@ export function readExtraction(cacheDir: string, scope: string): ExtractionFile 
 		return undefined
 	}
 }
-
-const DAY_MS = 86_400_000
 
 // Extraction files hold page lines, so they age out like the pages do (PageCache.purge only
 // clears pages/). A file that does not parse ages by its modification time. Returns the count.

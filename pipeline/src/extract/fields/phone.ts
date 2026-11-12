@@ -24,6 +24,10 @@ const LETTER = /\p{L}/u
 const TIME_SHAPE = /\d[.:]\d{2}/
 const DIGIT = /\d/g
 
+// The review reason for a number whose line holds a possible name and no role word. Extract
+// counts it in its summary, so the two read this one string.
+export const LOST_TO_NAME = "a number next to a possible name, with no role word"
+
 // One candidate per field, compared by value and role: a number in the box and again in the
 // text is one number, not two. The first wins, except that a duplicate with a review reason
 // replaces a clean one: "Ikke døgnåpen" in a second block must not vanish behind "Døgnåpent".
@@ -243,7 +247,7 @@ function inBlock(block: ContactBlock, b: number, ctx: RuleContext): ExtractedCan
 					...base,
 					evidence: quote([hit.text]),
 					rank: 2,
-					review: "a number next to a possible name, with no role word",
+					review: LOST_TO_NAME,
 				})
 				continue
 			}

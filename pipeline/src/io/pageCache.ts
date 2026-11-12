@@ -13,7 +13,7 @@ export const DEFAULT_CACHE_DIR = fileURLToPath(new URL("../../../.cache/", impor
 
 // Raw pages can hold staff names, so a local cache keeps them 90 days at most.
 export const MAX_AGE_DAYS = 90
-const DAY_MS = 86_400_000
+export const DAY_MS = 86_400_000
 const PAGE_FILE = /^[0-9a-f]{32}\.html$/
 
 export const ManifestEntry = z.strictObject({
