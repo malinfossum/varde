@@ -145,5 +145,7 @@ export function isRepoData(
 ): boolean {
 	const fold = (p: string) => (platform === "win32" ? p.toLowerCase() : p)
 	const rel = relative(fold(real(repoData)), fold(real(dataDir)))
-	return rel === "" || (!rel.startsWith("..") && !rel.startsWith("/") && !/^[a-z]:/i.test(rel))
+	// ".." alone or followed by a separator leaves data/; a folder named "..x" inside it does not.
+	const outside = rel === ".." || rel.startsWith("../") || rel.startsWith("..\\")
+	return rel === "" || (!outside && !rel.startsWith("/") && !/^[a-z]:/i.test(rel))
 }

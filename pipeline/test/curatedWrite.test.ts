@@ -110,5 +110,7 @@ describe("isRepoData", () => {
 		expect(isRepoData(join(repo, "curated"), repo)).toBe(true)
 		expect(isRepoData(repo.toUpperCase(), repo, "win32")).toBe(true)
 		expect(isRepoData(join(repo, "..", "annet"), repo)).toBe(false)
+		expect(isRepoData(join(repo, "..x"), repo)).toBe(true)
+		expect(isRepoData(join(repo, ".."), repo)).toBe(false)
 	})
 })
