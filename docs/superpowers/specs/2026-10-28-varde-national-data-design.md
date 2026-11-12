@@ -437,6 +437,13 @@ Innlandet goes live.
 Amended 06.11.2026: PR 3 extracts with rules, so the pipeline costs $0. The model rows above
 apply only if PR 4 leads to an AI fallback.
 
+Amended 12.11.2026: PR 3 as built. The extraction file has its own schema. `alwaysOpen` next to a
+number goes to review. `phoneHours` comes from the next line only after "Telefontid". A unit's
+website match includes it. A bare hour range counts only right after "kl" or a day word. My
+answer settles validity and Lavterskel safety reviews, and decision evidence nests `original`.
+Review accepts a typed "keep" for an edit the gate would only send to review. NKLM is fetched
+only on `--nklm-fetch`, from the project page's file on `www.norceresearch.no`.
+
 ## Delivery
 
 Each PR leaves `main` green. None of them changes what the site shows.
@@ -620,12 +627,13 @@ Reads each cached page (the raw HTML PR 2 stores) and runs the same adapter agai
   the value together with the exact page line it came from, so the quote is verbatim by
   construction. A rule that cannot decide emits a review candidate, never a guess.
 - `text/hours.ts` is the time formatter: `13.00-18.00` becomes `kl. 13:00–18:00`.
-- Output: one extraction file per kommune (schema from PR 2).
+- Output: one extraction file per kommune, in its own schema (`src/schema/extraction.ts`), cache only.
 
 #### NKLM reader
 
 `xlsx/read.ts` (`fflate` plus `cheerio`) and `registers/nklm.ts`. The file is fetched only when
-its date changes. It finds legevakter and the kommuner each one covers. It never supplies a
+I run `verify --nklm-fetch`; every other run rereads the saved copy. A changed hash is recorded in
+`state.json`. It finds legevakter and the kommuner each one covers. It never supplies a
 phone number or an address on its own: those must agree with the legevakt's own page.
 
 #### verify
@@ -633,8 +641,9 @@ phone number or an address on its own: those must agree with the legevakt's own 
 Builds the real `GateContext` from the cache, the registers and the NKLM data
 (`verify/context.ts`, the assembly left over from #114). Runs the five gates and writes the lock
 file. Unit inclusion lives in `curate/include.ts`. A match is clear when exactly one register
-unit and exactly one fetched page belong together (by org number, or by normalised name plus
-Kartverket address id) and the category is known (from the SN2025 code or a known service
+unit and exactly one fetched page belong together (by org number, by normalised name plus
+Kartverket address id, or by the unit's brreg website normalising to the page URL, which also
+needs the page's h1 to name the unit) and the category is known (from the SN2025 code or a known service
 path). A clear match gets `include: true`. Anything else (two units for one page, two pages for
 one unit, no category) becomes one review question.
 
@@ -677,9 +686,11 @@ The phone order from the main spec decides which number the unit gets:
 1. **Service phone:** a number in the contact block next to "Telefon", "Tlf", "Vakttelefon" or
    the unit's name, with no person name on the line. A landline with a person name on its line
    is not a service phone: it follows rank 2 (role word needed, name never stored) or goes to
-   review. A time range on the same line or the line
-   after becomes `phoneHours` (through the formatter). "Døgnåpen" or "hele døgnet" sets
-   `alwaysOpen` only when the phrase stands alone on its line or next to the number. Any other
+   review. A time range on the same line becomes
+   `phoneHours` (through the formatter), and so does one on the line after, but only when that
+   line says "Telefontid". "Døgnåpen" or "hele døgnet" sets
+   `alwaysOpen` only when the phrase stands alone on its line. Next to a number it goes to
+   review, because the grounding gate would not pass it as a plain claim. Any other
    word on that line ("ikke", "unntatt", "i helgene", a day name) sends it to review. A wrong
    `alwaysOpen` on an acute line tells someone at night that a closed place is open.
 2. **Role mobile:** a mobile in the contact block with a role word on the same line or the line
@@ -735,7 +746,7 @@ works. Names are never stored, as today.
   formatter cannot read sends the field to review rather than storing it half tidied.
 - A time is hours 0 to 24 and minutes 0 to 59. An end before the start is allowed, because an
   overnight legevakt runs `kl. 15:00–08:00`. A bare range without minutes (`13-18`) counts as
-  times only when its line also holds "kl" or a day name, so "1-2 ganger i uka" stays text.
+  times only right after "kl" or a day word, so "1-2 ganger i uka" stays text.
 - **Length:** counted in characters (Unicode code points) on the final stored text, after the
   formatter and after runs of whitespace collapse to one space. Over 200: review.
 
@@ -793,16 +804,22 @@ list) and n (leave out, then type the reason). That writes `include`, `categorie
 `excludeReason` on the unit, which the schema already requires.
 
 An edited value runs the validity gate and the safety gate before it is saved. A value that
-fails is refused on the spot with the gate's reason, and the same item is asked again.
+fails is refused on the spot with the gate's reason, and the same item is asked again, except
+when the gate would only send the value to review. Then review shows the reason and I type
+"keep" to save it anyway, or type the value again. A drop is still refused on the spot.
 
 #### How an answer is stored
 
 - `ReviewDecision` gains `"edit"` and an optional `editedValue` and `role`. A question is still
   one value for one field from one page, so the key (`field`, `value`, `sourceUrl`) stays the
   page's value, not mine.
-- `Evidence` gains a third kind, `decision`, with `decidedOn` and the original page quotes.
-  `verify` uses it for an accepted or edited answer, and the grounding gate passes it with the
-  reason "my decision of <date>". Validity and safety still run on every verify.
+- `Evidence` gains a third kind, `decision`, with `decidedOn` and the original evidence nested
+  as `original` (a register record or a page quote). `verify` uses it for an accepted or edited
+  answer, and the grounding gate and the agreement gate pass it with the reason "my decision of
+  <date>". Validity and safety still run on every verify, but my answer settles what they only
+  send to review: a validity review, and a Lavterskel safety review when the rule's outcome is
+  review (silent or unclear). A drop still drops, a mobile still needs a role, and a rule that
+  gives an automatic yes or no my value contradicts stays in review (ruling of 06.11.2026).
 - When the page's value changes, the key no longer matches and the question comes back. When
   the quote leaves the page, the monthly quote check drops the value, as for any other.
 - Each answer is written at once: the curated file is checked against its schema, written to a
@@ -820,9 +837,12 @@ fails is refused on the spot with the gate's reason, and the same item is asked 
   that page. The run goes on. The summary counts it by reason; reasons never hold a value, a
   quote or a URL, because the summary ends up in public logs.
 - **NKLM file:**
-  - It is read only when its date or hash differs from the last one seen. The raw file is never
-    committed. The Sources list links NKLM's file page. The plan checks that the page serves
-    the 01.01.2026 file; if it does not, the reader takes a local path I set.
+  - It is downloaded only on `verify --nklm-fetch`, from
+    https://nklm.norceresearch.no/file/oversikt-over-legevakter-i-norge, which redirects to the
+    allow-listed host `www.norceresearch.no`. The saved copy is reread every run, and the file is
+    kept only when its hash matches an edition the licence covers. The raw file is never
+    committed. The Sources list links NKLM's project page. Without the download, the reader
+    takes a local path I set (`--nklm-file`).
   - The permission I have covers the 01.01.2026 file. A new edition stops the NKLM step with
     "new NKLM edition: licence check needed", and nothing from it is used until I record in
     `docs/licence-requests/README.md` that the permission covers it too.
@@ -886,7 +906,7 @@ fails is refused on the spot with the gate's reason, and the same item is asked 
 
 - `Register` gains `nklm`, and the source gate accepts `granted` as the licence for it.
 - `ReviewDecision` gains `edit`, plus optional `editedValue` and `role`.
-- `Evidence` gains the `decision` kind (`decidedOn` and the original page quotes).
+- `Evidence` gains the `decision` kind (`decidedOn` and the original evidence, nested as `original`).
 - `Candidate.personName` becomes `personNames`, a list.
 
 ### Dependencies
@@ -936,7 +956,7 @@ Dependabot. It unzips the NKLM `.xlsx`, and `cheerio` reads the sheet XML.
 - Frivillighetsregisteret API: https://data.brreg.no/frivillighetsregisteret/api/icnpo-kategorier
 - SSB KLASS: https://data.ssb.no/api/klass/v1/api-guide.html
 - Kartverket addresses: https://api.kartverket.no/adresser/v1/
-- NKLM legevakt list: https://nklm.norceresearch.no/en/file/offisiell-oversikt-over-legevakter-og-legevaktsentraler-i-norge
+- NKLM legevakt list: https://nklm.norceresearch.no/prosjekter/nasjonalt-legevaktregister
 - dinutvei: https://dinutvei.no/wp-json/wp/v2/help
 - Konfliktrådet: https://konfliktraadet.no/wp-json/wp/v2/ditt_konfliktrad
 - Kirkens Bymisjon: https://kirkensbymisjon.no/wp-json/wp/v2/tilbud
