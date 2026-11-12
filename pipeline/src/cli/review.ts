@@ -46,10 +46,11 @@ try {
 	const arg = kommuneArg(values.kommune, known)
 	if (!arg.ok)
 		throw new ReviewError("--kommune must be a KLASS kommune number the last discover run read")
-	const files = readKommuneFiles(dataDir, arg.kommune)
-	// One writer at a time: a verify running now would overwrite my answers. A run that refuses
-	// (no terminal) writes nothing, so it takes no hold.
+	// One writer at a time: a verify running now would overwrite my answers. The hold comes before
+	// the read, so a verify that finishes in between can never be overwritten by my first save. A
+	// run that refuses (no terminal) writes nothing, so it takes no hold.
 	held = isTTY ? holdDataDir(dataDir) : undefined
+	const files = readKommuneFiles(dataDir, arg.kommune)
 	const crawler = new Crawler({
 		transport: httpsTransport,
 		clock: systemClock,
