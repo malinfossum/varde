@@ -143,7 +143,7 @@ export function isRepoData(
 	repoData: string,
 	platform: NodeJS.Platform = process.platform
 ): boolean {
-	const fold = (p: string) => p
+	const fold = (p: string) => (platform === "win32" ? p : p)
 	const rel = relative(fold(real(repoData)), fold(real(dataDir)))
 	// ".." alone or followed by a separator leaves data/; a folder named "..x" inside it does not.
 	const outside = rel === ".." || rel.startsWith("../") || rel.startsWith("..\\")
