@@ -2,7 +2,7 @@ import { foldNorwegian } from "./normalise.ts"
 
 // Words that name a public role next to a number the kommune publishes as a unit's contact
 // (spec, "Phone order" rank 2). Each word is added from a fetched page or from Varde's own data,
-// never from memory, with its source. Task 6 of the PR 3 plan adds the ones fetched pages show.
+// never from memory, with its source.
 export type RoleWord = { word: string; label: string }
 
 export const ROLE_WORDS: readonly RoleWord[] = [

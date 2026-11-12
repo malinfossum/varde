@@ -114,7 +114,7 @@ export function readNklm(
 	}
 	let unknownKommuner = 0
 	const rows: NklmRow[] = []
-	// rows[n] is spreadsheet row n + 1 (Task 11), so a record id is the row number Excel shows.
+	// rows[n] is spreadsheet row n + 1 (xlsx/read.ts), so a record id is the row number Excel shows.
 	sheet.rows.slice(headerAt + 1).forEach((cells, i) => {
 		const cell = (key: keyof NklmColumns) => (cells[index[key] ?? -1] ?? "").trim()
 		const name = cell("name")

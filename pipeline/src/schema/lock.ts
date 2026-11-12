@@ -76,7 +76,7 @@ export const LockField = z
 		status: z.enum(["accepted", "review", "dropped"]),
 		value: FieldValue.optional(),
 		role: NonBlank.optional(),
-		// The origin verify used, so review checks my edit the way verify will (Task 18).
+		// The origin verify used, so review checks my edit the way verify will.
 		origin: z.enum(ORIGINS).optional(),
 		addressId: NonBlank.optional(),
 		sourceUrl: HttpsUrl,

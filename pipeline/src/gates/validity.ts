@@ -51,7 +51,7 @@ function fieldCheck(c: Candidate, ctx: GateContext): GateResult {
 // Gate 3 before my decision settles it. Review shows me a review it gives on a value I typed,
 // since my decision would settle it unseen.
 export function unsettledValidity(c: Candidate, ctx: GateContext): GateResult {
-	// A hidden character changes what a reader sees. textLines strips them (Task 6), so one here
+	// A hidden character changes what a reader sees. textLines strips them from page text, so one here
 	// came from somewhere else.
 	if (typeof c.value === "string" && hasInvisible(c.value)) {
 		return drop("validity", "the value holds an invisible character")

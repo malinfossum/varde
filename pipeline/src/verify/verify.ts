@@ -68,7 +68,7 @@ export type VerifyCounts = {
 	pagesWithProblem: number
 	// A page fetched again after extract ran: its extraction no longer describes the cached page.
 	pagesStale: number
-	// A main unit and its only sub-unit counted as one (Task 14).
+	// A main unit and its only sub-unit counted as one (curate/include.ts).
 	foldedParents: number
 	// My accepted or edited answers that verify still could not accept (a mobile with no role).
 	answersUnsettled: number
@@ -109,7 +109,7 @@ function toReview(field: LockField, reason: string): LockField {
 }
 
 // My answer stands on the page's quotes. The grounding gate passes a decision without reading the
-// page (Task 2), so verify checks here that every original quote is still on the cached page, the
+// page, so verify checks here that every original quote is still on the cached page, the
 // way the grounding gate checks a quote. A register value has no quote and needs no check.
 function quotesStillOnPage(c: Proposal["candidate"], ctx: GateContext): boolean {
 	if (c.evidence.kind !== "quote") return true

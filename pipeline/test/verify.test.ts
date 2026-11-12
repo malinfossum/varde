@@ -39,7 +39,7 @@ const NOW = "2026-11-06T10:00:00Z"
 const D = "\u2013"
 const html = (body: string) =>
 	`<html><head><meta name="acos-cmscontext" content="x"></head><body><main class="main">${body}</main></body></html>`
-// Task 14's default unit: a barneverntjeneste (SN 88.991), one of the codes that include by rule.
+// The default unit: a barneverntjeneste (SN 88.991), one of the codes that include by rule.
 // A helsestasjon goes to review, so it cannot show an automatic include.
 const BV = `${K}/barnevern/`
 const H1 = "<h1>Eksempel barneverntjeneste</h1>"

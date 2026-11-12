@@ -3,7 +3,7 @@ import { INVISIBLE } from "../text/invisible.ts"
 // Page text can hold terminal control codes. Everything a page gave (quotes, values, links) goes
 // through here before it is printed, so a page cannot recolour, clear or rewrite my terminal, or
 // make a quote or a link read differently from what it is. Each pattern scans forward once. The
-// hidden characters are the ones text/invisible.ts names (Task 2), so the screen and the stored
+// hidden characters are the ones text/invisible.ts names, so the screen and the stored
 // text agree on what counts as hidden.
 // biome-ignore lint/suspicious/noControlCharactersInRegex: the escape and bell characters are what this pattern must match
 const OSC = /\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)?/g

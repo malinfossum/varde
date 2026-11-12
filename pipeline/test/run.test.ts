@@ -490,7 +490,7 @@ describe("runGates: several names and decisions", () => {
 	})
 
 	it("drops an hours value that holds a two-word capitalised run", () => {
-		// The value is verbatim here so this test does not depend on the hours grounding of Task 4.
+		// The value is verbatim here so this test does not depend on the hours grounding.
 		const page = `${PAGE}\nÅpent hos Kari Nordmann mandag 10.00\u201312.00`
 		const c = candidate({
 			field: "openingHours",

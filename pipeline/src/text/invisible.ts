@@ -2,7 +2,7 @@
 // overrides, the soft hyphen, tag characters), the Hangul fillers and the variation selectors.
 // Tab and line breaks are whitespace, not hidden text, so they stay: the page reader splits lines
 // on them. textLines strips these from every text node; the validity gate drops any value that
-// still holds one; Task 17's sanitiser reuses the pattern. Alternatives of single classes: linear.
+// still holds one; review's sanitiser reuses the pattern. Alternatives of single classes: linear.
 export const INVISIBLE =
 	/(?![\t\n\v\f\r])(?:[\p{Cc}\p{Cf}\u115F\u1160\u3164\uFFA0]|[\uFE00-\uFE0F]|[\u{E0100}-\u{E01EF}])/gu
 

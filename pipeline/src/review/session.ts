@@ -350,7 +350,7 @@ class Session {
 		const unit = this.unit(item.kommune, item.unitId)
 		if (unit === undefined) return "skip"
 		// The question's key is the page's value; for an answer verify could not settle it is the
-		// value that answer was keyed by (Task 17's answerKey).
+		// value that answer was keyed by (the queue's answerKey).
 		const key = {
 			field: item.field,
 			value: item.answerKey ?? item.value,

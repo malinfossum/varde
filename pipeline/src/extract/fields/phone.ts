@@ -207,7 +207,7 @@ function inBlock(block: ContactBlock, b: number, ctx: RuleContext): ExtractedCan
 		for (const { hit, label, labelLine, first, after, last } of labelled(lines, i, hitsOf)) {
 			if (FAX.test(label) || FAX_AFTER.test(after) || (last && FAX.test(after))) continue
 			const phoneLabel = PHONE_LABEL.test(label)
-			// A short number is a house number, a price or a room as often as a phone (Task 3).
+			// A short number is a house number, a price or a room as often as a phone.
 			if (hit.short && !phoneLabel && !RING.test(label)) continue
 			const base = {
 				field: "phone" as const,

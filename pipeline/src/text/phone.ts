@@ -2,7 +2,7 @@ import { fitsNumberPlan } from "../gates/validity.ts"
 import { MAX_LINE, phoneDigits, undotPhones } from "./normalise.ts"
 
 // short: a 3, 5 or 6 digit number (113, 116 123). A house number or a price has the same
-// shape, so the phone rule (Task 7) takes one only beside a phone label.
+// shape, so the phone rule (extract/fields/phone.ts) takes one only beside a phone label.
 export type PhoneHit = { text: string; digits: string; index: number; short: boolean }
 
 // A run of digits with single spaces or dots between them, with an optional country code. Each

@@ -30,7 +30,7 @@ export type FieldItem = {
 	field: FieldName
 	value: FieldValue
 	role?: string
-	// The origin verify used, so review checks my edit the way verify will (Task 16).
+	// The origin verify used, so review checks my edit the way verify will.
 	origin?: Origin
 	evidence: Evidence
 	sourceUrl: string
