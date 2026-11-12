@@ -382,7 +382,8 @@ whole answer key is scored.
 1. **Zero wrong values.** No accepted field differs from the answer key once disagreements are
    resolved. Values are compared normalised (phone digits, URL, Kartverket address id). When
    the key turns out to be stale, the key is fixed, and that counts as a find, not a failure.
-2. **At most 1 row in 10** has a field in review.
+2. **At most 1 row in 10** has a field in review. Amended 12.11.2026: "include this unit?"
+   questions do not count here. The report counts them on their own (see "PR 4: pilot run").
 3. **At least 9 in 10** of the answer-key services in the pilot kommuner are found (matched by
    org number, or by name and address).
 4. **Lavterskel badges match the key**, apart from rows the new rule changes. Those come to me
@@ -457,7 +458,7 @@ Each PR leaves `main` green. None of them changes what the site shows.
 3. **Extract, verify, review:** the field rules, the NKLM reader and the review command. Detail
    in "PR 3: extract, verify, review" below.
 4. **Pilot run:** Innlandet and Oslo scored against the pass mark, with a report in the PR. Not
-   published.
+   published. Detail in "PR 4: pilot run" below.
 5. **Automation:** the scheduled workflows, the bot token, `check-refresh-only` and the
    auto-merge rule.
 
@@ -914,6 +915,163 @@ when the gate would only send the value to review. Then review shows the reason 
 `fflate` joins `cheerio` and `tldts`: MIT, no dependencies of its own, pinned and covered by
 Dependabot. It unzips the NKLM `.xlsx`, and `cheerio` reads the sheet XML.
 
+## PR 4: pilot run
+
+Decided in the brainstorm on 12.11.2026. Where this section and an earlier one disagree, this
+section wins.
+
+### What it delivers
+
+- The address place-part fix and a pace and cache for Kartverket, both before any lock file is
+  committed.
+- `npm run score`, which scores the locks against the pass mark and writes the report.
+- `--resume` on `fetch` and `verify`, and progress lines on every stage.
+- One full pilot run over Innlandet and Oslo, committed as a baseline: the lock files, the
+  curated file and the report. Nothing is published, and `web/`, `api/` and the live data stay
+  untouched.
+- Done when every test passes, the report is in the PR body, and every disagreement with the
+  answer key has my ruling.
+
+### Decisions
+
+1. **Measure first.** PR 4 commits the first run as a baseline, even if it misses the pass mark.
+   The rule fixes that close the gaps come in later PRs, one gap each, each scored again. The
+   AI fallback decision reads this baseline.
+2. **Inclusion questions are counted on their own.** The 1-in-10 mark counts rows with a field
+   in review. A unit waiting for "include this unit?" is not a row yet. The report gives the
+   inclusion questions their own count and a time estimate for me, because each answer is
+   saved in the curated file once and never asked again.
+3. **Disagreements are checked against the source first.** Each accepted value that differs
+   from the answer key is checked against the live source page and gets a proposed ruling: "key
+   stale", "pipeline wrong" or "unclear". I rule on each.
+4. **The run reuses the stages.** No `pilot` command. `discover`, `fetch`, `extract` and `verify`
+   already take `--only`, and PR 5's workflows chain the stages in YAML anyway.
+5. **The run happens once, on my PC, in a visible terminal.** I can stop it with Ctrl+C and
+   resume it later. Every later run moves to GitHub Actions in PR 5. Gap PRs re-run `extract`,
+   `verify` and `score` from the local caches, which takes minutes in the foreground.
+
+### The pilot list
+
+`PILOT` in one source file holds 0301 and KLASS 131 codes 3401 to 3454: Oslo and the 46
+Innlandet kommuner, 47 in all. Every stage and `score` accept `--only pilot`. The answer key
+covers 8 of them (0301, 3403, 3405, 3407, 3411, 3412, 3413, 3420). Pass-mark rules 1, 3 and 4
+are scored on those 8. Rule 2 is scored on all 47.
+
+### Address place part
+
+Verify stores Kartverket's street text and then the page's own text after the comma. On a page
+where a name or a label follows the place ("2609 Lillehammer Kari Nordmann"), the name is
+stored too. The new rule:
+
+- Kartverket's answer carries `postnummer` and `poststed`. The place part is kept only when it
+  starts with that postcode and poststed, compared without case. The page's own spelling stays
+  ("Lillehammer", not "LILLEHAMMER").
+- Words after the poststed are cut.
+- A different postcode, or a place part that is not the poststed, sends the field to review
+  with the reason "place part does not match Kartverket".
+
+### Kartverket pace and cache
+
+The address API goes through the website crawler today, so every lookup waits for the
+5-second floor. In the trial that cost 11 to 19 minutes per kommune. The API's own description
+(version 1.2.0, read 12.11.2026) needs no login and states no rate limit.
+
+- Kartverket's API gets its own pace: one request a second, one at a time. The 5-second floor
+  stays for websites, and the other registers keep the pace they have.
+- Answers are cached on disk next to the page cache (`.cache/kartverket/`), keyed by search
+  text and kommune, for 30 days. Addresses are public register data, but the cache stays local
+  like the rest of `.cache/`.
+- The network boundary still holds: only `src/net/` touches the network.
+
+### Resume and progress
+
+- Each stage prints one line when a kommune finishes, with a running count ("12 of 47").
+  `fetch` also prints a line about every five minutes.
+- `fetch --resume` skips a URL whose cached copy is under 24 hours old. The cache index records
+  each page when it is stored, not only at the end, so Ctrl+C loses only the pages in flight.
+- `verify --resume` skips a kommune whose lock file was written after its extraction file.
+  Each lock file is still written in one step, so a stop never leaves half a lock.
+
+### score and the report
+
+`npm run score -- --only pilot` reads the committed locks, the curated file,
+`test/answer-key.json` and `test/lavterskel-changes.json`. It runs offline and writes
+`docs/pilot/pilot-report.md`, which also goes in the PR body. The report holds no clock time,
+so a re-run on the same data gives the same file, and a gap PR's diff shows what changed. Stage
+durations go in the PR body, not the report.
+
+The report has six parts:
+
+1. **Pass mark.** One line per rule: the measured value, the target, pass or fail.
+2. **Per kommune.** Units, units with a field in review, inclusion questions, and accepted,
+   review and dropped fields.
+3. **Review reasons, ranked.** Every field in review, grouped by gate and reason, largest first.
+   This orders the gap PRs. It is also the evidence for the AI fallback, because it shows which
+   share a model could settle (extraction misses) and which it could not (register or
+   Kartverket gaps).
+4. **Inclusion questions.** A count per kommune and an estimate of my time at 30 seconds each,
+   marked as an estimate.
+5. **Recall.** Each key row not found, with the stage that lost it. Discover's reasons come from
+   the existing recall report. Later stages add "fetched, no unit id", "no values extracted"
+   and "dropped by a gate".
+6. **Disagreements.** Each accepted value that differs from the key: key row id, field, key
+   value, pipeline value, source link and quote, and the proposed ruling. Quotes sit in code
+   blocks, as in every PR body.
+
+A key row counts as found when a lock unit matches it, also while that unit waits for its
+inclusion answer. Finding is the pipeline's job; including is mine.
+
+### Disagreements and the golden test
+
+The golden test asserts today that there are no lock files. With the pilot's locks committed, a
+"pipeline wrong" value would turn `main` red. So it becomes a ratchet:
+
+- `test/known-wrong.json` lists each disagreement I ruled "pipeline wrong" (key row id, unit id,
+  field).
+- The test fails on a wrong value that is not listed, and on a listed one that no longer
+  occurs. Each gap PR removes its own entries.
+- The report still counts listed values as wrong. The pilot passes only when the list is empty.
+
+A "key stale" ruling means the live site shows an old value. It gets its own small data PR for
+the live site, then `key:freeze` and `score` run again. An "unclear" ruling stays in the report
+until I settle it.
+
+### The run
+
+The pipeline README gains a "Pilot run" section:
+
+1. `key:freeze` from the live site's JSON, so no disagreement comes from an old freeze.
+2. `discover`, `fetch` (no `--limit`), `extract`, `verify --nklm-fetch` and `score`, each with
+   `--only pilot`, in a Terminal tab I can see.
+3. The PC stays awake while it runs. The slowest host at a 5-second pace sets the time, likely
+   an afternoon into the evening.
+
+Committed: 47 lock files in `data/lock/`, the curated file with the units included by rule only,
+`docs/pilot/pilot-report.md` and `test/known-wrong.json`. The page cache and the Kartverket
+cache stay local. Branch `feat/pipeline-pilot` from `main`.
+
+### Errors
+
+- A host that stops, or a kommune that fails, is named in that stage's summary and in the
+  report's recall part. The run goes on.
+- `score` refuses to run when a pilot kommune has no lock file, and names the kommune. A
+  partial pilot is never scored as a whole one.
+
+### Testing
+
+- **Address:** a trailing name, a trailing "Telefon", a wrong postcode (review), and a clean
+  value that stays the same. Fixtures stay fictional.
+- **Kartverket:** a cached answer makes no request, an expired one does, and two lookups are a
+  second apart on a fake clock.
+- **score:** a small fixture of locks and key where each pass-mark rule passes and fails once,
+  inclusion questions counted apart from field review, and the same report twice in a row.
+- **Ratchet:** an unlisted wrong value goes red, and so does a listed one that is gone.
+- **Resume:** a stopped fetch followed by `--resume` fetches only the missing pages, and
+  `verify --resume` leaves finished kommuner byte for byte the same.
+- **Network boundary test** covers every new file.
+- **Before the PR:** `npm test`, `typecheck` and `lint` in `pipeline/`, and the web suites
+  (`npm test` and the full `npm run e2e`).
+
 ## Considered and rejected
 
 - **Running the pipeline on my PC.** Safer for the key, but it needs me every week. GitHub
@@ -949,6 +1107,13 @@ Dependabot. It unzips the NKLM `.xlsx`, and `cheerio` reads the sheet XML.
   ASCII, keys in text and `NO_COLOR` keep it readable without colour or graphics.
 - **Community MCP servers for brreg or Kartverket.** Unvetted code with my user rights, and
   name-squat risk. The pipeline calls the public APIs directly.
+- **A `pilot` command that chains the stages.** One command, but a second entry point that
+  PR 5's workflows would duplicate. The stages already take `--only`.
+- **Running the pilot in GitHub Actions.** It pulls PR 5 forward, a job stops after six hours,
+  and the locks would come back as a download. One run on my PC is simpler.
+- **Counting inclusion questions as review.** Each answer is asked once and remembered, unlike a
+  field review that can return with every refresh. Counted together, the trial would fail on
+  inclusion alone and hide the field numbers.
 
 ## Sources
 
