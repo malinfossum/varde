@@ -195,6 +195,20 @@ describe("verifyKommune", () => {
 		expect(JSON.stringify(lock)).not.toMatch(/Kari|Nordmann/)
 	})
 
+	it("accepts an address Kartverket knows without the mobile that follows it on the page", async () => {
+		const page = html(
+			`${H1}<h2>Kontakt</h2><p>Besøksadresse: Storgata 1, 2609 Lillehammer. Telefon 900 00 000</p>`
+		)
+		const { input } = setup({ pages: { [BV]: page }, units: [unit({ address: undefined })] })
+		const { lock } = await verifyKommune(input)
+		expect(lock.units[0]?.fields.address).toMatchObject({
+			status: "accepted",
+			value: "Storgata 1, 2609 Lillehammer",
+			addressId: "a1",
+		})
+		expect(lock.units[0]?.fields.address?.value).not.toContain("900")
+	})
+
 	it("sends two different service numbers on one rank to review", async () => {
 		const page = html(`${H1}<h2>Kontakt</h2><p>Telefon: 62 00 00 00</p><p>Telefon: 62 00 00 02</p>`)
 		const { input } = setup({ pages: { [BV]: page }, units: [unit({ address: undefined })] })

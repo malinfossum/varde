@@ -9,7 +9,11 @@ import { dedupe } from "./phone.ts"
 type Kind = "visit" | "plain" | "post"
 const LABEL = /^(besøksadresse|postadresse|adresse)\s*:?\s*/iu
 const POSTBOKS = /(?<![\p{L}])postboks(?![\p{L}])/iu
-const POSTCODE_LINE = /^\d{4} \p{L}/u
+// The postcode and the place name after it, and nothing more: words of letters and hyphens, up
+// to the first full stop, comma, semicolon, bracket, slash or digit. A word right before a slash
+// ("v/", "c/o") is no place. So "2609 Lillehammer v/ Kari Nordmann 900 00 000" gives
+// "2609 Lillehammer": a name or a mobile after the place never rides into the value.
+const PLACE = /^\d{4}(?: \p{L}[\p{L}-]*(?![\p{L}/-]))+/u
 const RANK: Readonly<Record<Kind, number>> = { visit: 0, plain: 1, post: 2 }
 
 const kindOf = (label: string | undefined): Kind =>
@@ -30,6 +34,11 @@ function streetIsClean(rest: string): boolean {
 	const street = comma < 0 ? rest : rest.slice(0, comma)
 	return findPhones(street).length === 0 && findRoleWord(street) === undefined
 }
+
+// The value as verify stores it holds no phone number and no role word anywhere, the place
+// part included.
+const valueIsClean = (value: string) =>
+	findPhones(value).length === 0 && findRoleWord(value) === undefined
 
 // A street with its number, then a four-digit postcode: on one line after a comma, or on the
 // next line. "Besøksadresse" wins over "Postadresse", and a Postboks is never a street address.
@@ -53,25 +62,19 @@ function inBlock(block: ContactBlock, b: number): ExtractedCandidate | undefined
 		const quotes = labelAbove === null ? [line] : [above, line]
 		if (!streetIsClean(rest)) continue
 		const parts = splitAddress(rest)
-		if (
-			parts?.postcode !== undefined &&
-			POSTCODE_LINE.test(rest.slice(rest.indexOf(",") + 1).trim())
-		) {
-			found.push({ kind: kindOf(label), value: rest, quotes })
+		const comma = rest.indexOf(",")
+		const sameLine = comma < 0 ? null : PLACE.exec(rest.slice(comma + 1).trim())
+		if (parts?.postcode !== undefined && sameLine !== null) {
+			const value = `${rest.slice(0, comma)}, ${sameLine[0]}`
+			if (valueIsClean(value)) found.push({ kind: kindOf(label), value, quotes })
 			continue
 		}
 		const next = (lines[i + 1] ?? "").trim()
-		if (
-			parts !== undefined &&
-			!rest.includes(",") &&
-			POSTCODE_LINE.test(next) &&
-			next.length <= MAX_QUOTE
-		) {
-			found.push({
-				kind: kindOf(label),
-				value: `${rest}, ${next.replace(/[.,;]+$/, "")}`,
-				quotes: [...quotes, lines[i + 1] ?? ""],
-			})
+		const nextLine = PLACE.exec(next)
+		if (parts !== undefined && comma < 0 && nextLine !== null && next.length <= MAX_QUOTE) {
+			const value = `${rest}, ${nextLine[0]}`
+			if (valueIsClean(value))
+				found.push({ kind: kindOf(label), value, quotes: [...quotes, lines[i + 1] ?? ""] })
 		}
 	}
 	const best = found.sort((x, y) => RANK[x.kind] - RANK[y.kind])[0]

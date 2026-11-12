@@ -50,4 +50,31 @@ describe("addressCandidates", () => {
 		expect(values("Kari Nordmann 900 00 000, 2609 Lillehammer")).toEqual([])
 		expect(values("Avdelingsleder rom 12", "2609 Lillehammer")).toEqual([])
 	})
+
+	it("cuts the value at the place name, so a phone number or a name after it never rides along", () => {
+		expect(values("Besøksadresse: Storgata 1, 2609 Lillehammer. Telefon 900 00 000")).toEqual([
+			"Storgata 1, 2609 Lillehammer",
+		])
+		expect(values("Storgata 1", "2609 Lillehammer v/ Kari Nordmann 900 00 000")).toEqual([
+			"Storgata 1, 2609 Lillehammer",
+		])
+		expect(values("Storgata 1, 2609 Lillehammer (inngang bak)")).toEqual([
+			"Storgata 1, 2609 Lillehammer",
+		])
+		expect(values("Storgata 1", "8622 Mo i Rana")).toEqual(["Storgata 1, 8622 Mo i Rana"])
+	})
+
+	it("keeps the whole line as the quote when it cuts the value", () => {
+		expect(
+			addressCandidates(block("Storgata 1", "2609 Lillehammer v/ Kari Nordmann 900 00 000"))[0]
+				?.evidence
+		).toEqual({
+			kind: "quote",
+			quotes: ["Storgata 1", "2609 Lillehammer v/ Kari Nordmann 900 00 000"],
+		})
+	})
+
+	it("never takes a value whose place part holds a role word", () => {
+		expect(values("Storgata 1", "2609 Teamleder")).toEqual([])
+	})
 })
