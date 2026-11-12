@@ -1,4 +1,11 @@
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	renameSync,
+	writeFileSync,
+} from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { PassThrough } from "node:stream"
@@ -762,6 +769,18 @@ describe("verifyAndWrite", () => {
 				.value
 		).toBe("62 00 00 09")
 		expect(checkData(dir)).toEqual([])
+	})
+
+	it("writes the curated file before the lock, so a failed lock save never leaves a lock with no curated file", async () => {
+		const { dir, input } = setup({ pages: { [BV]: UNIT_PAGE }, units: [unit()] })
+		const data = join(dir, "data")
+		const rename = (from: string, to: string) => {
+			if (to === lockPath(data, "3405")) throw Object.assign(new Error("full"), { code: "ENOSPC" })
+			renameSync(from, to)
+		}
+		await expect(verifyAndWrite(data, input, { rename })).rejects.toThrow("could not save the lock")
+		expect(existsSync(join(data, "curated", "3405-lillehammer.json"))).toBe(true)
+		expect(existsSync(lockPath(data, "3405"))).toBe(false)
 	})
 
 	it("leaves the previous lock file byte for byte the same when the run stops halfway", async () => {

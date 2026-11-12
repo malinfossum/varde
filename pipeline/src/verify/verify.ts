@@ -347,8 +347,10 @@ export async function verifyKommune(
 	return { lock, curated: { ...curated, units: all }, counts }
 }
 
-// Verify, then write the lock file and the curated file, each whole and each with the Windows
-// retry. Nothing is written for a kommune that does not complete. The CLI holds the data folder
+// Verify, then write the curated file and the lock file, each whole and each with the Windows
+// retry. Nothing is written for a kommune that does not complete. The curated file goes first: a
+// lock that fails to save after it leaves extra curated units, which review never walks, while a
+// lock with no curated file would stop the whole review run. The CLI holds the data folder
 // (holdDataDir) for the whole run, so no review writes the curated file in between.
 export async function verifyAndWrite(
 	dataDir: string,
@@ -356,11 +358,11 @@ export async function verifyAndWrite(
 	io: RenameIo = {}
 ): Promise<VerifyCounts> {
 	const { lock, curated, counts } = await verifyKommune(input)
-	await writeLockFile(lockPath(dataDir, input.kommune.kommune), lock, io)
 	const path =
 		findCuratedPath(dataDir, input.kommune.kommune) ??
 		curatedPathFor(dataDir, input.kommune.kommune, input.kommune.name)
 	await writeCuratedFile(path, curated, io)
+	await writeLockFile(lockPath(dataDir, input.kommune.kommune), lock, io)
 	return counts
 }
 
