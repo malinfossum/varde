@@ -83,6 +83,23 @@
 		position: static;
 		align-self: flex-start;
 	}
+	/* The page width the strip, header, main and footer share, so their edges line up. It grows
+	   in two wide steps instead of leaving 384 px of empty gutter on each side at 1920 px: each
+	   step keeps 64 px outside the box. The card grids add a fourth column from 1600 px to use
+	   the width; prose keeps its own measure (max-w-prose) at every step. */
+	.page-width {
+		max-inline-size: 72rem;
+	}
+	@media (min-width: 1600px) {
+		.page-width {
+			max-inline-size: 92rem;
+		}
+	}
+	@media (min-width: 1920px) {
+		.page-width {
+			max-inline-size: 112rem;
+		}
+	}
 	.btn-primary {
 		display: inline-flex;
 		align-items: center;
@@ -667,6 +684,7 @@
 		font-weight: 500;
 		text-align: center;
 		text-decoration: none;
+		overflow-wrap: anywhere;
 	}
 	.chip-acute {
 		border-color: var(--accent);
@@ -691,6 +709,16 @@
 		gap: 0.5rem;
 		width: 100%;
 		justify-self: center;
+	}
+	/* The category grid and the emergency buttons below 768 and 1024 px: two columns, or one when
+	   the text is so large that half the width cannot hold a label (8 rem, the featured pair's
+	   floor, so at 200 % text from 320 px). The half-width floor (less a gap, for rounding) keeps
+	   it from ever showing three, so default text keeps the same two columns as before. */
+	.chip-grid {
+		grid-template-columns: repeat(auto-fit, minmax(max(min(100%, 8rem), calc(50% - 0.5rem)), 1fr));
+	}
+	.emergency-grid {
+		grid-template-columns: repeat(auto-fit, minmax(max(min(100%, 8rem), calc(50% - 0.75rem)), 1fr));
 	}
 	@media (min-width: 768px) {
 		.chip-featured-row {
@@ -734,14 +762,19 @@
 	/* A contact tile on the detail page (spec C2a): the whole tile is one link. The 1 px border
 	   keeps its edge in forced-colors mode, where the accent-soft fill disappears. 69 px is the
 	   minimum: a long child name wraps inside the tile and makes it taller, never clipped.
-	   overflow-wrap: anywhere is what keeps a long name inside the tile at 200 % text. */
+	   overflow-wrap: anywhere is what keeps a long name inside the tile at 200 % text.
+	   At 200 % text on a phone the text column beside the icon was 44 px, so "116 123" broke every
+	   two characters. Now the text drops under the icon when 8rem will not fit beside it, and the
+	   padding is capped at its 100 % size, so large text gets the room instead of the padding.
+	   At default text both are the same as before. */
 	.contact-tile {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.75rem;
 		height: 100%;
 		min-height: 69px;
-		padding: 0.75rem 1rem;
+		padding: min(0.75rem, 12px) min(1rem, 16px);
 		border: 1px solid var(--border);
 		border-radius: 0.75rem;
 		background: var(--surface);
@@ -758,6 +791,10 @@
 		border-radius: 0.5rem;
 		background: var(--accent-soft);
 		color: var(--accent);
+	}
+	.contact-tile-text {
+		flex: 1 1 8rem;
+		min-width: 0;
 	}
 	/* The detail page card (spec: the detail page as one card). Each section after the head starts
 	   with a 1 px line: the card's gap-6 puts 1.5rem above it and this puts 1.5rem below. */
@@ -799,7 +836,7 @@
 	   wrap to one per row. */
 	.detail-actions {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(5.5rem, 100%), 1fr));
 		gap: 0.5rem;
 	}
 	.action-btn {
@@ -887,5 +924,364 @@
 		.detail-actions[data-tips="hidden"] .action-tip {
 			display: none;
 		}
+	}
+	/* The /sok facets (filter spec, FacetGroup). Every option is a 44 px row: the control, its
+	   label in the text colour, and the count pushed right, muted and tabular, so a label and its
+	   count never read as one value. The summary is heavier than the options. */
+	.facet-group > summary {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-height: 2.75rem;
+		cursor: pointer;
+		font-weight: 600;
+		list-style: none;
+	}
+	.facet-group > summary::-webkit-details-marker {
+		display: none;
+	}
+	.facet-summary-end {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-inline-start: auto;
+	}
+	.facet-ticked {
+		color: var(--muted);
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+	.facet-chevron {
+		color: var(--muted);
+	}
+	.facet-group[open] .facet-chevron {
+		rotate: 180deg;
+	}
+	/* A fieldset is min-content wide by default and Preflight does not reset it, so one long
+	   label could push the page sideways at 200 % text. */
+	.facet-fieldset {
+		display: grid;
+		min-inline-size: 0;
+	}
+	.facet-option {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		min-height: 2.75rem;
+		cursor: pointer;
+	}
+	.facet-input {
+		flex-shrink: 0;
+		inline-size: 1.25rem;
+		block-size: 1.25rem;
+		accent-color: var(--accent);
+	}
+	.facet-label {
+		min-inline-size: 0;
+		color: var(--text);
+		overflow-wrap: anywhere;
+	}
+	.facet-count {
+		margin-inline-start: auto;
+		color: var(--muted);
+		font-size: 0.875rem;
+		font-variant-numeric: tabular-nums;
+	}
+	/* Forced colours drop fills and shadows. Native boxes and radios keep their system look, and
+	   the focus ring is an outline, which forced colours paints in a system colour. */
+	@media (forced-colors: active) {
+		.facet-input {
+			forced-color-adjust: auto;
+		}
+		.facet-input:focus-visible {
+			outline: 3px solid Highlight;
+		}
+	}
+	/* The chips row above the results, with Nullstill alt at the end of the last line. The chips
+	   and the button are both 44 px, and items-end puts the button on the chips' bottom edge. */
+	.active-filters {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 0.5rem 1rem;
+	}
+	/* The /sok bar's reserved height while the catalog loads; the reasons are in ListPage.tsx.
+	   Each value is the loaded height of .sok-top at 100 % text, rounded up to the next 0.25rem.
+	   The sidebar step uses the sidebar's own media and container query. */
+	.sok-top {
+		min-height: 24rem;
+	}
+	@media (min-width: 768px) {
+		.sok-top {
+			min-height: 13.25rem;
+		}
+	}
+	@media (min-width: 1024px) {
+		@container sok (min-width: 39rem) {
+			.sok-top {
+				min-height: 9.5rem;
+			}
+		}
+	}
+	/* A label over its control: smaller and heavier than the value, so it reads as a label. */
+	.field-label {
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+		font-weight: 600;
+	}
+	/* The Sted field. The bordered group is the control: 2.75rem tall with no picks, the same as
+	   Søk, and it grows downwards as chips wrap, so it never scrolls sideways at 320 px. The input
+	   has no ring of its own; the group draws it, so the ring goes round the chips too. */
+	.place-group {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.25rem;
+		min-block-size: 2.75rem;
+		border: 1px solid var(--border);
+		border-radius: 0.75rem;
+		background: var(--surface);
+	}
+	.place-group:has(.filter-chip) {
+		padding: 0.25rem;
+	}
+	.place-group:has(input:focus-visible) {
+		outline: 3px solid var(--accent);
+		outline-offset: 2px;
+	}
+	.place-input {
+		flex: 1 1 10rem;
+		min-inline-size: 0;
+		min-block-size: calc(2.75rem - 2px);
+		padding-inline: 0.75rem;
+		background: transparent;
+		color: var(--text);
+		outline: none;
+	}
+	.place-option {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		min-block-size: 2.75rem;
+		padding-inline: 0.75rem;
+		border-radius: 0.5rem;
+		cursor: pointer;
+	}
+	.place-option[data-focused] {
+		background: var(--accent-soft);
+	}
+	.place-option[data-selected] {
+		font-weight: 600;
+	}
+	.place-check {
+		flex-shrink: 0;
+		color: var(--accent);
+	}
+	/* A removable chip: the label, then a 44 px remove button. A border, not a shadow, so forced
+	   colours keep its edge. The button overlaps that 1 px border (negative margin), so the chip
+	   is 44 px like Nullstill alt beside it, not 46, and the button keeps its full 44 px target. */
+	.filter-chip {
+		display: inline-flex;
+		align-items: center;
+		max-inline-size: 100%;
+		min-block-size: 2.75rem;
+		padding-inline-start: 0.75rem;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		background: var(--ground);
+		color: var(--text);
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+	.filter-chip[data-focus-visible] {
+		outline: 3px solid var(--accent);
+		outline-offset: 2px;
+	}
+	.filter-chip-label {
+		min-inline-size: 0;
+		overflow-wrap: anywhere;
+	}
+	.filter-chip-remove {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		min-inline-size: 2.75rem;
+		min-block-size: 2.75rem;
+		margin-block: -1px;
+		margin-inline-end: -1px;
+		border-radius: 999px;
+		color: var(--muted);
+		cursor: pointer;
+	}
+	.filter-chip-remove:hover {
+		color: var(--text);
+	}
+	@media (forced-colors: active) {
+		.place-option[data-focused] {
+			outline: 2px solid Highlight;
+			outline-offset: -2px;
+		}
+		.filter-chip {
+			border-color: CanvasText;
+		}
+		.place-group:has(input:focus-visible),
+		.filter-chip[data-focus-visible] {
+			outline-color: Highlight;
+		}
+	}
+	/* Søk and Sted (filter spec, PlaceBar). Stacked on a phone. From 768 px they sit side by side
+	   on a two-row subgrid: the labels share the first row and the controls the second, so the
+	   labels keep one baseline even when one wraps at a larger text size, and both controls start
+	   on one line. With no picks both are 2.75rem tall, so they share one bottom edge too. Picks
+	   make Sted grow downwards. Søk keeps its own height at the top of its row (align-self: start),
+	   because the subgrid row grows with Sted and would otherwise stretch Søk into an empty box. */
+	.place-bar {
+		display: grid;
+		gap: 1rem;
+	}
+	/* minmax(0, 1fr), not the implicit auto column: an auto column takes its content's
+	   min-content, and the Sted input's intrinsic width alone made the page 437 px wide at 375 px
+	   and 200 % text. */
+	.place-bar > search,
+	.place-bar > search > form,
+	.place-field {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0.25rem;
+		align-content: start;
+		min-inline-size: 0;
+	}
+	.search-input {
+		display: block;
+		inline-size: 100%;
+		min-block-size: 2.75rem;
+		padding-inline: 0.75rem;
+		border: 1px solid var(--border);
+		border-radius: 0.75rem;
+		background: var(--surface);
+		color: var(--text);
+	}
+	/* Stacked 44 px rows on a phone, one wrapping row from 768 px. */
+	.national-radio {
+		min-inline-size: 0;
+	}
+	.national-radio > legend {
+		margin-block-end: 0.25rem;
+	}
+	.national-options {
+		display: grid;
+	}
+	@media (min-width: 768px) {
+		.place-bar {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			grid-template-rows: auto auto;
+			gap: 0.25rem 1rem;
+		}
+		.place-bar > search,
+		.place-bar > search > form,
+		.place-bar > .place-field {
+			grid-row: span 2;
+			grid-template-rows: subgrid;
+		}
+		.place-bar .field-label {
+			align-self: end;
+		}
+		.place-bar .search-input {
+			align-self: start;
+		}
+		.national-options {
+			display: flex;
+			flex-wrap: wrap;
+			column-gap: 1.5rem;
+		}
+	}
+
+	/* The /sok layout (filter spec, Layout 1). The page is a size container, so the facets can
+	   ask how wide the page really is. From 1024 px they sit in a 17.5rem column, but only while
+	   the results keep 20rem: 17.5rem + 1.5rem gap + 20rem = 39rem. In rem, so it follows the root
+	   font size: at 200 % text on a 1280 px window the page is 1216 px against 1248 px, and the
+	   facets fall back to the dialog. The rule sits after .btn-secondary on purpose, and the
+	   trigger selector has two classes, so display: none wins over the button's inline-flex. */
+	.sok-page {
+		grid-template-columns: minmax(0, 1fr);
+		container: sok / inline-size;
+	}
+	.sok-layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 1.5rem;
+	}
+	/* No scroll anchoring on /sok. react-aria renders a TagGroup's chips one commit after the
+	   rest, so on Back the saved scroll is restored first and the chip rows grow above it
+	   afterwards; Chrome's anchoring then moved the page by their height (38 px at 375 px with
+	   one Sted pick: e2e/oldLinks.spec.ts failed). The layout after that commit is the one the
+	   scroll was saved in, so the restored number is already right. */
+	html:has(.sok-page) {
+		overflow-anchor: none;
+	}
+	.facet-sidebar {
+		display: none;
+	}
+	.facet-groups {
+		display: grid;
+		gap: 0.5rem;
+	}
+	@media (min-width: 1024px) {
+		@container sok (min-width: 39rem) {
+			.sok-layout {
+				grid-template-columns: 17.5rem minmax(0, 1fr);
+				align-items: start;
+			}
+			.facet-sidebar {
+				display: block;
+			}
+			.sok-page .facet-trigger {
+				display: none;
+			}
+		}
+	}
+	/* The full-screen filter dialog: heading, a scroll area, and the footer below it. */
+	.facet-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 50;
+		background: var(--ground);
+	}
+	.facet-modal {
+		block-size: 100%;
+	}
+	.facet-dialog {
+		display: flex;
+		flex-direction: column;
+		block-size: 100%;
+		outline: none;
+	}
+	/* The heading and the dialog's own quick exit share one row, the exit at the end as in the
+	   header. */
+	.facet-dialog-header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem 1rem;
+		padding: 0.5rem 1rem;
+		border-block-end: 1px solid var(--border);
+	}
+	.facet-dialog-title {
+		font-size: 1.25rem;
+	}
+	.facet-dialog-body {
+		flex: 1;
+		min-block-size: 0;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		padding-inline: 1rem;
+	}
+	.facet-dialog-footer {
+		padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+		border-block-start: 1px solid var(--border);
+		background: var(--surface);
 	}
 }

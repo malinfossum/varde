@@ -28,10 +28,16 @@ export function AnnouncerProvider({ children }: { children: ReactNode }) {
 	return (
 		<AnnouncerContext.Provider value={announce}>
 			{children}
-			{/* The app's single aria-live region — every async announcement funnels here. */}
+			{/* The app's single aria-live region: every async announcement funnels here. */}
 			{/* `top-0`: without it this absolute 1 px box sits after the `min-h-dvh` shell and adds 1 px of
 			    scroll to every page (the landing fit test catches it). */}
-			<div aria-live="polite" className="visually-hidden top-0">
+			{/* data-live-announcer="true" keeps this region audible while a react-aria Modal or an
+			    open ComboBox hides the rest of the page (ariaHideOutside). Its first pass skips
+			    any element with the attribute, but its MutationObserver checks for the value
+			    "true", so the value matters (react-aria/dist/private/overlays/ariaHideOutside.mjs).
+			    That is how the filter dialog's count announcement stays audible without a second
+			    region inside the dialog (filter spec, FacetPanel). */}
+			<div aria-live="polite" data-live-announcer="true" className="visually-hidden top-0">
 				{message}
 			</div>
 		</AnnouncerContext.Provider>

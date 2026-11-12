@@ -1,4 +1,5 @@
 import { act, render, screen } from "@testing-library/react"
+import { Dialog, Modal, ModalOverlay } from "react-aria-components"
 import { expect, test, vi } from "vitest"
 import { AnnouncerProvider, useAnnounce } from "../src/components/StatusRegion.tsx"
 
@@ -60,4 +61,29 @@ test("the compose window is anchored to the first message, not extended by each 
 	expect(region.textContent).not.toContain("A")
 	expect(region.textContent).not.toContain("B")
 	vi.useRealTimers()
+})
+
+// aria-hidden in jsdom, inert in a browser: react-aria's Modal uses whichever the platform has.
+function hiddenFromScreenReaders(el: Element | null): boolean {
+	for (let node = el; node; node = node.parentElement) {
+		if (node.getAttribute("aria-hidden") === "true" || (node as HTMLElement).inert) return true
+	}
+	return false
+}
+
+test("an open modal leaves the status region audible", async () => {
+	render(
+		<AnnouncerProvider>
+			<p>Bak dialogen</p>
+			<ModalOverlay isOpen>
+				<Modal>
+					<Dialog aria-label="Prøve">Innhold</Dialog>
+				</Modal>
+			</ModalOverlay>
+		</AnnouncerProvider>
+	)
+	await screen.findByRole("dialog")
+	// The control: the modal did hide what sits outside it.
+	expect(hiddenFromScreenReaders(screen.getByText("Bak dialogen"))).toBe(true)
+	expect(hiddenFromScreenReaders(document.querySelector("[aria-live]"))).toBe(false)
 })

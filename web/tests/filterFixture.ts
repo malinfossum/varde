@@ -1,3 +1,4 @@
+import type { Catalog } from "../src/services/data.ts"
 import { EMPTY_FILTERS, type Filters } from "../src/services/filters.ts"
 import type { CategoryDto, MunicipalityDto } from "../src/types/api.ts"
 import { makeResource } from "./stubData.ts"
@@ -60,3 +61,15 @@ export const nationalRus = makeResource({
 export const rows = [hamarRus, ringsakerBolig, osloRusLavterskel, sharedKrisesenter, nationalRus]
 
 export const f = (over: Partial<Filters> = {}): Filters => ({ ...EMPTY_FILTERS, ...over })
+
+// The catalog the component tests share: today's two fylker and the three kommuner above.
+export const catalog: Catalog = {
+	municipalities: places,
+	categories: [],
+	kommuner: [],
+	counties: [
+		{ number: "03", name: "Oslo" },
+		{ number: "34", name: "Innlandet" },
+	],
+	aliases: [],
+}

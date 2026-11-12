@@ -69,7 +69,7 @@ export function LandingPage({ arrival }: { arrival: number }) {
 					<ul
 						// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
 						role="list"
-						className="chip-grid grid grid-cols-2 gap-2 md:grid-cols-4"
+						className="chip-grid grid gap-2 md:grid-cols-4"
 					>
 						{GRID_SLUGS.map((slug) => (
 							<li key={slug}>
@@ -104,13 +104,13 @@ export function LandingPage({ arrival }: { arrival: number }) {
 						<ul
 							// biome-ignore lint/a11y/noRedundantRoles: VoiceOver drops it when list-style is none
 							role="list"
-							className="mt-3 grid auto-rows-fr grid-cols-2 gap-3 lg:mt-2 lg:grid-cols-1 lg:gap-2 lg:self-start"
+							className="emergency-grid mt-3 grid auto-rows-fr gap-3 lg:mt-2 lg:grid-cols-1 lg:gap-2 lg:self-start"
 						>
 							{emergencyLines.map((line) => (
 								<li key={line.id}>
 									<a
 										href={telHref(line.phone)}
-										className="btn-primary h-full w-full flex-wrap gap-x-2 gap-y-0 px-2 py-[calc(0.375rem-1px)] text-center text-lg lg:text-base"
+										className="btn-primary h-full w-full flex-wrap wrap-anywhere gap-x-2 gap-y-0 px-2 py-[calc(0.375rem-1px)] text-center text-lg lg:text-base"
 									>
 										<span className="whitespace-nowrap">{line.phone}</span>{" "}
 										<span className="text-base font-normal text-balance lg:text-sm">

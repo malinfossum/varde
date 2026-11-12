@@ -26,7 +26,7 @@ export function AboutPage({ arrival }: { arrival: number }) {
 	const { ref } = useArrivalFocus<HTMLHeadingElement>(arrival, true)
 	const [beforeAddress, afterAddress] = t("about.reportBody").split("{address}")
 	return (
-		<article className="about mx-auto grid max-w-prose gap-6">
+		<article className="about mx-auto grid max-w-prose gap-6 wrap-anywhere">
 			<PageHead title={t("about.pageTitle")} description={t("about.description")} path="/om" />
 			<h1 ref={ref} tabIndex={-1} className="text-4xl">
 				{t("about.heading")}

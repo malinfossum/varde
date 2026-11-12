@@ -26,7 +26,7 @@ import { ArrivalContext, HistoryEventsContext, NavigationContext } from "./navig
 import type { Filters } from "./services/filters.ts"
 import type { Route } from "./services/urlState.ts"
 
-// ListPage and ResourceDetail pull in react-aria-components (the municipality combobox)
+// ListPage and ResourceDetail pull in react-aria-components (the Sted field, the chips and the filter dialog)
 // and the card/detail layout, none of which the landing page needs to paint its first frame.
 // Splitting them into their own chunks keeps "/" small; the Suspense fallback below only
 // shows while that chunk is still downloading, which in practice is a route change, not the
@@ -81,7 +81,7 @@ function Shell({ route, filters, arrival }: { route: Route; filters: Filters; ar
 			<Header theme={theme} atLanding={route.kind === "landing"} />
 			<main
 				id="main"
-				className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 ${route.kind === "landing" ? "lg:py-3" : ""}`}
+				className={`mx-auto w-full page-width flex-1 px-4 py-6 ${route.kind === "landing" ? "lg:py-3" : ""}`}
 			>
 				<Page route={route} filters={filters} arrival={arrival} />
 			</main>

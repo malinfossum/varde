@@ -110,8 +110,10 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 		resource.openingHours || resource.address || resource.website || resource.costNote
 	)
 
+	// One service has no columns to add, so the page keeps the width it had before the wide steps
+	// (70rem, main's old 72rem less its padding) and centres in the wider shell from 1600 px.
 	return (
-		<div className="grid gap-6">
+		<div className="mx-auto grid w-full max-w-[70rem] gap-6">
 			<PageHead
 				title={serviceTitle(resource)}
 				description={metaDescription(resource.description)}
@@ -134,8 +136,9 @@ export function ResourceDetail({ id, arrival = 0 }: { id: number; arrival?: numb
 				</Link>
 			)}
 			{/* Everything about the service sits in this one card (spec: the detail page as one
-			    card). DOM order is the reading and focus order at every width. */}
-			<article className="detail-card grid gap-6 rounded-xl border border-border bg-surface p-5 md:p-8">
+			    card). DOM order is the reading and focus order at every width. The phone padding stops
+			    at 20 px so that at 200 % text the extra room goes to the text, not the padding. */}
+			<article className="detail-card grid gap-6 rounded-xl wrap-anywhere border border-border bg-surface p-[min(1.25rem,20px)] md:p-8">
 				<header className="detail-head">
 					<div className="detail-title grid min-w-0 gap-3">
 						<h1 ref={heading} tabIndex={-1} className="text-3xl wrap-anywhere md:text-5xl">

@@ -13,13 +13,16 @@ export function SearchBar({
 	return (
 		<search>
 			<form onSubmit={(event) => event.preventDefault()}>
-				<label htmlFor={id}>{t("search.label")}</label>
+				<label htmlFor={id} className="field-label">
+					{t("search.label")}
+				</label>
 				<input
 					id={id}
 					type="search"
 					value={value}
 					onChange={(event) => onChange(event.target.value)}
 					autoComplete="off"
+					className="search-input"
 				/>
 			</form>
 		</search>

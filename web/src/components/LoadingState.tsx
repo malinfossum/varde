@@ -22,7 +22,7 @@ export function LoadingState() {
 			    scale as the ready-state heading below reserves the same line of vertical space
 			    that heading occupies once results arrive, instead of collapsing to nothing. */}
 			<h1 className="text-lg leading-snug">{t("status.loading")}</h1>
-			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+			<div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2 xl:grid-cols-3 min-[100rem]:grid-cols-4">
 				{placeholders.map((n) => (
 					<div
 						key={n}

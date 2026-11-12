@@ -24,13 +24,17 @@ public static partial class SeedDocs
     /// <summary>The lavterskel reconcile doc: one row per category 10 row, with its Topic and Referral quote.</summary>
     public const string Reconcile = "docs/seed-data-lavterskel-reconcile.md";
 
+    /// <summary>The lavterskel badge audit doc: rows whose badge rested on an umbrella or wider-body quote.</summary>
+    public const string Audit = "docs/seed-data-lavterskel-audit.md";
+
     /// <summary>
     /// Docs that re-settle rows an earlier doc in WithReferralQuotes already lists. Their Referral
     /// quote cell replaces the earlier one, an empty cell included. A doc joins this list in the
     /// task that seeds its rows, never earlier. The reconcile doc joined in the task that seeded it
-    /// (gate closed 03.11.2026).
+    /// (gate closed 03.11.2026). The badge audit comes last, so it wins over the reconcile doc for
+    /// rows 305 and 335 (gate closed 10.11.2026).
     /// </summary>
-    public static readonly string[] Overrides = [Reconcile];
+    public static readonly string[] Overrides = [Reconcile, Audit];
 
     /// <summary>
     /// The categories a category 10 row may carry as its topic: every category except

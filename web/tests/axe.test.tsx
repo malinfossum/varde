@@ -59,6 +59,7 @@ const options = { rules: { "color-contrast": { enabled: false } } }
 const pages: [string, string, Mode, RegExp][] = [
 	["landing", "/", "ok", /Noen å snakke med/],
 	["results", "/sok", "ok", /treff/],
+	["filtered", "/sok?municipality=3403&category=nodtjenester", "ok", /treff/],
 	["empty", "/sok?search=zzz", "empty", /Ingen treff/],
 	["error", "/sok", "error", /Noe gikk galt/],
 	["detail", "/resources/12", "ok", /Krisesenteret i Hamar/],

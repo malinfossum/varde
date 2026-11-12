@@ -64,6 +64,18 @@ namespace Varde.Data.Seed;
 /// docs/seed-data-acute-recheck.md, checked in docs/verification/seed-data-acute-recheck-check.md.
 /// All 16 rows carry VerifiedAcuteRecheck.
 ///
+/// The lavterskel badge audit (10.11.2026) re-read the nine badged rows whose quote came from an
+/// umbrella intro, a wider body or a "fra lege" sentence: docs/seed-data-lavterskel-audit.md,
+/// checked in docs/verification/seed-data-lavterskel-audit-check.md. It turns the badge off on
+/// rows 17, 18, 305 and 335, gives rows 17 and 18 their new address, and rewrites row 17's
+/// description and cost note from the unit's own page. That doc overrides the referral quote of
+/// its rows. It read only some fields, so LastVerified does not move.
+///
+/// Two of its follow-ups (10.11.2026): row 17's Website now points to the Housing First page, and
+/// row 225's description no longer says no referral is needed (the akuttplass needs a vedtak):
+/// docs/seed-data-audit-follow-ups.md, checked in docs/verification/seed-data-audit-follow-ups-check.md.
+/// It read only those fields, so LastVerified does not move.
+///
 /// LastVerified moves only when a pass re-reads every seeded field of a row (04.11.2026). The C1
 /// re-read and the lavterskel reconcile read only some fields, so their rows keep the date of
 /// their last full read.
@@ -85,6 +97,11 @@ public static class SeedData
     // 2026-11-04) re-read every seeded field of every acute row, so all 16 carry this date,
     // changed or not.
     private static readonly DateOnly VerifiedAcuteRecheck = new(2026, 11, 4);
+
+    // Row 211 (Nav Stovner) got a full re-read on 2026-11-09, the day its temporary "Kun
+    // timeavtale" notice ended (docs/seed-data-lavterskel-retag.md, Verify item 24). Every
+    // seeded field still matched the office page.
+    private static readonly DateOnly VerifiedRow211 = new(2026, 11, 9);
 
     // Municipality ids — county = Innlandet for 1-7, Oslo for 8.
     private const int Hamar = 1;
@@ -332,11 +349,11 @@ public static class SeedData
             {
                 Id = 17,
                 Name = "Housing First, Lillehammer kommune",
-                IsLowThreshold = true,
                 Cost = ResourceCost.Free,
                 MunicipalityId = Lillehammer,
+                Address = "Industrigata 17, 3. etg., 2619 Lillehammer",
                 Phone = "451 64 131",
-                Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/",
+                Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/housing-first/",
                 LastVerified = Verified,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
@@ -345,9 +362,9 @@ public static class SeedData
             {
                 Id = 18,
                 Name = "Oppfølgingsteamet, Lillehammer kommune",
-                IsLowThreshold = true,
                 Cost = ResourceCost.Free,
                 MunicipalityId = Lillehammer,
+                Address = "Industrigata 17, 3. etg., 2619 Lillehammer",
                 Phone = "902 43 733",
                 Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/",
                 LastVerified = Verified,
@@ -867,7 +884,7 @@ public static class SeedData
                 Address = "Stovner Senter 17, 0985 Oslo",
                 Phone = "55 55 33 33",
                 Website = "https://www.nav.no",
-                LastVerified = Verified,
+                LastVerified = VerifiedRow211,
                 CreatedAt = SeededAt,
                 UpdatedAt = SeededAt,
             },
@@ -1430,7 +1447,6 @@ public static class SeedData
             {
                 Id = 305,
                 Name = "Evangeliesenteret kontaktsenter Hamar",
-                IsLowThreshold = true,
                 MunicipalityId = Hamar,
                 Address = "Torggata 71, Hamar",
                 Phone = "21 00 49 00",
@@ -1799,7 +1815,6 @@ public static class SeedData
             {
                 Id = 335,
                 Name = "Stangehjelpa aktivitetshus",
-                IsLowThreshold = true,
                 MunicipalityId = Stange,
                 Address = "Skolegata 13, 2335 Stange",
                 Phone = "911 65 956",
@@ -2235,18 +2250,18 @@ public static class SeedData
                 Id = 33,
                 ResourceId = 17,
                 LanguageCode = "nb",
-                Description = "Tilbud til bostedsløse med rus- eller psykiske helseutfordringer, der du først får en varig bolig og deretter oppfølging der du bor. Målet er en stabil bosituasjon uten krav om rusfrihet på forhånd.",
+                Description = "Støtte til å mestre eget boforhold for deg som er fylt 18 år og har langvarige utfordringer knyttet til rus og/eller psykisk lidelse. Teamet følger deg opp enten du bor i kommunal bolig, leier privat eller eier egen bolig. Teamet disponerer ikke boliger og tildeler ikke kommunale boliger. Søker du kommunal bolig, kan du skrive i søknaden at du ønsker vurdering av deltakelse i Housing First. Ta kontakt for en informasjonssamtale før du søker. Skal du delta, får du et vedtak.",
                 OpeningHours = "Hverdager 09:00–15:00",
-                CostNote = "Våre tjenester er gratis.",
+                CostNote = "Tilbudet er gratis.",
             },
             new ResourceTranslation
             {
                 Id = 34,
                 ResourceId = 17,
                 LanguageCode = "en",
-                Description = "A service for homeless people with substance use or mental health difficulties, where you first get permanent housing and then receive support where you live. The aim is a stable home without requiring sobriety first.",
+                Description = "Support to manage your own home for people aged 18 or over with long-term difficulties related to substance use and/or mental illness. The team follows you up whether you live in municipal housing, rent privately or own your home. The team does not hold or allocate municipal housing. If you apply for municipal housing, you can write in the application that you want to be assessed for Housing First. Get in touch for an information talk before you apply. If you join, you get a formal decision (vedtak).",
                 OpeningHours = "Weekdays 09:00–15:00",
-                CostNote = "Our services are free.",
+                CostNote = "The service is free.",
             },
             new ResourceTranslation
             {
@@ -3092,7 +3107,7 @@ public static class SeedData
                 Id = 137,
                 ResourceId = 225,
                 LanguageCode = "nb",
-                Description = "Lavterskeltilbud med helse- og sosialtjenester for deg med rusutfordringer, med brukerrom, feltpleie, lege og akutt overnatting. Du trenger ikke henvisning for å komme.",
+                Description = "Lavterskeltilbud med helse- og sosialtjenester for deg med rusutfordringer, med brukerrom, feltpleie, lege og akutt overnatting. Feltpleien har gratis drop-in helsetjenester. For en akuttplass trenger du et vedtak: på hverdager kl. 09:00–15:00 kontakter du bydelen din, ellers Oslo legevakt eller psykososial akuttjeneste.",
                 OpeningHours = "Brukerrom mandag–søndag 09:00–22:00. Feltpleie mandag–fredag 09:00–22:00, lørdag–søndag 10:00–20:00",
             },
             new ResourceTranslation
@@ -3100,7 +3115,7 @@ public static class SeedData
                 Id = 138,
                 ResourceId = 225,
                 LanguageCode = "en",
-                Description = "A low-threshold centre with health and social services for people with substance use difficulties, offering a drug consumption room, field nursing, a doctor and emergency overnight accommodation. No referral is needed.",
+                Description = "A low-threshold centre with health and social services for people with substance use difficulties, offering a drug consumption room, field nursing, a doctor and emergency overnight accommodation. Field nursing offers free drop-in health services. An emergency bed needs a formal decision (vedtak): on weekdays 09:00–15:00 contact your district (bydel), at other times Oslo legevakt or the psychosocial emergency service.",
                 OpeningHours = "Consumption room Monday–Sunday 09:00–22:00. Field nursing Monday–Friday 09:00–22:00, Saturday–Sunday 10:00–20:00",
             },
             new ResourceTranslation

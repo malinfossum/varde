@@ -17,7 +17,7 @@ namespace Varde.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.13")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -660,25 +660,27 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 17,
+                            Address = "Industrigata 17, 3. etg., 2619 Lillehammer",
                             Cost = 1,
                             CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsAlwaysOpen = false,
-                            IsLowThreshold = true,
+                            IsLowThreshold = false,
                             IsNational = false,
                             LastVerified = new DateOnly(2026, 8, 13),
                             MunicipalityId = 2,
                             Name = "Housing First, Lillehammer kommune",
                             Phone = "451 64 131",
                             UpdatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/"
+                            Website = "https://lillehammer.kommune.no/helse-og-velferd/psykisk-helse-og-rus/housing-first/"
                         },
                         new
                         {
                             Id = 18,
+                            Address = "Industrigata 17, 3. etg., 2619 Lillehammer",
                             Cost = 1,
                             CreatedAt = new DateTime(2026, 8, 17, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsAlwaysOpen = false,
-                            IsLowThreshold = true,
+                            IsLowThreshold = false,
                             IsNational = false,
                             LastVerified = new DateOnly(2026, 8, 13),
                             MunicipalityId = 2,
@@ -1271,7 +1273,7 @@ namespace Varde.Data.Migrations
                             IsAlwaysOpen = false,
                             IsLowThreshold = false,
                             IsNational = false,
-                            LastVerified = new DateOnly(2026, 8, 13),
+                            LastVerified = new DateOnly(2026, 11, 9),
                             MunicipalityId = 8,
                             Name = "Nav Stovner",
                             Phone = "55 55 33 33",
@@ -1897,7 +1899,7 @@ namespace Varde.Data.Migrations
                             CreatedAt = new DateTime(2026, 10, 27, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "post@evangeliesenteret.no",
                             IsAlwaysOpen = false,
-                            IsLowThreshold = true,
+                            IsLowThreshold = false,
                             IsNational = false,
                             LastVerified = new DateOnly(2026, 10, 27),
                             MunicipalityId = 1,
@@ -2339,7 +2341,7 @@ namespace Varde.Data.Migrations
                             Address = "Skolegata 13, 2335 Stange",
                             CreatedAt = new DateTime(2026, 10, 27, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsAlwaysOpen = false,
-                            IsLowThreshold = true,
+                            IsLowThreshold = false,
                             IsNational = false,
                             LastVerified = new DateOnly(2026, 10, 27),
                             MunicipalityId = 5,
@@ -4364,8 +4366,8 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 33,
-                            CostNote = "Våre tjenester er gratis.",
-                            Description = "Tilbud til bostedsløse med rus- eller psykiske helseutfordringer, der du først får en varig bolig og deretter oppfølging der du bor. Målet er en stabil bosituasjon uten krav om rusfrihet på forhånd.",
+                            CostNote = "Tilbudet er gratis.",
+                            Description = "Støtte til å mestre eget boforhold for deg som er fylt 18 år og har langvarige utfordringer knyttet til rus og/eller psykisk lidelse. Teamet følger deg opp enten du bor i kommunal bolig, leier privat eller eier egen bolig. Teamet disponerer ikke boliger og tildeler ikke kommunale boliger. Søker du kommunal bolig, kan du skrive i søknaden at du ønsker vurdering av deltakelse i Housing First. Ta kontakt for en informasjonssamtale før du søker. Skal du delta, får du et vedtak.",
                             LanguageCode = "nb",
                             OpeningHours = "Hverdager 09:00–15:00",
                             ResourceId = 17
@@ -4373,8 +4375,8 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 34,
-                            CostNote = "Our services are free.",
-                            Description = "A service for homeless people with substance use or mental health difficulties, where you first get permanent housing and then receive support where you live. The aim is a stable home without requiring sobriety first.",
+                            CostNote = "The service is free.",
+                            Description = "Support to manage your own home for people aged 18 or over with long-term difficulties related to substance use and/or mental illness. The team follows you up whether you live in municipal housing, rent privately or own your home. The team does not hold or allocate municipal housing. If you apply for municipal housing, you can write in the application that you want to be assessed for Housing First. Get in touch for an information talk before you apply. If you join, you get a formal decision (vedtak).",
                             LanguageCode = "en",
                             OpeningHours = "Weekdays 09:00–15:00",
                             ResourceId = 17
@@ -5216,7 +5218,7 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 137,
-                            Description = "Lavterskeltilbud med helse- og sosialtjenester for deg med rusutfordringer, med brukerrom, feltpleie, lege og akutt overnatting. Du trenger ikke henvisning for å komme.",
+                            Description = "Lavterskeltilbud med helse- og sosialtjenester for deg med rusutfordringer, med brukerrom, feltpleie, lege og akutt overnatting. Feltpleien har gratis drop-in helsetjenester. For en akuttplass trenger du et vedtak: på hverdager kl. 09:00–15:00 kontakter du bydelen din, ellers Oslo legevakt eller psykososial akuttjeneste.",
                             LanguageCode = "nb",
                             OpeningHours = "Brukerrom mandag–søndag 09:00–22:00. Feltpleie mandag–fredag 09:00–22:00, lørdag–søndag 10:00–20:00",
                             ResourceId = 225
@@ -5224,7 +5226,7 @@ namespace Varde.Data.Migrations
                         new
                         {
                             Id = 138,
-                            Description = "A low-threshold centre with health and social services for people with substance use difficulties, offering a drug consumption room, field nursing, a doctor and emergency overnight accommodation. No referral is needed.",
+                            Description = "A low-threshold centre with health and social services for people with substance use difficulties, offering a drug consumption room, field nursing, a doctor and emergency overnight accommodation. Field nursing offers free drop-in health services. An emergency bed needs a formal decision (vedtak): on weekdays 09:00–15:00 contact your district (bydel), at other times Oslo legevakt or the psychosocial emergency service.",
                             LanguageCode = "en",
                             OpeningHours = "Consumption room Monday–Sunday 09:00–22:00. Field nursing Monday–Friday 09:00–22:00, Saturday–Sunday 10:00–20:00",
                             ResourceId = 225

@@ -235,7 +235,7 @@ test("Forward onto a /sok entry with zero results moves focus to the empty state
 	const [, forward] = screen.getAllByRole("button", { name: "Fremover" })
 	if (!forward) throw new Error("missing Forward button")
 	// Only national services: a pushed entry on the same route with no results.
-	fireEvent.click(screen.getByRole("button", { name: "Nasjonale tjenester" }))
+	fireEvent.click(screen.getByRole("radio", { name: /^Bare nasjonale/ }))
 	await screen.findByRole("heading", { level: 1, name: "Ingen treff" })
 	act(() => window.history.back())
 	await screen.findByRole("heading", { level: 1, name: "1 treff" })
