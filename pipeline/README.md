@@ -35,17 +35,21 @@ when no verify or review is running. `verify --nklm-fetch` downloads NKLM's lege
 file only when its hash matches an edition the licence covers; any other file stops the NKLM
 step until I record the licence in `docs/licence-requests/README.md`. `--nklm-file` names a
 file I downloaded myself and goes through the same hash check. `verify` also takes `--dry-run`,
-which reads and counts and writes nothing.
+which reads and counts and writes nothing to `--data`. With `--nklm-fetch` it still saves the
+NKLM file in the cache. Both commands take `--cache <dir>` (default `.cache/` at the repo root)
+for discover's and extract's output, and `review --kommune 3405` walks one kommune only.
 
 `data:check` accepts a value I edited when the curated file holds a matching `edit` decision, and
 it grounds every value the same way the grounding gate does (a website by its source page, hours
 by their quote). An answer settles a Lavterskel question only when the rule itself is unsure: if
 the rule gives an automatic yes or no that the value contradicts, the item stays in review.
+When such an item is in review, `r` (drop the field) is the only answer that overrules the rule.
 
 ## Review
 
 `review` shows each open item with its quote, its source link and host, and the gate's reason.
-Each answer is a key and Enter, written to the curated file at once (check it with `git diff`):
+Each answer is a key and Enter, written to the curated file at once (if the data folder is in
+git, check it with `git diff`):
 
 | Key | Does |
 |---|---|
@@ -54,6 +58,10 @@ Each answer is a key and Enter, written to the curated file at once (check it wi
 | e | type my own value (and a role for a phone); it gets the checks verify runs first |
 | s | skip, ask again next time |
 | q or Ctrl+C | quit; every earlier answer is already saved |
+
+A value I type that a check drops is refused with the reason. One the validity gate only doubts
+(an address Kartverket does not know, a URL that does not answer 200) shows the reason and is
+saved only when I type `keep`; typing a new value checks that one instead.
 
 A mobile with no role offers no `a`: the safety gate passes it only with a role, so only `e`
 (with a role) or `r` settles it. For "include this unit?" the keys are y (then pick categories)
@@ -75,10 +83,10 @@ Terminal, or start it as `winpty npm run review -- --data <dir>`.
 `--only` that matches no kommune stops `discover` before it writes anything, and a `fetch`
 selection with no pages exits with code 2 and leaves `pages/report.json` as it was.
 `discover` and `fetch` take `--dry-run` (read and report, write nothing) and `--cache <dir>`
-(default `.cache/` at the repo root); `extract` and `recall-report` take `--cache <dir>` too, and `extract` also takes `--dry-run`. `discover`
-also takes `--date YYYY-MM-DD` (the day KLASS codes are read for). `fetch` takes `--limit N`
-(at most N pages per kommune, and per national source) and `--national`, which adds Nav
-offices and catalogue findings.
+(default `.cache/` at the repo root); `extract` and `recall-report` take `--cache <dir>` too,
+and `extract` also takes `--dry-run`. `discover` also takes `--date YYYY-MM-DD` (the day KLASS
+codes are read for). `fetch` takes `--limit N` (at most N pages per kommune, and per national
+source) and `--national`, which adds Nav offices and catalogue findings.
 
 ## How it fetches
 
@@ -109,7 +117,9 @@ offices and catalogue findings.
 - Commands print counts, hosts, kommune numbers and reasons. Never page text, unit names,
   org numbers, phone numbers or URLs; URL lists go to report files in the cache folder.
 - A role mobile keeps two quotes only, the role word and the number. Every other quote has its
-  possible names replaced by `[navn]` before it is stored. Names are never stored.
+  possible names replaced by `[navn]` before it is stored. A value is stored as the page writes
+  it, so a name that is part of a value stays: a street named after a person, or an hours line
+  that opens with a given name.
 - Extraction files (`<cache>/extract/`) hold page lines: cache only, never printed, never committed.
 - Text I type in review (a reason, a role, an edited value) is public once the curated file is
   committed. Review warns me about a possible person name before it saves one.
