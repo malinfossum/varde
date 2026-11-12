@@ -1,8 +1,10 @@
 import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import {
+	brregRecordUrl,
 	kommuneSites,
 	kommuneSitesQuery,
+	kommuneSwitchboards,
 	namedQuery,
 	parseBrregPage,
 	readBrreg,
@@ -120,5 +122,33 @@ describe("readBrreg", () => {
 			complete: true,
 			skipped: 0,
 		})
+	})
+})
+
+describe("the kommune switchboard", () => {
+	it("reads telefon from the kommune's own record only, never mobil", () => {
+		const page = parseBrregPage(fixture("komm.json"), "enheter")
+		const units = page?.units ?? []
+		expect(units.find((u) => u.kommune === "3405")?.switchboard).toBe("62 00 00 00")
+		expect(JSON.stringify(units)).not.toContain("900 00 001")
+		expect([...kommuneSwitchboards(units)]).toEqual([
+			["3405", { phone: "62 00 00 00", orgNumber: "999999981" }],
+		])
+	})
+
+	it("refuses a mobile-shaped switchboard", () => {
+		const units = parseBrregPage(fixture("komm.json"), "enheter")?.units ?? []
+		expect(units.find((u) => u.kommune === "0301")?.switchboard).toBeUndefined()
+	})
+
+	it("still reads no telefon for any other unit", () => {
+		const page = parseBrregPage(fixture("units.json"), "underenheter")
+		expect(page?.units.every((u) => u.switchboard === undefined)).toBe(true)
+	})
+
+	it("points a record at Brreg's own API", () => {
+		expect(brregRecordUrl("enheter", "999999981")).toBe(
+			"https://data.brreg.no/enhetsregisteret/api/enheter/999999981"
+		)
 	})
 })

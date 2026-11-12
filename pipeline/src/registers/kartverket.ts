@@ -1,8 +1,7 @@
 import { z } from "zod"
 import type { AddressHit } from "../gates/types.ts"
 import type { Get } from "../net/crawler.ts"
-import { splitAddress } from "../text/address.ts"
-import { normaliseText } from "../text/normalise.ts"
+import { splitAddress, streetKey } from "../text/address.ts"
 import { readJson } from "./json.ts"
 
 // Kartverket's address API, CC BY 4.0. PR 3 uses findAddress to build GateContext.findAddress.
@@ -48,14 +47,15 @@ export function pickAddress(
 ): AddressHit | undefined {
 	const parts = splitAddress(wanted)
 	if (parts === undefined) return undefined
+	const wantedStreet = streetKey(parts.street)
 	const hits = records.filter(
 		(r) =>
-			normaliseText(r.text) === parts.street &&
+			streetKey(r.text) === wantedStreet &&
 			(parts.postcode === undefined || r.postcode === parts.postcode)
 	)
 	const [hit] = hits
 	if (hit === undefined || new Set(hits.map((h) => h.addressId)).size !== 1) return undefined
-	return { addressId: hit.addressId, kommune: hit.kommune }
+	return { addressId: hit.addressId, kommune: hit.kommune, text: hit.text }
 }
 
 export async function findAddress(
@@ -65,6 +65,8 @@ export async function findAddress(
 ): Promise<AddressHit | undefined> {
 	const parts = splitAddress(wanted)
 	if (parts === undefined) return undefined
-	const records = parseAddressSearch(await readJson(get, addressQuery(parts.street, kommune)))
+	const records = parseAddressSearch(
+		await readJson(get, addressQuery(streetKey(parts.street), kommune))
+	)
 	return records === undefined ? undefined : pickAddress(records, wanted)
 }

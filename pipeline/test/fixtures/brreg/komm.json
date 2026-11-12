@@ -11,7 +11,9 @@
 					"poststed": "LILLEHAMMER",
 					"kommunenummer": "3405"
 				},
-				"hjemmeside": "www.lillehammer.kommune.no/"
+				"hjemmeside": "www.lillehammer.kommune.no/",
+				"telefon": "62 00 00 00",
+				"mobil": "900 00 001"
 			},
 			{
 				"organisasjonsnummer": "999999982",
@@ -23,7 +25,8 @@
 					"poststed": "OSLO",
 					"kommunenummer": "0301"
 				},
-				"hjemmeside": "https://www.oslo.kommune.no"
+				"hjemmeside": "https://www.oslo.kommune.no",
+				"telefon": "900 00 002"
 			}
 		]
 	},

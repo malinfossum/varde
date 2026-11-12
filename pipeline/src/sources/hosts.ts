@@ -13,7 +13,7 @@ const register = (name: keyof typeof REGISTER_SOURCES): HostEntry => ({
 
 // The registers PR 2 reads and the catalogues discover uses as finders. Licences go by exact
 // host: frivilligsentral.no is the register, hamar.frivilligsentral.no is a sentral's own site.
-// NKLM and the Aim API (api.aimcms.no) are not fetched until their owners answer.
+// The Aim API (api.aimcms.no) is not fetched until Prokom answers.
 export const FIXED_HOSTS: readonly HostEntry[] = [
 	register("brreg"),
 	register("klass"),
@@ -21,6 +21,10 @@ export const FIXED_HOSTS: readonly HostEntry[] = [
 	// data.ssb.no/robots.txt redirects to www.ssb.no, so the crawler needs that host allowed.
 	{ host: "www.ssb.no", kind: "register", licence: "ccBy" },
 	register("nav"),
+	register("nklm"),
+	// NKLM's file link on nklm.norceresearch.no redirects to this host, which serves the xlsx.
+	// Exact host, so no other norceresearch.no subdomain is reachable.
+	{ host: "www.norceresearch.no", kind: "register", licence: REGISTER_SOURCES.nklm.licence },
 	// Finders only, until NKVTS and Norges Frivilligsentraler say yes.
 	{ host: "dinutvei.no", kind: "catalogue", licence: "pending" },
 	{ host: "frivilligsentral.no", kind: "catalogue", licence: "pending" },

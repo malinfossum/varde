@@ -110,6 +110,8 @@ describe("discover", () => {
 		const k = result.kommuner[0]
 		expect(k).toMatchObject({ kommune: "3405", name: "Lillehammer", brregComplete: true })
 		expect(k?.units.map((u) => u.orgNumber)).toEqual(["999999991"])
+		expect(k?.switchboard).toEqual({ phone: "62 00 00 00", orgNumber: "999999981" })
+		expect(JSON.stringify(k?.units)).not.toContain("switchboard")
 		expect(k?.pages).toEqual([
 			{ url: `${L}/helse/helsestasjonen/`, from: "sitemap", lastmod: "2026-11-02" },
 			{ url: "https://www.lillehammer.kommune.no/helsestasjon/", from: "brreg" },

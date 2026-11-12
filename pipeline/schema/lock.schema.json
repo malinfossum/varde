@@ -76,6 +76,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -135,6 +146,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -229,6 +316,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -288,6 +386,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -382,6 +556,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -441,6 +626,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -535,6 +796,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -594,6 +866,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -688,6 +1036,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -747,6 +1106,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -841,6 +1276,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -900,6 +1346,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -994,6 +1516,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -1053,6 +1586,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -1147,6 +1756,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -1206,6 +1826,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -1300,6 +1996,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -1359,6 +2066,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -1453,6 +2236,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -1512,6 +2306,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -1606,6 +2476,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -1665,6 +2546,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -1759,6 +2716,17 @@
 										"type": "string",
 										"pattern": "\\S"
 									},
+									"origin": {
+										"type": "string",
+										"enum": [
+											"register",
+											"unitContact",
+											"unitPage",
+											"staffList",
+											"article",
+											"jsonLdAuthor"
+										]
+									},
 									"addressId": {
 										"type": "string",
 										"pattern": "\\S"
@@ -1818,6 +2786,82 @@
 												"required": [
 													"kind",
 													"quotes"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "decision"
+													},
+													"decidedOn": {
+														"type": "string",
+														"format": "date",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+													},
+													"original": {
+														"oneOf": [
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "register"
+																	},
+																	"register": {
+																		"type": "string",
+																		"enum": [
+																			"brreg",
+																			"nav",
+																			"klass",
+																			"nklm",
+																			"kartverket"
+																		]
+																	},
+																	"recordId": {
+																		"type": "string",
+																		"pattern": "\\S"
+																	}
+																},
+																"required": [
+																	"kind",
+																	"register",
+																	"recordId"
+																],
+																"additionalProperties": false
+															},
+															{
+																"type": "object",
+																"properties": {
+																	"kind": {
+																		"type": "string",
+																		"const": "quote"
+																	},
+																	"quotes": {
+																		"minItems": 1,
+																		"type": "array",
+																		"items": {
+																			"type": "string",
+																			"maxLength": 400,
+																			"pattern": "\\S"
+																		}
+																	}
+																},
+																"required": [
+																	"kind",
+																	"quotes"
+																],
+																"additionalProperties": false
+															}
+														]
+													}
+												},
+												"required": [
+													"kind",
+													"decidedOn",
+													"original"
 												],
 												"additionalProperties": false
 											}
@@ -1887,6 +2931,53 @@
 								"additionalProperties": false
 							}
 						},
+						"additionalProperties": false
+					},
+					"inclusion": {
+						"type": "object",
+						"properties": {
+							"status": {
+								"type": "string",
+								"enum": [
+									"auto",
+									"review"
+								]
+							},
+							"reason": {
+								"type": "string",
+								"pattern": "\\S"
+							},
+							"suggestedCategories": {
+								"type": "array",
+								"items": {
+									"type": "string",
+									"enum": [
+										"okonomi",
+										"bolig",
+										"psykisk-helse",
+										"rus",
+										"vold-og-overgrep",
+										"familie-og-barn",
+										"arbeid",
+										"juridisk-hjelp",
+										"nodtjenester",
+										"lavterskeltilbud"
+									]
+								}
+							},
+							"providerType": {
+								"type": "string",
+								"enum": [
+									"offentlig",
+									"frivillig"
+								]
+							}
+						},
+						"required": [
+							"status",
+							"reason",
+							"suggestedCategories"
+						],
 						"additionalProperties": false
 					}
 				},

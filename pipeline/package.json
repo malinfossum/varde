@@ -17,10 +17,14 @@
 		"key:freeze": "node src/cli/freeze-key.ts",
 		"discover": "node src/cli/discover.ts",
 		"fetch": "node src/cli/fetch.ts",
+		"extract": "node src/cli/extract.ts",
+		"verify": "node src/cli/verify.ts",
+		"review": "node src/cli/review.ts",
 		"recall-report": "node src/cli/recall-report.ts"
 	},
 	"dependencies": {
 		"cheerio": "1.2.0",
+		"fflate": "0.8.3",
 		"tldts": "7.4.26",
 		"zod": "4.6.7"
 	},

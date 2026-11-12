@@ -21,7 +21,7 @@ import {
 	type Transport,
 } from "./types.ts"
 
-export type Kind = "html" | "xml" | "json" | "text"
+export type Kind = "html" | "xml" | "json" | "text" | "binary"
 
 export const SKIP_REASONS = [
 	"notHttps",
@@ -56,6 +56,8 @@ export type Fetched = {
 	contentType: string
 	headers: Readonly<Record<string, string>>
 	body: string
+	// The raw body, for kind "binary" only; body is then "".
+	bytes?: Buffer
 	fetchedAt: string
 }
 export type NotFetched = {
@@ -76,6 +78,8 @@ const ACCEPT: Readonly<Record<Kind, string>> = {
 	xml: "application/xml,text/xml",
 	json: "application/json",
 	text: "text/plain,*/*",
+	binary:
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream",
 }
 
 const TYPE_FITS: Readonly<Record<Kind, (contentType: string, body: string) => boolean>> = {
@@ -84,6 +88,8 @@ const TYPE_FITS: Readonly<Record<Kind, (contentType: string, body: string) => bo
 	xml: (t, body) => /\bxml\b/i.test(t) || /^\s*<(?:\?xml|urlset|sitemapindex)\b/.test(body),
 	json: (t) => /\bjson\b/i.test(t),
 	text: () => true,
+	// A spreadsheet or a plain download; never a page that only looks like one.
+	binary: (t) => /spreadsheetml|octet-stream|application\/zip/i.test(t),
 }
 
 // One request at a time per server: www and the bare domain, and every subdomain of one
@@ -210,7 +216,7 @@ export class Crawler {
 		}
 		if (res.status !== 200) return skip("httpStatus", { status: res.status })
 		const contentType = res.headers["content-type"] ?? ""
-		const body = decodeText(res.body, contentType)
+		const body = kind === "binary" ? "" : decodeText(res.body, contentType)
 		if (!TYPE_FITS[kind](contentType, body)) {
 			return skip("wrongType", { status: res.status, contentType })
 		}
@@ -222,6 +228,7 @@ export class Crawler {
 			contentType,
 			headers: res.headers,
 			body,
+			...(kind === "binary" ? { bytes: res.body } : {}),
 			fetchedAt: isoSeconds(this.#clock.now()),
 		}
 	}

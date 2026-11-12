@@ -45,6 +45,11 @@ export const KommuneDiscovery = z.strictObject({
 	name: NonBlank,
 	discoveredAt: UtcTimestamp,
 	site: SiteSummary.optional(),
+	// The kommune's own switchboard from its Brreg record (rank 3 of the phone order). Optional,
+	// so a discovery file written before PR 3 still parses.
+	switchboard: z
+		.strictObject({ phone: NonBlank, orgNumber: z.string().regex(/^\d{9}$/) })
+		.optional(),
 	brregComplete: z.boolean(),
 	allSitemapUrls: z.array(z.string()),
 	units: z.array(DiscoveredUnit),

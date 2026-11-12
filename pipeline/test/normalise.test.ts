@@ -122,3 +122,37 @@ describe("quoteHasText", () => {
 		expect(quoteHasText("Storgata 12 og Storgata 1.", "Storgata 1")).toBe(true)
 	})
 })
+
+describe("quoteHasPhone: dot-grouped numbers", () => {
+	it("finds 2-2-2-2 and 3-2-3 dotted numbers", () => {
+		expect(quoteHasPhone("Telefon 62.00.00.00", "62 00 00 00")).toBe(true)
+		expect(quoteHasPhone("Telefon 620.00.000", "620 00 000")).toBe(true)
+	})
+
+	it("still blanks times and dates, so hours never glue onto a number", () => {
+		expect(quoteHasPhone("Åpent 08.00-15.30, tlf 62 00 00 00", "62 00 00 00")).toBe(true)
+		expect(quoteHasPhone("27.10.2026", "27102026")).toBe(false)
+		expect(quoteHasPhone("62.00.00", "620000")).toBe(false)
+	})
+
+	it("finishes on a 1 MB run of digits and dots well within a second", () => {
+		const started = performance.now()
+		quoteHasPhone("12.".repeat(350_000), "62 00 00 00")
+		expect(performance.now() - started).toBeLessThan(1000)
+	})
+
+	it("stays linear on a long run of single-digit groups", () => {
+		// 1,999 characters, then 1 MB: every group starts a new try at the number.
+		for (const groups of ["6 2 ".repeat(500).slice(0, 1999), "6 2 ".repeat(250_000)]) {
+			const started = performance.now()
+			expect(quoteHasPhone(groups, "62 00 00 00")).toBe(false)
+			expect(performance.now() - started).toBeLessThan(1000)
+		}
+	})
+})
+
+describe("quoteHasPhone: a time after a number", () => {
+	it("finds a number written before an opening time", () => {
+		expect(quoteHasPhone("Telefon 62 00 00 00 08.00-15.30", "62 00 00 00")).toBe(true)
+	})
+})

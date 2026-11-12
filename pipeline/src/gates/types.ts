@@ -1,14 +1,9 @@
 import type { CategorySlug, Cost, FieldName, FieldValue, GateName } from "../schema/common.ts"
-import type { Evidence, GateResult } from "../schema/lock.ts"
+import type { Evidence, GateResult, ORIGINS } from "../schema/lock.ts"
 
-// Where on a page (or in which register) a value was found. Adapters set it in PR 2.
-export type Origin =
-	| "register"
-	| "unitContact" // the unit's own contact block on its own page
-	| "unitPage" // elsewhere on the unit's own page
-	| "staffList"
-	| "article"
-	| "jsonLdAuthor"
+// Where on a page (or in which register) a value was found. Adapters set it in PR 2; each
+// origin is described above ORIGINS in schema/lock.ts.
+export type Origin = (typeof ORIGINS)[number]
 
 // nlod: open register data (NLOD 2.0). ccBy: CC BY 4.0 (Kartverket, KLASS), reused like nlod
 // with a credit line under "Kilder og lisenser". ownPage: the provider's own site. granted: a
@@ -26,12 +21,14 @@ export type Candidate = {
 	evidence: Evidence
 	origin: Origin
 	role?: string
-	// Used to redact quotes, never stored.
-	personName?: string
+	// Possible person names in the quotes (text/names.ts), used to redact them. Never stored.
+	// Required, so a candidate built without the name check does not compile.
+	personNames: readonly string[]
 	fetchedAt: string
 }
 
-export type AddressHit = { addressId: string; kommune: string }
+// text is Kartverket's own address text ("Storgata 1A"), the form verify stores.
+export type AddressHit = { addressId: string; kommune: string; text?: string }
 
 export type UnitFacts = {
 	categories: readonly CategorySlug[]

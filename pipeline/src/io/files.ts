@@ -29,7 +29,7 @@ export function readJsonDir(dir: string): JsonFile[] {
 
 // Writes to a temporary file beside the target and renames it into place, so a run that
 // stops halfway leaves the old file whole.
-export function writeFileAtomic(path: string, data: string): void {
+export function writeFileAtomic(path: string, data: string | Uint8Array): void {
 	mkdirSync(dirname(path), { recursive: true })
 	const temp = `${path}.${process.pid}.tmp`
 	writeFileSync(temp, data)

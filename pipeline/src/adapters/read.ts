@@ -1,6 +1,6 @@
 import { type CheerioAPI, load } from "cheerio/slim"
 import { siteHost } from "../text/normalise.ts"
-import { mainText } from "./clean.ts"
+import { type TextLine, textLines } from "./clean.ts"
 import { SITE_RULES } from "./siteRules.ts"
 import type { AdapterName, AdapterResult } from "./types.ts"
 
@@ -26,35 +26,42 @@ const CMS: readonly Cms[] = [
 	},
 ]
 
-const found = (adapter: AdapterName, text: string): AdapterResult => ({
-	adapter,
-	text,
-	origin: "unitPage",
-	fallback: false,
+export type PageRead = { result: AdapterResult; selector: string; lines: TextLine[] }
+
+const read = (
+	adapter: AdapterName,
+	selector: string,
+	lines: TextLine[],
+	fallback: boolean
+): PageRead => ({
+	result: { adapter, text: lines.map((l) => l.text).join("\n"), origin: "unitPage", fallback },
+	selector,
+	lines,
 })
 
-// Everything else falls back to <main>, marked, so PR 3 sends its values to review.
-const fallback = ($: CheerioAPI, url: string): AdapterResult => ({
-	adapter: "fallback",
-	text: mainText($, "main", url) ?? "",
-	origin: "unitPage",
-	fallback: true,
-})
+// Everything else falls back to <main>, marked, so PR 3 can tell its values apart.
+const fallback = ($: CheerioAPI, url: string): PageRead =>
+	read("fallback", "main", textLines($, "main", url) ?? [], true)
 
 // The page's main text, by the site rule for its host, else the first CMS adapter that knows
-// the page. A rule or adapter whose element is missing (a redesign) falls back, marked.
-export function readPage(html: string, url: string): AdapterResult {
+// the page. A rule or adapter whose element is missing (a redesign) falls back, marked. The
+// selector and the lines go to PR 3's page reader.
+export function readPageWith(html: string, url: string): PageRead {
 	const $ = load(html)
 	const host = siteHost(url)
 	const rule = SITE_RULES.find((r) => siteHost(`https://${r.host}/`) === host)
 	if (rule !== undefined) {
-		const text = mainText($, rule.selector, url)
-		return text === undefined ? fallback($, url) : found("siteRule", text)
+		const lines = textLines($, rule.selector, url)
+		return lines === undefined ? fallback($, url) : read("siteRule", rule.selector, lines, false)
 	}
 	const cms = CMS.find((c) => c.detect(html, $))
 	for (const selector of cms?.selectors ?? []) {
-		const text = mainText($, selector, url)
-		if (text !== undefined && cms !== undefined) return found(cms.name, text)
+		const lines = textLines($, selector, url)
+		if (lines !== undefined && cms !== undefined) return read(cms.name, selector, lines, false)
 	}
 	return fallback($, url)
+}
+
+export function readPage(html: string, url: string): AdapterResult {
+	return readPageWith(html, url).result
 }

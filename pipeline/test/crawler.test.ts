@@ -611,3 +611,29 @@ describe("crawler: failures and refusals", () => {
 		})
 	})
 })
+
+describe("crawler: binary", () => {
+	it("keeps a binary body as bytes, untouched by text decoding", async () => {
+		const zipStart = Buffer.from([0x50, 0x4b, 0x03, 0x04, 0xff, 0xfe])
+		const { crawler } = setup({
+			[`${A}/fil.xlsx`]: {
+				status: 200,
+				headers: {
+					"content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+				},
+				body: zipStart,
+			},
+		})
+		const res = await crawler.get(`${A}/fil.xlsx`, "binary")
+		expect(res.ok && res.bytes).toEqual(zipStart)
+		expect(res.ok && res.body).toBe("")
+	})
+
+	it("refuses an HTML page asked for as binary", async () => {
+		const { crawler } = setup({ [`${A}/fil.xlsx`]: html("<p>Fant ikke</p>") })
+		expect(await crawler.get(`${A}/fil.xlsx`, "binary")).toMatchObject({
+			ok: false,
+			reason: "wrongType",
+		})
+	})
+})

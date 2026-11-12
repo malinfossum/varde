@@ -1,5 +1,8 @@
 import { z } from "zod"
 import {
+	CalendarDate,
+	CategorySlug,
+	Cost,
 	FIELD_NAMES,
 	FieldName,
 	FieldValue,
@@ -9,6 +12,7 @@ import {
 	KommuneNumber,
 	MAX_QUOTE,
 	NonBlank,
+	ProviderType,
 	REGISTERS,
 	Register,
 	UtcTimestamp,
@@ -16,15 +20,35 @@ import {
 } from "./common.ts"
 import { UnitId } from "./ids.ts"
 
+export const RegisterEvidence = z.strictObject({
+	kind: z.literal("register"),
+	register: Register,
+	recordId: NonBlank,
+})
+export const QuoteEvidence = z.strictObject({
+	kind: z.literal("quote"),
+	quotes: z.array(NonBlank.max(MAX_QUOTE)).min(1),
+})
+// My answer in review. It keeps the evidence the page or register gave, so safety and redaction
+// still read the page's quotes, and a register value I reviewed keeps its record id.
+export const DecisionEvidence = z.strictObject({
+	kind: z.literal("decision"),
+	decidedOn: CalendarDate,
+	original: z.discriminatedUnion("kind", [RegisterEvidence, QuoteEvidence]),
+})
 export const Evidence = z.discriminatedUnion("kind", [
-	z.strictObject({
-		kind: z.literal("register"),
-		register: Register,
-		recordId: NonBlank,
-	}),
-	z.strictObject({ kind: z.literal("quote"), quotes: z.array(NonBlank.max(MAX_QUOTE)).min(1) }),
+	RegisterEvidence,
+	QuoteEvidence,
+	DecisionEvidence,
 ])
 export type Evidence = z.infer<typeof Evidence>
+
+// The page quotes behind a value: a quote's own, a decision's original ones, none for a register.
+export function evidenceQuotes(e: Evidence): readonly string[] {
+	if (e.kind === "quote") return e.quotes
+	if (e.kind === "decision" && e.original.kind === "quote") return e.original.quotes
+	return []
+}
 
 export const GateResult = z.strictObject({
 	gate: GateName,
@@ -34,11 +58,26 @@ export const GateResult = z.strictObject({
 })
 export type GateResult = z.infer<typeof GateResult>
 
+// Where a value was found. gates/types.ts reads its Origin type from here.
+// register: a register record. unitContact: the unit's own contact block on its own page.
+// unitPage: elsewhere on the unit's own page. staffList, article, jsonLdAuthor: a staff list, an
+// article or a JSON-LD author on a page.
+export const ORIGINS = [
+	"register",
+	"unitContact",
+	"unitPage",
+	"staffList",
+	"article",
+	"jsonLdAuthor",
+] as const
+
 export const LockField = z
 	.strictObject({
 		status: z.enum(["accepted", "review", "dropped"]),
 		value: FieldValue.optional(),
 		role: NonBlank.optional(),
+		// The origin verify used, so review checks my edit the way verify will.
+		origin: z.enum(ORIGINS).optional(),
 		addressId: NonBlank.optional(),
 		sourceUrl: HttpsUrl,
 		evidence: Evidence.optional(),
@@ -59,9 +98,10 @@ export const LockField = z
 				field.value !== undefined ||
 				field.evidence !== undefined ||
 				field.role !== undefined ||
+				field.origin !== undefined ||
 				field.addressId !== undefined
 			) {
-				issue("a dropped field keeps no value, evidence, role or address id")
+				issue("a dropped field keeps no value, evidence, role, origin or address id")
 			}
 			if (field.reason === undefined) issue("a dropped field needs its reason")
 			return
@@ -96,11 +136,35 @@ const LockFields = z.strictObject(
 	>
 )
 
+// "Include this unit?" A clear match is auto (verify writes include: true to the curated file);
+// anything else waits for my answer in review. Reasons never hold a value or a name.
+export const Inclusion = z
+	.strictObject({
+		status: z.enum(["auto", "review"]),
+		reason: NonBlank,
+		suggestedCategories: z.array(CategorySlug),
+		providerType: ProviderType.optional(),
+	})
+	.superRefine((inc, ctx) => {
+		// An auto inclusion becomes a curated unit, which needs both (CuratedUnit refuses either gap).
+		if (
+			inc.status === "auto" &&
+			(inc.suggestedCategories.length === 0 || inc.providerType === undefined)
+		) {
+			ctx.addIssue({
+				code: "custom",
+				message: "an auto inclusion needs a category and a provider type",
+			})
+		}
+	})
+export type Inclusion = z.infer<typeof Inclusion>
+
 export const LockUnit = z
 	.strictObject({
 		unitId: UnitId,
 		sources: z.array(SourceRef).min(1),
 		fields: LockFields,
+		inclusion: Inclusion.optional(),
 	})
 	.superRefine((unit, ctx) => {
 		for (const name of FieldName.options) {
@@ -111,6 +175,15 @@ export const LockUnit = z
 		}
 	})
 export type LockUnit = z.infer<typeof LockUnit>
+
+// The unit's own cost, only when verify accepted it. The Lavterskel rule reads it (a partly free
+// unit can still be lavterskel); a cost in review or dropped counts as none.
+export function acceptedCost(fields: LockUnit["fields"]): Cost | undefined {
+	const cost = fields.cost
+	if (cost?.status !== "accepted") return undefined
+	const parsed = Cost.safeParse(cost.value)
+	return parsed.success ? parsed.data : undefined
+}
 
 // No file-level timestamp: the refresh-only check allows only verifiedAt and fetchedAt to move.
 export const LockFile = z

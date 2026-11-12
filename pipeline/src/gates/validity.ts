@@ -1,5 +1,9 @@
+import type { GateResult } from "../schema/lock.ts"
+import { hoursLength } from "../text/hours.ts"
+import { hasInvisible } from "../text/invisible.ts"
 import { phoneDigits } from "../text/normalise.ts"
-import { drop, type Gate, pass, review } from "./types.ts"
+import { settled } from "./grounding.ts"
+import { type Candidate, drop, type Gate, type GateContext, pass, review } from "./types.ts"
 
 // Today's database limit for opening hours, which no seed guard checks.
 export const MAX_HOURS = 200
@@ -10,11 +14,7 @@ export function fitsNumberPlan(phone: string): boolean {
 	return /^[2-9]\d{7}$/.test(d) || /^1\d{2}$/.test(d) || /^116\d{3}$/.test(d) || /^0\d{4}$/.test(d)
 }
 
-// Gate 3: the value has the right shape, and the lookups that can prove it do.
-export const validityGate: Gate = (c, ctx) => {
-	if (!ctx.validKommuner.has(c.kommune)) {
-		return review("validity", `kommune ${c.kommune} is not in KLASS on the fetch date`)
-	}
+function fieldCheck(c: Candidate, ctx: GateContext): GateResult {
 	if (typeof c.value !== "string") return pass("validity")
 	switch (c.field) {
 		case "phone":
@@ -40,10 +40,32 @@ export const validityGate: Gate = (c, ctx) => {
 		}
 		case "openingHours":
 		case "phoneHours":
-			return c.value.length <= MAX_HOURS
+			return hoursLength(c.value) <= MAX_HOURS
 				? pass("validity")
 				: review("validity", `hours are longer than ${MAX_HOURS} characters`)
 		default:
 			return pass("validity")
 	}
 }
+
+// Gate 3 before my decision settles it. Review shows me a review it gives on a value I typed,
+// since my decision would settle it unseen.
+export function unsettledValidity(c: Candidate, ctx: GateContext): GateResult {
+	// A hidden character changes what a reader sees. textLines strips them from page text, so one here
+	// came from somewhere else.
+	if (typeof c.value === "string" && hasInvisible(c.value)) {
+		return drop("validity", "the value holds an invisible character")
+	}
+	// A drop wins over the kommune review, as it does in runGates, so my decision can never settle
+	// a number outside the Nkom plan by way of an unknown kommune.
+	const field = fieldCheck(c, ctx)
+	if (!field.pass && field.onFail === "drop") return field
+	if (!ctx.validKommuner.has(c.kommune)) {
+		return review("validity", `kommune ${c.kommune} is not in KLASS on the fetch date`)
+	}
+	return field
+}
+
+// Gate 3: the value has the right shape, and the lookups that can prove it do. My decision
+// settles a review it gives (a URL I checked myself, an address Kartverket does not know).
+export const validityGate: Gate = (c, ctx) => settled(c, unsettledValidity(c, ctx))

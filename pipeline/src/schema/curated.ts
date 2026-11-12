@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { comparable } from "../gates/compare.ts"
 import {
 	CalendarDate,
 	CategorySlug,
@@ -9,19 +10,51 @@ import {
 	MAX_QUOTE,
 	NonBlank,
 	ProviderType,
+	valueFitsField,
 } from "./common.ts"
 import { UnitId } from "./ids.ts"
 
-// One answer of mine per question, so the review command never asks twice. A question is
-// one value for one field from one page.
-export const ReviewDecision = z.strictObject({
-	field: FieldName,
-	value: FieldValue,
-	sourceUrl: HttpsUrl,
-	decision: z.enum(["accept", "reject"]),
-	decidedOn: CalendarDate,
-	note: NonBlank.optional(),
-})
+// One answer of mine per question, so the review command never asks twice. A question is one
+// value for one field from one page, so the key (field, value, sourceUrl) stays the page's
+// value; an edit stores mine in editedValue.
+export const ReviewDecision = z
+	.strictObject({
+		field: FieldName,
+		value: FieldValue,
+		sourceUrl: HttpsUrl,
+		decision: z.enum(["accept", "reject", "edit"]),
+		editedValue: FieldValue.optional(),
+		role: NonBlank.optional(),
+		decidedOn: CalendarDate,
+		note: NonBlank.optional(),
+	})
+	.superRefine((d, ctx) => {
+		const issue = (message: string) => ctx.addIssue({ code: "custom", message })
+		if (d.decision === "edit" && d.editedValue === undefined)
+			issue("an edit needs its edited value")
+		if (d.decision !== "edit" && (d.editedValue !== undefined || d.role !== undefined)) {
+			issue("only an edit carries an edited value or a role")
+		}
+		// A value of the wrong kind would make every verify write a lock file LockUnit refuses.
+		if (!valueFitsField(d.field, d.value)) issue("the value does not fit the field")
+		if (d.editedValue !== undefined && !valueFitsField(d.field, d.editedValue)) {
+			issue("the edited value does not fit the field")
+		}
+	})
+export type ReviewDecision = z.infer<typeof ReviewDecision>
+
+// My answer to this question, if I gave one. Values compare as the gates compare them, so
+// "62000000" and "62 00 00 00" are one question.
+export function findDecision(
+	decisions: readonly ReviewDecision[],
+	q: { field: z.infer<typeof FieldName>; value: z.infer<typeof FieldValue>; sourceUrl: string }
+): ReviewDecision | undefined {
+	const wanted = comparable(q.field, q.value)
+	return decisions.find(
+		(d) =>
+			d.field === q.field && d.sourceUrl === q.sourceUrl && comparable(d.field, d.value) === wanted
+	)
+}
 
 export const CuratedUnit = z
 	.strictObject({

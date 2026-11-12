@@ -1,5 +1,6 @@
 import { getDomain } from "tldts"
 import { comparable } from "./compare.ts"
+import { norwegianDate } from "./grounding.ts"
 import { type Candidate, type Gate, pass, review } from "./types.ts"
 
 // Two sources are independent when they are different registers, or different registrable
@@ -20,6 +21,10 @@ export function sourceKey(c: Candidate): string {
 // direct line. A disagreement counts from any source, the same host included; only
 // agreement needs an independent one.
 export const agreementGate: Gate = (c, ctx) => {
+	// I settled the disagreement in review. Without this an accepted answer would come back.
+	if (c.evidence.kind === "decision") {
+		return pass("agreement", `my decision of ${norwegianDate(c.evidence.decidedOn)}`)
+	}
 	const key = (p: Candidate): string => {
 		if (p.field === "address" && typeof p.value === "string") {
 			const hit = ctx.findAddress(p.value)

@@ -17,17 +17,20 @@ export const sourceGate: Gate = (c, ctx) => {
 	const host = url.hostname.toLowerCase()
 	if (!ctx.allowedHosts.has(host)) return drop("source", `${host} is not on the allow-list`)
 	if (!ctx.robotsAllows(c.sourceUrl)) return drop("source", "robots.txt disallows this URL")
-	if (c.evidence.kind === "register") {
+	// A reviewed register value still comes from the register's own host, under a licence that
+	// is not pending.
+	const evidence = c.evidence.kind === "decision" ? c.evidence.original : c.evidence
+	if (evidence.kind === "register") {
 		// Grounding skips the page check for register evidence, so it must come from the
 		// register itself, under a licence that is not pending.
-		const register = REGISTER_SOURCES[c.evidence.register]
+		const register = REGISTER_SOURCES[evidence.register]
 		if (host !== register.host) {
-			return drop("source", `${c.evidence.register} evidence from ${host}, not ${register.host}`)
+			return drop("source", `${evidence.register} evidence from ${host}, not ${register.host}`)
 		}
 		if (register.licence === "pending") {
-			return drop("source", `the ${c.evidence.register} licence is still pending`)
+			return drop("source", `the ${evidence.register} licence is still pending`)
 		}
-		return pass("source", `register ${c.evidence.register} (${register.licence})`)
+		return pass("source", `register ${evidence.register} (${register.licence})`)
 	}
 	const licence = ctx.licence(host)
 	if (licence === undefined) return drop("source", `no licence status recorded for ${host}`)

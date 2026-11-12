@@ -1,5 +1,14 @@
 import { type FieldName, type FieldValue, MAX_QUOTE } from "../schema/common.ts"
-import { normaliseText, quoteHasPhone, quoteHasText, quoteHasUrl } from "../text/normalise.ts"
+import type { GateResult } from "../schema/lock.ts"
+import { quoteHasAddress } from "../text/address.ts"
+import { hoursGrounded } from "../text/hours.ts"
+import {
+	normaliseText,
+	normaliseUrl,
+	quoteHasPhone,
+	quoteHasText,
+	quoteHasUrl,
+} from "../text/normalise.ts"
 import {
 	alwaysOpenQualifiedIn,
 	classifyCost,
@@ -8,7 +17,18 @@ import {
 	plainlyFree,
 	readAlwaysOpen,
 } from "./phrases.ts"
-import { drop, type Gate, pass, review } from "./types.ts"
+import { type Candidate, drop, type Gate, pass, review } from "./types.ts"
+
+// "2026-11-06" as "06.11.2026": reasons are read in Norwegian date style.
+export const norwegianDate = (iso: string) => iso.split("-").reverse().join(".")
+
+// My answer in review settles what a gate only sends to review (decided 06.11.2026). A drop
+// still drops. Validity uses it, and the safety gate for a Lavterskel question the rule leaves
+// open.
+export function settled(c: Candidate, result: GateResult): GateResult {
+	if (result.pass || result.onFail !== "review" || c.evidence.kind !== "decision") return result
+	return pass(result.gate, `my decision of ${norwegianDate(c.evidence.decidedOn)}`)
+}
 
 // Does this quote hold this value? Cost and the two booleans are judged by phrase rules
 // instead (below, and in the safety gate for lowThreshold).
@@ -16,12 +36,33 @@ export function quoteHasValue(field: FieldName, value: FieldValue, quote: string
 	if (typeof value === "boolean" || field === "cost") return true
 	if (field === "phone") return quoteHasPhone(quote, value)
 	if (field === "website" || field === "chatUrl") return quoteHasUrl(quote, value)
+	if (field === "address") return quoteHasAddress(quote, value)
 	return quoteHasText(quote, value)
+}
+
+// Do these quotes ground this value? The test the gate below passes a value by, and the one
+// data:check runs on a stored field, so the two never disagree. Hours are grounded line by line
+// through the formatter, and a website by its own source page. Cost and the two booleans are
+// judged by phrase rules in the gates, so they pass here.
+export function valueGrounded(
+	field: FieldName,
+	value: FieldValue,
+	quotes: readonly string[],
+	sourceUrl: string
+): boolean {
+	if (typeof value === "boolean" || field === "cost") return true
+	if (field === "openingHours" || field === "phoneHours") return hoursGrounded(value, quotes)
+	if (field === "website" && normaliseUrl(value) === normaliseUrl(sourceUrl)) return true
+	return quotes.some((q) => quoteHasValue(field, value, q))
 }
 
 // Gate 2: a register record id, or verbatim quotes that are on the cached page and hold
 // the value. This is what stops an invented value.
 export const groundingGate: Gate = (c, ctx) => {
+	// My answer in review settles grounding; validity and safety still run.
+	if (c.evidence.kind === "decision") {
+		return pass("grounding", `my decision of ${norwegianDate(c.evidence.decidedOn)}`)
+	}
 	if (c.evidence.kind === "register") return pass("grounding", `register ${c.evidence.register}`)
 	const page = ctx.pageText(c.sourceUrl)
 	if (page === undefined) return drop("grounding", "no cached page text for the source URL")
@@ -74,8 +115,22 @@ export const groundingGate: Gate = (c, ctx) => {
 			}
 			return pass("grounding")
 		}
+		case "openingHours":
+		case "phoneHours":
+			return typeof c.value === "string" && valueGrounded(c.field, c.value, quotes, c.sourceUrl)
+				? pass("grounding")
+				: drop("grounding", "no quote holds these hours")
+		case "website":
+			// The unit's own page is its website, grounded by the fetch itself (spec, "Email and
+			// website"); any other address must be in a quote.
+			if (typeof c.value === "string" && normaliseUrl(c.value) === normaliseUrl(c.sourceUrl)) {
+				return pass("grounding", "the source page itself")
+			}
+			return valueGrounded(c.field, c.value, quotes, c.sourceUrl)
+				? pass("grounding")
+				: drop("grounding", "no quote holds the value")
 		default:
-			return quotes.some((q) => quoteHasValue(c.field, c.value, q))
+			return valueGrounded(c.field, c.value, quotes, c.sourceUrl)
 				? pass("grounding")
 				: drop("grounding", "no quote holds the value")
 	}

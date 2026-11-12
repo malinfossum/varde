@@ -179,8 +179,24 @@
 									"type": "string",
 									"enum": [
 										"accept",
-										"reject"
+										"reject",
+										"edit"
 									]
+								},
+								"editedValue": {
+									"anyOf": [
+										{
+											"type": "string",
+											"pattern": "\\S"
+										},
+										{
+											"type": "boolean"
+										}
+									]
+								},
+								"role": {
+									"type": "string",
+									"pattern": "\\S"
 								},
 								"decidedOn": {
 									"type": "string",

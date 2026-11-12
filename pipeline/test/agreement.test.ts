@@ -132,3 +132,19 @@ describe("agreement gate: registrable domains", () => {
 		})
 	})
 })
+
+it("passes my decision even when another source disagrees", () => {
+	const mine = candidate({
+		evidence: {
+			kind: "decision",
+			decidedOn: "2026-11-06",
+			original: { kind: "quote", quotes: ["x"] },
+		},
+	})
+	const other = candidate({ value: "62 00 00 01", sourceUrl: "https://www.eksempel.kommune.no/" })
+	expect(agreementGate(mine, context({ peers: [mine, other] }))).toEqual({
+		gate: "agreement",
+		pass: true,
+		reason: "my decision of 06.11.2026",
+	})
+})

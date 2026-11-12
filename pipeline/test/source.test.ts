@@ -73,9 +73,37 @@ describe("source gate: register evidence", () => {
 		})
 	})
 
-	it("drops evidence from a register whose licence is still pending", () => {
-		const nklm = fromRegister("nklm", "https://nklm.norceresearch.no/legevakter")
-		expect(sourceGate(nklm, ctx)).toMatchObject({ pass: false, onFail: "drop" })
+	it("passes NKLM register evidence now that its licence is granted", () => {
+		const c = candidate({
+			sourceUrl: "https://nklm.norceresearch.no/prosjekter/nasjonalt-legevaktregister",
+			evidence: { kind: "register", register: "nklm", recordId: "2026-01-01#3" },
+			origin: "register",
+		})
+		expect(sourceGate(c, ctx)).toEqual({
+			gate: "source",
+			pass: true,
+			reason: "register nklm (granted)",
+		})
+	})
+
+	it("drops NKLM register evidence while its licence is pending", () => {
+		const c = candidate({
+			sourceUrl: "https://nklm.norceresearch.no/prosjekter/nasjonalt-legevaktregister",
+			evidence: { kind: "register", register: "nklm", recordId: "2026-01-01#3" },
+			origin: "register",
+		})
+		const granted = REGISTER_SOURCES.nklm.licence
+		try {
+			// REGISTER_SOURCES is only shallow Readonly, so the test can flip one licence.
+			;(REGISTER_SOURCES.nklm as { licence: string }).licence = "pending"
+			expect(sourceGate(c, ctx)).toMatchObject({
+				pass: false,
+				onFail: "drop",
+				reason: "the nklm licence is still pending",
+			})
+		} finally {
+			;(REGISTER_SOURCES.nklm as { licence: string }).licence = granted
+		}
 	})
 
 	it("records Kartverket and KLASS as CC BY, Brreg as NLOD", () => {
@@ -113,4 +141,18 @@ describe("source gate: licences and the unit's own host", () => {
 		})
 		expect(sourceGate(article, context({ allowedHosts: HOSTS })).pass).toBe(true)
 	})
+})
+
+it("reads my decision's original evidence: a register value still comes from the register's host", () => {
+	const reg = { kind: "register", register: "brreg", recordId: "999999999" } as const
+	const c = candidate({
+		evidence: { kind: "decision", decidedOn: "2026-11-06", original: reg },
+		origin: "register",
+	})
+	expect(sourceGate(c, context())).toMatchObject({ pass: false, onFail: "drop" })
+	const atBrreg = {
+		...c,
+		sourceUrl: "https://data.brreg.no/enhetsregisteret/api/enheter/999999999",
+	}
+	expect(sourceGate(atBrreg, context()).pass).toBe(true)
 })

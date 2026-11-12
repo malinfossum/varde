@@ -3,6 +3,20 @@
 
 import { getDomain } from "tldts"
 
+// A line longer than this is not a contact line. Every rule skips it, so no pattern ever runs
+// over a page's worth of text (spec, "Field rules").
+export const MAX_LINE = 2000
+
+// Dotted numbers in the two shapes no time ("08.00") or date ("27.10.2026") has. The whole
+// dotted run must have the shape: no digit or further dotted group on either side.
+const DOTTED_2222 = /(?<![\d.:])(\d{2})\.(\d{2})\.(\d{2})\.(\d{2})(?!\d|[.:]\d)/g
+const DOTTED_323 = /(?<![\d.:])(\d{3})\.(\d{2})\.(\d{3})(?!\d|[.:]\d)/g
+
+// "62.00.00.00" as "62 00 00 00", so the space rules below read it as a number.
+export function undotPhones(text: string): string {
+	return text.replace(DOTTED_2222, "$1 $2 $3 $4").replace(DOTTED_323, "$1 $2 $3")
+}
+
 const SOFT_HYPHEN = /\u00AD/g
 const ODD_SPACES = /[\u00A0\u2007\u2009\u202F]/g
 const DASHES = /[\u2010-\u2015\u2212]/g
@@ -38,13 +52,14 @@ export function phoneDigits(phone: string): string {
 export function quoteHasPhone(quote: string, phone: string): boolean {
 	const target = phoneDigits(phone)
 	if (target.length === 0) return false
-	const withoutTimes = normaliseText(quote).replace(/\d+(?:[.:]\d+)+/g, " ")
+	const withoutTimes = undotPhones(normaliseText(quote)).replace(/(?<!\d)\d+(?:[.:]\d+)+/g, " ")
 	for (const run of withoutTimes.match(/\d+(?: \d+)*/g) ?? []) {
 		const groups = run.split(" ")
 		for (let start = 0; start < groups.length; start++) {
 			let joined = ""
-			for (const group of groups.slice(start)) {
-				joined += group
+			// Indexed, not sliced: each start reads at most the eight digits a number has.
+			for (let i = start; i < groups.length; i++) {
+				joined += groups[i]
 				if (joined === target) return true
 				if (joined.length >= target.length) break
 			}

@@ -71,3 +71,33 @@ describe("validity gate", () => {
 		})
 	})
 })
+
+const decided = {
+	kind: "decision" as const,
+	decidedOn: "2026-11-06",
+	original: { kind: "quote" as const, quotes: ["x"] },
+}
+
+describe("validity: my decision and invisible characters", () => {
+	it("lets my decision settle a review, but never a drop", () => {
+		const site = candidate({ field: "website", value: "https://www.hamar.kommune.no/rusteamet/" })
+		const forbidden = context({ urlStatus: () => 403 })
+		expect(validityGate(site, forbidden).pass).toBe(false)
+		expect(validityGate({ ...site, evidence: decided }, forbidden)).toEqual({
+			gate: "validity",
+			pass: true,
+			reason: "my decision of 06.11.2026",
+		})
+		expect(validityGate(candidate({ value: "12", evidence: decided }), context()).pass).toBe(false)
+	})
+
+	it("drops a value that holds an invisible character", () => {
+		const c = candidate({ field: "openingHours", value: "Mandag\u200B kl. 08:00" })
+		expect(validityGate(c, context())).toMatchObject({ pass: false, onFail: "drop" })
+	})
+
+	it("counts hours in code points: 200 emoji are 200, not 400", () => {
+		const c = candidate({ field: "openingHours", value: "\u{1F600}".repeat(200) })
+		expect(validityGate(c, context()).pass).toBe(true)
+	})
+})

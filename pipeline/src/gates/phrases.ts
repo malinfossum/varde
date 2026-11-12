@@ -6,10 +6,12 @@ import { normaliseText } from "../text/normalise.ts"
 
 export const NEGATORS: ReadonlySet<string> = new Set(["ikke", "ingen", "uten"])
 
+// Split at a sentence end: after . ! or ? and before whitespace. The Lavterskel extractor splits
+// raw page lines with it too, so the quotes it keeps are the sentences these rules read.
+export const splitSentences = (text: string): string[] => text.split(/(?<=[.!?])\s+/)
+
 export function sentences(text: string): string[] {
-	return normaliseText(text)
-		.split(/(?<=[.!?])\s+/)
-		.filter((s) => s.length > 0)
+	return splitSentences(normaliseText(text)).filter((s) => s.length > 0)
 }
 
 export function words(sentence: string): string[] {

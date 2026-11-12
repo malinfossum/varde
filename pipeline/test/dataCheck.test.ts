@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { checkData } from "../src/check/dataCheck.ts"
-import { acceptedField, curatedUnit, lockUnit } from "./helpers.ts"
+import { acceptedField, curatedUnit, lockUnit, PAGE_URL } from "./helpers.ts"
 
 function repo(files: Record<string, unknown>): string {
 	const root = mkdtempSync(join(tmpdir(), "varde-data-"))
@@ -70,6 +70,60 @@ describe("checkData", () => {
 			"lock/3403.json org:999999999 phone: no stored quote holds the value",
 		])
 		expect(problems[0]).not.toContain("900 00 000")
+	})
+
+	it("reads a decision's original quotes too, so a value they do not hold is flagged", () => {
+		const evidence = {
+			kind: "decision" as const,
+			decidedOn: "2026-11-06",
+			original: { kind: "quote" as const, quotes: ["Telefon: 62 00 00 00"] },
+		}
+		const bad = lockUnit({ fields: { phone: acceptedField({ value: "900 00 000", evidence }) } })
+		const problems = checkData(repo({ "lock/3403.json": { kommune: "3403", units: [bad] } }))
+		expect(problems).toEqual([
+			"lock/3403.json org:999999999 phone: no stored quote holds the value",
+		])
+	})
+
+	describe("my edit, which no page quote holds by design", () => {
+		const evidence = {
+			kind: "decision" as const,
+			decidedOn: "2026-11-06",
+			original: { kind: "quote" as const, quotes: ["Telefon: 62 00 00 00"] },
+		}
+		const edited = lockUnit({
+			fields: { phone: acceptedField({ value: "62 00 00 09", evidence }) },
+		})
+		const edit = (decidedOn: string) =>
+			curatedUnit({
+				decisions: [
+					{
+						field: "phone",
+						value: "62 00 00 00",
+						sourceUrl: PAGE_URL,
+						decision: "edit",
+						editedValue: "62 00 00 09",
+						decidedOn,
+					},
+				],
+			})
+		const files = (decidedOn: string) => ({
+			"curated/3403-hamar.json": { ...curated, units: [edit(decidedOn)] },
+			"lock/3403.json": { kommune: "3403", units: [edited] },
+		})
+
+		it("passes when the curated file holds that edit", () => {
+			expect(checkData(repo(files("2026-11-06")))).toEqual([])
+		})
+
+		it("is flagged when no edit in the curated file matches it", () => {
+			expect(checkData(repo(files("2026-11-07")))).toEqual([
+				"lock/3403.json org:999999999 phone: no stored quote holds the value",
+			])
+			expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [edited] } }))).toEqual([
+				"lock/3403.json org:999999999 phone: no stored quote holds the value",
+			])
+		})
 	})
 
 	it("flags an accepted phone outside the number plan", () => {
