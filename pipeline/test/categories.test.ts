@@ -70,6 +70,24 @@ describe("categoriesFor", () => {
 		).toBe(true)
 	})
 
+	it("reads krisesentret and krisesentre as krisesenter words, in a name and in a path", () => {
+		expect(
+			categoriesFor({
+				naeringskode: "88.991",
+				urls: [`${K}/eksempel/`],
+				names: ["Krisesentret i Eksempel"],
+				nklmLegevakt: false,
+			}).isKrisesenter
+		).toBe(true)
+		for (const path of ["krisesentret", "krisesentre"]) {
+			expect(
+				categoriesFor({ naeringskode: "88.991", urls: [`${K}/${path}/`], nklmLegevakt: false })
+					.isKrisesenter,
+				path
+			).toBe(true)
+		}
+	})
+
 	it("keeps the ambiguous codes and barnevernvakt in review, even beside a path word", () => {
 		for (const code of ["86.941", "88.995", "88.994", "88.996"]) {
 			expect(categoriesFor({ naeringskode: code, urls: [], nklmLegevakt: false }).known).toBe(false)

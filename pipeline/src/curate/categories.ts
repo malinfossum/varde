@@ -17,6 +17,9 @@ import { foldNorwegian, siteHost } from "../text/normalise.ts"
 export type CategoryRule = { categories: readonly CategorySlug[]; known: boolean }
 
 const KRISESENTER: readonly CategorySlug[] = ["vold-og-overgrep", "nodtjenester"]
+// The stem, so "krisesentret" and "krisesentre" count too: a centre missed here gets its Brreg
+// address shown, which a centre may keep off its own site on purpose.
+const KRISESENTER_STEM = "krisesent"
 
 export const SN_CATEGORIES: Readonly<Record<string, CategoryRule>> = {
 	"86.942": { categories: ["familie-og-barn"], known: false },
@@ -43,7 +46,7 @@ export const PATH_CATEGORIES: readonly ({ stem: string } & CategoryRule)[] = [
 	{ stem: "helsestasjon", categories: ["familie-og-barn"], known: false },
 	{ stem: "barnevern", categories: ["familie-og-barn"], known: true },
 	{ stem: "familievern", categories: ["familie-og-barn"], known: true },
-	{ stem: "krisesenter", categories: KRISESENTER, known: true },
+	{ stem: KRISESENTER_STEM, categories: KRISESENTER, known: true },
 	{ stem: "legevakt", categories: ["nodtjenester"], known: true },
 	{ stem: "gjeldsradgiv", categories: ["okonomi"], known: true },
 ]
@@ -87,11 +90,13 @@ export function categoriesFor(input: {
 		for (const word of lastSegmentWords(url)) {
 			const hit = PATH_CATEGORIES.find((p) => word.startsWith(p.stem))
 			if (hit === undefined) continue
-			if (hit.stem === "krisesenter") pathKrisesenter = true
+			if (hit.stem === KRISESENTER_STEM) pathKrisesenter = true
 			rules.push(hit)
 		}
 	}
-	const nameKrisesenter = (input.names ?? []).some((n) => foldNorwegian(n).includes("krisesenter"))
+	const nameKrisesenter = (input.names ?? []).some((n) =>
+		foldNorwegian(n).includes(KRISESENTER_STEM)
+	)
 	if (nameKrisesenter) rules.push({ categories: KRISESENTER, known: true })
 	const code = input.naeringskode
 	if (code === "87.999") {
