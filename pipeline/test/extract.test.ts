@@ -178,7 +178,7 @@ describe("lostToName", () => {
 })
 
 describe("extractScopes", () => {
-	it("writes the next scope when one stops, counts the failure, and keeps the summaries of the rest", () => {
+	it("writes the next scope when one stops, names the one that failed, and keeps the summaries of the rest", () => {
 		const cache = cacheWith({ [A]: page("kontakt-heading.html") })
 		const scopes = [
 			{ scope: "3405", name: "Lillehammer", urls: [A], ctx },
@@ -191,7 +191,7 @@ describe("extractScopes", () => {
 		})
 		expect(written).toEqual(["3407"])
 		expect(summaries.map((s) => s.scope)).toEqual(["3407"])
-		expect(failed).toBe(1)
+		expect(failed).toEqual(["3405"])
 	})
 })
 

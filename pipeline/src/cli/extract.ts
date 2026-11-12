@@ -62,10 +62,11 @@ try {
 		if (!values["dry-run"]) writeJsonAtomic(extractionPath(root, scope), file)
 	})
 	console.log(formatExtractSummary(summaries))
-	if (failed > 0) {
+	if (failed.length > 0) {
 		console.error(
-			`extract stopped on ${failed} of ${scopes.length} scopes; their old files are unchanged`
+			`extract stopped on ${failed.length} of ${scopes.length} scopes; their old files are unchanged`
 		)
+		console.error(`not finished: ${failed.join(", ")}`)
 		process.exit(1)
 	}
 } catch (err) {

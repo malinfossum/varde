@@ -198,17 +198,17 @@ export function extractScopes(
 	cache: PageCache,
 	now: string,
 	write: (scope: string, file: ExtractionFile) => void
-): { summaries: ExtractSummary[]; failed: number } {
+): { summaries: ExtractSummary[]; failed: string[] } {
 	const summaries: ExtractSummary[] = []
-	let failed = 0
+	const failed: string[] = []
 	for (const s of scopes) {
 		try {
 			const { file, summary } = extractScope(s.scope, s.urls, cache, s.ctx, now)
 			write(s.scope, file)
 			summaries.push(s.name === undefined ? summary : { ...summary, name: s.name })
 		} catch {
-			// No message: an unexpected error's text could quote a page.
-			failed++
+			// The scope name only: an unexpected error's text could quote a page.
+			failed.push(s.scope)
 		}
 	}
 	return { summaries, failed }

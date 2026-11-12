@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { matchUnits, type UnitGroup } from "../curate/include.ts"
-import { type RenameIo, writeCuratedFile, writeLockFile } from "../curate/write.ts"
+import { type RenameIo, SaveError, writeCuratedFile, writeLockFile } from "../curate/write.ts"
 import type { KommuneDiscovery } from "../discover/types.ts"
 import { norwegianDate } from "../gates/grounding.ts"
 import { runGates } from "../gates/run.ts"
@@ -88,15 +88,16 @@ export function findCuratedPath(dataDir: string, kommune: string): string | unde
 }
 
 // Messages name the kommune only: a parse error would quote the file.
-export function readCuratedFile(path: string): CuratedFile {
+export function readCuratedFile(path: string, kommune: string): CuratedFile {
 	let data: unknown
 	try {
 		data = JSON.parse(readFileSync(path, "utf8"))
 	} catch {
-		throw new VerifyError("a curated file is not valid JSON")
+		throw new VerifyError(`${kommune}: the curated file is not valid JSON`)
 	}
 	const parsed = CuratedFile.safeParse(data)
-	if (!parsed.success) throw new VerifyError("a curated file does not match its schema")
+	if (!parsed.success)
+		throw new VerifyError(`${kommune}: the curated file does not match its schema`)
 	return parsed.data
 }
 
@@ -354,6 +355,47 @@ export async function verifyAndWrite(
 		curatedPathFor(dataDir, input.kommune.kommune, input.kommune.name)
 	await writeCuratedFile(path, curated, io)
 	return counts
+}
+
+// A kommune verify did not finish, and why. Every VerifyError message opens with its kommune.
+export type Unfinished = { kommune: string; reason: string }
+
+// The reason a kommune stopped, by class. An unexpected error's own text could quote a file, and
+// Actions logs are public, so only the class is printed for it.
+export function unfinishedReason(kommune: string, err: unknown): string {
+	if (err instanceof VerifyError) return err.message
+	if (err instanceof SaveError) return `${kommune}: ${err.message}`
+	return `${kommune}: stopped on an unexpected error`
+}
+
+// Each kommune on its own, as extract runs each scope: one that stops is named in the summary and
+// never stops the next, and the counts of the ones done still print. run gives undefined for a
+// kommune with no extraction file.
+export async function verifyEach<K extends { kommune: string }>(
+	kommuner: readonly K[],
+	run: (k: K) => Promise<VerifyCounts | undefined>
+): Promise<{ counts: VerifyCounts[]; missing: string[]; unfinished: Unfinished[] }> {
+	const counts: VerifyCounts[] = []
+	const missing: string[] = []
+	const unfinished: Unfinished[] = []
+	for (const k of kommuner) {
+		try {
+			const done = await run(k)
+			if (done === undefined) missing.push(k.kommune)
+			else counts.push(done)
+		} catch (err) {
+			unfinished.push({ kommune: k.kommune, reason: unfinishedReason(k.kommune, err) })
+		}
+	}
+	return { counts, missing, unfinished }
+}
+
+// The kommuner a run did not finish, by number, then one reason line each.
+export function formatUnfinished(unfinished: readonly Unfinished[]): string {
+	return [
+		`not finished: ${unfinished.map((u) => u.kommune).join(", ")}`,
+		...unfinished.map((u) => u.reason),
+	].join("\n")
 }
 
 // What the command prints. Actions logs are public: counts, kommune numbers and names only.

@@ -15,11 +15,12 @@ import { httpsTransport } from "../net/http.ts"
 import { fetchNklm, kommuneLookup, loadNklm, readNklm } from "../registers/nklm.ts"
 import {
 	findCuratedPath,
+	formatUnfinished,
 	formatVerifySummary,
 	readCuratedFile,
-	type VerifyCounts,
 	VerifyError,
 	verifyAndWrite,
+	verifyEach,
 	verifyKommune,
 } from "../verify/verify.ts"
 
@@ -103,14 +104,11 @@ try {
 	const kommuner = found.kommuner.filter(
 		(k) => only.length === 0 || only.some((p) => k.kommune.startsWith(p))
 	)
-	const counts: VerifyCounts[] = []
-	const missing: string[] = []
-	for (const k of kommuner) {
+	// One kommune that stops never stops the next: the summary prints the ones done, then names
+	// the ones not finished.
+	const { counts, missing, unfinished } = await verifyEach(kommuner, async (k) => {
 		const extraction = readExtraction(root, k.kommune)
-		if (extraction === undefined) {
-			missing.push(k.kommune)
-			continue
-		}
+		if (extraction === undefined) return undefined
 		const curatedAt = findCuratedPath(dataDir, k.kommune)
 		const input = {
 			kommune: k,
@@ -123,16 +121,18 @@ try {
 			places: found.kommuner.map((x) => x.name),
 			get: crawler.get,
 			...(nklm === undefined ? {} : { nklm }),
-			...(curatedAt === undefined ? {} : { curated: readCuratedFile(curatedAt) }),
+			...(curatedAt === undefined ? {} : { curated: readCuratedFile(curatedAt, k.kommune) }),
 			now,
 		}
-		counts.push(
-			values["dry-run"] ? (await verifyKommune(input)).counts : await verifyAndWrite(dataDir, input)
-		)
-	}
+		return values["dry-run"] ? (await verifyKommune(input)).counts : verifyAndWrite(dataDir, input)
+	})
 	console.log(formatVerifySummary(counts))
 	if (missing.length > 0)
 		console.log(`No extraction file (run extract first): ${missing.join(", ")}`)
+	if (unfinished.length > 0) {
+		console.error(formatUnfinished(unfinished))
+		process.exitCode = 1
+	}
 } catch (err) {
 	const known =
 		err instanceof DiscoverError || err instanceof VerifyError || err instanceof SaveError

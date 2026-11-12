@@ -4,6 +4,7 @@ import { join } from "node:path"
 import { PassThrough } from "node:stream"
 import { describe, expect, it } from "vitest"
 import { checkData } from "../src/check/dataCheck.ts"
+import { SaveError } from "../src/curate/write.ts"
 import type { DiscoveredUnit, KommuneDiscovery } from "../src/discover/types.ts"
 import { extractScope } from "../src/extract/extract.ts"
 import { PageCache } from "../src/io/pageCache.ts"
@@ -13,10 +14,15 @@ import { addressQuery } from "../src/registers/kartverket.ts"
 import { readKommuneFiles } from "../src/review/queue.ts"
 import { runReview } from "../src/review/session.ts"
 import type { CuratedFile } from "../src/schema/curated.ts"
+import type { VerifyCounts } from "../src/verify/verify.ts"
 import {
+	formatUnfinished,
 	formatVerifySummary,
 	lockPath,
+	readCuratedFile,
+	VerifyError,
 	verifyAndWrite,
+	verifyEach,
 	verifyKommune,
 } from "../src/verify/verify.ts"
 import { fakeGet } from "./netHelpers.ts"
@@ -802,5 +808,44 @@ describe("review then verify", () => {
 		expect(phone).toMatchObject({ status: "accepted", value: "62 00 00 09" })
 		expect(phone.evidence).toMatchObject({ kind: "decision", decidedOn: "2026-11-06" })
 		expect(checkData(dir)).toEqual([])
+	})
+})
+
+describe("verifyEach", () => {
+	const counts = (kommune: string) => ({ kommune }) as unknown as VerifyCounts
+	it("finishes every kommune after one that stops, and names each one not finished", async () => {
+		const run = async ({ kommune }: { kommune: string }) => {
+			if (kommune === "3405") throw new VerifyError("3405: the curated file is not valid JSON")
+			if (kommune === "3407") throw new SaveError("could not save the lock file", "x.tmp")
+			if (kommune === "3411") throw new Error("Kari Nordmann 900 00 000")
+			return kommune === "3412" ? undefined : counts(kommune)
+		}
+		const result = await verifyEach(
+			["3405", "3407", "3411", "3412", "3413"].map((kommune) => ({ kommune })),
+			run
+		)
+		expect(result.counts.map((c) => c.kommune)).toEqual(["3413"])
+		expect(result.missing).toEqual(["3412"])
+		expect(formatUnfinished(result.unfinished)).toBe(
+			[
+				"not finished: 3405, 3407, 3411",
+				"3405: the curated file is not valid JSON",
+				"3407: could not save the lock file",
+				"3411: stopped on an unexpected error",
+			].join("\n")
+		)
+	})
+})
+
+describe("readCuratedFile", () => {
+	it("names the kommune, and never the file's text, when the file cannot be read", () => {
+		const dir = mkdtempSync(join(tmpdir(), "varde-curated-"))
+		const bad = join(dir, "3405-lillehammer.json")
+		writeFileSync(bad, "{ Kari Nordmann")
+		expect(() => readCuratedFile(bad, "3405")).toThrow("3405: the curated file is not valid JSON")
+		writeFileSync(bad, '{"kommune":"3405"}')
+		expect(() => readCuratedFile(bad, "3405")).toThrow(
+			"3405: the curated file does not match its schema"
+		)
 	})
 })
