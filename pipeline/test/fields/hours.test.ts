@@ -4,7 +4,7 @@ import { navHoursCandidate, pageHoursCandidate } from "../../src/extract/fields/
 import { readUnitPage } from "../../src/extract/page.ts"
 import type { NavOffice } from "../../src/registers/nav.ts"
 
-const D = "–"
+const D = "\u2013"
 const page = (name: string) =>
 	readFileSync(new URL(`../fixtures/pages/${name}`, import.meta.url), "utf8")
 const K = "https://www.eksempel.kommune.no/helse/helsestasjon/"
