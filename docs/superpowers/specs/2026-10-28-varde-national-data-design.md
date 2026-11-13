@@ -388,6 +388,9 @@ whole answer key is scored.
    org number, or by name and address).
 4. **Lavterskel badges match the key**, apart from rows the new rule changes. Those come to me
    once.
+5. **Zero wrong values in a sample outside the key.** Amended 13.11.2026: 20 accepted units
+   drawn from the pilot kommuner the key does not cover, checked by hand (see "PR 4: pilot
+   run").
 
 The pilot output is scored but not published. Order: the pilot passes, spec B ships, then
 Innlandet goes live.
@@ -926,11 +929,17 @@ section wins.
   committed.
 - `npm run score`, which scores the locks against the pass mark and writes the report.
 - `--resume` on `fetch` and `verify`, and progress lines on every stage.
+- `npm run sweep`, `--offline` on `extract`, `verify` and `score`, and `data:check --publish`.
+- Lock schema changes: `inputs` (extraction hash and `RULES_VERSION`) on every lock, and a
+  `failed` reason on a kommune's lock when nothing came through. The JSON Schema snapshot moves
+  with them.
 - One full pilot run over Innlandet and Oslo, committed as a baseline: the lock files, the
-  curated file and the report. Nothing is published, and `web/`, `api/` and the live data stay
-  untouched.
-- Done when every test passes, the report is in the PR body, and every disagreement with the
-  answer key has my ruling.
+  curated file and the report. Nothing reaches the live site, and `web/`, `api/` and the live
+  data stay untouched. The repository is public, though, so every committed file is published
+  the moment it is pushed, and git history keeps it. See "Privacy of the baseline".
+- Done when every test passes, the report's summary is in the PR body, every disagreement with
+  the answer key has my ruling, every sampled row outside the key has my check, and I have read
+  the name sweep before the commit.
 
 ### Decisions
 
@@ -955,7 +964,25 @@ section wins.
 `PILOT` in one source file holds 0301 and KLASS 131 codes 3401 to 3454: Oslo and the 46
 Innlandet kommuner, 47 in all. Every stage and `score` accept `--only pilot`. The answer key
 covers 8 of them (0301, 3403, 3405, 3407, 3411, 3412, 3413, 3420). Pass-mark rules 1, 3 and 4
-are scored on those 8. Rule 2 is scored on all 47.
+are scored on those 8. Rule 2 is scored on all 47. Rule 5 is scored on a sample from the other
+39, which have no key (see "Sample outside the key").
+
+### Privacy of the baseline
+
+Committing the baseline publishes it: 47 lock files with their quotes, and a report that quotes
+them again. Redaction finds names by a rule that redacts too much on purpose, but a rule can
+still miss one. A name that stands in a field's own value is not redacted from its quote at all
+(`inValue` in `gates/run.ts`), which is how "2609 Lillehammer Kari Nordmann" reached the trial's
+lock. A miss in a public repository can only be undone by rewriting history, and clones keep it.
+
+- **Name sweep before the commit.** `npm run sweep -- --only pilot` reads the locks offline and
+  prints every capitalised word left in values, roles and quotes that does not open a sentence
+  and is not on Varde's known-word list, with its kommune, unit id and field. It prints to the
+  terminal only and writes no file. I read the list before the commit. A real name means a
+  redaction fix, a test fixture and a new `verify`, never a hand edit of the lock.
+- The address fix below also closes the `inValue` gap for addresses: once the trailing name is
+  cut from the value, redaction removes it from the quote too.
+- The report quotes only from the lock files, so it adds no text the locks do not already hold.
 
 ### Address place part
 
@@ -981,26 +1008,67 @@ The address API goes through the website crawler today, so every lookup waits fo
 - Answers are cached on disk next to the page cache (`.cache/kartverket/`), keyed by search
   text and kommune, for 30 days. Addresses are public register data, but the cache stays local
   like the rest of `.cache/`.
+- The key is page text, so it can hold a name, and on Windows it can hold characters a file
+  name cannot. Each answer's file is named by the sha256 of the normalised key, never the key
+  itself.
+- Only a successful answer is cached, including one with no hits. A timeout, a 4xx or a 5xx is
+  never cached, so one bad minute cannot pin a wrong answer for 30 days.
+- The 90-day purge clears `.cache/kartverket/` as it clears the pages.
+- In Actions (PR 5) this cache follows the page-cache rule, because its keys are page text: it
+  lives in the job's temporary folder only. Every scheduled run then repeats every lookup at one
+  a second, so the pilot counts the lookups (see "score and the report").
 - The network boundary still holds: only `src/net/` touches the network.
 
 ### Resume and progress
 
 - Each stage prints one line when a kommune finishes, with a running count ("12 of 47").
   `fetch` also prints a line about every five minutes.
-- `fetch --resume` skips a URL whose cached copy is under 24 hours old. The cache index records
-  each page when it is stored, not only at the end, so Ctrl+C loses only the pages in flight.
-- `verify --resume` skips a kommune whose lock file was written after its extraction file.
-  Each lock file is still written in one step, so a stop never leaves half a lock.
+- `fetch --resume` skips a URL whose cached copy is under 24 hours old. Ctrl+C loses only the
+  pages in flight.
+- **The cache index is a journal.** Today `save()` rewrites the whole `manifest.json` once, at
+  the end. Rewriting it after every page would cost more with each page, and on Windows a
+  rename onto a file that Defender or the search indexer holds open can fail with EPERM and end
+  the run. Instead, each stored page appends one JSON line to `manifest.jsonl`. Loading the cache
+  folds the journal into the manifest, skips a last line that was cut off, and checks each page
+  against its hash as `read()` does now. The end of a run writes `manifest.json` once and empties
+  the journal.
+- **`verify --resume` compares hashes, not file times.** A checkout gives committed files a new
+  modified time, and a gap PR that changes only a gate leaves the extraction files alone, so file
+  times would skip kommuner whose locks are stale. Each lock file records `inputs`: the sha256 of
+  its extraction file and `RULES_VERSION`, a constant in the source that every gate or field-rule
+  change bumps. Resume skips a kommune only when both match. This is the same rule verify
+  already uses for pages: an extraction that no longer matches its cached page is not used.
+- Each lock file is still written in one step, so a stop never leaves half a lock.
 
 ### score and the report
 
 `npm run score -- --only pilot` reads the committed locks, the curated file,
 `test/answer-key.json` and `test/lavterskel-changes.json`. It runs offline and writes
-`docs/pilot/pilot-report.md`, which also goes in the PR body. The report holds no clock time,
-so a re-run on the same data gives the same file, and a gap PR's diff shows what changed. Stage
-durations go in the PR body, not the report.
+`docs/pilot/pilot-report.md`. The report holds no clock time, so a re-run on the same data gives
+the same file, and a gap PR's diff shows what changed.
 
-The report has six parts:
+**The PR body holds a summary, not the whole report.** GitHub refuses a PR body over 65,536
+characters, and parts 3 and 6 quote text from 47 kommuner. The body holds part 1, part 2, the
+counts from parts 3 to 7, and a link to the committed report. `score --pr-body` writes that
+summary and fails if it is over 60,000 characters.
+
+**Scale numbers go in the PR body,** next to the stage durations, because PR 5 sizes its
+workflows from them and none of them belongs in a deterministic report:
+
+- requests per host, and the slowest host's time with its crawl delay (the crawler already
+  counts requests per host). A host with a 30-second delay and 1,000 pages takes 8 hours and 20
+  minutes, and a GitHub-hosted job stops at 6 hours.
+- the total size of the 47 lock files, which, times the weekly refresh commits, sets how fast
+  the repository grows at 357 kommuner.
+- the number of Kartverket lookups and cache hits.
+
+**Gap PRs score offline.** The Kartverket cache expires after 30 days and the page cache after
+90. A gap PR scored after an expiry would mix its rule change with changes on the source pages.
+`extract`, `verify` and `score` take `--offline`: nothing expires, nothing is fetched, and a
+cache miss is an error that names the URL or the search. The report states the date of the
+oldest cached page, so a re-baseline after the 90-day purge is visible as one.
+
+The report has seven parts:
 
 1. **Pass mark.** One line per rule: the measured value, the target, pass or fail.
 2. **Per kommune.** Units, units with a field in review, inclusion questions, and accepted,
@@ -1017,9 +1085,26 @@ The report has six parts:
 6. **Disagreements.** Each accepted value that differs from the key: key row id, field, key
    value, pipeline value, source link and quote, and the proposed ruling. Quotes sit in code
    blocks, as in every PR body.
+7. **Sample outside the key.** The rows drawn for rule 5, each with its fields, source links,
+   quotes and my check.
 
 A key row counts as found when a lock unit matches it, also while that unit waits for its
 inclusion answer. Finding is the pipeline's job; including is mine.
+
+### Sample outside the key
+
+The key covers 7 of Innlandet's 46 kommuner. Rule 1 cannot see a wrong value in the other 39,
+and the rollout's 20-row hand check applies only outside the pilot, yet Innlandet goes live
+straight after the pilot passes. So the pilot carries the rollout's check:
+
+- `score` draws 20 accepted units at random from the 39 kommuner with no key, with the seed
+  fixed in the source, so the same locks always give the same sample.
+- Each is checked by hand against its sources in a fresh session, as in the rollout. My checks
+  are saved in `test/sample-checks.json` (unit id, field, right or wrong), and `score` reads them.
+- **Pass-mark rule 5:** zero wrong values in the sample. A wrong one is ruled like a key
+  disagreement: it goes into `test/known-wrong.json`, and its fix is a gap PR.
+- A gap PR that changes the locks can change the sample. Rows already checked keep their check;
+  only new rows wait for me.
 
 ### Disagreements and the golden test
 
@@ -1031,6 +1116,10 @@ The golden test asserts today that there are no lock files. With the pilot's loc
 - The test fails on a wrong value that is not listed, and on a listed one that no longer
   occurs. Each gap PR removes its own entries.
 - The report still counts listed values as wrong. The pilot passes only when the list is empty.
+- A listed value is still an accepted field in a committed lock. `data:check` therefore fails
+  whenever `test/known-wrong.json` has an entry and the check runs with `--publish`, which spec
+  B's publish step and PR 5's workflows must pass. Nothing on the list can reach the site, even
+  if a later PR forgets the pass mark.
 
 A "key stale" ruling means the live site shows an old value. It gets its own small data PR for
 the live site, then `key:freeze` and `score` run again. An "unclear" ruling stays in the report
@@ -1046,28 +1135,47 @@ The pipeline README gains a "Pilot run" section:
 3. The PC stays awake while it runs. The slowest host at a 5-second pace sets the time, likely
    an afternoon into the evening.
 
+4. `npm run sweep -- --only pilot`, read before the commit (see "Privacy of the baseline").
+
 Committed: 47 lock files in `data/lock/`, the curated file with the units included by rule only,
-`docs/pilot/pilot-report.md` and `test/known-wrong.json`. The page cache and the Kartverket
-cache stay local. Branch `feat/pipeline-pilot` from `main`.
+`docs/pilot/pilot-report.md`, `test/known-wrong.json` and `test/sample-checks.json`. The page
+cache and the Kartverket cache stay local. Branch `feat/pipeline-pilot` from `main`.
 
 ### Errors
 
 - A host that stops, or a kommune that fails, is named in that stage's summary and in the
   report's recall part. The run goes on.
-- `score` refuses to run when a pilot kommune has no lock file, and names the kommune. A
-  partial pilot is never scored as a whole one.
+- **A failed kommune still gets a lock.** Today verify skips a kommune with no extraction file,
+  so one host that stops would leave a kommune with no lock, and `score` would refuse the whole
+  pilot. Instead, `extract` writes an extraction file for every kommune it was asked for, empty
+  when no page came through, and verify writes a lock for it with no units and a `failed`
+  reason ("host stopped: 429", "no pages fetched"). `score` counts that kommune's key rows as
+  lost, with that reason in the recall part.
+- `score` refuses to run only when a pilot kommune was never attempted (no lock file at all),
+  and names it. A partial pilot is never scored as a whole one.
 
 ### Testing
 
-- **Address:** a trailing name, a trailing "Telefon", a wrong postcode (review), and a clean
-  value that stays the same. Fixtures stay fictional.
+- **Address:** a trailing name (cut from the value, and redacted from the stored quote), a
+  trailing "Telefon", a wrong postcode (review), and a clean value that stays the same. Fixtures
+  stay fictional.
 - **Kartverket:** a cached answer makes no request, an expired one does, and two lookups are a
-  second apart on a fake clock.
+  second apart on a fake clock. A 503 is not cached. A key holding `:` and "æøå" gives a hashed
+  file name. The purge removes an answer over 90 days old.
 - **score:** a small fixture of locks and key where each pass-mark rule passes and fails once,
-  inclusion questions counted apart from field review, and the same report twice in a row.
+  inclusion questions counted apart from field review, and the same report twice in a row. The
+  sample is the same twice in a row, and comes only from kommuner with no key. `--pr-body`
+  fails on a fixture that would exceed the limit. `--offline` fails on a cache miss and names it.
 - **Ratchet:** an unlisted wrong value goes red, and so does a listed one that is gone.
-- **Resume:** a stopped fetch followed by `--resume` fetches only the missing pages, and
-  `verify --resume` leaves finished kommuner byte for byte the same.
+  `data:check --publish` fails while the list has an entry.
+- **Resume:** a stopped fetch followed by `--resume` fetches only the missing pages. A journal
+  with a cut-off last line loads without it. `verify --resume` leaves finished kommuner byte for
+  byte the same, and re-runs a kommune whose extraction hash or `RULES_VERSION` changed, even
+  when its lock file is newer.
+- **Failed kommune:** a kommune whose host stopped gets a lock with no units and its reason, and
+  `score` runs and counts it as lost recall.
+- **Sweep:** a fixture lock with a name left in a quote is listed; a sentence-opening word and a
+  known word are not. The sweep writes no file.
 - **Network boundary test** covers every new file.
 - **Before the PR:** `npm test`, `typecheck` and `lint` in `pipeline/`, and the web suites
   (`npm test` and the full `npm run e2e`).
