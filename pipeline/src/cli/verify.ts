@@ -1,5 +1,5 @@
 // Runs the five gates on what extract found and writes lock and curated files into --data.
-//   node src/cli/verify.ts --data <dir> [--only 3405] [--cache <dir>] [--nklm-file <path>] [--nklm-fetch] [--dry-run]
+//   node src/cli/verify.ts --data <dir> [--only pilot|3405] [--cache <dir>] [--nklm-file <path>] [--nklm-fetch] [--dry-run]
 import { join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { parseArgs } from "node:util"
@@ -12,6 +12,7 @@ import { AllowList } from "../net/allowList.ts"
 import { systemClock } from "../net/clock.ts"
 import { Crawler } from "../net/crawler.ts"
 import { httpsTransport } from "../net/http.ts"
+import { parseOnly, selects } from "../pilot/list.ts"
 import { fetchNklm, kommuneLookup, loadNklm, readNklm } from "../registers/nklm.ts"
 import {
 	findCuratedPath,
@@ -25,7 +26,7 @@ import {
 } from "../verify/verify.ts"
 
 const USAGE =
-	"usage: verify --data <dir> [--only 3405,0301] [--cache <dir>] [--nklm-file <path>] [--nklm-fetch] [--dry-run]"
+	"usage: verify --data <dir> [--only pilot|3405,0301] [--cache <dir>] [--nklm-file <path>] [--nklm-fetch] [--dry-run]"
 
 const { values } = parseArgs({
 	options: {
@@ -37,11 +38,8 @@ const { values } = parseArgs({
 		"dry-run": { type: "boolean", default: false },
 	},
 })
-const only = (values.only ?? "")
-	.split(",")
-	.map((p) => p.trim())
-	.filter((p) => p !== "")
-if (values.data === undefined || only.some((p) => !/^\d{2}(?:\d{2})?$/.test(p))) {
+const only = parseOnly(values.only)
+if (values.data === undefined || only === undefined) {
 	console.error(USAGE)
 	process.exit(2)
 }
@@ -101,9 +99,7 @@ try {
 	)
 	const nklm = read?.ok === true ? { date: read.date, rows: read.rows } : undefined
 	const national = readExtraction(root, "national")
-	const kommuner = found.kommuner.filter(
-		(k) => only.length === 0 || only.some((p) => k.kommune.startsWith(p))
-	)
+	const kommuner = found.kommuner.filter((k) => selects(only, k.kommune))
 	// One kommune that stops never stops the next: the summary prints the ones done, then names
 	// the ones not finished.
 	const { counts, missing, unfinished } = await verifyEach(kommuner, async (k) => {

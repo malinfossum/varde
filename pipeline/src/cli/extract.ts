@@ -1,5 +1,5 @@
 // Extracts field values from the pages fetch cached, into <cache>/extract/, and prints counts.
-//   node src/cli/extract.ts [--only 3405,0301] [--national] [--cache <dir>] [--dry-run]
+//   node src/cli/extract.ts [--only pilot|3405,0301] [--national] [--cache <dir>] [--dry-run]
 import { join } from "node:path"
 import { parseArgs } from "node:util"
 import { DiscoverError } from "../discover/discover.ts"
@@ -13,9 +13,10 @@ import {
 } from "../extract/extract.ts"
 import { writeJsonAtomic } from "../io/files.ts"
 import { DEFAULT_CACHE_DIR, PageCache } from "../io/pageCache.ts"
+import { parseOnly, selects } from "../pilot/list.ts"
 import { isNavOfficeUrl } from "../registers/nav.ts"
 
-const USAGE = "usage: extract [--only 3405,0301] [--national] [--cache <dir>] [--dry-run]"
+const USAGE = "usage: extract [--only pilot|3405,0301] [--national] [--cache <dir>] [--dry-run]"
 
 const { values } = parseArgs({
 	options: {
@@ -25,11 +26,8 @@ const { values } = parseArgs({
 		"dry-run": { type: "boolean", default: false },
 	},
 })
-const only = (values.only ?? "")
-	.split(",")
-	.map((p) => p.trim())
-	.filter((p) => p !== "")
-if (only.some((p) => !/^\d{2}(?:\d{2})?$/.test(p))) {
+const only = parseOnly(values.only)
+if (only === undefined) {
 	console.error(USAGE)
 	process.exit(2)
 }
@@ -41,7 +39,7 @@ try {
 	const places = found.kommuner.map((k) => k.name)
 	const now = new Date().toISOString().replace(/\.\d{3}Z$/, "Z")
 	const scopes: ScopeInput[] = found.kommuner
-		.filter((k) => only.length === 0 || only.some((p) => k.kommune.startsWith(p)))
+		.filter((k) => selects(only, k.kommune))
 		.map((k) => ({
 			scope: k.kommune,
 			name: k.name,
