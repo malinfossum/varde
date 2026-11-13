@@ -27,8 +27,15 @@ export type Candidate = {
 	fetchedAt: string
 }
 
-// text is Kartverket's own address text ("Storgata 1A"), the form verify stores.
-export type AddressHit = { addressId: string; kommune: string; text?: string }
+// text is Kartverket's own address text ("Storgata 1A"), the form verify stores. postcode and
+// poststed are Kartverket's too ("2999", "EKSEMPELBY"); the place-part rule reads them.
+export type AddressHit = {
+	addressId: string
+	kommune: string
+	text?: string
+	postcode?: string
+	poststed?: string
+}
 
 export type UnitFacts = {
 	categories: readonly CategorySlug[]

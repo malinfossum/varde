@@ -98,7 +98,13 @@ describe("resolveAddresses and kartverketForm", () => {
 		const asked: string[] = []
 		const body = JSON.stringify({
 			adresser: [
-				{ adresseid: "a1", adressetekst: "Storgata 1A", kommunenummer: "3405", postnummer: "2609" },
+				{
+					adresseid: "a1",
+					adressetekst: "Storgata 1A",
+					kommunenummer: "3405",
+					postnummer: "2609",
+					poststed: "LILLEHAMMER",
+				},
 			],
 		})
 		const get = fakeGet({ [addressQuery("storgata 1a", "3405")]: { body } })
@@ -113,10 +119,16 @@ describe("resolveAddresses and kartverketForm", () => {
 		)
 		expect(asked).toHaveLength(1)
 		const hit = map.get("Storgata 1 A, 2609 Lillehammer")
-		expect(hit).toEqual({ addressId: "a1", kommune: "3405", text: "Storgata 1A" })
+		expect(hit).toEqual({
+			addressId: "a1",
+			kommune: "3405",
+			text: "Storgata 1A",
+			postcode: "2609",
+			poststed: "LILLEHAMMER",
+		})
 		expect(
 			kartverketForm("Storgata 1 A, 2609 Lillehammer", hit ?? { addressId: "", kommune: "" })
-		).toBe("Storgata 1A, 2609 Lillehammer")
+		).toEqual({ value: "Storgata 1A, 2609 Lillehammer" })
 	})
 })
 

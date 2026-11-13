@@ -21,6 +21,7 @@ import { addressQuery } from "../src/registers/kartverket.ts"
 import { readKommuneFiles } from "../src/review/queue.ts"
 import { runReview } from "../src/review/session.ts"
 import type { CuratedFile } from "../src/schema/curated.ts"
+import { PLACE_MISMATCH } from "../src/text/address.ts"
 import type { VerifyCounts } from "../src/verify/verify.ts"
 import {
 	formatUnfinished,
@@ -79,9 +80,22 @@ const answer = (
 	decisions,
 	...over,
 })
-const address = (id: string, text: string) => ({
+const address = (
+	id: string,
+	text: string,
+	postnummer = "2609",
+	poststed: string | null = "LILLEHAMMER"
+) => ({
 	body: JSON.stringify({
-		adresser: [{ adresseid: id, adressetekst: text, kommunenummer: "3405", postnummer: "2609" }],
+		adresser: [
+			{
+				adresseid: id,
+				adressetekst: text,
+				kommunenummer: "3405",
+				postnummer,
+				...(poststed === null ? {} : { poststed }),
+			},
+		],
 	}),
 })
 const KARTVERKET = {
@@ -866,5 +880,109 @@ describe("readCuratedFile", () => {
 		expect(() => readCuratedFile(bad, "3405")).toThrow(
 			"3405: the curated file does not match its schema"
 		)
+	})
+})
+
+describe("the address place part", () => {
+	const page = (line: string) => html(`${H1}<h2>Kontakt</h2><p>Besøksadresse: ${line}</p>`)
+	// Kartverket's answer for Storgata 3: postcode 2999, and the poststed given (null: none).
+	const storgata3 = (poststed: string | null, postnummer = "2999") =>
+		fakeGet({
+			...KARTVERKET,
+			[addressQuery("storgata 3", "3405")]: address("a3", "Storgata 3", postnummer, poststed),
+		})
+	const lockFor = async (line: string, get: Get, curated?: CuratedFile) => {
+		const { input } = setup({
+			pages: { [BV]: page(line) },
+			units: [unit({ address: undefined })],
+			get,
+			curated,
+		})
+		return (await verifyKommune(input)).lock
+	}
+
+	it("cuts a trailing name from the value, so redaction removes it from the quote too", async () => {
+		const lock = await lockFor("Storgata 3, 2999 Eksempelby Kari Nordmann", storgata3("EKSEMPELBY"))
+		expect(lock.units[0]?.fields.address).toMatchObject({
+			status: "accepted",
+			value: "Storgata 3, 2999 Eksempelby",
+			addressId: "a3",
+		})
+		expect(JSON.stringify(lock)).not.toMatch(/Kari|Nordmann/)
+	})
+
+	it("cuts a trailing Telefon from the value", async () => {
+		const lock = await lockFor(
+			"Storgata 3, 2999 Eksempelby Telefon 62 00 00 00",
+			storgata3("EKSEMPELBY")
+		)
+		expect(lock.units[0]?.fields.address).toMatchObject({
+			status: "accepted",
+			value: "Storgata 3, 2999 Eksempelby",
+		})
+	})
+
+	it("leaves a clean value as the page wrote it", async () => {
+		const lock = await lockFor("Storgata 3, 2999 Eksempelby", storgata3("EKSEMPELBY"))
+		expect(lock.units[0]?.fields.address).toMatchObject({
+			status: "accepted",
+			value: "Storgata 3, 2999 Eksempelby",
+			addressId: "a3",
+		})
+	})
+
+	it("sends a different postcode to review through the validity gate, with the text before the comma alone", async () => {
+		// pickAddress refuses a record with another postcode, so there is no hit and no place-part check.
+		const lock = await lockFor("Storgata 3, 2998 Eksempelby Kari Nordmann", storgata3("EKSEMPELBY"))
+		const field = lock.units[0]?.fields.address
+		expect(field).toMatchObject({
+			status: "review",
+			value: "Storgata 3",
+			reason: "validity: Kartverket does not know the address",
+		})
+		expect(field?.addressId).toBeUndefined()
+		expect(JSON.stringify(lock)).not.toMatch(/Kari|Nordmann/)
+	})
+
+	it("sends an answer with no poststed to review, with the street text alone", async () => {
+		const lock = await lockFor("Storgata 3, 2999 Eksempelby Kari Nordmann", storgata3(null))
+		expect(lock.units[0]?.fields.address).toMatchObject({
+			status: "review",
+			value: "Storgata 3",
+			reason: PLACE_MISMATCH,
+			addressId: "a3",
+		})
+		expect(JSON.stringify(lock)).not.toMatch(/Kari|Nordmann/)
+	})
+
+	it("sends a hyphenated poststed to review, and my accept settles it", async () => {
+		const line = "Storgata 3, 2999 Nordre-Eksempelby"
+		const before = await lockFor(line, storgata3("NORDRE EKSEMPELBY"))
+		expect(before.units[0]?.fields.address).toMatchObject({
+			status: "review",
+			value: "Storgata 3",
+			reason: PLACE_MISMATCH,
+		})
+		const decisions = [
+			{
+				field: "address" as const,
+				value: "Storgata 3",
+				sourceUrl: BV,
+				decision: "accept" as const,
+				decidedOn: "2026-11-06",
+			},
+		]
+		const curated: CuratedFile = {
+			kommune: "3405",
+			name: "Lillehammer",
+			units: [answer(decisions)],
+		}
+		const after = await lockFor(line, storgata3("NORDRE EKSEMPELBY"), curated)
+		expect(after.units[0]?.fields.address).toMatchObject({
+			status: "accepted",
+			value: "Storgata 3",
+			addressId: "a3",
+		})
+		expect(after.units[0]?.fields.address?.reason).toBeUndefined()
 	})
 })

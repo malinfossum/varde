@@ -12,7 +12,14 @@ export function addressQuery(street: string, kommune: string): string {
 	return `${KARTVERKET_SEARCH}?${params}`
 }
 
-export type AddressRecord = { addressId: string; kommune: string; text: string; postcode?: string }
+// poststed comes as Kartverket writes it, in capitals ("EKSEMPELBY").
+export type AddressRecord = {
+	addressId: string
+	kommune: string
+	text: string
+	postcode?: string
+	poststed?: string
+}
 
 const Search = z.object({
 	adresser: z.array(
@@ -21,6 +28,7 @@ const Search = z.object({
 			adressetekst: z.string(),
 			kommunenummer: z.string(),
 			postnummer: z.string().optional(),
+			poststed: z.string().optional(),
 		})
 	),
 })
@@ -35,6 +43,7 @@ export function parseAddressSearch(json: unknown): AddressRecord[] | undefined {
 			text: a.adressetekst,
 		}
 		if (a.postnummer !== undefined) record.postcode = a.postnummer
+		if (a.poststed !== undefined) record.poststed = a.poststed
 		return record
 	})
 }
@@ -55,7 +64,13 @@ export function pickAddress(
 	)
 	const [hit] = hits
 	if (hit === undefined || new Set(hits.map((h) => h.addressId)).size !== 1) return undefined
-	return { addressId: hit.addressId, kommune: hit.kommune, text: hit.text }
+	return {
+		addressId: hit.addressId,
+		kommune: hit.kommune,
+		text: hit.text,
+		...(hit.postcode === undefined ? {} : { postcode: hit.postcode }),
+		...(hit.poststed === undefined ? {} : { poststed: hit.poststed }),
+	}
 }
 
 export async function findAddress(

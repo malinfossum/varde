@@ -5,6 +5,7 @@ import type { AllowList } from "../net/allowList.ts"
 import type { Get } from "../net/crawler.ts"
 import { findAddress } from "../registers/kartverket.ts"
 import { REGISTER_SOURCES } from "../sources/registers.ts"
+import { placePart } from "../text/address.ts"
 import { normaliseUrl } from "../text/normalise.ts"
 
 export type Lookups = Omit<GateContext, "unit" | "peers">
@@ -108,9 +109,15 @@ export async function resolveUrls(
 	return new Map(keys.map((k, i) => [k, answers[i]?.status]))
 }
 
-// The value verify stores: Kartverket's own street text, then the page's postcode and place.
-export function kartverketForm(value: string, hit: AddressHit): string {
-	if (hit.text === undefined) return value
-	const comma = value.indexOf(",")
-	return comma < 0 ? hit.text : `${hit.text}${value.slice(comma)}`
+// The value verify stores: Kartverket's street text, then the page's postcode and poststed when
+// they are Kartverket's own (placePart). Any other place part sends the field to review, and the
+// value holds Kartverket's street text alone: page text Kartverket did not confirm (a name, a
+// label, a floor line) never stands in a stored value, so redaction also takes a name out of the
+// quote (inValue in gates/run.ts spares only the value's own words).
+export function kartverketForm(value: string, hit: AddressHit): { value: string; review?: string } {
+	if (hit.text === undefined) return { value }
+	const place = placePart(value, hit.postcode, hit.poststed)
+	if (place === undefined) return { value: hit.text }
+	if ("review" in place) return { value: hit.text, review: place.review }
+	return { value: `${hit.text}${place.place}` }
 }

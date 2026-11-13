@@ -122,8 +122,12 @@ function quotesStillOnPage(c: Proposal["candidate"], ctx: GateContext): boolean 
 }
 
 // One field: Kartverket's form for an address, my answer if I gave one, then the five gates. A
-// rule's or the shared page's review reason applies only where I have not answered. An answer
-// whose quotes left the page counts as no answer, so the gates judge the value afresh.
+// rule's, the shared page's or the place part's review reason applies only where I have not
+// answered: my decision is found by the stored value, Kartverket's form, so an accept settles a
+// place mismatch as it settles any other review. An address Kartverket gave no hit keeps only the
+// text before its first comma: no place was confirmed, so a name after it never stands in the
+// value or, through inValue, in the quote. An answer whose quotes left the page counts as no
+// answer, so the gates judge the value afresh.
 function settle(
 	p: Proposal,
 	ctx: GateContext,
@@ -131,14 +135,29 @@ function settle(
 	now: string
 ): { field: LockField; unsettled: boolean } {
 	let c = p.candidate
+	let placeReview: string | undefined
+	let gateCtx = ctx
 	if (c.field === "address" && typeof c.value === "string") {
 		const hit = ctx.findAddress(c.value)
-		if (hit !== undefined) c = { ...c, value: kartverketForm(c.value, hit) }
+		if (hit !== undefined) {
+			const form = kartverketForm(c.value, hit)
+			c = { ...c, value: form.value }
+			placeReview = form.review
+		} else {
+			const comma = c.value.indexOf(",")
+			const street = comma < 0 ? "" : c.value.slice(0, comma).trim()
+			if (street !== "") {
+				c = { ...c, value: street }
+				// The page's own candidate is among the peers; with its value cut it would
+				// disagree with its own copy, so it leaves the peers.
+				gateCtx = { ...ctx, peers: ctx.peers.filter((x) => x !== p.candidate) }
+			}
+		}
 	}
 	const found = findDecision(decisions, { field: c.field, value: c.value, sourceUrl: c.sourceUrl })
 	const d = found !== undefined && quotesStillOnPage(c, ctx) ? found : undefined
 	if (d?.decision === "reject") {
-		const { gates } = runGates(c, ctx, now)
+		const { gates } = runGates(c, gateCtx, now)
 		const field: LockField = {
 			status: "dropped",
 			sourceUrl: c.sourceUrl,
@@ -158,10 +177,11 @@ function settle(
 			// The role I typed with an edited mobile: the safety gate passes a mobile only with one.
 			...(d.role === undefined ? {} : { role: d.role }),
 		}
-		const field = runGates(c, ctx, now)
+		const field = runGates(c, gateCtx, now)
 		return { field, unsettled: field.status !== "accepted" }
 	}
-	const field = runGates(c, ctx, now)
+	const gated = runGates(c, gateCtx, now)
+	const field = placeReview === undefined ? gated : toReview(gated, placeReview)
 	return { field: p.review === undefined ? field : toReview(field, p.review), unsettled: false }
 }
 
@@ -243,7 +263,7 @@ export async function verifyKommune(
 	const resolved = await resolveAddresses(input.get, wanted, k.kommune)
 	const addresses = new Map(resolved)
 	for (const [a, hit] of resolved)
-		if (hit?.text !== undefined) addresses.set(kartverketForm(a, hit), hit)
+		if (hit?.text !== undefined) addresses.set(kartverketForm(a, hit).value, hit)
 	const checkedUrls = await resolveUrls(
 		input.get,
 		editedValues(input.curated, new Set(["website", "chatUrl"]))

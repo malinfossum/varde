@@ -33,12 +33,24 @@ describe("pickAddress: a house letter", () => {
 		const r = radhus.adresser[0]
 		const spaced = String(r.adressetekst).replace(/(\d)(\p{L})$/u, "$1 $2")
 		const hit = pickAddress(records(r), `${spaced}, ${r.postnummer} ${r.poststed}`)
-		expect(hit).toEqual({ addressId: r.adresseid, kommune: r.kommunenummer, text: r.adressetekst })
+		expect(hit).toEqual({
+			addressId: r.adresseid,
+			kommune: r.kommunenummer,
+			text: r.adressetekst,
+			postcode: r.postnummer,
+			poststed: r.poststed,
+		})
 	})
 
 	it("reads Storgata 1 A as Storgata 1A, and gives Kartverket's text", () => {
 		const hit = pickAddress(records(record("a1", "Storgata 1A")), "Storgata 1 A, 2609 Lillehammer")
-		expect(hit).toEqual({ addressId: "a1", kommune: "3405", text: "Storgata 1A" })
+		expect(hit).toEqual({
+			addressId: "a1",
+			kommune: "3405",
+			text: "Storgata 1A",
+			postcode: "2609",
+			poststed: "LILLEHAMMER",
+		})
 	})
 
 	it("never reads Storgata 1 as Storgata 1A, nor Storgata 1 og 2 as a letter", () => {
@@ -62,6 +74,30 @@ describe("splitAddress", () => {
 	})
 })
 
+describe("Kartverket's postcode and poststed", () => {
+	it("carries the postcode and the poststed onto the hit", () => {
+		expect(pickAddress(records(record("a1")), "Storgata 1, 2609 Lillehammer")).toEqual({
+			addressId: "a1",
+			kommune: "3405",
+			text: "Storgata 1",
+			postcode: "2609",
+			poststed: "LILLEHAMMER",
+		})
+	})
+
+	it("gives no poststed when Kartverket sends none", () => {
+		const bare = {
+			adresseid: "a1",
+			adressetekst: "Storgata 1",
+			kommunenummer: "3405",
+			postnummer: "2609",
+		}
+		expect(parseAddressSearch({ adresser: [bare] })).toEqual([
+			{ addressId: "a1", kommune: "3405", text: "Storgata 1", postcode: "2609" },
+		])
+	})
+})
+
 describe("Kartverket address search", () => {
 	it("builds the search URL", () => {
 		expect(addressQuery("Storgata 1", "3405")).toBe(
@@ -74,6 +110,8 @@ describe("Kartverket address search", () => {
 			addressId: "100000001",
 			kommune: "3405",
 			text: "Storgata 1",
+			postcode: "2609",
+			poststed: "LILLEHAMMER",
 		})
 	})
 
@@ -97,6 +135,8 @@ describe("Kartverket address search", () => {
 			addressId: "100000001",
 			kommune: "3405",
 			text: "Storgata 1",
+			postcode: "2609",
+			poststed: "LILLEHAMMER",
 		})
 	})
 
@@ -110,6 +150,8 @@ describe("Kartverket address search", () => {
 			addressId: "a1",
 			kommune: "3405",
 			text: "Storgata 1A",
+			postcode: "2609",
+			poststed: "LILLEHAMMER",
 		})
 	})
 })
