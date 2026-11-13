@@ -3,6 +3,7 @@ import { join } from "node:path"
 import { matchUnits, type UnitGroup } from "../curate/include.ts"
 import { type RenameIo, SaveError, writeCuratedFile, writeLockFile } from "../curate/write.ts"
 import type { KommuneDiscovery } from "../discover/types.ts"
+import { comparable } from "../gates/compare.ts"
 import { norwegianDate } from "../gates/grounding.ts"
 import { runGates } from "../gates/run.ts"
 import type { GateContext, UnitFacts } from "../gates/types.ts"
@@ -148,9 +149,16 @@ function settle(
 			const street = comma < 0 ? "" : c.value.slice(0, comma).trim()
 			if (street !== "") {
 				c = { ...c, value: street }
-				// The page's own candidate is among the peers; with its value cut it would
-				// disagree with its own copy, so it leaves the peers.
-				gateCtx = { ...ctx, peers: ctx.peers.filter((x) => x !== p.candidate) }
+				// A peer stating the same raw line (my own candidate, Brreg, NKLM, another page) is the
+				// same claim, not a disagreement with the cut street, so it leaves the peers.
+				const raw = comparable(c.field, p.candidate.value)
+				gateCtx = {
+					...ctx,
+					peers: ctx.peers.filter(
+						(x) =>
+							x !== p.candidate && !(x.field === c.field && comparable(x.field, x.value) === raw)
+					),
+				}
 			}
 		}
 	}

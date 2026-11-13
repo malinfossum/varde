@@ -944,6 +944,21 @@ describe("the address place part", () => {
 		expect(JSON.stringify(lock)).not.toMatch(/Kari|Nordmann/)
 	})
 
+	it("does not count a register peer with the same line as a disagreement", async () => {
+		// Brreg states the identical line, so it is the same claim as the page's, not a rival.
+		const { input } = setup({
+			pages: { [BV]: page("Storgata 3, 2998 Eksempelby") },
+			units: [unit({ address: "Storgata 3, 2998 EKSEMPELBY" })],
+			get: storgata3("EKSEMPELBY"),
+		})
+		const lock = (await verifyKommune(input)).lock
+		expect(lock.units[0]?.fields.address).toMatchObject({
+			status: "review",
+			value: "Storgata 3",
+			reason: "validity: Kartverket does not know the address",
+		})
+	})
+
 	it("sends an answer with no poststed to review, with the street text alone", async () => {
 		const lock = await lockFor("Storgata 3, 2999 Eksempelby Kari Nordmann", storgata3(null))
 		expect(lock.units[0]?.fields.address).toMatchObject({
