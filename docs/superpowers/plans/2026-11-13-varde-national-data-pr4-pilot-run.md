@@ -44,7 +44,7 @@ Inputs the spec implies but no spec test names, most likely first. Each has a te
 
 ## Decided (13.11.2026, writing this plan)
 
-Choices the spec leaves open, or where the code on `main` forced a shape. Each line has its reason. Lines 1, 2, 5, 6, 22 and 23 go further than the spec's text; I approve them at plan review or they change.
+Choices the spec leaves open, or where the code on `main` forced a shape. Each line has its reason. Lines 1, 2, 5, 6, 7, 8, 14, 19, 22 and 23 go further than the spec's text; I approve them at plan review or they change.
 
 1. **A lock's `inputs` hold more than the spec names:** `{ extraction, national?, curated?, nklm?, rules }`: the sha256 of the kommune's extraction file, of the national extraction file, of the curated file as verify wrote it, the NKLM edition date, and `RULES_VERSION`. Verify reads all of them, so a resume that skipped on the spec's two alone would keep stale locks after a review session (Review Focus 2), a new Nav extraction or a new NKLM edition. Every extra input only makes resume skip less.
 2. **`RULES_VERSION` has a fingerprint** (`RULES_FINGERPRINT`, sha256 over `src/gates/`, `src/verify/`, `src/curate/`, `src/text/` and `src/registers/kartverket.ts`, with `\r\n` read as `\n`). A test fails while the two do not match, and its message says to bump both. Reason: Review Focus 3. A formatting-only change also asks for a bump; that costs one full verify of the local caches, a few minutes.
@@ -59,7 +59,7 @@ Choices the spec leaves open, or where the code on `main` forced a shape. Each l
 11. **The Kartverket cache is used by verify only.** `review` keeps its live lookup, now at the new 1-second pace: a value I type should be checked against today's register.
 12. **Stage timings and scale numbers live in the cache, not the report.** Each stage CLI appends its duration to `<cache>/timings.json`; verify writes its Kartverket counts to `<cache>/verify-stats.json`; the crawler's report gains each host's crawl delay. `score --pr-body` reads them for the PR body's scale block.
 13. **`verify` may now write to the repo's `data/`.** The PR 3 guard (`isRepoData`) is removed from the verify CLI; `isRepoData` stays exported for its tests until a later clean-up. `--data` stays required, so a run always names its target.
-14. **A different postcode never reaches the place-part rule.** `pickAddress` already refuses a Kartverket record whose postcode differs from the page's, so `findAddress` gives no hit, the value stays as the page wrote it (a name after the place included), and the validity gate sends it to review as "validity: Kartverket does not know the address". Task 2 pins this with a test. Reason: the place-part rule needs a matched record to compare against; widening it is a gap PR (see Left for later).
+14. **A different postcode never reaches the place-part rule.** `pickAddress` already refuses a Kartverket record whose postcode differs from the page's, so `findAddress` gives no hit, the value stays as the page wrote it (a name after the place included), and the validity gate sends it to review as "validity: Kartverket does not know the address". Task 2 pins this with a test. This leaves the `inValue` gap open for these values: a name after the place stays in the value and in its quote, and the review value is committed. The name sweep in Task 13 is the only guard for them, so I read its address lines first. Reason: the place-part rule needs a matched record to compare against; widening it is a gap PR (see Left for later).
 15. **On a place mismatch the review value is Kartverket's street text alone.** A review value is committed too, so unconfirmed page text after the comma (a name, a label) must not ride into it, nor into the quote through `inValue`.
 16. **`resolveAddresses` runs one Kartverket lookup at a time.** Two units at one address then make one request: the second search finds the first answer in the cache. Kartverket is held to one request a second anyway, so nothing is lost.
 17. **`pages/report.json` has one reader:** Task 4's `readCrawlReport(path)` in `src/fetch/fetchPages.ts`, with one schema. Fetch, extract and verify read a missing or broken report as none; `score` refuses a report that exists but does not parse, since reading it as none would turn a stopped host into "no pages fetched".
@@ -70,6 +70,7 @@ Choices the spec leaves open, or where the code on `main` forced a shape. Each l
 22. **How `score` reads my checks.** A disagreement or sampled field in a kommune that blocks ClaudeBot counts as "check by hand" while it has no ruling by me. Rule 5 counts any ruling by me other than `right` as wrong, and an empty sample fails. Two checks with the same `by` for one field make `score` refuse.
 23. **What `score` and `sweep` print.** A refusal names a check by its entry number in `test/pilot-checks.json`, never by unit id (unit ids hold org numbers). Discover's reasons go into the report as plain inert text. The sweep's place names come from the discover files, and from the curated files' `name` when the cache has none (a fresh clone).
 24. **Units I left out never reach a lock.** `verifyKommune` on `main` skips a unit whose answer has `include: false` (`src/verify/verify.ts` line 296), so rule 2 and the ratchet never see them. No task changes this.
+25. **The PR body names the report by its path in a code span, not a link.** A relative link in a PR body resolves against the PR's page and breaks.
 
 ## Left for later plans
 
@@ -102,6 +103,7 @@ pipeline/
     verify/failed.ts         NEW  failedKind, failedLock, writeFailedLock, TRANSIENT_KINDS
     gates/types.ts           MOD  AddressHit gains postcode, poststed
     discover/types.ts        MOD  DiscoverReport.hosts[].delayMs (optional)
+    discover/discover.ts     MOD  onKommune progress callback
     curate/write.ts          MOD  curatedText
     extract/extract.ts       MOD  --offline misses, empty scope, runExtract
     io/files.ts              MOD  sha256Of
@@ -129,11 +131,15 @@ pipeline/
     score/sweep.ts           NEW  sweepLocks, formatSweep
     text/names.ts            MOD  export isKnownWord
   schema/lock.schema.json    MOD  regenerated (npm run schema)
+  package.json               MOD  score and sweep scripts
   test/
     known-wrong.json         NEW  { "entries": [] }
     pilot-checks.json        NEW  { "checks": [] }
     golden.test.ts           MOD  the ratchet
     helpers.ts               MOD  testInputs()
+    networkBoundary.test.ts  MOD  scans src/score/, src/pilot/ and the new files
+    verify, kartverket, context, crawler, pageCache, schema, dataCheck, curatedWrite, queue,
+    session, score, extract, discover .test.ts; reviewHelpers.ts                        MOD  new shapes
     verifyHelpers.ts, pilotFixture.ts                                                    NEW  shared fixtures
     pilotList.test.ts, placePart.test.ts, addressCache.test.ts, pace.test.ts, journal.test.ts,
     resumeFetch.test.ts, runLock.test.ts, progress.test.ts, timings.test.ts, rules.test.ts,
@@ -185,7 +191,7 @@ export class AddressCache {
 export class OfflineMissError extends Error { readonly what: string }   // message: "offline: not in the cache: <what>"
 export const offlineGet: Get                                           // rejects with OfflineMissError(url)
 // src/verify/context.ts (Task 3)
-export async function resolveAddresses(get: Get, addresses: readonly string[], kommune: string, cache?: AddressCache): Promise<...same as today> // one lookup at a time
+export async function resolveAddresses(get: Get, addresses: Iterable<string>, kommune: string, cache?: AddressCache): Promise<...same as today> // one lookup at a time
 // src/discover/types.ts (Task 3): DiscoverReport.hosts[] gains an optional delayMs
 // src/net/types.ts (Task 3)
 export const PACE_MS: Readonly<Record<string, number>>                  // { "kartverket.no": 1_000 }, keyed by registrable domain
@@ -266,7 +272,7 @@ export function readKnownWrong(path: string): KnownWrong
 export function ratchet(wrong: readonly Wrong[], known: KnownWrong): { unlisted: Wrong[]; gone: KnownWrongEntry[] } // disagreement entries only
 export function checksAgree(checks: PilotChecks, known: KnownWrong): string[]   // problems; [] when every pipelineWrong by me is listed and nothing else is
 export class ChecksFileError extends Error {}   // readPilotChecks and readKnownWrong throw it on a missing or invalid file
-export function goneSamples(...)                 // see Task 7
+export function goneSamples(known: KnownWrong, locks: readonly LockFile[]): KnownWrongEntry[] // sample entries whose field is no longer accepted
 // src/answerKey/score.ts (Task 7): Score gains badgeWrong
 // src/check/dataCheck.ts (Task 7)
 export function checkData(root: string, options?: { publish?: boolean }): string[]
@@ -323,14 +329,14 @@ export function formatSweep(lines: readonly SweepLine[]): string
 | 1 | The pilot list and `--only pilot` | none |
 | 2 | The address place part | none |
 | 3 | Kartverket pace, cache and `--offline` lookups | 2 |
-| 4 | The page-cache journal, `fetch --resume`, progress, the cache lock | 1 |
-| 5 | Lock schema: `inputs`, `failed`, `RULES_VERSION` | none |
+| 4 | The page-cache journal, `fetch --resume`, progress, the cache lock | 1, 3 |
+| 5 | Lock schema: `inputs`, `failed`, `RULES_VERSION` | 2, 3 |
 | 6 | Verify: `--resume`, failed locks, `--offline`, progress, the repo's `data/` | 3, 4, 5 |
-| 7 | The ratchet: known wrong values, rulings, `data:check --publish` | 5 |
-| 8 | Scoring the pilot | 1, 7 |
+| 7 | The ratchet: known wrong values, rulings, `data:check --publish` | 1, 5 |
+| 8 | Scoring the pilot | 1, 6, 7 |
 | 9 | The report and the PR-body summary | 8 |
 | 10 | The `score` command and the scale numbers | 4, 6, 9 |
-| 11 | The name sweep | 5 |
+| 11 | The name sweep | 1, 5 |
 | 12 | Docs: the pilot run, sources and licences, the notice | 10, 11 |
 | 13 | Full suites, the pilot run, the checks, the baseline PR | all |
 
@@ -3636,6 +3642,14 @@ with:
 			: "discover stopped on an unexpected error"
 ```
 
+- [ ] **Step 10b: A progress line and a timing for discover**
+
+The spec asks every stage for one line when a kommune finishes, and the PR body's stage durations need discover too. In `src/discover/discover.ts`, `DiscoverOptions` gains `onKommune?: (kommune: string, name: string, at: number, of: number) => void`. In `discover()`, the kommune map inside `Promise.all` awaits each `discoverKommune(...)`, then raises a `done` counter (declared `let done = 0` before it) and calls `o.onKommune?.(k.code, k.name, done, kommuner.length)`. Kommuner run side by side, so the count is how many are done, not a place in the list.
+
+In `src/cli/discover.ts`, set `const started = Date.now()` before the call, pass `onKommune: (kommune, name, at, of) => console.log(`discover: ${kommune} ${name} done (${at} of ${of})`)`, and after `writeDiscovery(...)` call `recordTiming(root, "discover", Date.now() - started)` (import it from `../io/timings.ts`).
+
+In `test/discover.test.ts`, add a test that a two-kommune run calls `onKommune` twice, the last time with 2 of 2. Add `src/discover/discover.ts test/discover.test.ts` to this task's `git add`.
+
 - [ ] **Step 11: Check the CLI offline**
 
 Neither check reaches the network: the first stops at the arguments, the second before the crawler is built. From `pipeline/`:
@@ -4252,6 +4266,7 @@ A pilot run is stopped and resumed, and a kommune whose site stopped must still 
 
 **Files:**
 - Create: `pipeline/src/verify/resume.ts`, `pipeline/src/verify/failed.ts`, `pipeline/test/verifyHelpers.ts`
+- Modify: `pipeline/src/verify/rules.ts` (the new `RULES_FINGERPRINT`, Step 16)
 - Modify: `pipeline/src/io/files.ts` (imports, after line 41), `pipeline/src/curate/write.ts` (lines 72-86 on `main`), `pipeline/src/verify/verify.ts` (imports; `VerifyInput` lines 41-54; the `resolveAddresses` call, line 243; `verifyAndWrite` lines 350-367; `unfinishedReason` lines 372-378; `verifyEach` lines 380-400), `pipeline/src/extract/extract.ts` (imports; `extractScope` lines 126-165; `extractScopes` lines 191-212; new `runExtract` after line 254), `pipeline/src/cli/verify.ts` (whole file), `pipeline/src/cli/extract.ts` (whole file)
 - Test: `pipeline/test/resumeVerify.test.ts`, `pipeline/test/failed.test.ts`, `pipeline/test/offline.test.ts` (all new), `pipeline/test/extract.test.ts` (extend), `pipeline/test/verify.test.ts` (seven calls updated, one test added)
 
@@ -5095,11 +5110,11 @@ export async function verifyEach<K extends { kommune: string }>(
 import { type RenameIo, writeLockFile } from "../curate/write.ts"
 import type { KommuneDiscovery } from "../discover/types.ts"
 import type { CrawlReport } from "../net/crawler.ts"
-import type { FAILED_KINDS, LockFailure, LockFile, LockInputs } from "../schema/lock.ts"
+import type { FailedKind, LockFailure, LockFile, LockInputs } from "../schema/lock.ts"
 import { httpsHost } from "../text/normalise.ts"
 import { lockPath, type VerifyCounts } from "./verify.ts"
 
-export type FailedKind = (typeof FAILED_KINDS)[number]
+export type { FailedKind }
 
 // The stops a sleeping PC or one bad hour causes. A kommune failed for one of these is not a
 // result: score refuses the pilot until fetch --resume has fetched it again. Every other kind is
@@ -5895,6 +5910,7 @@ describe("PilotChecks", () => {
 		)
 		expect(PilotChecks.safeParse({ checks: [check({ note: "x".repeat(301) })] }).success).toBe(false)
 		expect(PilotChecks.safeParse({ checks: [{ ...check(), by: "someone" }] }).success).toBe(false)
+		expect(PilotChecks.safeParse({ checks: [check({ by: "proposed" }), check({ by: "me" })] }).success).toBe(true)
 	})
 })
 
@@ -6286,12 +6302,12 @@ function keyIdProblems(e: Identity): string[] {
 	return []
 }
 
-function repeats(list: readonly Identity[]): number[] {
+function repeats<T>(list: readonly T[], key: (e: T) => string): number[] {
 	const seen = new Set<string>()
 	const at: number[] = []
 	for (const [i, e] of list.entries()) {
-		if (seen.has(identity(e))) at.push(i)
-		seen.add(identity(e))
+		if (seen.has(key(e))) at.push(i)
+		seen.add(key(e))
 	}
 	return at
 }
@@ -6316,11 +6332,12 @@ export type PilotCheck = z.infer<typeof PilotCheck>
 export const PilotChecks = z
 	.strictObject({ checks: z.array(PilotCheck) })
 	.superRefine((file, ctx) => {
-		for (const i of repeats(file.checks))
+		// A proposal and my ruling may stand side by side. Two from one author may not.
+		for (const i of repeats(file.checks, (c) => `${identity(c)}|${c.by}`))
 			ctx.addIssue({
 				code: "custom",
 				path: ["checks", i],
-				message: "two checks of one disagreement or sampled field",
+				message: "two checks of one disagreement or sampled field by the same author",
 			})
 	})
 export type PilotChecks = z.infer<typeof PilotChecks>
@@ -6340,7 +6357,7 @@ export type KnownWrongEntry = z.infer<typeof KnownWrongEntry>
 export const KnownWrong = z
 	.strictObject({ entries: z.array(KnownWrongEntry) })
 	.superRefine((file, ctx) => {
-		for (const i of repeats(file.entries))
+		for (const i of repeats(file.entries, identity))
 			ctx.addIssue({ code: "custom", path: ["entries", i], message: "a value listed twice" })
 	})
 export type KnownWrong = z.infer<typeof KnownWrong>
@@ -9923,7 +9940,7 @@ git commit -m "feat(pipeline): add npm run sweep to list capitalised words left 
 
 - [ ] **Step 1: Extend the network boundary test's scan list**
 
-In `pipeline/test/networkBoundary.test.ts`, rename the test "scans the PR 3 folders and files" to "scans the PR 3 and PR 4 folders and files", add `"src/score/"` and `"src/pilot/"` to the folder list, and add these to the file list:
+In `pipeline/test/networkBoundary.test.ts`, rename the test "scans the PR 3 folders and files" to "scans the PR 3 and PR 4 folders and files", add `"src/pilot/"` to the folder list (Task 8 added `"src/score/"`), and add these to the file list:
 
 ```ts
 			"src/io/addressCache.ts",
@@ -9934,8 +9951,6 @@ In `pipeline/test/networkBoundary.test.ts`, rename the test "scans the PR 3 fold
 			"src/verify/failed.ts",
 			"src/verify/rules.ts",
 			"src/fetch/progress.ts",
-			"src/cli/score.ts",
-			"src/cli/sweep.ts",
 ```
 
 - [ ] **Step 2: Run it**
@@ -10106,7 +10121,7 @@ In `docs/superpowers/specs/2026-10-28-varde-national-data-design.md`, "### Who r
 Run from `pipeline/`: `npx biome check --write .`, `npx biome ci .`, `npm run typecheck`, `npm run lint`, `npm test`. Expected: all pass.
 
 ```bash
-git add pipeline/README.md data/README.md pipeline/test/networkBoundary.test.ts
+git add README.md ../data/README.md test/networkBoundary.test.ts
 git commit -m "docs(pipeline): document the pilot run, sources and licences, and the data notice"
 ```
 
@@ -10143,7 +10158,7 @@ npm run key:freeze -- ../.cache/live-data <today's date from the line above>
 git diff --stat test/answer-key.json
 ```
 
-Expected: `answer key: <n> rows, frozen on <today>`. If the diff is more than the date line, run `npm test` (the golden test reads it) and commit it alone: `git add pipeline/test/answer-key.json && git commit -m "chore(pipeline): freeze the answer key before the pilot run"`.
+Expected: `answer key: <n> rows, frozen on <today>`. If the diff is more than the date line, run `npm test` (the golden test reads it) and commit it alone: `git add test/answer-key.json && git commit -m "chore(pipeline): freeze the answer key before the pilot run"`.
 
 - [ ] **Step 3: Keep the PC awake and start the run**
 
@@ -10173,6 +10188,8 @@ npm run score -- --only pilot --pr-body ../.cache/pr-body.md
 
 If it refuses on a transient failure, it names the kommuner: run `npm run fetch -- --only pilot --resume`, `npm run extract -- --only pilot`, `npm run verify -- --data ../data --only pilot --resume`, and score again. If it refuses for a missing lock, find out why from the verify output and fix the cause before going on. Expected at the end: the pass-mark lines printed (rule 5 "waiting" until the sample is checked) and `docs/pilot/pilot-report.md` written.
 
+Run Step 9 (the name sweep) here, before any check is written: a redaction fix re-runs verify, and changed locks would make every check after it stale.
+
 - [ ] **Step 6: Seed the blocked kommuner and write the todo list**
 
 ```bash
@@ -10197,7 +10214,7 @@ npm run score -- --only pilot --pr-body ../.cache/pr-body.md
 
 Expected: the golden test passes (every wrong value listed, every listing still occurring, the two files agree), and score no longer reports open checks. "Done when" in the PR body counts only `by: "me"`.
 
-- [ ] **Step 9: The name sweep (mine)**
+- [ ] **Step 9: The name sweep again (mine), only if a lock changed since Step 5**
 
 I run `npm run sweep -- --only pilot` in a Terminal tab I open myself, and read it. The controller does not read that tab. If I find a real name: stop, write a redaction fix with a fictional test fixture as its own commit, re-run `npm run verify -- --data ../data --only pilot --resume` (the fix bumps `RULES_VERSION`), score and sweep again.
 
