@@ -1023,8 +1023,10 @@ The address API goes through the website crawler today, so every lookup waits fo
 
 - Each stage prints one line when a kommune finishes, with a running count ("12 of 47").
   `fetch` also prints a line about every five minutes.
-- `fetch --resume` skips a URL whose cached copy is under 24 hours old. Ctrl+C loses only the
-  pages in flight.
+- `fetch --resume` skips a URL fetched by the same run, whatever its age, and any other URL
+  whose cached copy is under 24 hours old. A run gets an id when it starts without `--resume`,
+  and the journal records it with each page. A run stopped in the evening and resumed the next
+  afternoon then refetches nothing it already has. Ctrl+C loses only the pages in flight.
 - **The cache index is a journal.** Today `save()` rewrites the whole `manifest.json` once, at
   the end. Rewriting it after every page would cost more with each page, and on Windows a
   rename onto a file that Defender or the search indexer holds open can fail with EPERM and end
@@ -1073,8 +1075,10 @@ The report has seven parts:
 1. **Pass mark.** One line per rule: the measured value, the target, pass or fail.
 2. **Per kommune.** Units, units with a field in review, inclusion questions, and accepted,
    review and dropped fields.
-3. **Review reasons, ranked.** Every field in review, grouped by gate and reason, largest first.
-   This orders the gap PRs. It is also the evidence for the AI fallback, because it shows which
+3. **Review reasons, ranked.** Every field in review, grouped by gate and reason, largest first,
+   and on a tie by gate name, then reason, so equal counts never swap places between runs. Every
+   other list in the report is sorted by kommune number, then unit id, then field. This orders
+   the gap PRs. It is also the evidence for the AI fallback, because it shows which
    share a model could settle (extraction misses) and which it could not (register or
    Kartverket gaps).
 4. **Inclusion questions.** A count per kommune and an estimate of my time at 30 seconds each,
@@ -1083,10 +1087,13 @@ The report has seven parts:
    the existing recall report. Later stages add "fetched, no unit id", "no values extracted"
    and "dropped by a gate".
 6. **Disagreements.** Each accepted value that differs from the key: key row id, field, key
-   value, pipeline value, source link and quote, and the proposed ruling. Quotes sit in code
-   blocks, as in every PR body.
+   value, pipeline value, source link and quote, and the ruling, proposed or mine.
 7. **Sample outside the key.** The rows drawn for rule 5, each with its fields, source links,
-   quotes and my check.
+   quotes and the check.
+
+The report is committed and GitHub renders it, so it follows the PR body rules: every quote,
+value and source URL goes through the same sanitiser as the review PR body, quotes sit in code
+blocks, and URLs are plain text in code spans, never live links.
 
 A key row counts as found when a lock unit matches it, also while that unit waits for its
 inclusion answer. Finding is the pipeline's job; including is mine.
@@ -1099,8 +1106,9 @@ straight after the pilot passes. So the pilot carries the rollout's check:
 
 - `score` draws 20 accepted units at random from the 39 kommuner with no key, with the seed
   fixed in the source, so the same locks always give the same sample.
-- Each is checked by hand against its sources in a fresh session, as in the rollout. My checks
-  are saved in `test/sample-checks.json` (unit id, field, right or wrong), and `score` reads them.
+- Each is checked by hand against its sources in a fresh session, as in the rollout, except in
+  the kommuner that block ClaudeBot (see "Who reads the live pages"). The checks are saved in
+  `test/pilot-checks.json`, and `score` reads them.
 - **Pass-mark rule 5:** zero wrong values in the sample. A wrong one is ruled like a key
   disagreement: it goes into `test/known-wrong.json`, and its fix is a gap PR.
 - A gap PR that changes the locks can change the sample. Rows already checked keep their check;
@@ -1125,6 +1133,39 @@ A "key stale" ruling means the live site shows an old value. It gets its own sma
 the live site, then `key:freeze` and `score` run again. An "unclear" ruling stays in the report
 until I settle it.
 
+### Rulings are data
+
+`score` is offline, so it cannot check a live page, and a ruling written into the report by hand
+would be lost the next time `score` writes it. Every ruling and every sample check therefore
+lives in `test/pilot-checks.json`, which `score` reads:
+
+- One entry per check: `kind` (disagreement or sample), key row id (disagreements only), unit
+  id, field, `ruling` (key stale, pipeline wrong, unclear, or right), a short note, and `by`
+  (proposed or me).
+- The session that checks the live pages writes its proposals with `by: proposed`. I change each
+  to `by: me`, keeping or changing the ruling. The report shows both, and "Done when" counts
+  only `by: me`.
+- A "pipeline wrong" ruling by me also goes into `test/known-wrong.json`; the golden test checks
+  that the two lists agree.
+- An entry whose disagreement or sampled row no longer occurs fails `score`, as a stale
+  `known-wrong.json` entry fails the golden test. Each gap PR removes its own entries.
+
+### Who reads the live pages
+
+Seven Innlandet pilot kommuner block ClaudeBot: Hamar, Stange, Løten, Grue, Nord-Odal, Sør-Odal
+and Våler. (The list above names Våler without a number; the plan confirms from robots.txt
+that it is Innlandet's 3419.) This spec promises that their text never goes to an AI company. A Claude session that
+reads their live pages for a disagreement or a sample check would break that promise, even
+though its own user agent is not ClaudeBot.
+
+- For units in those kommuner the session proposes nothing from the page. It writes the entry
+  with `ruling: unclear` and the note "check by hand", from the lock and the key alone, which
+  are already public.
+- I check those pages myself in the browser and set the ruling. Hamar is in the key, so this is
+  all of Hamar's disagreements; the report counts these entries so I can see the time.
+- The name sweep runs in my terminal tab and I read it. Its output is not pasted into a Claude
+  session, for the same reason.
+
 ### The run
 
 The pipeline README gains a "Pilot run" section:
@@ -1133,13 +1174,32 @@ The pipeline README gains a "Pilot run" section:
 2. `discover`, `fetch` (no `--limit`), `extract`, `verify --nklm-fetch` and `score`, each with
    `--only pilot`, in a Terminal tab I can see.
 3. The PC stays awake while it runs. The slowest host at a 5-second pace sets the time, likely
-   an afternoon into the evening.
-
+   an afternoon into the evening. If it sleeps anyway, see "Errors": the stops it causes are
+   transient, and `fetch --resume` picks them up.
 4. `npm run sweep -- --only pilot`, read before the commit (see "Privacy of the baseline").
 
 Committed: 47 lock files in `data/lock/`, the curated file with the units included by rule only,
-`docs/pilot/pilot-report.md`, `test/known-wrong.json` and `test/sample-checks.json`. The page
-cache and the Kartverket cache stay local. Branch `feat/pipeline-pilot` from `main`.
+`docs/pilot/pilot-report.md`, `test/known-wrong.json`, `test/pilot-checks.json` and
+`data/README.md`. The page cache and the Kartverket cache stay local. Branch
+`feat/pipeline-pilot` from `main`.
+
+### Sources, licences and the notice
+
+The committed locks carry register data and a few managers' numbers with their roles, so the
+public repository holds them from this PR on. The spec's rule is that the credit lines and the
+Art. 14 notice exist from the first published value, and this PR is the first. The Om Varde
+section still ships with the UI follow-up before go-live; until then, `data/README.md` does the
+job for the repository:
+
+- **Sources and licences:** one line per source in the locks (brreg and the other registers,
+  Kartverket, Nav, NKLM, the kommuner's own pages), each with its licence, the credit line it
+  asks for and a link. It points to `docs/licence-requests/README.md` for the granted ones.
+  Confirm each licence from its source when writing the file, and write "confirm" where it
+  cannot be read.
+- **Notice (Art. 14):** what personal data the locks hold (a manager's number and role, never a
+  name), why, where it comes from, and how to ask for removal. It says plainly that removal
+  takes the value out of the current files and every later run, and that older commits keep it
+  unless history is rewritten, which I do on request.
 
 ### Errors
 
@@ -1151,8 +1211,19 @@ cache and the Kartverket cache stay local. Branch `feat/pipeline-pilot` from `ma
   when no page came through, and verify writes a lock for it with no units and a `failed`
   reason ("host stopped: 429", "no pages fetched"). `score` counts that kommune's key rows as
   lost, with that reason in the recall part.
-- `score` refuses to run only when a pilot kommune was never attempted (no lock file at all),
-  and names it. A partial pilot is never scored as a whole one.
+- **Transient stops are not results.** The crawler stops a host for the run on a timeout, a
+  network error or a server error. A PC that sleeps for an hour gives every busy host one of
+  those, and the run would end looking like 47 failed kommuner. So the `failed` reason keeps the
+  crawler's stop kind, and `score` refuses to run while any pilot kommune failed for a transient
+  kind (`timeout`, `network`, `serverError`). It names them and says to run `fetch --resume`.
+  Only a lasting kind (robots, a Retry-After over the cap, a crawl delay too long, no pages) is
+  scored as lost recall.
+- `score` refuses to run when a pilot kommune was never attempted (no lock file at all), and
+  names it. A partial pilot is never scored as a whole one.
+- **One process per cache.** Two `fetch` runs in two Terminal tabs would interleave the journal
+  and both write `manifest.json` at the end. Each stage takes a lock file in the cache folder
+  (`.cache/pages/run.lock`, holding its process id) and refuses to start while another live
+  process holds it. A lock left by a process that is gone is taken over.
 
 ### Testing
 
@@ -1176,12 +1247,30 @@ cache and the Kartverket cache stay local. Branch `feat/pipeline-pilot` from `ma
   `score` runs and counts it as lost recall.
 - **Sweep:** a fixture lock with a name left in a quote is listed; a sentence-opening word and a
   known word are not. The sweep writes no file.
+- **Rulings:** `score` shows a proposed ruling and my ruling apart, counts only mine as done,
+  fails on an entry whose disagreement or sampled row is gone, and the golden test fails when
+  `known-wrong.json` and the "pipeline wrong" rulings in `pilot-checks.json` disagree.
+- **Transient stops:** a lock failed for `timeout` makes `score` refuse and name the kommune; one
+  failed for robots is scored as lost recall.
+- **Cache lock:** a second `fetch` on a held cache refuses to start; a lock whose process is gone
+  is taken over.
+- **Report sanitiser:** a fixture quote holding `@someone`, `<img>`, triple backticks and a
+  `javascript:` URL renders inert in the committed report, as in the PR body test. Two
+  review reasons with equal counts keep their order across runs.
 - **Network boundary test** covers every new file.
 - **Before the PR:** `npm test`, `typecheck` and `lint` in `pipeline/`, and the web suites
   (`npm test` and the full `npm run e2e`).
 
 ## Considered and rejected
 
+- **A name sweep in CI with an allow-list (PR 4).** Every capitalised service word would need an
+  entry, so the list would be long and approved without reading. One careful read before one
+  commit fits a single pilot. Revisit in PR 5, when refreshes commit unattended.
+- **Keeping the pilot's locks out of the public repository (PR 4).** The golden test and the
+  ratchet need them in CI, and measure-first needs them committed. The sweep, redaction and the
+  notice in `data/README.md` are the controls instead.
+- **Keeping the PC awake with `powercfg` (PR 4).** That changes a system setting for one run.
+  The transient-stop rule makes a sleep cost only a `fetch --resume`.
 - **Running the pipeline on my PC.** Safer for the key, but it needs me every week. GitHub
   secrets already hold Varde's other credentials, and the spend limit caps the risk.
 - **Auto-merging every change.** A changed phone number reaching users unseen breaks the
@@ -1247,4 +1336,4 @@ cache and the Kartverket cache stay local. Branch `feat/pipeline-pilot` from `ma
 - Ollama structured outputs: https://docs.ollama.com/capabilities/structured-outputs
 - NorMistral-11B: https://huggingface.co/ltg/normistral-11b-thinking
 
-> Stress-tested 2026-11-06 (skill a217382), PR 3 section: 14 applied, 2 adapted, 1 decided by me. Earlier run 2026-10-28 (skill 1b85fca), whole spec: 15 applied, 3 adapted, 2 decided by me.
+> Stress-tested 2026-11-13 (skill 5065c26), PR 4 section: 6 applied, 2 adapted, 0 decided by me. Earlier runs: 2026-11-06 (skill a217382), PR 3 section: 14 applied, 2 adapted, 1 decided by me; 2026-10-28 (skill 1b85fca), whole spec: 15 applied, 3 adapted, 2 decided by me.
