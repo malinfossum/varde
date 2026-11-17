@@ -1153,8 +1153,8 @@ lives in `test/pilot-checks.json`, which `score` reads:
 ### Who reads the live pages
 
 Seven Innlandet pilot kommuner block ClaudeBot: Hamar, Stange, Løten, Grue, Nord-Odal, Sør-Odal
-and Våler. (The list above names Våler without a number; the plan confirms from robots.txt
-that it is Innlandet's 3419.) This spec promises that their text never goes to an AI company. A Claude session that
+and Våler. (Våler is Innlandet's 3419: checked 13.11.2026, `www.vaaler-he.kommune.no`
+disallows ClaudeBot, and Østfold's Våler, 3114, does not.) This spec promises that their text never goes to an AI company. A Claude session that
 reads their live pages for a disagreement or a sample check would break that promise, even
 though its own user agent is not ClaudeBot.
 
