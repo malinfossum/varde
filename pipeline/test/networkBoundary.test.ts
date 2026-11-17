@@ -34,7 +34,14 @@ describe("network boundary", () => {
 
 	it("scans the PR 3 folders and files", () => {
 		const scanned = tsFiles(join(ROOT, "src")).map(rel)
-		for (const dir of ["src/extract/", "src/curate/", "src/verify/", "src/review/", "src/xlsx/"]) {
+		for (const dir of [
+			"src/extract/",
+			"src/curate/",
+			"src/verify/",
+			"src/review/",
+			"src/xlsx/",
+			"src/score/",
+		]) {
 			expect(
 				scanned.some((f) => f.startsWith(dir)),
 				dir

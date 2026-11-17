@@ -19,7 +19,7 @@ export type RecallResult = {
 	notes: string[]
 }
 
-const STOP_TEXT: Readonly<Record<HostStop, string>> = {
+export const STOP_TEXT: Readonly<Record<HostStop, string>> = {
 	visitTime: "outside its Visit-time window",
 	crawlDelayTooLong: "its Crawl-delay is over a minute",
 	retryAfterTooLong: "it asked to wait more than ten minutes",
