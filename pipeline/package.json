@@ -21,7 +21,8 @@
 		"verify": "node src/cli/verify.ts",
 		"review": "node src/cli/review.ts",
 		"recall-report": "node src/cli/recall-report.ts",
-		"score": "node src/cli/score.ts"
+		"score": "node src/cli/score.ts",
+		"sweep": "node src/cli/sweep.ts"
 	},
 	"dependencies": {
 		"cheerio": "1.2.0",

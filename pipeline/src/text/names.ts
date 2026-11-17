@@ -91,6 +91,16 @@ const WHITESPACE_ONLY = /^\s+$/
 const fold = (word: string) => foldNorwegian(word.replace(/[\u2010\u2011]/g, "-"))
 const wordsOf = (text: string) => text.split(/[\s,()]+/).filter((w) => w !== "")
 
+// The folded place names and each of their parts: "Nord-Odal" gives "nord-odal", "nord" and "odal".
+function placeWords(places: readonly string[]): Set<string> {
+	const words = new Set<string>()
+	for (const place of places) {
+		words.add(fold(place))
+		for (const part of place.split(/[\s-]+/)) words.add(fold(part))
+	}
+	return words
+}
+
 // A label word as written, in its definite form ("Sentralbordet", "Legevakten") or with
 // "-nummer" ("Telefonnummer", "Telefonnummeret"). Each ending is one fixed suffix: no overlap.
 const DEFINITE = /(?:ene|en|et|a)$/
@@ -118,6 +128,14 @@ function staticWord(folded: string): boolean {
 	return folded
 		.split("-")
 		.every((p) => p !== "" && (one(p) || DAY_WORDS.has(p) || MONTH_WORDS.has(p)))
+}
+
+// A word Varde knows is no name: a day, month, label or role word, or a place (a kommune name or
+// one of its parts). The name sweep lists every other capitalised word that does not open a
+// sentence.
+export function isKnownWord(word: string, places: readonly string[]): boolean {
+	const folded = fold(word)
+	return staticWord(folded) || placeWords(places).has(folded)
 }
 
 type Word = { text: string; folded: string }
@@ -150,11 +168,7 @@ function runs(text: string): Word[][] {
 // a name behind. A word of the unit's own name is exempt only beside another one ("Eksempel
 // Helsestasjon"): alone it may be the person a unit is named after.
 export function possibleNames(text: string, ctx: NameContext): string[] {
-	const places = new Set<string>()
-	for (const place of ctx.places) {
-		places.add(fold(place))
-		for (const part of place.split(/[\s-]+/)) places.add(fold(part))
-	}
+	const places = placeWords(ctx.places)
 	const unitWords = new Set(wordsOf(ctx.unitName ?? "").map(fold))
 	const found: string[] = []
 	for (const run of runs(text)) {

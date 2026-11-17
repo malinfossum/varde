@@ -49,15 +49,20 @@ function readJson<S extends z.ZodType>(schema: S, path: string, name: string): z
 	return parsed.data
 }
 
-function readLocks(root: string, only: readonly string[]): LockFile[] {
-	return readJsonDir(join(root, "data", "lock")).flatMap((f) => {
+// Every lock file under data/lock, each checked against its schema.
+export function readAllLocks(root: string): LockFile[] {
+	return readJsonDir(join(root, "data", "lock")).map((f) => {
 		const parsed = LockFile.safeParse(f.data)
 		if (!f.valid || !parsed.success)
 			throw new ScoreLoadError(
 				`data/lock/${f.file} does not match its schema: run npm run data:check`
 			)
-		return only.includes(parsed.data.kommune) ? [parsed.data] : []
+		return parsed.data
 	})
+}
+
+function readLocks(root: string, only: readonly string[]): LockFile[] {
+	return readAllLocks(root).filter((lock) => only.includes(lock.kommune))
 }
 
 function readCurated(root: string, only: readonly string[]): CuratedFile[] {
