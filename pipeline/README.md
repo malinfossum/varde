@@ -44,23 +44,36 @@ which reads and counts and writes nothing to `--data`. With `--nklm-fetch` it st
 NKLM file in the cache. Both commands take `--cache <dir>` (default `.cache/` at the repo root)
 for discover's and extract's output, and `review --kommune 3405` walks one kommune only.
 
-`discover`, `fetch`, `extract` and `verify` each hold `<cache>/pages/run.lock` while they run, so two of
-them never share a cache. A lock left by a process that is gone is taken over. Each prints a
-line when a kommune is done, with a running count, and `fetch` prints a line about every five
-minutes. `fetch --resume` skips a page the same run already fetched and any page under 24 hours
-old. `verify --resume` skips a kommune only when its lock's `inputs` (the hashes of its
-extraction file, the national extraction file and its curated file, the NKLM edition and
-`RULES_VERSION`) all match. A change to a gate or a field rule bumps `RULES_VERSION` in
-`src/verify/rules.ts`; `test/rules.test.ts` fails until it is bumped. `extract --offline` and
-`verify --offline` fetch nothing and let nothing expire: a page or a Kartverket answer missing
-from the cache stops the kommune and names what it missed. `verify --offline` does not ask for
-the status of a website or chat URL I typed in review again: its status comes from the page
-manifest when that holds the URL, and otherwise my decision stands. Gap PRs score this way, so a
-rule change is never mixed with changes on the source pages.
+`fetch`, `extract` and `verify` each hold `<cache>/pages/run.lock` while they run, and
+`discover` holds it while it writes its files and purges, so two of them never share a cache.
+A lock left by a process that is gone is taken over. `score` and `sweep` only read and take
+neither lock. Run while `verify` or `review` writes to `data/`, they would read a mix of old
+and new locks, so I start them only after. Each stage prints a line when a kommune is done,
+with a running count, and `fetch` prints a line about every five minutes.
+
+`fetch --resume` skips a page the same run already fetched and any page under 24 hours old. A
+`fetch` without `--resume` starts a new run for the whole cache, whatever its `--only`: it
+replaces `pages/run.json` and deletes `pages/report.json`, so every other kommune's stops and
+not-fetched lines are gone until a full `npm run fetch -- --only pilot --national`.
+`pages/run.json` also records whether the run finished, and `verify` and `score` refuse while
+a fetch stopped and was never resumed. `verify --resume` skips a kommune only when its lock's
+`inputs` (the hashes of its extraction file, the national extraction file and its curated
+file, the NKLM edition and `RULES_VERSION`) all match. A change to a rule file (`RULE_PATHS` in
+`src/verify/rules.ts`) needs two edits there: a new `RULES_FINGERPRINT`, which
+`test/rules.test.ts` asks for, and a bump of `RULES_VERSION`, which no test checks. Without the
+bump `verify --resume` keeps every old lock.
+
+`extract --offline` and `verify --offline` fetch nothing and let nothing expire: a page or a
+Kartverket answer missing from the cache stops the kommune and names what it missed.
+`verify --offline` does not ask for the status of a website or chat URL I typed in review
+again: its status comes from the page manifest when that holds the URL, and otherwise my
+decision stands. Gap PRs score this way, so a rule change is never mixed with changes on the
+source pages. An offline `verify` writes no Kartverket counts and no time for the PR body, and
+a resumed online one adds its counts and time to the earlier run's.
 
 Kartverket's address API gets its own pace, one request a second, and its answers are cached
-for 30 days in `<cache>/kartverket/`, each file named by a hash of its search. The 90-day purge
-in `fetch` clears them with the pages.
+for 30 days in `<cache>/kartverket/`, each file named by a hash of its search. The purge in
+`discover`, `fetch` and `verify` clears them when they are past that age.
 
 `data:check` accepts a value I edited when the curated file holds a matching `edit` decision, and
 it grounds every value the same way the grounding gate does (a website by its source page, hours
@@ -91,26 +104,39 @@ Once, on my PC, in a Terminal tab I can see. Ctrl+C stops any stage; run it agai
 
    If `score` refuses because a kommune failed on a timeout, a network error or a server
    error, run `npm run fetch -- --only pilot --national --resume`, then extract (with
-   `--national` again), `verify --resume` and score again. `score` also refuses when a kommune
-   that blocks ClaudeBot has no site in discover's files: it names the kommune number, and I
-   run `discover` again so the site is found.
-4. `npm run score -- --only pilot --seed-blocked` writes "check by hand" entries for the seven
+   `--national` again), `verify --resume` and score again. `score` also refuses when
+   discover's files lack a pilot kommune or a kommune that blocks ClaudeBot has no site there:
+   it names the kommune numbers, and I run `npm run discover -- --only pilot` again. A
+   narrower `--only` replaces discover's whole report, so it never fixes this.
+4. `npm run sweep -- --only pilot | less` in a terminal outside any AI tool, right after the
+   first score. The pager keeps the top of the list from scrolling away and writes no file;
+   `--only 3405` reads one kommune at a time instead. I read the list myself and never paste
+   it into an AI session. A real name means a redaction fix, a test fixture and a new
+   `verify`, never a hand edit of a lock.
+5. `npm run score -- --only pilot --seed-blocked` writes "check by hand" entries for the seven
    kommuner that block ClaudeBot. I check those pages myself in a browser.
-5. `npm run score -- --only pilot --todo ../.cache/pilot-todo.json` lists the other open
+6. Only after I have read the sweep and settled any name in it:
+   `npm run score -- --only pilot --todo ../.cache/pilot-todo.json` lists the other open
    checks, without the seven kommuner or any page on their sites. A fresh Claude session
    reads only that file and the live pages, and writes its proposals into
    `test/pilot-checks.json` with `by: "proposed"`. I rule on each and set `by: "me"`; every
    "pipeline wrong" ruling also goes into `test/known-wrong.json`.
-6. `npm run sweep -- --only pilot` in a terminal outside any AI tool. I read the list myself
-   and never paste it into an AI session. A real name means a redaction fix, a test fixture
-   and a new `verify`, never a hand edit of a lock.
 7. `npm run score -- --only pilot --pr-body ../.cache/pr-body.md` once more, then commit
-   `data/lock/`, `data/curated/`, `docs/pilot/pilot-report.md`, `test/known-wrong.json`,
-   `test/pilot-checks.json` and `test/answer-key.json` if the freeze changed it.
+   `data/lock/*.json`, `data/curated/*.json`, `docs/pilot/pilot-report.md`,
+   `test/known-wrong.json`, `test/pilot-checks.json` and `test/answer-key.json` if the freeze
+   changed it. Only the `.json` files: a `<file>.<pid>.tmp` left by a save that failed holds
+   values like a lock, and `data:check` flags one.
 
-Gap PRs re-run `extract --offline`, `verify --offline --resume` and `score` from the local
-caches, which takes minutes. The report states the date of the oldest page behind the locks,
-so a re-baseline after the 90-day purge shows as one.
+Gap PRs re-run these from the local caches, which takes minutes:
+
+```bash
+npm run extract -- --only pilot --national --offline
+npm run verify -- --data ../data --only pilot --offline --resume
+npm run score -- --only pilot
+```
+
+The report states the date of the oldest page behind the locks, so a re-baseline after the
+90-day purge shows as one.
 
 ## Review
 
@@ -146,7 +172,8 @@ turns colour off, and meaning never rests on colour. `review` refuses to run wit
 interactive terminal. Git Bash's own window is not one to Node: run it in PowerShell or Windows
 Terminal, or start it as `winpty npm run review -- --data <dir>`.
 
-`--only` takes kommune numbers or two-digit fylke prefixes, and `discover` requires it. An
+`--only` takes kommune numbers, two-digit fylke prefixes or `pilot`, and `discover` requires
+it. `score` takes `--only pilot` and nothing else. An
 `--only` that matches no kommune stops `discover` before it writes anything, and a `fetch`
 selection with no pages exits with code 2 and leaves `pages/report.json` as it was.
 `discover` and `fetch` take `--dry-run` (read and report, write nothing) and `--cache <dir>`
@@ -173,6 +200,10 @@ source) and `--national`, which adds Nav offices and catalogue findings.
 - A 429 or 503 waits for `Retry-After`; a second one stops the host for the run. Outside a
   host's `Visit-time` the host is skipped. A timeout, a server error, 30 seconds or 5 MB end
   a request; the run goes on and lists what it skipped.
+- A skipped redirect is listed under the URL fetch asked for. When the page redirected to its
+  host's www twin, verify reads the twin's stop as the site's own. A redirect to a third host
+  (an old domain to a new one) is not followed there: such a kommune reads as not settled, and
+  `fetch --resume` cannot change it.
 - The manifest (`pages/manifest.json` in the cache) holds the pages fetched with status 200.
   Every other final status sits in `pages/report.json`. A page that later stops answering
   keeps its manifest entry until the 90-day purge.
@@ -182,7 +213,9 @@ source) and `--national`, which adds Nav offices and catalogue findings.
 - Raw pages can hold staff names. They live in the cache folder only (gitignored here, the
   job's temporary folder in Actions), and a local cache drops them after 90 days.
 - Commands print counts, hosts, kommune numbers and reasons. Never page text, unit names,
-  org numbers, phone numbers or URLs; URL lists go to report files in the cache folder.
+  org numbers, phone numbers or URLs; URL lists go to report files in the cache folder. Two
+  exceptions, both local only: `sweep` prints unit ids and words from the locks, and an
+  `--offline` miss names the URL or the search it missed.
 - A role mobile keeps two quotes only, the role word and the number. Every other quote has its
   possible names replaced by `[navn]` before it is stored. A value is stored as the page writes
   it, so a name that is part of a value stays: a street named after a person, or an hours line
@@ -194,6 +227,10 @@ source) and `--national`, which adds Nav offices and catalogue findings.
 - A catalogue only points to a provider's own page; no value is taken from it.
 - Do not open or print cached pages. If an AI tool helps with this code, it must never see a
   page from a kommune that blocks ClaudeBot.
+- No AI session opens, prints, quotes or reviews these, since they hold text from the pages of
+  the seven kommuner that block ClaudeBot: `data/lock/3403.json`, `3412.json`, `3413.json`,
+  `3414.json`, `3415.json`, `3417.json` and `3419.json`, `docs/pilot/pilot-report.md`, and the
+  output of `sweep` for any kommune. A review of a PR that changes them leaves those paths out.
 
 A Dependabot bump of `zod` can change the exported schemas. The snapshot test then fails on
 purpose: run `npm run schema` in that PR and commit the result.

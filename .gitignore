@@ -42,3 +42,8 @@ dist/
 
 # Pipeline page cache: raw pages can hold staff names, never committed
 .cache/
+
+# Leftovers in data/ from a verify or review that stopped: a .tmp save holds values and quotes
+# like a lock, and the folder lock is only a process id. data:check flags a .tmp too.
+data/**/*.tmp
+data/.pipeline.lock
