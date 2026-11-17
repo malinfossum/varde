@@ -43,14 +43,14 @@ describe("todoItems", () => {
 	})
 
 	it("leaves out a field whose page is on a blocked kommune's site, whatever the unit's kommune", () => {
-		const blockedPage = "https://www.proveby.kommune.no/tjeneste-41/"
+		const blockedPage = "https://www.proveby.eksempel.kommune.no/tjeneste-41/"
 		const hosted = withUnits(baseLocks(), "3401", [
 			named(41, "Tilbud 41", { phone: acceptedField({ sourceUrl: blockedPage }) }),
 		])
 		const s = scored(
 			pilotInput({
 				locks: hosted,
-				blockedHosts: ["proveby.kommune.no"],
+				blockedHosts: ["proveby.eksempel.kommune.no"],
 				checks: { checks: sampleChecks([42, 43]) },
 			})
 		)

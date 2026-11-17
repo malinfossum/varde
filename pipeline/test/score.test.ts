@@ -93,12 +93,12 @@ describe("score", () => {
 	it("matches a renamed unit by address and phone", () => {
 		const keyed: AnswerKey = {
 			...KEY,
-			rows: [keyRow(1, "Rusteamet", { address: "Storgata 1, 2317 Hamar" })],
+			rows: [keyRow(1, "Rusteamet", { address: "Storgata 1, 2999 Eksempelby" })],
 		}
 		const u = unit(0, "Rus- og psykiatritjenesten", {
 			address: acceptedField({
-				value: "Storgata 1, 2317 Hamar",
-				evidence: { kind: "quote", quotes: ["Storgata 1, 2317 Hamar"] },
+				value: "Storgata 1, 2999 Eksempelby",
+				evidence: { kind: "quote", quotes: ["Storgata 1, 2999 Eksempelby"] },
 			}),
 		})
 		const result = score({ locks: [lock([u])], key: keyed, kommuner: ["3403"], decideOnce: [] })

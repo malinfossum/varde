@@ -34,7 +34,7 @@ const lookups = buildLookups({
 	allowList,
 	validKommuner: new Set(["3405"]),
 	addresses: new Map([
-		["Storgata 1, 2609 Lillehammer", { addressId: "a1", kommune: "3405", text: "Storgata 1" }],
+		["Storgata 1, 2999 Eksempelby", { addressId: "a1", kommune: "3405", text: "Storgata 1" }],
 	]),
 	checkedUrls: new Map([["eksempel.kommune.no/ny-side", 200]]),
 })
@@ -75,8 +75,8 @@ describe("buildLookups", () => {
 	})
 
 	it("answers addresses from the map filled before the gates run", () => {
-		expect(lookups.findAddress("Storgata 1, 2609 Lillehammer")).toMatchObject({ addressId: "a1" })
-		expect(lookups.findAddress("Storgata 2, 2609 Lillehammer")).toBeUndefined()
+		expect(lookups.findAddress("Storgata 1, 2999 Eksempelby")).toMatchObject({ addressId: "a1" })
+		expect(lookups.findAddress("Storgata 2, 2999 Eksempelby")).toBeUndefined()
 	})
 })
 
@@ -102,8 +102,8 @@ describe("resolveAddresses and kartverketForm", () => {
 					adresseid: "a1",
 					adressetekst: "Storgata 1A",
 					kommunenummer: "3405",
-					postnummer: "2609",
-					poststed: "LILLEHAMMER",
+					postnummer: "2999",
+					poststed: "EKSEMPELBY",
 				},
 			],
 		})
@@ -114,21 +114,21 @@ describe("resolveAddresses and kartverketForm", () => {
 		}
 		const map = await resolveAddresses(
 			counting,
-			["Storgata 1 A, 2609 Lillehammer", "Storgata 1 A, 2609 Lillehammer"],
+			["Storgata 1 A, 2999 Eksempelby", "Storgata 1 A, 2999 Eksempelby"],
 			"3405"
 		)
 		expect(asked).toHaveLength(1)
-		const hit = map.get("Storgata 1 A, 2609 Lillehammer")
+		const hit = map.get("Storgata 1 A, 2999 Eksempelby")
 		expect(hit).toEqual({
 			addressId: "a1",
 			kommune: "3405",
 			text: "Storgata 1A",
-			postcode: "2609",
-			poststed: "LILLEHAMMER",
+			postcode: "2999",
+			poststed: "EKSEMPELBY",
 		})
 		expect(
-			kartverketForm("Storgata 1 A, 2609 Lillehammer", hit ?? { addressId: "", kommune: "" })
-		).toEqual({ value: "Storgata 1A, 2609 Lillehammer" })
+			kartverketForm("Storgata 1 A, 2999 Eksempelby", hit ?? { addressId: "", kommune: "" })
+		).toEqual({ value: "Storgata 1A, 2999 Eksempelby" })
 	})
 })
 

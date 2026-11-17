@@ -151,7 +151,7 @@ describe("verifyKommune", () => {
 			website: ["accepted", BV],
 			phone: ["accepted", "62 00 00 00"],
 			email: ["accepted", "barnevern@eksempel.kommune.no"],
-			address: ["accepted", "Storgata 1, 2609 Lillehammer"],
+			address: ["accepted", "Storgata 1, 2999 Eksempelby"],
 			openingHours: ["accepted", `Mandag kl. 08:00${D}15:30`],
 		})
 		expect(u?.fields.address?.addressId).toBe("a1")
@@ -197,13 +197,13 @@ describe("verifyKommune", () => {
 
 	it("accepts an address Kartverket knows without the mobile that follows it on the page", async () => {
 		const page = html(
-			`${H1}<h2>Kontakt</h2><p>Besøksadresse: Storgata 1, 2609 Lillehammer. Telefon 900 00 000</p>`
+			`${H1}<h2>Kontakt</h2><p>Besøksadresse: Storgata 1, 2999 Eksempelby. Telefon 900 00 000</p>`
 		)
 		const { input } = setup({ pages: { [BV]: page }, units: [unit({ address: undefined })] })
 		const { lock } = await verifyKommune(input)
 		expect(lock.units[0]?.fields.address).toMatchObject({
 			status: "accepted",
-			value: "Storgata 1, 2609 Lillehammer",
+			value: "Storgata 1, 2999 Eksempelby",
 			addressId: "a1",
 		})
 		expect(lock.units[0]?.fields.address?.value).not.toContain("900")
@@ -411,10 +411,10 @@ describe("verifyKommune", () => {
 		const decisions = [
 			{
 				field: "address" as const,
-				value: "Storgata 1, 2609 Lillehammer",
+				value: "Storgata 1, 2999 Eksempelby",
 				sourceUrl: BV,
 				decision: "edit" as const,
-				editedValue: "Storgata 2, 2609 Lillehammer",
+				editedValue: "Storgata 2, 2999 Eksempelby",
 				decidedOn: "2026-11-06",
 			},
 		]
@@ -427,7 +427,7 @@ describe("verifyKommune", () => {
 		const { lock } = await verifyKommune(input)
 		expect(lock.units[0]?.fields.address).toMatchObject({
 			status: "accepted",
-			value: "Storgata 2, 2609 Lillehammer",
+			value: "Storgata 2, 2999 Eksempelby",
 			addressId: "a2",
 		})
 	})
@@ -645,7 +645,7 @@ describe("verifyKommune", () => {
 				"<h1>Eksempel legevakt</h1>",
 				"<h2>Kontakt</h2>",
 				"<p>Telefon: 62 00 00 00</p>",
-				"<p>Besøksadresse: Storgata 1, 2609 Lillehammer</p>",
+				"<p>Besøksadresse: Storgata 1, 2999 Eksempelby</p>",
 			].join("")
 		)
 		const legevakt = unit({

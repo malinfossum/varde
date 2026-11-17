@@ -9,13 +9,13 @@ import {
 import { splitAddress } from "../src/text/address.ts"
 import { fakeGet } from "./netHelpers.ts"
 
-const record = (adresseid: string, adressetekst = "Storgata 1", postnummer = "2609") => ({
+const record = (adresseid: string, adressetekst = "Storgata 1", postnummer = "2999") => ({
 	adressetekst,
 	adresseid,
 	kommunenummer: "3405",
 	kommunenavn: "LILLEHAMMER",
 	postnummer,
-	poststed: "LILLEHAMMER",
+	poststed: "EKSEMPELBY",
 })
 const search = (...adresser: ReturnType<typeof record>[]) => ({
 	metadata: { totaltAntallTreff: adresser.length },
@@ -43,45 +43,45 @@ describe("pickAddress: a house letter", () => {
 	})
 
 	it("reads Storgata 1 A as Storgata 1A, and gives Kartverket's text", () => {
-		const hit = pickAddress(records(record("a1", "Storgata 1A")), "Storgata 1 A, 2609 Lillehammer")
+		const hit = pickAddress(records(record("a1", "Storgata 1A")), "Storgata 1 A, 2999 Eksempelby")
 		expect(hit).toEqual({
 			addressId: "a1",
 			kommune: "3405",
 			text: "Storgata 1A",
-			postcode: "2609",
-			poststed: "LILLEHAMMER",
+			postcode: "2999",
+			poststed: "EKSEMPELBY",
 		})
 	})
 
 	it("never reads Storgata 1 as Storgata 1A, nor Storgata 1 og 2 as a letter", () => {
 		expect(
-			pickAddress(records(record("a1", "Storgata 1A")), "Storgata 1, 2609 Lillehammer")
+			pickAddress(records(record("a1", "Storgata 1A")), "Storgata 1, 2999 Eksempelby")
 		).toBeUndefined()
 		expect(
-			pickAddress(records(record("a1", "Storgata 1A")), "Storgata 1 og 2, 2609 Lillehammer")
+			pickAddress(records(record("a1", "Storgata 1A")), "Storgata 1 og 2, 2999 Eksempelby")
 		).toBeUndefined()
 	})
 })
 
 describe("splitAddress", () => {
 	it("takes the street before the first comma and the postcode after it", () => {
-		expect(splitAddress("Storgata 1, 2. etasje, 2609 LILLEHAMMER")).toEqual({
+		expect(splitAddress("Storgata 1, 2. etasje, 2999 EKSEMPELBY")).toEqual({
 			street: "storgata 1",
-			postcode: "2609",
+			postcode: "2999",
 		})
 		expect(splitAddress("Storgata 1")).toEqual({ street: "storgata 1" })
-		expect(splitAddress("Rådhuset, 2609 Lillehammer")).toBeUndefined()
+		expect(splitAddress("Rådhuset, 2999 Eksempelby")).toBeUndefined()
 	})
 })
 
 describe("Kartverket's postcode and poststed", () => {
 	it("carries the postcode and the poststed onto the hit", () => {
-		expect(pickAddress(records(record("a1")), "Storgata 1, 2609 Lillehammer")).toEqual({
+		expect(pickAddress(records(record("a1")), "Storgata 1, 2999 Eksempelby")).toEqual({
 			addressId: "a1",
 			kommune: "3405",
 			text: "Storgata 1",
-			postcode: "2609",
-			poststed: "LILLEHAMMER",
+			postcode: "2999",
+			poststed: "EKSEMPELBY",
 		})
 	})
 
@@ -90,10 +90,10 @@ describe("Kartverket's postcode and poststed", () => {
 			adresseid: "a1",
 			adressetekst: "Storgata 1",
 			kommunenummer: "3405",
-			postnummer: "2609",
+			postnummer: "2999",
 		}
 		expect(parseAddressSearch({ adresser: [bare] })).toEqual([
-			{ addressId: "a1", kommune: "3405", text: "Storgata 1", postcode: "2609" },
+			{ addressId: "a1", kommune: "3405", text: "Storgata 1", postcode: "2999" },
 		])
 	})
 })
@@ -106,21 +106,19 @@ describe("Kartverket address search", () => {
 	})
 
 	it("accepts exactly one address", () => {
-		expect(pickAddress(records(record("100000001")), "Storgata 1, 2609 Lillehammer")).toEqual({
+		expect(pickAddress(records(record("100000001")), "Storgata 1, 2999 Eksempelby")).toEqual({
 			addressId: "100000001",
 			kommune: "3405",
 			text: "Storgata 1",
-			postcode: "2609",
-			poststed: "LILLEHAMMER",
+			postcode: "2999",
+			poststed: "EKSEMPELBY",
 		})
 	})
 
 	it("refuses two different addresses for the same text, and a wrong postcode", () => {
 		const two = records(record("100000001"), record("100000002"))
-		expect(pickAddress(two, "Storgata 1, 2609 Lillehammer")).toBeUndefined()
-		expect(
-			pickAddress(records(record("100000001")), "Storgata 1, 2615 Lillehammer")
-		).toBeUndefined()
+		expect(pickAddress(two, "Storgata 1, 2999 Eksempelby")).toBeUndefined()
+		expect(pickAddress(records(record("100000001")), "Storgata 1, 2998 Eksempelby")).toBeUndefined()
 	})
 
 	it("refuses a body that is not a search result", () => {
@@ -131,12 +129,12 @@ describe("Kartverket address search", () => {
 		const get = fakeGet({
 			[addressQuery("storgata 1", "3405")]: { body: JSON.stringify(search(record("100000001"))) },
 		})
-		expect(await findAddress(get, "Storgata 1, 2609 Lillehammer", "3405")).toEqual({
+		expect(await findAddress(get, "Storgata 1, 2999 Eksempelby", "3405")).toEqual({
 			addressId: "100000001",
 			kommune: "3405",
 			text: "Storgata 1",
-			postcode: "2609",
-			poststed: "LILLEHAMMER",
+			postcode: "2999",
+			poststed: "EKSEMPELBY",
 		})
 	})
 
@@ -146,12 +144,12 @@ describe("Kartverket address search", () => {
 				body: JSON.stringify(search(record("a1", "Storgata 1A"))),
 			},
 		})
-		expect(await findAddress(get, "Storgata 1 A, 2609 Lillehammer", "3405")).toEqual({
+		expect(await findAddress(get, "Storgata 1 A, 2999 Eksempelby", "3405")).toEqual({
 			addressId: "a1",
 			kommune: "3405",
 			text: "Storgata 1A",
-			postcode: "2609",
-			poststed: "LILLEHAMMER",
+			postcode: "2999",
+			poststed: "EKSEMPELBY",
 		})
 	})
 })

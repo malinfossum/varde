@@ -7,7 +7,7 @@ import { pilotInput, scored } from "./pilotFixture.ts"
 const report = {
 	hosts: [
 		{ host: "www.eksempel.kommune.no", requests: 120, delayMs: 5_000 },
-		{ host: "treg.eksempel.no", requests: 1_000, delayMs: 30_000 },
+		{ host: "treg.eksempel.kommune.no", requests: 1_000, delayMs: 30_000 },
 	],
 	notFetched: [],
 }
@@ -22,11 +22,16 @@ describe("scaleNumbers", () => {
 
 	it("estimates each host at its pace, slowest first, and flags one over 6 hours", () => {
 		expect(n.hosts).toEqual([
-			{ host: "treg.eksempel.no", requests: 1_000, delayMs: 30_000, estimateMs: 30_000_000 },
+			{
+				host: "treg.eksempel.kommune.no",
+				requests: 1_000,
+				delayMs: 30_000,
+				estimateMs: 30_000_000,
+			},
 			{ host: "www.eksempel.kommune.no", requests: 120, delayMs: 5_000, estimateMs: 600_000 },
 		])
-		expect(n.slowest?.host).toBe("treg.eksempel.no")
-		expect(n.overJobLimit).toEqual(["treg.eksempel.no"])
+		expect(n.slowest?.host).toBe("treg.eksempel.kommune.no")
+		expect(n.overJobLimit).toEqual(["treg.eksempel.kommune.no"])
 		expect(n).toMatchObject({ lockBytes: 1_234_567, kartverket: { lookups: 400, hits: 310 } })
 	})
 
@@ -34,16 +39,16 @@ describe("scaleNumbers", () => {
 		const s = scored(pilotInput())
 		const body = renderPrBody(s, n, "docs/pilot/pilot-report.md")
 		for (const line of [
-			"| `treg.eksempel.no` | 1,000 | 30 s | 8 h 20 min |",
-			"- Slowest host: `treg.eksempel.no`, 8 h 20 min for 1,000 requests at a 30 s delay.",
-			"- Over the 6 h a GitHub-hosted job may run: `treg.eksempel.no`.",
+			"| `treg.eksempel.kommune.no` | 1,000 | 30 s | 8 h 20 min |",
+			"- Slowest host: `treg.eksempel.kommune.no`, 8 h 20 min for 1,000 requests at a 30 s delay.",
+			"- Over the 6 h a GitHub-hosted job may run: `treg.eksempel.kommune.no`.",
 			"- Lock files: 1,234,567 bytes in all.",
 			"- Kartverket: 400 lookups, 310 answered from the cache.",
 			"- Stage times: discover 2 min 5 s, fetch 8 h 20 min.",
 		]) {
 			expect(body).toContain(line)
 		}
-		expect(renderReport(s)).not.toContain("treg.eksempel.no")
+		expect(renderReport(s)).not.toContain("treg.eksempel.kommune.no")
 	})
 
 	it("has no hosts and no slowest host without a crawl report", () => {

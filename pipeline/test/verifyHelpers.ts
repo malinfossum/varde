@@ -30,7 +30,7 @@ export const UNIT_PAGE = html(
 		"<h2>Kontakt</h2>",
 		"<p>Telefon: 62 00 00 00</p>",
 		'<p>E-post: <a href="mailto:barnevern@eksempel.kommune.no">barnevern@eksempel.kommune.no</a></p>',
-		"<p>Besøksadresse: Storgata 1, 2609 Lillehammer</p>",
+		"<p>Besøksadresse: Storgata 1, 2999 Eksempelby</p>",
 		"<h2>Åpningstider</h2>",
 		"<p>Mandag 08.00-15.30</p>",
 	].join("")
@@ -41,7 +41,7 @@ export const unit = (over: Partial<DiscoveredUnit> = {}): DiscoveredUnit => ({
 	name: "EKSEMPEL KOMMUNE BARNEVERNTJENESTE",
 	orgForm: "BEDR",
 	naeringskode: "88.991",
-	address: "Storgata 1, 2609 LILLEHAMMER",
+	address: "Storgata 1, 2999 EKSEMPELBY",
 	kommune: "3405",
 	website: BV,
 	register: "underenheter",
@@ -66,8 +66,8 @@ export const fetched = (
 export const address = (
 	id: string,
 	text: string,
-	postnummer = "2609",
-	poststed: string | null = "LILLEHAMMER"
+	postnummer = "2999",
+	poststed: string | null = "EKSEMPELBY"
 ) => ({
 	body: JSON.stringify({
 		adresser: [
