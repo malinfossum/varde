@@ -11,11 +11,12 @@ export const RULES_VERSION = 1
 // rulesFingerprint over this repo's rule files when RULES_VERSION was last set. A hash of source
 // code, not of page data.
 export const RULES_FINGERPRINT =
-	"sha256:4d7dd3f443cb8662ece6d07b5553315a48e3d486ad2a99e8e0e6c093c04c612f"
+	"sha256:c4d478590777401085a37e7e6248357543b8db243bb7888ac5d6c56f44f6521e"
 
 // The code that decides a lock's values: every file verify.ts imports, outside src/net/ and
 // src/io/ (ruleGaps checks this). A formatting-only change asks for a bump too: that costs one
-// full verify from the local caches, a few minutes.
+// full verify from the local caches, a few minutes. One file under src/net/ is listed by name:
+// failed.ts settles a kommune through wwwTwin in allowList.ts, so that file decides a lock too.
 export const RULE_PATHS: readonly string[] = [
 	"src/adapters/",
 	"src/answerKey/schema.ts",
@@ -32,6 +33,7 @@ export const RULE_PATHS: readonly string[] = [
 	"src/verify/",
 	"src/curate/",
 	"src/text/",
+	"src/net/allowList.ts",
 ]
 // This file holds the fingerprint, so a hash that read it could never match it.
 const SELF = "src/verify/rules.ts"

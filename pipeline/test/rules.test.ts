@@ -61,6 +61,7 @@ describe("RULES_VERSION", () => {
 			"src/verify/",
 			"src/curate/",
 			"src/text/",
+			"src/net/allowList.ts",
 		])
 	})
 })
