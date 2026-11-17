@@ -56,6 +56,7 @@ describe("network boundary", () => {
 			"src/cli/extract.ts",
 			"src/cli/verify.ts",
 			"src/cli/review.ts",
+			"src/cli/score.ts",
 		]) {
 			expect(scanned).toContain(file)
 		}

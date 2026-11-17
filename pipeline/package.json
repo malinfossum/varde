@@ -20,7 +20,8 @@
 		"extract": "node src/cli/extract.ts",
 		"verify": "node src/cli/verify.ts",
 		"review": "node src/cli/review.ts",
-		"recall-report": "node src/cli/recall-report.ts"
+		"recall-report": "node src/cli/recall-report.ts",
+		"score": "node src/cli/score.ts"
 	},
 	"dependencies": {
 		"cheerio": "1.2.0",

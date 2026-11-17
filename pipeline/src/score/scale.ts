@@ -1,3 +1,6 @@
+import type { CrawlReport } from "../net/crawler.ts"
+import { compareText } from "./sample.ts"
+
 // The numbers PR 5 sizes its workflows from. They come from the local cache and change with every
 // run, so they go in the PR body only, never in the deterministic report.
 export type HostScale = { host: string; requests: number; delayMs: number; estimateMs: number }
@@ -35,4 +38,38 @@ export function groupDigits(n: number): string {
 		out += digits.charAt(i)
 	}
 	return n < 0 ? `-${out}` : out
+}
+
+export type ScaleInput = {
+	report?: CrawlReport
+	lockBytes: number
+	stats?: { lookups: number; hits: number }
+	timings: Record<string, number>
+}
+
+// Each host's time if its requests run one after another at its crawl delay. A host over 6 hours
+// cannot finish in one GitHub-hosted job, so PR 5 has to split or resume it.
+export function scaleNumbers(o: ScaleInput): ScaleNumbers {
+	const hosts = (o.report?.hosts ?? [])
+		.map((h) => ({
+			host: h.host,
+			requests: h.requests,
+			delayMs: h.delayMs,
+			estimateMs: h.requests * h.delayMs,
+		}))
+		.sort((a, b) => b.estimateMs - a.estimateMs || compareText(a.host, b.host))
+	const [slowest] = hosts
+	return {
+		hosts,
+		...(slowest === undefined ? {} : { slowest }),
+		overJobLimit: hosts
+			.filter((h) => h.estimateMs > JOB_LIMIT_MS)
+			.map((h) => h.host)
+			.sort(compareText),
+		lockBytes: o.lockBytes,
+		...(o.stats === undefined
+			? {}
+			: { kartverket: { lookups: o.stats.lookups, hits: o.stats.hits } }),
+		timings: { ...o.timings },
+	}
 }
