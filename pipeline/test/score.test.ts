@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { AnswerKey, KeyRow } from "../src/answerKey/schema.ts"
-import { score } from "../src/answerKey/score.ts"
+import { matchKeyRow, score } from "../src/answerKey/score.ts"
 import type { LockFile, LockUnit } from "../src/schema/lock.ts"
 import { acceptedField, lockUnit, testInputs } from "./helpers.ts"
 
@@ -103,5 +103,55 @@ describe("score", () => {
 		})
 		const result = score({ locks: [lock([u])], key: keyed, kommuner: ["3403"], decideOnce: [] })
 		expect(result.found).toBe(1)
+	})
+})
+
+describe("matchKeyRow", () => {
+	const rows = [keyRow(1, "Rusteamet", { address: "Storgata 1, 2999 Eksempelby" })]
+	const inReview = (value: string) =>
+		acceptedField({
+			status: "review",
+			reason: "agreement: 1 other source(s) disagree",
+			value,
+			evidence: { kind: "quote", quotes: [value] },
+		})
+
+	it("reads accepted names only, unless asked for any status", () => {
+		const u = unit(0, "Annet navn", { name: inReview("Rusteamet") })
+		expect(matchKeyRow(u, rows)).toBeUndefined()
+		expect(matchKeyRow(u, rows, { anyStatus: true })?.id).toBe(1)
+	})
+
+	it("reads an address and phone pair in review only when asked for any status", () => {
+		const u = unit(0, "Annet navn", {
+			address: inReview("Storgata 1, 2999 Eksempelby"),
+			phone: inReview("62 00 00 00"),
+		})
+		expect(matchKeyRow(u, rows)).toBeUndefined()
+		expect(matchKeyRow(u, rows, { anyStatus: true })?.id).toBe(1)
+	})
+
+	it("never reads a dropped field", () => {
+		const dropped = acceptedField({
+			status: "dropped",
+			value: undefined,
+			evidence: undefined,
+			reason: "grounding: no quote holds the value",
+		})
+		const u = unit(0, "Rusteamet", { name: dropped })
+		expect(matchKeyRow(u, rows, { anyStatus: true })).toBeUndefined()
+	})
+})
+
+describe("score: badge mismatches for the ratchet", () => {
+	it("gives each badge mismatch with its unit and the field lowThreshold", () => {
+		const badge = {
+			lowThreshold: acceptedField({ value: true, evidence: { kind: "quote", quotes: ["x"] } }),
+		}
+		const units = names.map((n, i) => (i === 0 ? unit(i, n, badge) : unit(i, n)))
+		expect(run(units).badgeWrong).toEqual([
+			{ keyId: 1, unitId: "org:000000000", field: "lowThreshold" },
+		])
+		expect(run(units, [1]).badgeWrong).toEqual([])
 	})
 })

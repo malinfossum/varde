@@ -11,6 +11,8 @@ export type Score = {
 	found: number
 	wrong: Wrong[]
 	badgeMismatches: number[]
+	// Each badge mismatch with its unit, as a wrong value of the field lowThreshold, for the ratchet.
+	badgeWrong: Wrong[]
 	pass: boolean
 }
 
@@ -26,20 +28,34 @@ const COMPARED = [
 	"alwaysOpen",
 ] as const satisfies readonly FieldName[]
 
-function accepted(unit: LockUnit, field: FieldName): string | boolean | undefined {
+// A field's value when its status counts: accepted only, or with anyStatus accepted or in review.
+// A dropped field never counts.
+function held(unit: LockUnit, field: FieldName, anyStatus: boolean): string | boolean | undefined {
 	const f = unit.fields[field]
-	return f?.status === "accepted" ? f.value : undefined
+	if (f === undefined) return undefined
+	return f.status === "accepted" || (anyStatus && f.status === "review") ? f.value : undefined
 }
 
-// A unit matches a key row by name, or (when it was renamed) by address and phone together.
-export function matchKeyRow(unit: LockUnit, rows: readonly KeyRow[]): KeyRow | undefined {
-	const name = accepted(unit, "name")
+function accepted(unit: LockUnit, field: FieldName): string | boolean | undefined {
+	return held(unit, field, false)
+}
+
+// A unit matches a key row by name, or (when it was renamed) by address and phone together. With
+// anyStatus the name, address and phone may still wait in review: a unit that finds the row
+// counts as found while I settle its fields (Decided 8). The golden test uses accepted values only.
+export function matchKeyRow(
+	unit: LockUnit,
+	rows: readonly KeyRow[],
+	options: { anyStatus?: boolean } = {}
+): KeyRow | undefined {
+	const anyStatus = options.anyStatus === true
+	const name = held(unit, "name", anyStatus)
 	if (typeof name === "string") {
 		const byName = rows.find((r) => comparable("name", r.name) === comparable("name", name))
 		if (byName !== undefined) return byName
 	}
-	const address = accepted(unit, "address")
-	const phone = accepted(unit, "phone")
+	const address = held(unit, "address", anyStatus)
+	const phone = held(unit, "phone", anyStatus)
 	if (typeof address !== "string" || typeof phone !== "string") return undefined
 	return rows.find(
 		(r) =>
@@ -64,6 +80,7 @@ export function score(input: {
 	const found = new Set<number>()
 	const wrong: Wrong[] = []
 	const badgeMismatches: number[] = []
+	const badgeWrong: Wrong[] = []
 	let units = 0
 	let unitsWithReview = 0
 	for (const lock of input.locks) {
@@ -89,6 +106,7 @@ export function score(input: {
 				!input.decideOnce.includes(row.id)
 			) {
 				badgeMismatches.push(row.id)
+				badgeWrong.push({ keyId: row.id, unitId: unit.unitId, field: "lowThreshold" })
 			}
 		}
 	}
@@ -98,5 +116,14 @@ export function score(input: {
 		unitsWithReview * 10 <= units &&
 		found.size * 10 >= keyRows * 9 &&
 		badgeMismatches.length === 0
-	return { units, unitsWithReview, keyRows, found: found.size, wrong, badgeMismatches, pass }
+	return {
+		units,
+		unitsWithReview,
+		keyRows,
+		found: found.size,
+		wrong,
+		badgeMismatches,
+		badgeWrong,
+		pass,
+	}
 }

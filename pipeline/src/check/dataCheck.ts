@@ -7,6 +7,7 @@ import { readJsonDir } from "../io/files.ts"
 import { FieldName, type FieldValue } from "../schema/common.ts"
 import { CuratedFile } from "../schema/curated.ts"
 import { type Evidence, evidenceQuotes, LockFile } from "../schema/lock.ts"
+import { ChecksFileError, type KnownWrong, readKnownWrong } from "../score/checks.ts"
 
 // Runs in CI on every PR: the schemas, the file names, and the gate checks that need no
 // page (a quote still holds its value, the phone plan, the hours limit, no account
@@ -33,7 +34,7 @@ function isMyEdit(
 	)
 }
 
-export function checkData(root: string): string[] {
+export function checkData(root: string, options: { publish?: boolean } = {}): string[] {
 	const problems: string[] = []
 	const curatedOf = new Map<string, CuratedFile>()
 
@@ -108,5 +109,23 @@ export function checkData(root: string): string[] {
 			}
 		}
 	}
+	if (options.publish === true) problems.push(...publishProblems(root))
 	return problems
+}
+
+// The publish gate (spec B's publish step and PR 5's workflows run it). A value on the known-wrong
+// list is still an accepted field in a committed lock, so nothing may be published while the list
+// has an entry, even if a later PR forgets the pass mark. A missing or broken list fails too.
+function publishProblems(root: string): string[] {
+	let known: KnownWrong
+	try {
+		known = readKnownWrong(join(root, "pipeline", "test", "known-wrong.json"))
+	} catch (err) {
+		return [err instanceof ChecksFileError ? err.message : "known-wrong.json could not be read"]
+	}
+	const n = known.entries.length
+	if (n === 0) return []
+	return [
+		`known-wrong.json lists ${n} ${n === 1 ? "value" : "values"}: nothing may be published while it has an entry`,
+	]
 }
