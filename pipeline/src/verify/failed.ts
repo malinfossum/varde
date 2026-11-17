@@ -1,6 +1,7 @@
 import { type RenameIo, writeLockFile } from "../curate/write.ts"
 import type { KommuneDiscovery } from "../discover/types.ts"
-import type { CrawlReport } from "../net/crawler.ts"
+import { wwwTwin } from "../net/allowList.ts"
+import type { CrawlReport, HostLine } from "../net/crawler.ts"
 import type { FailedKind, LockFailure, LockFile, LockInputs } from "../schema/lock.ts"
 import { httpsHost } from "../text/normalise.ts"
 import { lockPath, type VerifyCounts } from "./verify.ts"
@@ -17,15 +18,34 @@ const hostStopped = (host: string, kind: FailedKind): LockFailure => ({
 	reason: `host stopped: ${kind} (${host})`,
 })
 
-// Why nothing came through for a kommune, from the crawl report: its own site's stop first, then
-// the first stopped host among its pages' hosts (in the report's host order), then robots when
-// robots.txt refused every page, else no pages. Hosts are public; a reason never holds a URL.
+// A host and its www twin are one site: kommune sites redirect between the two, and the crawler
+// files a skipped redirect under the URL it was asked for while the stop sits on the target.
+const withTwin = (host: string): string[] => [host, wwwTwin(host)]
+
+// The stopped lines of the kommune's own site: its exact host first, then its www twin.
+function ownSiteStops(k: KommuneDiscovery, report: CrawlReport | undefined): HostLine[] {
+	const own = k.site?.host.toLowerCase()
+	if (own === undefined) return []
+	const hosts = report?.hosts ?? []
+	return withTwin(own).flatMap((name) =>
+		hosts.filter((h) => h.host === name && h.stopped !== undefined)
+	)
+}
+
+// Why nothing came through for a kommune, from the crawl report: its own site's stop first (its
+// host, then its www twin), then the first stopped host among its pages' hosts and their twins
+// (in the report's host order), then robots when robots.txt refused every page, else no pages.
+// Hosts are public; a reason never holds a URL.
 export function failedKind(k: KommuneDiscovery, report: CrawlReport | undefined): LockFailure {
 	const hosts = report?.hosts ?? []
-	const own = k.site?.host.toLowerCase()
-	const ownLine = hosts.find((h) => h.host === own)
+	const ownLine = ownSiteStops(k, report)[0]
 	if (ownLine?.stopped !== undefined) return hostStopped(ownLine.host, ownLine.stopped)
-	const pageHosts = new Set(k.pages.map((p) => httpsHost(p.url)))
+	const pageHosts = new Set(
+		k.pages.flatMap((p) => {
+			const h = httpsHost(p.url)
+			return h === undefined ? [] : withTwin(h)
+		})
+	)
 	const pageLine = hosts.find((h) => h.stopped !== undefined && pageHosts.has(h.host))
 	if (pageLine?.stopped !== undefined) return hostStopped(pageLine.host, pageLine.stopped)
 	const refused = new Set(
@@ -37,30 +57,37 @@ export function failedKind(k: KommuneDiscovery, report: CrawlReport | undefined)
 	return { kind: "noPages", reason: "no pages fetched" }
 }
 
-// True when the kommune's own site host stopped for a transient reason. Only that host's line
-// counts, never another page host's, so verify names the kommuner score refuses.
+// True when the kommune's own site (its host or its www twin) stopped for a transient reason.
+// Only the own site's lines count, never another page host's, so verify names the kommuner score
+// refuses.
 export function ownSiteStopTransient(
 	k: KommuneDiscovery,
 	report: CrawlReport | undefined
 ): boolean {
-	const own = k.site?.host.toLowerCase()
-	const stop = report?.hosts.find((h) => h.host === own)?.stopped
-	return stop !== undefined && TRANSIENT_KINDS.includes(stop)
+	return ownSiteStops(k, report).some(
+		(h) => h.stopped !== undefined && TRANSIENT_KINDS.includes(h.stopped)
+	)
 }
 
 // Whether the crawl report settles every page of a kommune: each one is listed as not fetched (a
 // stop, a refusal, a 404). A fetch stopped with Ctrl+C leaves its remaining URLs in neither the
 // cache nor the report, and can leave a stale hostSkipped line: a resumed run that made requests
 // cleared the host's stop, then stopped itself. So a hostSkipped line counts only while the
-// report's line for that URL's host still carries a stop. A kommune that is not settled is not
-// finished: it gets no failed lock. A kommune with no pages to fetch is settled.
+// report's line for that URL's host, or for its www twin (a redirect target), still carries a
+// stop. A redirect to a third host is not followed here: the line names the URL asked for, not
+// the host that stopped. A kommune that is not settled is not finished: it gets no failed lock.
+// A kommune with no pages to fetch is settled.
 export function fetchSettled(k: KommuneDiscovery, report: CrawlReport | undefined): boolean {
 	if (k.pages.length === 0) return true
 	if (report === undefined) return false
 	const stopped = new Set(report.hosts.filter((h) => h.stopped !== undefined).map((h) => h.host))
+	const hostStopped = (url: string) => {
+		const h = httpsHost(url)
+		return h !== undefined && withTwin(h).some((name) => stopped.has(name))
+	}
 	const settled = new Set(
 		report.notFetched
-			.filter((n) => n.reason !== "hostSkipped" || stopped.has(httpsHost(n.url) ?? ""))
+			.filter((n) => n.reason !== "hostSkipped" || hostStopped(n.url))
 			.map((n) => n.url)
 	)
 	return k.pages.every((p) => settled.has(p.url))

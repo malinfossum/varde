@@ -10,11 +10,10 @@ import { readDiscovery } from "../discover/files.ts"
 import { readExtraction } from "../extract/extract.ts"
 import { readCrawlReport } from "../fetch/fetchPages.ts"
 import { AddressCache } from "../io/addressCache.ts"
-import { writeJsonAtomic } from "../io/files.ts"
 import { offlineGet } from "../io/offline.ts"
-import { DEFAULT_CACHE_DIR, PageCache } from "../io/pageCache.ts"
+import { DEFAULT_CACHE_DIR, fetchUnfinished, PageCache } from "../io/pageCache.ts"
 import { CacheBusyError, holdCache } from "../io/runLock.ts"
-import { recordTiming } from "../io/timings.ts"
+import { recordVerifyRun } from "../io/timings.ts"
 import { AllowList } from "../net/allowList.ts"
 import { systemClock } from "../net/clock.ts"
 import { Crawler, type Get } from "../net/crawler.ts"
@@ -54,6 +53,13 @@ const dryRun = values["dry-run"]
 const offline = values.offline
 const started = Date.now()
 const now = new Date(started).toISOString().replace(/\.\d{3}Z$/, "Z")
+
+// A fetch that stopped and was never resumed leaves kommuner with part of their pages, and each
+// would get a normal lock from them.
+if (fetchUnfinished(join(root, "pages"))) {
+	console.error("the last fetch did not finish: run fetch --resume first")
+	process.exit(2)
+}
 
 // One writer at a time in the data folder (a review running now would lose my answers), and one
 // process at a time in the page cache (a fetch running now would change the pages under me).
@@ -192,15 +198,13 @@ try {
 				.map((f) => f.kommune)
 				.join(", ")}`
 		)
-	// A resumed run verifies only some kommuner, so its counts and its time would replace the full
-	// run's with a part of it. Only a full run writes them.
-	if (!dryRun && !values.resume) {
-		writeJsonAtomic(join(root, "verify-stats.json"), {
-			lookups: addressCache.lookups,
-			hits: addressCache.hits,
-		})
-		recordTiming(root, "verify", Date.now() - started)
-	}
+	// A resumed run adds its counts and its time to the earlier run's; offline writes neither.
+	if (!dryRun)
+		recordVerifyRun(
+			root,
+			{ lookups: addressCache.lookups, hits: addressCache.hits, ms: Date.now() - started },
+			{ resume: values.resume, offline }
+		)
 	if (unfinished.length > 0) {
 		console.error(formatUnfinished(unfinished))
 		process.exitCode = 1

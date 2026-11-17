@@ -41,7 +41,12 @@ export const ManifestEntry = z.strictObject({
 })
 export type ManifestEntry = z.infer<typeof ManifestEntry>
 const Manifest = z.strictObject({ entries: z.array(ManifestEntry) })
-const RunFile = z.strictObject({ runId: z.string().regex(RUN_ID) })
+// finished is false from the moment a run or a resume starts until fetchPages returns, so a
+// fetch that stopped (Ctrl+C, a closed tab, a crash) is never verified or scored as complete.
+const RunFile = z.strictObject({
+	runId: z.string().regex(RUN_ID),
+	finished: z.boolean().optional(),
+})
 
 const sha256 = (text: string) => createHash("sha256").update(text).digest("hex")
 const byUrl = (a: ManifestEntry, b: ManifestEntry) => (a.url < b.url ? -1 : a.url > b.url ? 1 : 0)
@@ -53,20 +58,40 @@ function checkRunId(runId: string): void {
 
 // The run a fetch started without --resume, from <pages>/run.json. undefined when there is none
 // or it does not parse; the file is never printed.
-export function readRunId(dir: string): string | undefined {
+function readRunFile(dir: string): z.infer<typeof RunFile> | undefined {
 	const path = join(dir, "run.json")
 	if (!existsSync(path)) return undefined
 	try {
 		const parsed = RunFile.safeParse(JSON.parse(readFileSync(path, "utf8")))
-		return parsed.success ? parsed.data.runId : undefined
+		return parsed.success ? parsed.data : undefined
 	} catch {
 		return undefined
 	}
 }
 
+export function readRunId(dir: string): string | undefined {
+	return readRunFile(dir)?.runId
+}
+
+// Writes the run's id with finished false: a run or a resume has started.
 export function writeRunId(dir: string, runId: string): void {
 	checkRunId(runId)
-	writeJsonAtomic(join(dir, "run.json"), { runId })
+	writeJsonAtomic(join(dir, "run.json"), { runId, finished: false })
+}
+
+// Marks the run in run.json as finished: fetchPages returned, so every URL it was asked for is
+// either cached or listed in the crawl report.
+export function markRunFinished(dir: string, runId: string): void {
+	checkRunId(runId)
+	writeJsonAtomic(join(dir, "run.json"), { runId, finished: true })
+}
+
+// True when <pages>/run.json exists and does not say the run finished: a fetch stopped and was
+// never resumed, or the file is broken or older than the flag. verify and score refuse then. No
+// run.json at all means no fetch ran on this cache, and the per-kommune checks speak for it.
+export function fetchUnfinished(dir: string): boolean {
+	if (!existsSync(join(dir, "run.json"))) return false
+	return readRunFile(dir)?.finished !== true
 }
 
 // Raw pages plus their index: URL, status, final URL, fetch time, content hash and run id.

@@ -31,7 +31,8 @@ const hostOf = (url: string) => {
 // Every lookup the gates need that does not depend on the unit. Built once per kommune from the
 // cache: robots.txt was checked when the crawler fetched each page, so a URL the manifest holds
 // passed it; the host of a register that serves no pages is a documented open API. Anything else
-// is refused. A URL I typed in review gets the status verify asked the crawler for (checkedUrls).
+// is refused. A URL I typed in review gets the status verify asked the crawler for (checkedUrls)
+// when verify runs online. Offline, checkedUrls is empty, so such a URL has no status.
 export function buildLookups(input: {
 	manifest: readonly ManifestEntry[]
 	readHtml: (entry: ManifestEntry) => string | undefined

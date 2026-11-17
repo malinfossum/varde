@@ -2,7 +2,8 @@
 //   node src/cli/fetch.ts [--only 3405,0301|pilot] [--national] [--limit 3] [--resume] [--cache <dir>] [--dry-run]
 // A run without --resume gets a new id in pages/run.json. --resume goes on with that run: it
 // skips every page the run stored, and any other page fetched under 24 hours ago, and merges its
-// crawl report into the stopped run's. Ctrl+C keeps every page stored so far.
+// crawl report into the stopped run's. Ctrl+C keeps every page stored so far. run.json records
+// whether the run finished; verify and score refuse until it did.
 import { randomUUID } from "node:crypto"
 import { rmSync } from "node:fs"
 import { join } from "node:path"
@@ -21,7 +22,13 @@ import {
 import { KommuneProgress } from "../fetch/progress.ts"
 import { AddressCache } from "../io/addressCache.ts"
 import { writeJsonAtomic } from "../io/files.ts"
-import { DEFAULT_CACHE_DIR, PageCache, readRunId, writeRunId } from "../io/pageCache.ts"
+import {
+	DEFAULT_CACHE_DIR,
+	markRunFinished,
+	PageCache,
+	readRunId,
+	writeRunId,
+} from "../io/pageCache.ts"
 import { CacheBusyError, holdCache } from "../io/runLock.ts"
 import { readTimings, recordTiming } from "../io/timings.ts"
 import { AllowList } from "../net/allowList.ts"
@@ -76,10 +83,12 @@ async function main(selection: readonly string[]): Promise<number> {
 			console.error("fetch --resume needs pages/run.json: start the run without --resume first")
 			return 2
 		}
-		if (!resume && !dryRun) {
+		if (!dryRun) {
+			// run.json says finished false until fetchPages returns, so verify and score refuse a
+			// fetch that stopped and was never resumed.
 			writeRunId(pagesDir, runId)
 			// The report belongs to the run in run.json, so an older run's report never merges in.
-			rmSync(reportPath, { force: true })
+			if (!resume) rmSync(reportPath, { force: true })
 		}
 		const now = Date.now()
 		const cache = new PageCache(pagesDir, { dryRun, runId })
@@ -126,16 +135,19 @@ async function main(selection: readonly string[]): Promise<number> {
 			console.error("fetch stopped: the pages fetched so far are kept. Run fetch --resume to go on")
 			process.exit(130)
 		}
-		process.once("SIGINT", onStop)
+		// Ctrl+C, a closed terminal tab (SIGHUP on Windows) and a SIGTERM all keep the report.
+		const signals = ["SIGINT", "SIGHUP", "SIGTERM"] as const
+		for (const signal of signals) process.once(signal, onStop)
 		const onPage = (url: string) => {
 			settled.push(url)
 			progress.page(url)
 		}
 		const summary = await fetchPages(crawler.get, cache, todo, onPage).finally(() => {
-			process.off("SIGINT", onStop)
+			for (const signal of signals) process.off(signal, onStop)
 			wrapUp()
 		})
 		cache.save()
+		if (!dryRun) markRunFinished(pagesDir, runId)
 		console.log(formatFetchSummary(summary, merged()))
 		return 0
 	} finally {

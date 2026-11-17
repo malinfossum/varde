@@ -11,6 +11,7 @@ import {
 	writeCuratedFile,
 	writeLockFile,
 } from "../src/curate/write.ts"
+import { writeFileAtomic } from "../src/io/files.ts"
 import type { CuratedFile } from "../src/schema/curated.ts"
 import { curatedUnit, lockUnit, testInputs } from "./helpers.ts"
 
@@ -86,6 +87,39 @@ describe("writeLockFile", () => {
 		}).catch((e) => e)
 		expect(err).toBeInstanceOf(SaveError)
 		expect(String(err.message)).toContain("the lock file")
+	})
+})
+
+describe("writeFileAtomic", () => {
+	it("retries a busy rename with the same loop, so one held page file never ends a fetch", () => {
+		const path = join(mkdtempSync(join(tmpdir(), "varde-atomic-")), "pages", "a.html")
+		let calls = 0
+		const rename = (from: string, to: string) => {
+			calls++
+			if (calls < 3) throw busy()
+			renameSync(from, to)
+		}
+		writeFileAtomic(path, "<p>eksempeltekst</p>", { rename, sleep: () => {} })
+		expect(calls).toBe(3)
+		expect(readFileSync(path, "utf8")).toBe("<p>eksempeltekst</p>")
+	})
+
+	it("throws the rename's error after five busy attempts, and at once for another error", () => {
+		const path = join(mkdtempSync(join(tmpdir(), "varde-atomic-")), "report.json")
+		let calls = 0
+		const always = () => {
+			calls++
+			throw busy()
+		}
+		expect(() => writeFileAtomic(path, "{}", { rename: always, sleep: () => {} })).toThrow("busy")
+		expect(calls).toBe(5)
+		calls = 0
+		const missing = () => {
+			calls++
+			throw Object.assign(new Error("gone"), { code: "ENOENT" })
+		}
+		expect(() => writeFileAtomic(path, "{}", { rename: missing, sleep: () => {} })).toThrow("gone")
+		expect(calls).toBe(1)
 	})
 })
 

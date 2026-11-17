@@ -4,20 +4,15 @@ import {
 	mkdirSync,
 	openSync,
 	realpathSync,
-	renameSync,
 	rmSync,
 	writeFileSync,
 } from "node:fs"
 import { dirname, join, relative, resolve } from "node:path"
+import { type RenameIo, renameRetrying } from "../io/files.ts"
 import { CuratedFile } from "../schema/curated.ts"
 import { LockFile } from "../schema/lock.ts"
 
-export type RenameIo = {
-	rename?: (from: string, to: string) => void
-	sleep?: (ms: number) => Promise<void>
-	attempts?: number
-	waitMs?: number
-}
+export type { RenameIo }
 
 // A file that could not be renamed into place. The temporary file is kept, so nothing is lost.
 export class SaveError extends Error {
@@ -37,34 +32,22 @@ export class CuratedWriteError extends SaveError {
 	}
 }
 
-// Another program can hold a file for a moment on Windows (an editor, a virus scanner).
-const RETRYABLE = new Set(["EPERM", "EBUSY", "EACCES"])
-const pause = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
-
 // One file, whole: written to a temporary file, then renamed over the old one, so a crash
-// mid-write leaves the old file whole. A busy rename is retried; one that keeps failing stops
-// with the temporary file kept.
+// mid-write leaves the old file whole. A busy rename is retried (renameRetrying, the loop every
+// atomic write shares); one that keeps failing stops with the temporary file kept.
 async function saveWhole(
 	path: string,
 	text: string,
 	io: RenameIo,
 	fail: (temp: string) => SaveError
 ): Promise<void> {
-	const rename = io.rename ?? renameSync
-	const sleep = io.sleep ?? pause
-	const attempts = io.attempts ?? 5
 	mkdirSync(dirname(path), { recursive: true })
 	const temp = `${path}.${process.pid}.tmp`
 	writeFileSync(temp, text)
-	for (let attempt = 1; ; attempt++) {
-		try {
-			rename(temp, path)
-			return
-		} catch (err) {
-			const code = (err as { code?: string }).code ?? ""
-			if (!RETRYABLE.has(code) || attempt >= attempts) throw fail(temp)
-			await sleep(io.waitMs ?? 200)
-		}
+	try {
+		renameRetrying(temp, path, io)
+	} catch {
+		throw fail(temp)
 	}
 }
 

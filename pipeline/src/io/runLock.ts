@@ -7,7 +7,7 @@ export const RUN_LOCK = "run.lock"
 export class CacheBusyError extends Error {
 	constructor(dir: string) {
 		super(
-			`another fetch, extract or verify is running on this cache: ${basename(dir)}/${RUN_LOCK} holds its process id. If none is running, delete that file and start again`
+			`another discover, fetch, extract or verify is running on this cache: ${basename(dir)}/${RUN_LOCK} holds its process id. If none is running, delete that file and start again`
 		)
 		this.name = "CacheBusyError"
 	}

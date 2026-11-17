@@ -61,13 +61,14 @@ try {
 	}
 	if (!values["dry-run"]) {
 		const root = values.cache ?? DEFAULT_CACHE_DIR
-		writeDiscovery(join(root, "discover"), run, report, allowList.entries())
-		recordTiming(root, "discover", Date.now() - started)
-		// Every run that starts with discover clears raw pages and Kartverket answers past their
-		// age, even when fetch is not run for a while. save() empties the page journal, so the
-		// purge holds the cache lock: no fetch, extract or verify may run at the same time.
+		// The cache lock comes before the discovery files are replaced: a fetch, extract or verify
+		// running now reads them. It also holds the purge, since save() empties the page journal.
 		const held = holdCache(join(root, "pages"))
 		try {
+			writeDiscovery(join(root, "discover"), run, report, allowList.entries())
+			recordTiming(root, "discover", Date.now() - started)
+			// Every run that starts with discover clears raw pages and Kartverket answers past their
+			// age, even when fetch is not run for a while.
 			const pages = new PageCache(join(root, "pages"))
 			pages.purge(Date.now())
 			pages.save()

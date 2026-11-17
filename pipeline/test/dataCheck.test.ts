@@ -45,6 +45,22 @@ describe("checkData", () => {
 		expect(checkData(repo({}))).toEqual([])
 	})
 
+	it("flags a leftover temporary file or any other non-JSON file, never reading it", () => {
+		const problems = checkData(
+			repo({
+				"lock/3403.json": lock,
+				"lock/3403.json.4242.tmp": "{ Kari Nordmann",
+				"curated/3403-hamar.json.4242.tmp": "{ Kari Nordmann",
+				"curated/.gitkeep": "",
+				"lock/.gitkeep": "",
+			})
+		)
+		expect(problems).toEqual([
+			"curated/3403-hamar.json.4242.tmp: not a .json file, delete it before a commit",
+			"lock/3403.json.4242.tmp: not a .json file, delete it before a commit",
+		])
+	})
+
 	it("flags a lock file name that does not match its kommune", () => {
 		expect(checkData(repo({ "lock/3405.json": lock }))).toEqual([
 			"lock/3405.json: name must be <kommune number>.json for its kommune",

@@ -3,7 +3,13 @@ import { appendFileSync, existsSync, mkdtempSync, readFileSync, writeFileSync } 
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
-import { PageCache, readRunId, writeRunId } from "../src/io/pageCache.ts"
+import {
+	fetchUnfinished,
+	markRunFinished,
+	PageCache,
+	readRunId,
+	writeRunId,
+} from "../src/io/pageCache.ts"
 import type { Fetched } from "../src/net/crawler.ts"
 
 const A = "https://www.eksempel.kommune.no/a/"
@@ -142,6 +148,24 @@ describe("run ids", () => {
 		expect(readRunId(dir)).toBeUndefined()
 		writeFileSync(join(dir, "run.json"), JSON.stringify({ runId: "Kari Nordmann" }))
 		expect(readRunId(dir)).toBeUndefined()
+	})
+
+	it("says a run is unfinished from its start until it is marked finished, with or without a resume", () => {
+		const dir = tmp()
+		expect(fetchUnfinished(dir)).toBe(false)
+		writeRunId(dir, RUN)
+		expect(fetchUnfinished(dir)).toBe(true)
+		markRunFinished(dir, RUN)
+		expect(fetchUnfinished(dir)).toBe(false)
+		expect(readRunId(dir)).toBe(RUN)
+		// A resume starts the same run again: unfinished until fetchPages returns.
+		writeRunId(dir, RUN)
+		expect(fetchUnfinished(dir)).toBe(true)
+		// A run.json from before the flag, or a broken one, does not say it finished.
+		writeFileSync(join(dir, "run.json"), JSON.stringify({ runId: RUN }))
+		expect(fetchUnfinished(dir)).toBe(true)
+		writeFileSync(join(dir, "run.json"), "{ ikke json")
+		expect(fetchUnfinished(dir)).toBe(true)
 	})
 
 	it("takes the id randomUUID gives", () => {

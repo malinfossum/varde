@@ -205,6 +205,8 @@ export type LockInputs = z.infer<typeof LockInputs>
 
 // Why a kommune has no units: the crawler's stop for its host, robots.txt refusing every page,
 // or no page fetched at all. score refuses while a kommune failed for a transient kind.
+// HOST_STOPS lives in src/net/crawler.ts, outside RULE_PATHS, so a change there leaves the
+// fingerprint alone. The lock schema snapshot goes red instead.
 export const FAILED_KINDS = [...HOST_STOPS, "robots", "noPages"] as const
 export type FailedKind = (typeof FAILED_KINDS)[number]
 export const LockFailure = z.strictObject({ kind: z.enum(FAILED_KINDS), reason: NonBlank })

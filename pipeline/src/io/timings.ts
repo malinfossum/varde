@@ -29,3 +29,34 @@ export function recordTiming(cacheDir: string, stage: string, ms: number): void 
 	)
 	writeJsonAtomic(join(cacheDir, FILE), sorted)
 }
+
+const VerifyStats = z.strictObject({
+	lookups: z.number().int().nonnegative(),
+	hits: z.number().int().nonnegative(),
+})
+const STATS = "verify-stats.json"
+
+// verify's Kartverket counts and its time, for the PR body. A full online run replaces the
+// earlier numbers; a resumed one adds to them, the way fetch adds its time, so a verify that
+// stopped on a Kartverket error and went on with --resume counts every lookup once. Offline the
+// answers come from the cache and the time is no measure, so nothing is written. Counts only.
+export function recordVerifyRun(
+	cacheDir: string,
+	run: { lookups: number; hits: number; ms: number },
+	mode: { resume: boolean; offline: boolean }
+): void {
+	if (mode.offline) return
+	const path = join(cacheDir, STATS)
+	let before = { lookups: 0, hits: 0 }
+	if (mode.resume && existsSync(path)) {
+		try {
+			const parsed = VerifyStats.safeParse(JSON.parse(readFileSync(path, "utf8")))
+			if (parsed.success) before = parsed.data
+		} catch {
+			// A broken file starts over, as readTimings does.
+		}
+	}
+	writeJsonAtomic(path, { lookups: before.lookups + run.lookups, hits: before.hits + run.hits })
+	const earlier = mode.resume ? (readTimings(cacheDir).verify ?? 0) : 0
+	recordTiming(cacheDir, "verify", earlier + run.ms)
+}

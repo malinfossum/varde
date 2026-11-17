@@ -221,6 +221,16 @@ describe("fetchSettled", () => {
 		expect(fetchSettled(kommune(), { hosts: [running], notFetched: [skippedBv] })).toBe(false)
 	})
 
+	it("is settled when every page redirected to the www twin and the twin stopped", () => {
+		const twin = { host: "eksempel.kommune.no", requests: 1, delayMs: 5_000 }
+		const lasting = { ...twin, stopped: "crawlDelayTooLong" as const }
+		const running = { host: HOST, requests: 1, delayMs: 5_000 }
+		expect(fetchSettled(kommune(), { hosts: [running, lasting], notFetched: [skippedBv] })).toBe(
+			true
+		)
+		expect(fetchSettled(kommune(), { hosts: [running, twin], notFetched: [skippedBv] })).toBe(false)
+	})
+
 	it("is settled for a kommune with no pages to fetch", () => {
 		expect(fetchSettled({ ...kommune(), pages: [] }, undefined)).toBe(true)
 	})

@@ -117,6 +117,31 @@ describe("ownSiteStopTransient", () => {
 		expect(ownSiteStopTransient(kommune(), other)).toBe(false)
 		expect(ownSiteStopTransient(kommune(), undefined)).toBe(false)
 	})
+
+	it("reads the own site's www twin as the same site, since the pages may sit on either", () => {
+		const bare = "eksempel.kommune.no"
+		expect(ownSiteStopTransient(kommune(), report({ hosts: [host(bare, "timeout")] }))).toBe(true)
+		expect(ownSiteStopTransient(kommune(), report({ hosts: [host(bare, "visitTime")] }))).toBe(
+			false
+		)
+	})
+})
+
+describe("a stop on the own site's www twin", () => {
+	const bare = "eksempel.kommune.no"
+
+	it("gives the twin's stop as the kommune's failure", () => {
+		const r = report({ hosts: [host(SITE), host(bare, "crawlDelayTooLong")] })
+		expect(failedKind(kommune([A]), r)).toEqual({
+			kind: "crawlDelayTooLong",
+			reason: `host stopped: crawlDelayTooLong (${bare})`,
+		})
+	})
+
+	it("gives the stop of a page host's twin, where a page redirected to", () => {
+		const r = report({ hosts: [host(SITE), host("eksempel-helse.no", "secondTooMany")] })
+		expect(failedKind(kommune([B]), r).kind).toBe("secondTooMany")
+	})
 })
 
 describe("failed locks", () => {

@@ -1,3 +1,4 @@
+import { existsSync, readdirSync } from "node:fs"
 import { join } from "node:path"
 import { comparable } from "../gates/compare.ts"
 import { valueGrounded } from "../gates/grounding.ts"
@@ -34,8 +35,23 @@ function isMyEdit(
 	)
 }
 
+// A file verify or review left behind (a <name>.json.<pid>.tmp from a save that failed or was cut
+// off) holds values and quotes like a lock, and nothing else reads it: the sweep and score read
+// .json files only. Anything in the two folders that is not a .json file or .gitkeep is flagged by
+// name, never read.
+function strayFiles(root: string): string[] {
+	return ["curated", "lock"].flatMap((folder) => {
+		const dir = join(root, "data", folder)
+		if (!existsSync(dir)) return []
+		return readdirSync(dir)
+			.filter((f) => !f.endsWith(".json") && f !== ".gitkeep")
+			.sort()
+			.map((f) => `${folder}/${f}: not a .json file, delete it before a commit`)
+	})
+}
+
 export function checkData(root: string, options: { publish?: boolean } = {}): string[] {
-	const problems: string[] = []
+	const problems: string[] = [...strayFiles(root)]
 	const curatedOf = new Map<string, CuratedFile>()
 
 	for (const { file, data, valid } of readJsonDir(join(root, "data", "curated"))) {

@@ -26,7 +26,7 @@ describe("holdCache", () => {
 		const held = holdCache(dir)
 		expect(() => holdCache(dir)).toThrow(CacheBusyError)
 		expect(() => holdCache(dir)).toThrow("pages/run.lock")
-		expect(() => holdCache(dir)).toThrow("another fetch, extract or verify is running")
+		expect(() => holdCache(dir)).toThrow("another discover, fetch, extract or verify is running")
 		held.release()
 	})
 
