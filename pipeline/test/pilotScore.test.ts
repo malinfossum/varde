@@ -495,3 +495,86 @@ describe("determinism", () => {
 		expect(scored(pilotInput({ locks })).oldestFetchedAt).toBe("2026-10-01T08:00:00Z")
 	})
 })
+
+describe("fields read from a blocked kommune's site", () => {
+	const BLOCKED_SITE = "sperret.eksempel.kommune.no"
+	const onBlocked = `https://www.${BLOCKED_SITE}/tjeneste/`
+	const open = (blockedHosts: string[]) => ({ checks: { checks: [] }, blockedHosts })
+	const sampleByHand = (s: PilotScore, n: number) =>
+		s.sample.units.find((u) => u.unitId === unitIdOf(n))?.fields.map((f) => [f.field, f.byHand])
+
+	// Unit 41 sits in the open kommune 3401, and its own pages are on an open host.
+	const phoneOnBlocked = withUnits(baseLocks(), "3401", [
+		named(41, "Tilbud 41", {
+			phone: acceptedField({ sourceUrl: onBlocked }),
+		}),
+	])
+	const pageOnBlocked = withUnits(baseLocks(), "3401", [
+		named(41, "Tilbud 41", {}, { sources: [{ kind: "page", ref: onBlocked }] }),
+	])
+
+	it("flags a sampled field whose source page lies on a blocked site, and only that field", () => {
+		const s = scored(pilotInput({ locks: phoneOnBlocked, ...open([BLOCKED_SITE]) }))
+		expect(sampleByHand(s, 41)).toEqual([
+			["name", false],
+			["phone", true],
+		])
+		expect(s.done.checkByHand).toBe(1)
+		const none = scored(pilotInput({ locks: phoneOnBlocked, ...open([]) }))
+		expect(sampleByHand(none, 41)).toEqual([
+			["name", false],
+			["phone", false],
+		])
+		expect(none.done.checkByHand).toBe(0)
+	})
+
+	it("flags every field of a unit that has a page on a blocked site", () => {
+		const s = scored(pilotInput({ locks: pageOnBlocked, ...open([BLOCKED_SITE]) }))
+		expect(sampleByHand(s, 41)).toEqual([
+			["name", true],
+			["phone", true],
+		])
+		expect(s.done.checkByHand).toBe(2)
+		expect(scored(pilotInput({ locks: pageOnBlocked, ...open([]) })).done.checkByHand).toBe(0)
+	})
+
+	it("flags a disagreement in an open key kommune by its source page, or by a page of its unit", () => {
+		const bySource = withUnits(baseLocks(), "3405", [
+			named(2, "Tjeneste 2", {
+				phone: acceptedField({
+					value: "62 00 00 01",
+					sourceUrl: onBlocked,
+					evidence: { kind: "quote", quotes: ["Telefon: 62 00 00 01"] },
+				}),
+			}),
+		])
+		const byPage = withUnits(baseLocks(), "3405", [
+			named(
+				2,
+				"Tjeneste 2",
+				{
+					phone: acceptedField({
+						value: "62 00 00 01",
+						sourceUrl: page("tjeneste-2"),
+						evidence: { kind: "quote", quotes: ["Telefon: 62 00 00 01"] },
+					}),
+				},
+				{ sources: [{ kind: "page", ref: onBlocked }] }
+			),
+		])
+		for (const locks of [bySource, byPage]) {
+			const s = scored(pilotInput({ locks, ...open([BLOCKED_SITE]) }))
+			expect(s.disagreements.map((d) => [d.keyId, d.byHand])).toEqual([[2, true]])
+			expect(s.done.checkByHand).toBe(1)
+			const none = scored(pilotInput({ locks, ...open([]) }))
+			expect(none.disagreements.map((d) => d.byHand)).toEqual([false])
+			expect(none.done.checkByHand).toBe(0)
+		}
+	})
+
+	it("leaves a unit whose pages are on an open host unflagged while a site is blocked", () => {
+		const s = scored(pilotInput({ ...open([BLOCKED_SITE]) }))
+		expect(s.done.checkByHand).toBe(0)
+		expect(s.sample.units.flatMap((u) => u.fields).some((f) => f.byHand)).toBe(false)
+	})
+})
