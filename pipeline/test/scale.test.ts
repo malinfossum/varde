@@ -65,7 +65,10 @@ describe("scaleNumbers", () => {
 		)
 		expect(body).toContain("The 30 slowest hosts at their pace:")
 		expect(body).toContain("| `h31.eksempel.kommune.no` | 41 | 1 s | 41 s |")
+		// Slowest first: h31 down to h02 are shown, h01 and h00 are the two cut.
+		expect(body).toContain("| `h02.eksempel.kommune.no` | 12 |")
 		expect(body).not.toContain("h01.eksempel.kommune.no")
+		expect(body).not.toContain("h00.eksempel.kommune.no")
 		expect(body).toContain("And 2 more hosts with 21 requests between them.")
 	})
 

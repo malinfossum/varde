@@ -99,12 +99,17 @@ function crawlReportOf(cacheDir: string): CrawlReport | undefined {
 }
 
 // The sites of the kommuner that block ClaudeBot, as siteHost gives them, from what discover found.
-function blockedHostsOf(discovery: DiscoveryFiles): string[] {
+function blockedHostsOf(discovery: DiscoveryFiles, pilot: readonly string[]): string[] {
 	const hosts = new Set<string>()
 	for (const k of discovery.kommuner) {
-		if (!CLAUDEBOT_BLOCKED.includes(k.kommune) || k.site === undefined) continue
-		const host = siteHost(`https://${k.site.host}/`)
-		if (host !== undefined) hosts.add(host)
+		if (!CLAUDEBOT_BLOCKED.includes(k.kommune) || !pilot.includes(k.kommune)) continue
+		// Fail closed: without its site, a page of an open kommune's unit on that site would go unmarked.
+		const host = k.site === undefined ? undefined : siteHost(`https://${k.site.host}/`)
+		if (host === undefined)
+			throw new ScoreLoadError(
+				`kommune ${k.kommune} blocks ClaudeBot and discover found no site for it: run discover for it first`
+			)
+		hosts.add(host)
 	}
 	return [...hosts].sort(compareText)
 }
@@ -137,7 +142,7 @@ export function loadPilotInput(
 		pilot,
 		keyKommuner: KEY_KOMMUNER.filter((k) => pilot.includes(k)),
 		blocked: CLAUDEBOT_BLOCKED,
-		blockedHosts: blockedHostsOf(discovery),
+		blockedHosts: blockedHostsOf(discovery, pilot),
 		locks: readLocks(root, pilot),
 		curated: readCurated(root, pilot),
 		key: readJson(AnswerKey, testFile(root, "answer-key.json"), "test/answer-key.json"),

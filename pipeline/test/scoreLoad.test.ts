@@ -18,6 +18,15 @@ const write = (path: string, value: unknown) => {
 	writeFileSync(path, `${JSON.stringify(value, null, "\t")}\n`)
 }
 
+const BLOCKED_SITE = {
+	host: "www.proveby.eksempel.kommune.no",
+	sitemap: "probe" as const,
+	sitemapUrls: 1,
+	servicePages: 1,
+	kept: 1,
+	truncated: false,
+}
+
 // A tiny repo and cache, laid out as the score command finds them. The extraction's quote holds
 // a marker word, so a test can show the loaded input keeps no page text.
 function layout(): { root: string; cache: string } {
@@ -39,7 +48,12 @@ function layout(): { root: string; cache: string } {
 	write(join(cache, "discover", "report.json"), found.report)
 	write(join(cache, "discover", "hosts.json"), found.hosts)
 	write(join(cache, "discover", "national.json"), found.national)
-	for (const k of found.kommuner) write(join(cache, "discover", "kommuner", `${k.kommune}.json`), k)
+	// 3403 blocks ClaudeBot, so discover must have found its site.
+	for (const k of found.kommuner)
+		write(
+			join(cache, "discover", "kommuner", `${k.kommune}.json`),
+			k.kommune === "3403" ? { ...k, site: BLOCKED_SITE } : k
+		)
 	write(join(cache, "pages", "report.json"), {
 		hosts: [{ host: "www.eksempel.kommune.no", requests: 12, delayMs: 5_000 }],
 		notFetched: [],
@@ -119,6 +133,24 @@ describe("loadPilotInput", () => {
 		expect(input.keyKommuner).toEqual(["3403"])
 		expect(input.keyKommuner.every((k) => input.pilot.includes(k))).toBe(true)
 		expect(input.blockedHosts).toEqual(["proveby.eksempel.kommune.no"])
+	})
+
+	it("stops, naming the number, when a blocked kommune of the run has no site in discover", () => {
+		const { root, cache } = layout()
+		const found = discovery()
+		const bare = found.kommuner.find((k) => k.kommune === "3403")
+		write(join(cache, "discover", "kommuner", "3403.json"), bare)
+		expect(() => loadPilotInput(root, cache, PILOT_T)).toThrow(
+			new ScoreLoadError(
+				"kommune 3403 blocks ClaudeBot and discover found no site for it: run discover for it first"
+			)
+		)
+		// A run that does not include the kommune does not need its site.
+		expect(loadPilotInput(root, cache, ["3401", "3405"]).blockedHosts).toEqual([])
+		write(join(cache, "discover", "kommuner", "3403.json"), { ...bare, site: BLOCKED_SITE })
+		expect(loadPilotInput(root, cache, PILOT_T).blockedHosts).toEqual([
+			"proveby.eksempel.kommune.no",
+		])
 	})
 
 	it("says to run discover when the discover folder is missing", () => {
