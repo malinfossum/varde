@@ -32,7 +32,7 @@ describe("network boundary", () => {
 		expect(offenders).toEqual([])
 	})
 
-	it("scans the PR 3 folders and files", () => {
+	it("scans the PR 3 and PR 4 folders and files", () => {
 		const scanned = tsFiles(join(ROOT, "src")).map(rel)
 		for (const dir of [
 			"src/extract/",
@@ -41,6 +41,7 @@ describe("network boundary", () => {
 			"src/review/",
 			"src/xlsx/",
 			"src/score/",
+			"src/pilot/",
 		]) {
 			expect(
 				scanned.some((f) => f.startsWith(dir)),
@@ -58,6 +59,14 @@ describe("network boundary", () => {
 			"src/cli/review.ts",
 			"src/cli/score.ts",
 			"src/cli/sweep.ts",
+			"src/io/addressCache.ts",
+			"src/io/runLock.ts",
+			"src/io/offline.ts",
+			"src/io/timings.ts",
+			"src/verify/resume.ts",
+			"src/verify/failed.ts",
+			"src/verify/rules.ts",
+			"src/fetch/progress.ts",
 		]) {
 			expect(scanned).toContain(file)
 		}
