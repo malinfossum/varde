@@ -1,6 +1,11 @@
 // The rules every request follows (spec, "PR 2: discover and fetch").
 export const USER_AGENT = "VardeBot/1.0 (+https://varde.pages.dev/om)"
 export const FLOOR_MS = 5_000
+// A server's own pace where it is not the website floor, keyed by registrable domain as the
+// crawler keys its queues. Kartverket's address API (version 1.2.0, read 12.11.2026) needs no
+// login and states no rate limit: I hold it to one request a second, one at a time. Every other
+// server keeps FLOOR_MS, and a longer Crawl-delay still wins everywhere.
+export const PACE_MS: Readonly<Record<string, number>> = Object.freeze({ "kartverket.no": 1_000 })
 export const TIMEOUT_MS = 30_000
 export const MAX_BYTES = 5 * 1024 * 1024
 export const MAX_REDIRECTS = 5

@@ -1,5 +1,6 @@
 import { readUnitPage } from "../extract/page.ts"
 import type { AddressHit, Candidate, GateContext, UnitFacts } from "../gates/types.ts"
+import type { AddressCache } from "../io/addressCache.ts"
 import type { ManifestEntry } from "../io/pageCache.ts"
 import type { AllowList } from "../net/allowList.ts"
 import type { Get } from "../net/crawler.ts"
@@ -83,16 +84,21 @@ export function contextFor(
 	return { ...lookups, unit, peers }
 }
 
-// Each distinct address once, through Kartverket, before any gate runs: the gates are
-// synchronous, the address API is not.
+// Each distinct address once, through Kartverket and its cache, before any gate runs: the gates
+// are synchronous, the address API is not. One at a time: the crawler sends Kartverket one
+// request at a time anyway, and this way a second spelling of one search ("2999 Eksempelby" and
+// "2999 EKSEMPELBY") finds the answer the first one cached.
 export async function resolveAddresses(
 	get: Get,
 	addresses: Iterable<string>,
-	kommune: string
+	kommune: string,
+	cache?: AddressCache
 ): Promise<Map<string, AddressHit | undefined>> {
-	const distinct = [...new Set(addresses)]
-	const hits = await Promise.all(distinct.map((a) => findAddress(get, a, kommune)))
-	return new Map(distinct.map((a, i) => [a, hits[i]]))
+	const found = new Map<string, AddressHit | undefined>()
+	for (const a of addresses) {
+		if (!found.has(a)) found.set(a, await findAddress(get, a, kommune, cache))
+	}
+	return found
 }
 
 // The status of each website or chat URL I typed in review, asked once through the crawler, so

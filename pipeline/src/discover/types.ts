@@ -88,8 +88,14 @@ export const DiscoverReport = z.strictObject({
 	),
 	nameMismatches: z.array(z.string()),
 	problems: z.array(z.string()),
+	// delayMs since PR 4. Optional, so a discover report written before it still reads.
 	hosts: z.array(
-		z.strictObject({ host: NonBlank, requests: Count, stopped: z.enum(HOST_STOPS).optional() })
+		z.strictObject({
+			host: NonBlank,
+			requests: Count,
+			delayMs: Count.optional(),
+			stopped: z.enum(HOST_STOPS).optional(),
+		})
 	),
 	notFetched: z.array(
 		z.strictObject({

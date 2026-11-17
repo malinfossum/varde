@@ -1,8 +1,8 @@
 import { z } from "zod"
 import type { AddressHit } from "../gates/types.ts"
+import type { AddressCache } from "../io/addressCache.ts"
 import type { Get } from "../net/crawler.ts"
 import { splitAddress, streetKey } from "../text/address.ts"
-import { readJson } from "./json.ts"
 
 // Kartverket's address API, CC BY 4.0. PR 3 uses findAddress to build GateContext.findAddress.
 export const KARTVERKET_SEARCH = "https://api.kartverket.no/adresser/v1/sok"
@@ -73,15 +73,45 @@ export function pickAddress(
 	}
 }
 
+// One timeout, network error or server error stops api.kartverket.no for the rest of the run, and
+// every later request comes back hostSkipped. In verify that is no answer at all: reading it as
+// "unknown address" would send every later address to review, and a resume would then skip those
+// locks. The message names no search, since a search is page text.
+export class AddressLookupError extends Error {
+	constructor() {
+		super(
+			"Kartverket stopped answering in this run, so no address was checked and nothing was written: run verify --resume later"
+		)
+		this.name = "AddressLookupError"
+	}
+}
+
+// The cache first (when given), then Kartverket, then the cache again: only an answer that parsed
+// is written, so a failed request (a 503, a stopped host) or a body that is no answer is asked
+// again next time. Offline, the cache throws on a miss before any request. A stopped host throws
+// AddressLookupError when a cache is given (verify); review passes none and gets no hit.
 export async function findAddress(
 	get: Get,
 	wanted: string,
-	kommune: string
+	kommune: string,
+	cache?: AddressCache
 ): Promise<AddressHit | undefined> {
 	const parts = splitAddress(wanted)
 	if (parts === undefined) return undefined
-	const records = parseAddressSearch(
-		await readJson(get, addressQuery(streetKey(parts.street), kommune))
-	)
-	return records === undefined ? undefined : pickAddress(records, wanted)
+	const search = streetKey(parts.street)
+	const cached = cache?.read(search, kommune)
+	if (cached !== undefined) return pickAddress(cached, wanted)
+	const res = await get(addressQuery(search, kommune), "json")
+	if (!res.ok && res.reason === "hostSkipped" && cache !== undefined) throw new AddressLookupError()
+	if (!res.ok) return undefined
+	let body: unknown
+	try {
+		body = JSON.parse(res.body)
+	} catch {
+		return undefined
+	}
+	const records = parseAddressSearch(body)
+	if (records === undefined) return undefined
+	cache?.write(search, kommune, records)
+	return pickAddress(records, wanted)
 }

@@ -66,7 +66,7 @@ describe("crawler: pace", () => {
 		expect(await crawler.get(`${A}/a/`, "html")).toMatchObject({ ok: false, reason: "hostSkipped" })
 		expect(calls).toEqual([`${A}/robots.txt`])
 		expect(crawler.report().hosts).toEqual([
-			{ host: "www.eksempel.kommune.no", requests: 1, stopped: "crawlDelayTooLong" },
+			{ host: "www.eksempel.kommune.no", requests: 1, delayMs: 5000, stopped: "crawlDelayTooLong" },
 		])
 	})
 
@@ -156,6 +156,7 @@ describe("crawler: 429 and 503", () => {
 		expect(crawler.report().hosts).toContainEqual({
 			host: "www.eksempel.kommune.no",
 			requests: 3,
+			delayMs: 5000,
 			stopped: "secondTooMany",
 		})
 	})
@@ -300,7 +301,7 @@ describe("crawler: a robots.txt that cannot be read", () => {
 		})
 		expect(calls).toEqual([`${R}/robots.txt`])
 		expect(crawler.report().hosts).toEqual([
-			{ host: "data.register-a.no", requests: 1, stopped: "retryAfterTooLong" },
+			{ host: "data.register-a.no", requests: 1, delayMs: 5000, stopped: "retryAfterTooLong" },
 		])
 	})
 
@@ -316,8 +317,8 @@ describe("crawler: a robots.txt that cannot be read", () => {
 		})
 		expect(calls).toEqual([`${R}/robots.txt`, `${R2}/robots.txt`])
 		expect(crawler.report().hosts).toEqual([
-			{ host: "data.register-a.no", requests: 1, stopped: "retryAfterTooLong" },
-			{ host: "data.register-b.no", requests: 1, stopped: "retryAfterTooLong" },
+			{ host: "data.register-a.no", requests: 1, delayMs: 5000, stopped: "retryAfterTooLong" },
+			{ host: "data.register-b.no", requests: 1, delayMs: 5000, stopped: "retryAfterTooLong" },
 		])
 	})
 
@@ -363,8 +364,8 @@ describe("crawler: a robots.txt that cannot be read", () => {
 		expect(await crawler.get(`${A}/a/`, "html")).toMatchObject({ ok: false, reason: "hostSkipped" })
 		expect(await crawler.get(`${P}/a/`, "html")).toMatchObject({ ok: false, reason: "hostSkipped" })
 		expect(crawler.report().hosts).toEqual([
-			{ host: "www.eksempel.kommune.no", requests: 1, stopped: "network" },
-			{ host: "www.leverandor.no", requests: 1, stopped: "network" },
+			{ host: "www.eksempel.kommune.no", requests: 1, delayMs: 5000, stopped: "network" },
+			{ host: "www.leverandor.no", requests: 1, delayMs: 5000, stopped: "network" },
 		])
 	})
 
@@ -406,7 +407,7 @@ describe("crawler: Visit-time", () => {
 		// The turn after the window waits once and sends nothing; the ones after it do not wait.
 		expect(clock.sleeps).toEqual([5000, 5000])
 		expect(crawler.report().hosts).toEqual([
-			{ host: "www.eksempel.kommune.no", requests: 2, stopped: "visitTime" },
+			{ host: "www.eksempel.kommune.no", requests: 2, delayMs: 5000, stopped: "visitTime" },
 		])
 	})
 

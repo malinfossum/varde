@@ -17,6 +17,7 @@ import {
 	MAX_REDIRECTS,
 	MAX_RETRY_AFTER_MS,
 	NetError,
+	PACE_MS,
 	type RawResponse,
 	type Transport,
 } from "./types.ts"
@@ -70,7 +71,8 @@ export type NotFetched = {
 export type CrawlResult = Fetched | NotFetched
 export type Get = (url: string, kind: Kind) => Promise<CrawlResult>
 
-export type HostLine = { host: string; requests: number; stopped?: HostStop }
+// delayMs is the pace the host's server ended the run on: its floor, or a longer Crawl-delay.
+export type HostLine = { host: string; requests: number; delayMs: number; stopped?: HostStop }
 export type CrawlReport = { hosts: HostLine[]; notFetched: NotFetched[] }
 
 const ACCEPT: Readonly<Record<Kind, string>> = {
@@ -94,8 +96,14 @@ const TYPE_FITS: Readonly<Record<Kind, (contentType: string, body: string) => bo
 
 // One request at a time per server: www and the bare domain, and every subdomain of one
 // registrable domain (the 371 *.frivilligsentral.no sites), share one queue and one pace.
-// robots.txt and stops stay per host, as RFC 9309 reads robots.txt per host.
-type Queue = { delayMs: number; next: number; tail: Promise<unknown> }
+// robots.txt and stops stay per host, as RFC 9309 reads robots.txt per host. floorMs is the
+// server's own floor (PACE_MS, else FLOOR_MS); delayMs never goes under it.
+type Queue = { delayMs: number; floorMs: number; next: number; tail: Promise<unknown> }
+
+// Object.hasOwn, so a host named like an Object method never reads the prototype.
+function floorFor(server: string): number {
+	return Object.hasOwn(PACE_MS, server) ? (PACE_MS[server] ?? FLOOR_MS) : FLOOR_MS
+}
 
 type HostState = {
 	queue: Queue
@@ -176,14 +184,10 @@ export class Crawler {
 	}
 
 	report(): CrawlReport {
-		const hosts = [...this.#hosts.entries()]
-			.sort(byHost)
-			.map(
-				([host, s]): HostLine =>
-					s.stopped === undefined
-						? { host, requests: s.requests }
-						: { host, requests: s.requests, stopped: s.stopped }
-			)
+		const hosts = [...this.#hosts.entries()].sort(byHost).map(([host, s]): HostLine => {
+			const line: HostLine = { host, requests: s.requests, delayMs: s.queue.delayMs }
+			return s.stopped === undefined ? line : { ...line, stopped: s.stopped }
+		})
 		return { hosts, notFetched: [...this.#notFetched] }
 	}
 
@@ -286,10 +290,10 @@ export class Crawler {
 		return DISALLOW_ALL
 	}
 
-	// A server's pace is the slowest any of its hosts asks for, never under the floor.
+	// A server's pace is the slowest any of its hosts asks for, never under its own floor.
 	#pace(state: HostState, delay: number): void {
 		const queue = state.queue
-		queue.delayMs = Math.max(queue.delayMs, FLOOR_MS, delay)
+		queue.delayMs = Math.max(queue.delayMs, queue.floorMs, delay)
 		queue.next = Math.max(queue.next, this.#clock.now() + queue.delayMs)
 	}
 
@@ -377,7 +381,8 @@ export class Crawler {
 			const server = getDomain(key) ?? key
 			let queue = this.#queues.get(server)
 			if (queue === undefined) {
-				queue = { delayMs: FLOOR_MS, next: 0, tail: Promise.resolve() }
+				const floorMs = floorFor(server)
+				queue = { delayMs: floorMs, floorMs, next: 0, tail: Promise.resolve() }
 				this.#queues.set(server, queue)
 			}
 			state = { queue, requests: 0, tooMany: 0 }
