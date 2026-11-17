@@ -152,5 +152,7 @@ try {
 			? err.message
 			: "fetch stopped on an unexpected error"
 	)
-	process.exitCode = 1
+	// Exit at once: the crawler's queued requests would keep the process alive, fetching and
+	// journaling pages with no lock held, and those pages would never reach report.json.
+	process.exit(1)
 }
