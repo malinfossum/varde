@@ -104,6 +104,8 @@ export async function resolveAddresses(
 // The status of each website or chat URL I typed in review, asked once through the crawler, so
 // its allow-list, robots and pace apply. A URL the crawler refuses has no 200, so the validity gate
 // sends it to review, and my decision settles that review. Review showed me the reason first.
+// Online only: offline verify never calls this, so a URL the manifest lacks has no status and gets
+// the same review.
 export async function resolveUrls(
 	get: Get,
 	urls: Iterable<string>

@@ -67,6 +67,9 @@ export type VerifyInput = {
 	validKommuner: ReadonlySet<string>
 	places: readonly string[]
 	get: Get
+	// Offline nothing is asked of any URL: a website or chat URL I typed in review has the status the
+	// page manifest holds, else none, and the validity gate sends it to review for my decision.
+	offline?: boolean
 	// Kartverket's answers on disk. Offline it answers from disk alone, and a miss stops the kommune.
 	addressCache?: AddressCache
 	nklm?: { date: string; rows: readonly NklmRow[] }
@@ -300,10 +303,10 @@ export async function verifyKommune(
 	const addresses = new Map(resolved)
 	for (const [a, hit] of resolved)
 		if (hit?.text !== undefined) addresses.set(kartverketForm(a, hit).value, hit)
-	const checkedUrls = await resolveUrls(
-		input.get,
-		editedValues(input.curated, new Set(["website", "chatUrl"]))
-	)
+	const checkedUrls =
+		input.offline === true
+			? new Map<string, number | undefined>()
+			: await resolveUrls(input.get, editedValues(input.curated, new Set(["website", "chatUrl"])))
 
 	const match = matchUnits({
 		units: k.units,

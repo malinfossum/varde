@@ -50,7 +50,7 @@ import {
 	unit,
 } from "./verifyHelpers.ts"
 
-const D = "–"
+const D = "\u2013"
 const answer = (
 	decisions: CuratedFile["units"][number]["decisions"],
 	over: Partial<CuratedFile["units"][number]> = {}

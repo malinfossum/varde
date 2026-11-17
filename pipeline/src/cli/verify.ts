@@ -22,25 +22,10 @@ import { httpsTransport } from "../net/http.ts"
 import { parseOnly, selects } from "../pilot/list.ts"
 import { fetchNklm, kommuneLookup, loadNklm, readNklm } from "../registers/nklm.ts"
 import type { LockFailure } from "../schema/lock.ts"
-import {
-	failedCounts,
-	failedKind,
-	fetchSettled,
-	ownSiteStopTransient,
-	TRANSIENT_KINDS,
-	writeFailedLock,
-} from "../verify/failed.ts"
+import { ownSiteStopTransient, TRANSIENT_KINDS } from "../verify/failed.ts"
 import { lockInputs, splitResume } from "../verify/resume.ts"
-import {
-	findCuratedPath,
-	formatUnfinished,
-	formatVerifySummary,
-	readCuratedFile,
-	VerifyError,
-	verifyAndWrite,
-	verifyEach,
-	verifyKommune,
-} from "../verify/verify.ts"
+import { formatUnfinished, formatVerifySummary, VerifyError, verifyEach } from "../verify/verify.ts"
+import { verifyOne } from "../verify/verifyOne.ts"
 
 const USAGE =
 	"usage: verify --data <dir> [--only pilot|3405,0301] [--cache <dir>] [--nklm-file <path>] [--nklm-fetch] [--resume] [--offline] [--dry-run]"
@@ -97,7 +82,9 @@ process.on("SIGINT", () => {
 try {
 	const found = readDiscovery(join(root, "discover"))
 	const allowList = AllowList.restore(found.hosts)
-	// Offline no crawler exists: every lookup answers from the caches, and a miss names itself.
+	// Offline no crawler exists: every page and address answers from the caches, and a miss names
+	// itself. A website or chat URL I typed in review is not looked up: it has the status the page
+	// manifest holds, else none, and the validity gate asks for my decision.
 	const get: Get = offline
 		? offlineGet
 		: new Crawler({ transport: httpsTransport, clock: systemClock, allowList }).get
@@ -152,38 +139,29 @@ try {
 			const extraction = readExtraction(root, k.kommune)
 			if (extraction === undefined) return undefined
 			const inputs = lockInputs({ cacheDir: root, dataDir, kommune: k.kommune, ...nklmDate })
-			// Nothing came through: the lock says why, with no units, and the curated file keeps my
-			// answers. Only when the crawl report settles every page: after a fetch stopped with
-			// Ctrl+C the kommune is not finished, gets no lock, and score refuses it as never run.
-			if (extraction.pages.length === 0) {
-				if (!fetchSettled(k, report)) {
-					throw new VerifyError(
-						`${k.kommune}: fetch did not settle every page: run fetch --resume, extract, then verify`
-					)
-				}
-				const failure = dryRun
-					? failedKind(k, report)
-					: await writeFailedLock(dataDir, k, report, inputs)
-				failed.push({ kommune: k.kommune, failure })
-				return failedCounts(k)
-			}
-			const curatedAt = findCuratedPath(dataDir, k.kommune)
-			const input = {
+			const { counts: done, failure } = await verifyOne({
 				kommune: k,
 				extraction,
-				...(national === undefined ? {} : { national }),
-				manifest: cache.entries(),
-				readHtml: (e: Parameters<typeof cache.read>[0]) => cache.read(e),
-				allowList,
-				validKommuner: new Set(found.report.kommuner),
-				places: found.kommuner.map((x) => x.name),
-				get,
-				addressCache,
-				...(nklm === undefined ? {} : { nklm }),
-				...(curatedAt === undefined ? {} : { curated: readCuratedFile(curatedAt, k.kommune) }),
-				now,
-			}
-			return dryRun ? (await verifyKommune(input)).counts : verifyAndWrite(dataDir, input, inputs)
+				shared: {
+					...(national === undefined ? {} : { national }),
+					manifest: cache.entries(),
+					readHtml: (e) => cache.read(e),
+					allowList,
+					validKommuner: new Set(found.report.kommuner),
+					places: found.kommuner.map((x) => x.name),
+					get,
+					offline,
+					addressCache,
+					...(nklm === undefined ? {} : { nklm }),
+					now,
+				},
+				dataDir,
+				report,
+				inputs,
+				dryRun,
+			})
+			if (failure !== undefined) failed.push({ kommune: k.kommune, failure })
+			return done
 		},
 		(k, at, of) => console.log(`verify: ${k.kommune} ${k.name} done (${at} of ${of})`)
 	)

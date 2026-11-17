@@ -8,8 +8,19 @@ import { writeJsonAtomic } from "../src/io/files.ts"
 import { OfflineMissError, offlineGet } from "../src/io/offline.ts"
 import { PageCache } from "../src/io/pageCache.ts"
 import { AddressLookupError } from "../src/registers/kartverket.ts"
+import type { CuratedFile } from "../src/schema/curated.ts"
 import { unfinishedReason, verifyEach, verifyKommune } from "../src/verify/verify.ts"
-import { BV, CTX, fetched, K, NOW, UNIT_PAGE, unit, verifySetup } from "./verifyHelpers.ts"
+import {
+	BV,
+	CTX,
+	fetched,
+	K,
+	kartverket,
+	NOW,
+	UNIT_PAGE,
+	unit,
+	verifySetup,
+} from "./verifyHelpers.ts"
 
 const MISSING = `${K}/ikke-hentet/`
 const cachedRoot = () => {
@@ -136,5 +147,52 @@ describe("extract --offline", () => {
 			onDone: (scope, at, of) => lines.push(`extract: ${scope} done (${at} of ${of})`),
 		})
 		expect(lines).toEqual(["extract: 3405 done (1 of 3)", "extract: 3411 done (3 of 3)"])
+	})
+})
+
+describe("verify --offline, my edited URL", () => {
+	it("finishes and settles it on my decision, since no status is asked for a URL the manifest lacks", async () => {
+		const mine = `${K}/barnevern/kontakt/`
+		const decisions = [
+			{
+				field: "website" as const,
+				value: BV,
+				sourceUrl: BV,
+				decision: "edit" as const,
+				editedValue: mine,
+				decidedOn: "2026-11-06",
+			},
+		]
+		const curated: CuratedFile = {
+			kommune: "3405",
+			name: "Lillehammer",
+			units: [
+				{
+					unitId: "org:999999991",
+					name: "Eksempel barneverntjeneste",
+					include: true,
+					sources: { orgNumber: "999999991", pages: [BV] },
+					categories: ["familie-og-barn"],
+					providerType: "offentlig",
+					decisions,
+				},
+			],
+		}
+		const s = verifySetup({ pages: { [BV]: UNIT_PAGE }, units: [unit()], get: offlineGet })
+		// Kartverket answers come from the fake, so only the URL lookup is under test here: a call for
+		// my URL would reach offlineGet and reject, as the real offline run does.
+		const { lock } = await verifyKommune({
+			...s.input,
+			curated,
+			offline: true,
+			get: (url, kind) => (url === mine ? offlineGet(url, kind) : kartverket(url, kind)),
+		})
+		const website = lock.units[0]?.fields.website
+		expect(website).toMatchObject({ status: "accepted", value: mine })
+		expect(website?.gates.find((g) => g.gate === "validity")).toMatchObject({
+			gate: "validity",
+			pass: true,
+			reason: "my decision of 06.11.2026",
+		})
 	})
 })
