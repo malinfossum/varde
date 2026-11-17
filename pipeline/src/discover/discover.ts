@@ -52,6 +52,9 @@ export type DiscoverOptions = {
 	date: string
 	only: readonly string[]
 	now: () => string
+	// Heard of each kommune when it is done: how many are done, of how many. Kommuner run side
+	// by side, so the count is not a place in the list.
+	onKommune?: (kommune: string, name: string, done: number, of: number) => void
 }
 
 export type DiscoverRun = {
@@ -186,8 +189,14 @@ export async function discover(o: DiscoverOptions): Promise<DiscoverRun> {
 	const navOffices = [...new Set(nav.urls.map((u) => u.loc).filter(isNavOfficeUrl))]
 	if (navOffices.length === 0) problems.push("nav.no's sitemap listed no office pages")
 
+	let done = 0
 	const results = await Promise.all(
-		kommuner.map((k) => discoverKommune(o, k, sites.get(k.code), boards.get(k.code)))
+		kommuner.map(async (k) => {
+			const result = await discoverKommune(o, k, sites.get(k.code), boards.get(k.code))
+			done++
+			o.onKommune?.(k.code, k.name, done, kommuner.length)
+			return result
+		})
 	)
 	for (const r of results) {
 		if (!r.brregComplete) problems.push(`${r.kommune}: a Brreg read was incomplete`)

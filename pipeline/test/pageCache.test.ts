@@ -78,7 +78,7 @@ describe("PageCache", () => {
 		writeFileSync(join(dir, `${"0".repeat(32)}.html`), "<main>gammel</main>")
 		expect(cache.purge(NOW)).toBe(2)
 		expect(cache.entries()).toEqual([fresh])
-		expect(readdirSync(dir)).toEqual([fresh.file])
+		expect(readdirSync(dir).sort()).toEqual([fresh.file, "manifest.jsonl"].sort())
 		expect(cache.read(old)).toBeUndefined()
 	})
 

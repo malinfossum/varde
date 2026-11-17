@@ -216,6 +216,29 @@ describe("discover", () => {
 		expect(result.problems.filter((p) => p.startsWith("3405"))).toEqual([])
 	})
 
+	it("tells onKommune as each kommune is done, counting how many are done of how many", async () => {
+		const seen: [string, string, number, number][] = []
+		const allowList = new AllowList()
+		const crawler = new Crawler({
+			transport: fakeWeb(web()).transport,
+			clock: new FakeClock(),
+			allowList,
+		})
+		await discover({
+			get: crawler.get,
+			robots: (host) => crawler.robots(host),
+			allowList,
+			date: "2026-11-03",
+			only: ["3405", "3407"],
+			now: () => "2026-11-03T12:00:00Z",
+			onKommune: (kommune, name, done, of) => seen.push([kommune, name, done, of]),
+		})
+		expect(seen).toHaveLength(2)
+		expect(seen.map(([kommune]) => kommune).sort()).toEqual(["3405", "3407"])
+		expect(seen.map(([, , done]) => done)).toEqual([1, 2])
+		expect(seen.every(([, , , of]) => of === 2)).toBe(true)
+	})
+
 	it("stops and writes nothing when --only matches no kommune", async () => {
 		await expect(run(web(), ["9999"])).rejects.toThrow(
 			new DiscoverError(

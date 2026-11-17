@@ -6,7 +6,10 @@ import { parseArgs } from "node:util"
 import { DiscoverError, discover, formatDiscoverSummary } from "../discover/discover.ts"
 import { writeDiscovery } from "../discover/files.ts"
 import type { DiscoverReport } from "../discover/types.ts"
+import { AddressCache } from "../io/addressCache.ts"
 import { DEFAULT_CACHE_DIR, PageCache } from "../io/pageCache.ts"
+import { CacheBusyError, holdCache } from "../io/runLock.ts"
+import { recordTiming } from "../io/timings.ts"
 import { AllowList } from "../net/allowList.ts"
 import { isoSeconds, systemClock } from "../net/clock.ts"
 import { Crawler } from "../net/crawler.ts"
@@ -32,6 +35,7 @@ if (only === undefined || only.length === 0 || !/^\d{4}-\d{2}-\d{2}$/.test(date)
 
 const allowList = new AllowList()
 const crawler = new Crawler({ transport: httpsTransport, clock: systemClock, allowList })
+const started = Date.now()
 try {
 	const run = await discover({
 		get: crawler.get,
@@ -40,6 +44,8 @@ try {
 		date,
 		only,
 		now: () => isoSeconds(Date.now()),
+		onKommune: (kommune, name, at, of) =>
+			console.log(`discover: ${kommune} ${name} done (${at} of ${of})`),
 	})
 	const crawl = crawler.report()
 	const report: DiscoverReport = {
@@ -56,17 +62,27 @@ try {
 	if (!values["dry-run"]) {
 		const root = values.cache ?? DEFAULT_CACHE_DIR
 		writeDiscovery(join(root, "discover"), run, report, allowList.entries())
-		// Every run that starts with discover clears raw pages older than 90 days, even when
-		// fetch is not run for a while.
-		const pages = new PageCache(join(root, "pages"))
-		pages.purge(Date.now())
-		pages.save()
+		recordTiming(root, "discover", Date.now() - started)
+		// Every run that starts with discover clears raw pages and Kartverket answers past their
+		// age, even when fetch is not run for a while. save() empties the page journal, so the
+		// purge holds the cache lock: no fetch, extract or verify may run at the same time.
+		const held = holdCache(join(root, "pages"))
+		try {
+			const pages = new PageCache(join(root, "pages"))
+			pages.purge(Date.now())
+			pages.save()
+			new AddressCache(join(root, "kartverket")).purge(Date.now())
+		} finally {
+			held.release()
+		}
 	}
 	console.log(formatDiscoverSummary(run, report))
 } catch (err) {
 	// The message only: an unexpected error's text could quote a response.
 	console.error(
-		err instanceof DiscoverError ? err.message : "discover stopped on an unexpected error"
+		err instanceof DiscoverError || err instanceof CacheBusyError
+			? err.message
+			: "discover stopped on an unexpected error"
 	)
 	process.exit(1)
 }
