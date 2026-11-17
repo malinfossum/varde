@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { checkData } from "../src/check/dataCheck.ts"
-import { acceptedField, curatedUnit, lockUnit, PAGE_URL } from "./helpers.ts"
+import { acceptedField, curatedUnit, lockUnit, PAGE_URL, testInputs } from "./helpers.ts"
 
 function repo(files: Record<string, unknown>): string {
 	const root = mkdtempSync(join(tmpdir(), "varde-data-"))
@@ -16,9 +16,25 @@ function repo(files: Record<string, unknown>): string {
 }
 
 const curated = { kommune: "3403", name: "Hamar", units: [curatedUnit()] }
-const lock = { kommune: "3403", units: [lockUnit()] }
+const lockOf = (units: unknown[]) => ({ kommune: "3403", inputs: testInputs(), units })
+const lock = lockOf([lockUnit()])
 
 describe("checkData", () => {
+	it("passes a failed lock: no units, its kind and its reason", () => {
+		const failed = {
+			kommune: "3403",
+			inputs: testInputs(),
+			failed: { kind: "noPages", reason: "no pages fetched" },
+			units: [],
+		}
+		expect(checkData(repo({ "lock/3403.json": failed }))).toEqual([])
+	})
+
+	it("flags a lock without inputs, by its path", () => {
+		const problems = checkData(repo({ "lock/3403.json": { kommune: "3403", units: [lockUnit()] } }))
+		expect(problems.some((p) => p.startsWith("lock/3403.json inputs: "))).toBe(true)
+	})
+
 	it("passes a valid pair of files", () => {
 		expect(checkData(repo({ "curated/3403-hamar.json": curated, "lock/3403.json": lock }))).toEqual(
 			[]
@@ -52,7 +68,7 @@ describe("checkData", () => {
 	it("flags units out of order", () => {
 		const a = lockUnit({ unitId: "org:000000002" })
 		const b = lockUnit({ unitId: "org:000000001" })
-		expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [a, b] } }))).toEqual([
+		expect(checkData(repo({ "lock/3403.json": lockOf([a, b]) }))).toEqual([
 			"lock/3403.json: units must be sorted by unitId",
 		])
 	})
@@ -65,7 +81,7 @@ describe("checkData", () => {
 
 	it("flags an accepted value its quote does not hold, without printing the value", () => {
 		const bad = lockUnit({ fields: { phone: acceptedField({ value: "900 00 000" }) } })
-		const problems = checkData(repo({ "lock/3403.json": { kommune: "3403", units: [bad] } }))
+		const problems = checkData(repo({ "lock/3403.json": lockOf([bad]) }))
 		expect(problems).toEqual([
 			"lock/3403.json org:999999999 phone: no stored quote holds the value",
 		])
@@ -79,7 +95,7 @@ describe("checkData", () => {
 			original: { kind: "quote" as const, quotes: ["Telefon: 62 00 00 00"] },
 		}
 		const bad = lockUnit({ fields: { phone: acceptedField({ value: "900 00 000", evidence }) } })
-		const problems = checkData(repo({ "lock/3403.json": { kommune: "3403", units: [bad] } }))
+		const problems = checkData(repo({ "lock/3403.json": lockOf([bad]) }))
 		expect(problems).toEqual([
 			"lock/3403.json org:999999999 phone: no stored quote holds the value",
 		])
@@ -109,7 +125,7 @@ describe("checkData", () => {
 			})
 		const files = (decidedOn: string) => ({
 			"curated/3403-hamar.json": { ...curated, units: [edit(decidedOn)] },
-			"lock/3403.json": { kommune: "3403", units: [edited] },
+			"lock/3403.json": lockOf([edited]),
 		})
 
 		it("passes when the curated file holds that edit", () => {
@@ -120,7 +136,7 @@ describe("checkData", () => {
 			expect(checkData(repo(files("2026-11-07")))).toEqual([
 				"lock/3403.json org:999999999 phone: no stored quote holds the value",
 			])
-			expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [edited] } }))).toEqual([
+			expect(checkData(repo({ "lock/3403.json": lockOf([edited]) }))).toEqual([
 				"lock/3403.json org:999999999 phone: no stored quote holds the value",
 			])
 		})
@@ -132,7 +148,7 @@ describe("checkData", () => {
 				phone: acceptedField({ value: "1234", evidence: { kind: "quote", quotes: ["Ring 1234"] } }),
 			},
 		})
-		expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [phone] } }))).toEqual([
+		expect(checkData(repo({ "lock/3403.json": lockOf([phone]) }))).toEqual([
 			"lock/3403.json org:999999999 phone: not a number in the Nkom plan",
 		])
 	})
@@ -144,7 +160,7 @@ describe("checkData", () => {
 				openingHours: acceptedField({ value: long, evidence: { kind: "quote", quotes: [long] } }),
 			},
 		})
-		expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [hours] } }))).toEqual([
+		expect(checkData(repo({ "lock/3403.json": lockOf([hours]) }))).toEqual([
 			"lock/3403.json org:999999999 openingHours: longer than 200 characters",
 		])
 	})
@@ -158,7 +174,7 @@ describe("checkData", () => {
 				}),
 			},
 		})
-		expect(checkData(repo({ "lock/3403.json": { kommune: "3403", units: [bad] } }))).toEqual([
+		expect(checkData(repo({ "lock/3403.json": lockOf([bad]) }))).toEqual([
 			"lock/3403.json: holds an account number",
 		])
 	})

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import type { AnswerKey, KeyRow } from "../src/answerKey/schema.ts"
 import { score } from "../src/answerKey/score.ts"
 import type { LockFile, LockUnit } from "../src/schema/lock.ts"
-import { acceptedField, lockUnit } from "./helpers.ts"
+import { acceptedField, lockUnit, testInputs } from "./helpers.ts"
 
 function keyRow(id: number, name: string, over: Partial<KeyRow["fields"]> = {}): KeyRow {
 	return {
@@ -47,7 +47,7 @@ const KEY: AnswerKey = {
 	source: "https://varde.pages.dev/data/resources.nb.json",
 	rows: names.map((n, i) => keyRow(i + 1, n)),
 }
-const lock = (units: LockUnit[]): LockFile => ({ kommune: "3403", units })
+const lock = (units: LockUnit[]): LockFile => ({ kommune: "3403", inputs: testInputs(), units })
 const run = (units: LockUnit[], decideOnce: number[] = []) =>
 	score({ locks: [lock(units)], key: KEY, kommuner: ["3403"], decideOnce })
 

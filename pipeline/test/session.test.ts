@@ -6,7 +6,7 @@ import { readKommuneFiles } from "../src/review/queue.ts"
 import { namesInMyText, type ReviewIO, runReview } from "../src/review/session.ts"
 import type { CuratedFile } from "../src/schema/curated.ts"
 import type { LockFile } from "../src/schema/lock.ts"
-import { acceptedField, curatedUnit, lockUnit, PAGE_URL } from "./helpers.ts"
+import { acceptedField, curatedUnit, lockUnit, PAGE_URL, testInputs } from "./helpers.ts"
 import { curatedWith, dataDir, lockWith, reviewField } from "./reviewHelpers.ts"
 
 const checks = {
@@ -38,6 +38,7 @@ async function session(keys: string, over: Partial<ReviewIO> = {}, dir = dataDir
 const onePhone = (phone: Parameters<typeof reviewField>[0]): string =>
 	dataDir({
 		kommune: "3405",
+		inputs: testInputs(),
 		units: [lockUnit({ unitId: "org:999999991", fields: { phone: reviewField(phone) } })],
 	})
 
@@ -341,6 +342,7 @@ describe("runReview", () => {
 		): string =>
 			dataDir({
 				kommune: "3405",
+				inputs: testInputs(),
 				units: [lockUnit({ unitId: "org:999999991", fields: { [field]: reviewField(over) } })],
 			})
 
@@ -359,6 +361,7 @@ describe("runReview", () => {
 		it("reads the unit's own accepted cost from the lock, as verify does", async () => {
 			const dir = dataDir({
 				kommune: "3405",
+				inputs: testInputs(),
 				units: [
 					lockUnit({
 						unitId: "org:999999991",

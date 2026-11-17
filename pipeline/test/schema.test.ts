@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { HOST_STOPS } from "../src/net/crawler.ts"
 import { KommuneNumber, REGISTERS } from "../src/schema/common.ts"
 import { CuratedFile, CuratedUnit, findDecision, ReviewDecision } from "../src/schema/curated.ts"
 import { unitId } from "../src/schema/ids.ts"
@@ -6,12 +7,15 @@ import {
 	acceptedCost,
 	Evidence,
 	evidenceQuotes,
+	FAILED_KINDS,
 	LockField,
 	LockFile,
+	LockInputs,
 	LockUnit,
+	Sha256,
 	SourceRef,
 } from "../src/schema/lock.ts"
-import { acceptedField, allGatesPass, curatedUnit, lockUnit, T } from "./helpers.ts"
+import { acceptedField, allGatesPass, curatedUnit, lockUnit, T, testInputs } from "./helpers.ts"
 
 describe("KommuneNumber", () => {
 	it("keeps Oslo's leading zero", () => {
@@ -109,31 +113,91 @@ describe("LockField", () => {
 })
 
 describe("LockFile", () => {
+	const lock = (units: unknown[], over: Record<string, unknown> = {}) => ({
+		kommune: "3403",
+		inputs: testInputs(),
+		units,
+		...over,
+	})
+
 	it("accepts a valid file", () => {
-		expect(LockFile.safeParse({ kommune: "3403", units: [lockUnit()] }).success).toBe(true)
+		expect(LockFile.safeParse(lock([lockUnit()])).success).toBe(true)
 	})
 
 	it("rejects a file-level timestamp, so a plain re-run cannot change it", () => {
-		const file = { kommune: "3403", generatedAt: T, units: [lockUnit()] }
-		expect(LockFile.safeParse(file).success).toBe(false)
+		expect(LockFile.safeParse(lock([lockUnit()], { generatedAt: T })).success).toBe(false)
 	})
 
 	it("rejects two units with the same id", () => {
-		expect(LockFile.safeParse({ kommune: "3403", units: [lockUnit(), lockUnit()] }).success).toBe(
-			false
-		)
+		expect(LockFile.safeParse(lock([lockUnit(), lockUnit()])).success).toBe(false)
 	})
 
 	it("rejects a field name outside the twelve", () => {
 		const unit = { ...lockUnit(), fields: { ...lockUnit().fields, fax: acceptedField() } }
-		expect(LockFile.safeParse({ kommune: "3403", units: [unit] }).success).toBe(false)
+		expect(LockFile.safeParse(lock([unit])).success).toBe(false)
 	})
 
 	it("rejects a value of the wrong kind for its field", () => {
 		const unit = lockUnit({ fields: { alwaysOpen: acceptedField({ value: "ja" }) } })
-		expect(LockFile.safeParse({ kommune: "3403", units: [unit] }).success).toBe(false)
+		expect(LockFile.safeParse(lock([unit])).success).toBe(false)
 		const cost = lockUnit({ fields: { cost: acceptedField({ value: "cheap" }) } })
-		expect(LockFile.safeParse({ kommune: "3403", units: [cost] }).success).toBe(false)
+		expect(LockFile.safeParse(lock([cost])).success).toBe(false)
+	})
+
+	it("rejects a lock without inputs", () => {
+		expect(LockFile.safeParse({ kommune: "3403", units: [lockUnit()] }).success).toBe(false)
+	})
+
+	it("takes every input a resume compares, and nothing else", () => {
+		const sha = `sha256:${"a".repeat(64)}`
+		const all = { extraction: sha, national: sha, curated: sha, nklm: "2026-11-01", rules: 1 }
+		expect(LockInputs.safeParse(all).success).toBe(true)
+		expect(LockInputs.safeParse({ extraction: sha, rules: 1 }).success).toBe(true)
+		expect(LockInputs.safeParse({ ...all, fetchedAt: T }).success).toBe(false)
+		expect(LockInputs.safeParse({ ...all, rules: 0 }).success).toBe(false)
+		expect(LockInputs.safeParse({ ...all, rules: 1.5 }).success).toBe(false)
+		expect(LockInputs.safeParse({ ...all, nklm: "01.11.2026" }).success).toBe(false)
+		expect(LockInputs.safeParse({ rules: 1 }).success).toBe(false)
+	})
+
+	it("rejects a sha256 that is not sha256: and 64 lowercase hex digits", () => {
+		expect(Sha256.safeParse(`sha256:${"0".repeat(64)}`).success).toBe(true)
+		for (const bad of [
+			`sha256:${"0".repeat(63)}`,
+			`sha256:${"A".repeat(64)}`,
+			"0".repeat(64),
+			`sha1:${"0".repeat(64)}`,
+		]) {
+			expect(Sha256.safeParse(bad).success, bad).toBe(false)
+			expect(LockFile.safeParse(lock([], { inputs: { extraction: bad, rules: 1 } })).success).toBe(
+				false
+			)
+		}
+	})
+
+	it("takes every failed kind: the crawler's stops, robots and noPages", () => {
+		expect(FAILED_KINDS).toEqual([...HOST_STOPS, "robots", "noPages"])
+		for (const kind of FAILED_KINDS) {
+			const failed = { kind, reason: "host stopped" }
+			expect(LockFile.safeParse(lock([], { failed })).success, kind).toBe(true)
+		}
+		expect(LockFile.safeParse(lock([], { failed: { kind: "sleep", reason: "x" } })).success).toBe(
+			false
+		)
+		expect(LockFile.safeParse(lock([], { failed: { kind: "timeout", reason: " " } })).success).toBe(
+			false
+		)
+	})
+
+	it("rejects a failed lock with a unit, at units", () => {
+		const parsed = LockFile.safeParse(
+			lock([lockUnit()], { failed: { kind: "timeout", reason: "host stopped: timeout" } })
+		)
+		expect(parsed.success).toBe(false)
+		expect(parsed.error?.issues.map((i) => [i.path.join("."), i.message])).toContainEqual([
+			"units",
+			"a failed lock has no units",
+		])
 	})
 })
 

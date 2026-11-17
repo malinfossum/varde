@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { HOST_STOPS } from "../net/crawler.ts"
 import {
 	CalendarDate,
 	CategorySlug,
@@ -185,17 +186,48 @@ export function acceptedCost(fields: LockUnit["fields"]): Cost | undefined {
 	return parsed.success ? parsed.data : undefined
 }
 
-// No file-level timestamp: the refresh-only check allows only verifiedAt and fetchedAt to move.
+// A sha256 hash as the pipeline writes it: "sha256:" and 64 lowercase hex digits.
+export const Sha256 = z.string().regex(/^sha256:[0-9a-f]{64}$/)
+
+// What verify built the lock from: the hashes of the kommune's extraction file, the national
+// extraction file and the curated file as verify wrote it, the NKLM edition date, and the rules
+// (RULES_VERSION in src/verify/rules.ts). verify --resume re-runs a kommune when any of them
+// differs from what it would read now. Hashes, not file times: a checkout gives every committed
+// file a new time, and a gate change leaves the extraction files alone.
+export const LockInputs = z.strictObject({
+	extraction: Sha256,
+	national: Sha256.optional(),
+	curated: Sha256.optional(),
+	nklm: CalendarDate.optional(),
+	rules: z.number().int().positive(),
+})
+export type LockInputs = z.infer<typeof LockInputs>
+
+// Why a kommune has no units: the crawler's stop for its host, robots.txt refusing every page,
+// or no page fetched at all. score refuses while a kommune failed for a transient kind.
+export const FAILED_KINDS = [...HOST_STOPS, "robots", "noPages"] as const
+export type FailedKind = (typeof FAILED_KINDS)[number]
+export const LockFailure = z.strictObject({ kind: z.enum(FAILED_KINDS), reason: NonBlank })
+export type LockFailure = z.infer<typeof LockFailure>
+
+// No file-level timestamp: a plain refresh moves only verifiedAt, fetchedAt and the inputs'
+// hashes. A kommune where nothing came through still gets a lock, with its failure and no units,
+// so score can tell a failed kommune from one never attempted.
 export const LockFile = z
 	.strictObject({
 		$schema: z.string().optional(),
 		kommune: KommuneNumber,
+		inputs: LockInputs,
+		failed: LockFailure.optional(),
 		units: z.array(LockUnit),
 	})
 	.superRefine((file, ctx) => {
 		const ids = file.units.map((u) => u.unitId)
 		if (new Set(ids).size !== ids.length) {
 			ctx.addIssue({ code: "custom", path: ["units"], message: "unit ids must be unique" })
+		}
+		if (file.failed !== undefined && file.units.length > 0) {
+			ctx.addIssue({ code: "custom", path: ["units"], message: "a failed lock has no units" })
 		}
 	})
 export type LockFile = z.infer<typeof LockFile>

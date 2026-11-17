@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { matchUnits, type UnitGroup } from "../curate/include.ts"
@@ -21,7 +22,13 @@ import {
 } from "../schema/curated.ts"
 import type { ExtractedPage, ExtractionFile } from "../schema/extraction.ts"
 import { slugify } from "../schema/ids.ts"
-import { acceptedCost, type LockField, LockFile, type LockUnit } from "../schema/lock.ts"
+import {
+	acceptedCost,
+	type LockField,
+	LockFile,
+	type LockInputs,
+	type LockUnit,
+} from "../schema/lock.ts"
 import { normaliseText, siteHost } from "../text/normalise.ts"
 import { type Proposal, unitCandidates, withCost } from "./candidates.ts"
 import {
@@ -31,6 +38,7 @@ import {
 	resolveAddresses,
 	resolveUrls,
 } from "./context.ts"
+import { RULES_VERSION } from "./rules.ts"
 
 export class VerifyError extends Error {
 	constructor(message: string) {
@@ -52,6 +60,9 @@ export type VerifyInput = {
 	nklm?: { date: string; rows: readonly NklmRow[] }
 	curated?: CuratedFile
 	now: string
+	// What the lock records it was built from: the file hashes, the NKLM edition and
+	// RULES_VERSION. Without it, the hash of the extraction in hand and today's RULES_VERSION.
+	inputs?: LockInputs
 }
 
 export type VerifyCounts = {
@@ -249,6 +260,11 @@ function curatedFor(g: UnitGroup): CuratedUnit | undefined {
 	}
 }
 
+function defaultInputs(extraction: ExtractionFile): LockInputs {
+	const hash = createHash("sha256").update(JSON.stringify(extraction)).digest("hex")
+	return { extraction: `sha256:${hash}`, rules: RULES_VERSION }
+}
+
 // Verify one kommune: everything in memory, nothing written. A throw anywhere (a lookup, a schema)
 // leaves the files as they were.
 export async function verifyKommune(
@@ -364,6 +380,7 @@ export async function verifyKommune(
 	// A parse error would quote a value, so only the kommune is named.
 	const parsed = LockFile.safeParse({
 		kommune: k.kommune,
+		inputs: input.inputs ?? defaultInputs(input.extraction),
 		units: units.sort((a, b) => (a.unitId < b.unitId ? -1 : 1)),
 	})
 	if (!parsed.success)

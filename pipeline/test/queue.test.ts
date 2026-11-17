@@ -6,7 +6,7 @@ import {
 	kommuneArg,
 	readKommuneFiles,
 } from "../src/review/queue.ts"
-import { acceptedField, curatedUnit, lockUnit, PAGE_URL } from "./helpers.ts"
+import { acceptedField, curatedUnit, lockUnit, PAGE_URL, testInputs } from "./helpers.ts"
 import { curatedWith, dataDir, lockWith } from "./reviewHelpers.ts"
 
 describe("buildQueue", () => {
@@ -59,6 +59,7 @@ describe("buildQueue", () => {
 		})
 		const lock = {
 			kommune: "3405",
+			inputs: testInputs(),
 			units: [lockUnit({ unitId: "org:999999991", fields: { phone: stuck } })],
 		}
 		const answered = curatedWith({

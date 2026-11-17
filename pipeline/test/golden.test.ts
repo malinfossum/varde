@@ -6,7 +6,7 @@ import { AnswerKey } from "../src/answerKey/schema.ts"
 import { score } from "../src/answerKey/score.ts"
 import { readJsonDir } from "../src/io/files.ts"
 import { LockFile } from "../src/schema/lock.ts"
-import { acceptedField, lockUnit } from "./helpers.ts"
+import { acceptedField, lockUnit, testInputs } from "./helpers.ts"
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url))
 const key = AnswerKey.parse(
@@ -39,6 +39,7 @@ describe("golden test", () => {
 		const wrongPhone = `${digits.slice(0, -1)}${digits.endsWith("0") ? "1" : "0"}`
 		const planted = LockFile.parse({
 			kommune: row.kommune,
+			inputs: testInputs(),
 			units: [
 				lockUnit({
 					fields: {

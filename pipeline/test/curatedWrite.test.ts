@@ -12,7 +12,7 @@ import {
 	writeLockFile,
 } from "../src/curate/write.ts"
 import type { CuratedFile } from "../src/schema/curated.ts"
-import { curatedUnit, lockUnit } from "./helpers.ts"
+import { curatedUnit, lockUnit, testInputs } from "./helpers.ts"
 
 const file: CuratedFile = { kommune: "3405", name: "Lillehammer", units: [curatedUnit()] }
 const busy = () => Object.assign(new Error("busy"), { code: "EBUSY" })
@@ -67,7 +67,7 @@ describe("writeCuratedFile", () => {
 describe("writeLockFile", () => {
 	it("retries a busy rename too, and keeps the temporary file when it keeps failing", async () => {
 		const path = join(mkdtempSync(join(tmpdir(), "varde-lock-")), "lock", "3405.json")
-		const lock = { kommune: "3405", units: [lockUnit()] }
+		const lock = { kommune: "3405", inputs: testInputs(), units: [lockUnit()] }
 		let calls = 0
 		await writeLockFile(path, lock, {
 			rename: (from, to) => {

@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { writeJsonAtomic } from "../src/io/files.ts"
 import type { CuratedFile } from "../src/schema/curated.ts"
 import type { LockField, LockFile } from "../src/schema/lock.ts"
-import { acceptedField, curatedUnit, lockUnit } from "./helpers.ts"
+import { acceptedField, curatedUnit, lockUnit, testInputs } from "./helpers.ts"
 
 // A phone in review from the unit's contact block, as verify writes it (origin included).
 export const reviewField = (over: Partial<LockField> = {}): LockField =>
@@ -20,6 +20,7 @@ export const reviewField = (over: Partial<LockField> = {}): LockField =>
 const reviewPhone = reviewField()
 export const lockWith = (): LockFile => ({
 	kommune: "3405",
+	inputs: testInputs(),
 	units: [
 		lockUnit({ unitId: "org:999999991", fields: { phone: reviewPhone } }),
 		lockUnit({

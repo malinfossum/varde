@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import {
 	existsSync,
 	mkdirSync,
@@ -22,6 +23,7 @@ import { readKommuneFiles } from "../src/review/queue.ts"
 import { runReview } from "../src/review/session.ts"
 import type { CuratedFile } from "../src/schema/curated.ts"
 import { PLACE_MISMATCH } from "../src/text/address.ts"
+import { RULES_VERSION } from "../src/verify/rules.ts"
 import type { VerifyCounts } from "../src/verify/verify.ts"
 import {
 	formatUnfinished,
@@ -174,6 +176,16 @@ function setup(o: {
 }
 
 describe("verifyKommune", () => {
+	it("records its inputs on the lock: the extraction's hash and RULES_VERSION unless given", async () => {
+		const { input } = setup({ pages: { [BV]: UNIT_PAGE }, units: [unit()] })
+		const { lock } = await verifyKommune(input)
+		const hash = createHash("sha256").update(JSON.stringify(input.extraction)).digest("hex")
+		expect(lock.inputs).toEqual({ extraction: `sha256:${hash}`, rules: RULES_VERSION })
+		expect(Object.keys(lock)).toEqual(["kommune", "inputs", "units"])
+		const given = { extraction: `sha256:${"1".repeat(64)}`, rules: 7 }
+		expect((await verifyKommune({ ...input, inputs: given })).lock.inputs).toEqual(given)
+	})
+
 	it("includes a clear unit by itself and accepts every value that passes the five gates", async () => {
 		const { input } = setup({ pages: { [BV]: UNIT_PAGE }, units: [unit()] })
 		const { lock, curated, counts } = await verifyKommune(input)

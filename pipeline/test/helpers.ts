@@ -1,7 +1,7 @@
 import type { Candidate, GateContext } from "../src/gates/types.ts"
 import { GATE_NAMES } from "../src/schema/common.ts"
 import type { CuratedUnit } from "../src/schema/curated.ts"
-import type { GateResult, LockField, LockUnit } from "../src/schema/lock.ts"
+import type { GateResult, LockField, LockInputs, LockUnit } from "../src/schema/lock.ts"
 
 // Every fixture here is fictional: the number, the org number and the address.
 export const T = "2026-10-29T08:00:00Z"
@@ -37,6 +37,12 @@ export function lockUnit(over: Partial<LockUnit> = {}): LockUnit {
 		},
 		...over,
 	}
+}
+
+// The inputs every fixture lock carries: an all-zero extraction hash and rules version 1. Only
+// the resume tests read them.
+export function testInputs(): LockInputs {
+	return { extraction: `sha256:${"0".repeat(64)}`, rules: 1 }
 }
 
 export function curatedUnit(over: Partial<CuratedUnit> = {}): CuratedUnit {
