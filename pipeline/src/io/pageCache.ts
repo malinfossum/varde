@@ -89,6 +89,10 @@ export function markRunFinished(dir: string, runId: string): void {
 // True when <pages>/run.json exists and does not say the run finished: a fetch stopped and was
 // never resumed, or the file is broken or older than the flag. verify and score refuse then. No
 // run.json at all means no fetch ran on this cache, and the per-kommune checks speak for it.
+// What verify and score print when fetchUnfinished is true. One fetch --resume settles it.
+export const FETCH_UNFINISHED =
+	"pages/run.json does not say the last fetch finished (it stopped, or it ran before this check existed): run fetch --resume once, with the same selection, then start again"
+
 export function fetchUnfinished(dir: string): boolean {
 	if (!existsSync(join(dir, "run.json"))) return false
 	return readRunFile(dir)?.finished !== true

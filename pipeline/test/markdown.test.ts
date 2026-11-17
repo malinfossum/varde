@@ -36,8 +36,15 @@ describe("codeBlock", () => {
 describe("cellText", () => {
 	it("sanitises and escapes, the pipe included, so the text stays in its cell", () => {
 		expect(cellText("Kafé | @varde <img> `x`\nny linje")).toBe(
-			"Kafé \\| @<!-- -->varde \\<img\\> \\`x\\` ny linje"
+			"Kafé \\| @<span></span>varde \\<img\\> \\`x\\` ny linje"
 		)
+	})
+
+	it("breaks a mention and an email in a table cell with an empty span, which nothing escapes", () => {
+		const row = `| ${cellText("Spør @kari-nordmann")} | ${cellText("post@eksempel.kommune.no")} |`
+		expect(row).toBe("| Spør @<span></span>kari-nordmann | post@<span></span>eksempel.kommune.no |")
+		expect(row).not.toContain("&lt;")
+		expect(row).not.toContain("<!--")
 	})
 
 	it("breaks a bare web address, so GitHub cannot make it a link", () => {

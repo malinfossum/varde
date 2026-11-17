@@ -7,7 +7,7 @@ import { type DiscoveryFiles, readDiscovery } from "../discover/files.ts"
 import { readExtraction } from "../extract/extract.ts"
 import { readCrawlReport } from "../fetch/fetchPages.ts"
 import { readJsonDir } from "../io/files.ts"
-import { fetchUnfinished } from "../io/pageCache.ts"
+import { FETCH_UNFINISHED, fetchUnfinished } from "../io/pageCache.ts"
 import { readTimings } from "../io/timings.ts"
 import type { CrawlReport } from "../net/crawler.ts"
 import { CLAUDEBOT_BLOCKED, KEY_KOMMUNER } from "../pilot/list.ts"
@@ -146,8 +146,7 @@ export function loadPilotInput(
 	only: readonly string[]
 ): PilotInput {
 	// A fetch that stopped and was never resumed would score kommuner with part of their pages.
-	if (fetchUnfinished(join(cacheDir, "pages")))
-		throw new ScoreLoadError("the last fetch did not finish: run fetch --resume first")
+	if (fetchUnfinished(join(cacheDir, "pages"))) throw new ScoreLoadError(FETCH_UNFINISHED)
 	const discovery = readDiscoveryFiles(cacheDir)
 	const pilot = [...only].sort(compareText)
 	checkCoverage(discovery, pilot)

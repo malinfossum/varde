@@ -150,13 +150,15 @@ export function recall(input: {
 }
 
 // Text from the key goes into a public PR body: no markup, no HTML, no mention can ping anyone.
-// GitHub's markdown API still links "&#64;" as a mention and an email, so an empty HTML comment
-// splits the token after each @ (it comes after the escapes, so its < stays a comment). A line
-// break and the space after it fold into one space: a single quantifier, linear time.
+// GitHub's markdown API still links "&#64;" as a mention and an email, and in a table cell it
+// links "@<!-- -->name" as a mention too. An empty span after each @ splits the token in running
+// text and in a cell (it comes after the escapes, so its < stays markup; cellText escapes nothing
+// after this). A line break and the space after it fold into one space: a single quantifier,
+// linear time.
 export function inert(text: string): string {
 	return text
 		.replace(/[\\`*_[\]<>|#]/g, (ch) => `\\${ch}`)
-		.replace(/@/g, "@<!-- -->")
+		.replace(/@/g, "@<span></span>")
 		.replace(/\n\s*/g, " ")
 }
 

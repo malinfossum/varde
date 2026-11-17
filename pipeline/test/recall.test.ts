@@ -194,15 +194,15 @@ describe("recall over the key", () => {
 		expect(md).toContain("| 2 Barnehagen | 3405 |")
 		expect(md).toContain("- `frivilligsentral.no`: outside its Visit-time window")
 		expect(inert("Kafé | Møteplassen @varde <img> `x` *y*")).toBe(
-			"Kafé \\| Møteplassen @<!-- -->varde \\<img\\> \\`x\\` \\*y\\*"
+			"Kafé \\| Møteplassen @<span></span>varde \\<img\\> \\`x\\` \\*y\\*"
 		)
 	})
 
-	it("breaks a mention and an email autolink with an empty comment after the @", () => {
-		// GitHub still links &#64; as a mention and an email; an HTML comment splits the token.
-		expect(inert("Spør @kari-nordmann")).toBe("Spør @<!-- -->kari-nordmann")
-		expect(inert("post@eksempel.kommune.no")).toBe("post@<!-- -->eksempel.kommune.no")
-		expect(inert("Kari Nordmann")).not.toContain("<!--")
+	it("breaks a mention and an email autolink with an empty span after the @", () => {
+		// GitHub links &#64; and, in a table cell, @<!-- --> as a mention; an empty span splits the token.
+		expect(inert("Spør @kari-nordmann")).toBe("Spør @<span></span>kari-nordmann")
+		expect(inert("post@eksempel.kommune.no")).toBe("post@<span></span>eksempel.kommune.no")
+		expect(inert("Kari Nordmann")).not.toContain("<span>")
 	})
 
 	it("folds each line break and the space after it into one space, in linear time", () => {

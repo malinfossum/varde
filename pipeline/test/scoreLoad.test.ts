@@ -170,7 +170,9 @@ describe("loadPilotInput", () => {
 		const run = join(cache, "pages", "run.json")
 		write(run, { runId: "eksempel-run-1", finished: false })
 		expect(() => loadPilotInput(root, cache, PILOT_T)).toThrow(
-			new ScoreLoadError("the last fetch did not finish: run fetch --resume first")
+			new ScoreLoadError(
+				"pages/run.json does not say the last fetch finished (it stopped, or it ran before this check existed): run fetch --resume once, with the same selection, then start again"
+			)
 		)
 		write(run, { runId: "eksempel-run-1", finished: true })
 		expect(loadPilotInput(root, cache, PILOT_T).pilot).toEqual(PILOT_T)

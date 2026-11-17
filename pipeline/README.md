@@ -56,8 +56,9 @@ with a running count, and `fetch` prints a line about every five minutes.
 replaces `pages/run.json` and deletes `pages/report.json`, so every other kommune's stops and
 not-fetched lines are gone until a full `npm run fetch -- --only pilot --national`.
 `pages/run.json` also records whether the run finished, and `verify` and `score` refuse while
-a fetch stopped and was never resumed. `verify --resume` skips a kommune only when its lock's
-`inputs` (the hashes of its extraction file, the national extraction file and its curated
+a fetch stopped and was never resumed, or while `run.json` comes from a fetch that ran before
+this check existed. Either way the remedy is one `fetch --resume` with the same selection.
+`verify --resume` skips a kommune only when its lock's `inputs` (the hashes of its extraction file, the national extraction file and its curated
 file, the NKLM edition and `RULES_VERSION`) all match. A change to a rule file (`RULE_PATHS` in
 `src/verify/rules.ts`) needs two edits there: a new `RULES_FINGERPRINT`, which
 `test/rules.test.ts` asks for, and a bump of `RULES_VERSION`, which no test checks. Without the

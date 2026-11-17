@@ -11,7 +11,7 @@ import { readExtraction } from "../extract/extract.ts"
 import { readCrawlReport } from "../fetch/fetchPages.ts"
 import { AddressCache } from "../io/addressCache.ts"
 import { offlineGet } from "../io/offline.ts"
-import { DEFAULT_CACHE_DIR, fetchUnfinished, PageCache } from "../io/pageCache.ts"
+import { DEFAULT_CACHE_DIR, FETCH_UNFINISHED, fetchUnfinished, PageCache } from "../io/pageCache.ts"
 import { CacheBusyError, holdCache } from "../io/runLock.ts"
 import { recordVerifyRun } from "../io/timings.ts"
 import { AllowList } from "../net/allowList.ts"
@@ -57,7 +57,7 @@ const now = new Date(started).toISOString().replace(/\.\d{3}Z$/, "Z")
 // A fetch that stopped and was never resumed leaves kommuner with part of their pages, and each
 // would get a normal lock from them.
 if (fetchUnfinished(join(root, "pages"))) {
-	console.error("the last fetch did not finish: run fetch --resume first")
+	console.error(FETCH_UNFINISHED)
 	process.exit(2)
 }
 
