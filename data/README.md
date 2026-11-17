@@ -26,6 +26,10 @@ Check the files: `cd pipeline && npm run data:check`.
 | NKLM (NORCE), legevakt list | legevakt phone and address, as cross-checks | permission 05.11.2026 for the file dated 01.01.2026 | Oversikt over legevakter i Norge, NKLM (NORCE), per 01.01.2026 | `docs/licence-requests/README.md` |
 | The kommuner's and providers' own pages | contact details, hours, costs, with a verbatim quote | none named: facts carry no copyright, and the short quotes are kept as evidence with the source named (quotation right, åndsverkloven § 29; confirm) | the source URL beside each value | the source URL beside each value |
 
+The values here are changed from what the sources publish, and the changes are mine: the pipeline
+joins address lines into one, writes web addresses as https links, and leaves out units and fields
+it does not use.
+
 Permissions and requests: `docs/licence-requests/README.md`.
 
 ## Personal data (Art. 14 notice)
