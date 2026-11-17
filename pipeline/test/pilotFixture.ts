@@ -184,6 +184,21 @@ export function sampleChecks(ns: readonly number[] = [41, 42, 43]): Check[] {
 	)
 }
 
+// The base pilot with 17 more units outside the key (44 to 60), so a full sample of 20 can be
+// drawn, and my check "right" on each sampled field. Rule 5 passes only on a full sample.
+export function fullSample(over: Partial<PilotInput> = {}): PilotInput {
+	const ns = Array.from({ length: 20 }, (_, i) => 41 + i)
+	return pilotInput({
+		locks: withUnits(
+			baseLocks(),
+			"3401",
+			ns.map((n) => named(n, `Tilbud ${n}`))
+		),
+		checks: { checks: sampleChecks(ns) },
+		...over,
+	})
+}
+
 // What discover wrote for the three kommuner. pages lists each kommune's discovered page URLs.
 export function discovery(pages: Readonly<Record<string, readonly string[]>> = {}): DiscoveryFiles {
 	const kommune = (code: string): KommuneDiscovery => ({

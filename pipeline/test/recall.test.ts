@@ -194,7 +194,22 @@ describe("recall over the key", () => {
 		expect(md).toContain("| 2 Barnehagen | 3405 |")
 		expect(md).toContain("- `frivilligsentral.no`: outside its Visit-time window")
 		expect(inert("Kafé | Møteplassen @varde <img> `x` *y*")).toBe(
-			"Kafé \\| Møteplassen &#64;varde \\<img\\> \\`x\\` \\*y\\*"
+			"Kafé \\| Møteplassen @<!-- -->varde \\<img\\> \\`x\\` \\*y\\*"
 		)
+	})
+
+	it("breaks a mention and an email autolink with an empty comment after the @", () => {
+		// GitHub still links &#64; as a mention and an email; an HTML comment splits the token.
+		expect(inert("Spør @kari-nordmann")).toBe("Spør @<!-- -->kari-nordmann")
+		expect(inert("post@eksempel.kommune.no")).toBe("post@<!-- -->eksempel.kommune.no")
+		expect(inert("Kari Nordmann")).not.toContain("<!--")
+	})
+
+	it("folds each line break and the space after it into one space, in linear time", () => {
+		expect(inert("Tilbud\n  for unge")).toBe("Tilbud for unge")
+		const spaces = " ".repeat(40_000)
+		const started = performance.now()
+		expect(inert(`a${spaces}b`)).toBe(`a${spaces}b`)
+		expect(performance.now() - started).toBeLessThan(100)
 	})
 })

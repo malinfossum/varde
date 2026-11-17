@@ -7,6 +7,7 @@ import { type DiscoveryFiles, readDiscovery } from "../discover/files.ts"
 import { readExtraction } from "../extract/extract.ts"
 import { readCrawlReport } from "../fetch/fetchPages.ts"
 import { readJsonDir } from "../io/files.ts"
+import { fetchUnfinished } from "../io/pageCache.ts"
 import { readTimings } from "../io/timings.ts"
 import type { CrawlReport } from "../net/crawler.ts"
 import { CLAUDEBOT_BLOCKED, KEY_KOMMUNER } from "../pilot/list.ts"
@@ -14,7 +15,7 @@ import { CuratedFile } from "../schema/curated.ts"
 import { LockFile } from "../schema/lock.ts"
 import { siteHost } from "../text/normalise.ts"
 import { ownSiteStopTransient } from "../verify/failed.ts"
-import { readKnownWrong, readPilotChecks } from "./checks.ts"
+import { ChecksFileError, readKnownWrong, readPilotChecks } from "./checks.ts"
 import type { PageCount, PilotInput } from "./pilot.ts"
 import { compareText } from "./sample.ts"
 import type { ScaleInput } from "./scale.ts"
@@ -76,10 +77,12 @@ function readCurated(root: string, only: readonly string[]): CuratedFile[] {
 	})
 }
 
+// A ChecksFileError names the file and the place in it, never its text, so it passes through.
 function readChecksFile<T>(read: () => T, name: string): T {
 	try {
 		return read()
-	} catch {
+	} catch (err) {
+		if (err instanceof ChecksFileError) throw new ScoreLoadError(`test/${err.message}`)
 		throw new ScoreLoadError(`${name} is missing or does not match its schema`)
 	}
 }
@@ -103,16 +106,31 @@ function crawlReportOf(cacheDir: string): CrawlReport | undefined {
 	return report
 }
 
-// The sites of the kommuner that block ClaudeBot, as siteHost gives them, from what discover found.
+const DISCOVER_PILOT = "run npm run discover -- --only pilot"
+
+// discover's report is whatever the last discover was asked for, and a narrower --only replaces
+// it. Fail closed: a pilot kommune it lacks would lose its blocked site, its transient stop check
+// and its name in the score. Kommune numbers only.
+function checkCoverage(discovery: DiscoveryFiles, pilot: readonly string[]): void {
+	const found = new Set(discovery.kommuner.map((k) => k.kommune))
+	const absent = pilot.filter((k) => !found.has(k))
+	if (absent.length > 0)
+		throw new ScoreLoadError(
+			`discover/report.json lacks kommune ${absent.join(", ")}: ${DISCOVER_PILOT}`
+		)
+}
+
+// The sites of the pilot kommuner that block ClaudeBot, as siteHost gives them, from what discover
+// found. Each blocking kommune is looked up by number, so one discover lacks throws too.
 function blockedHostsOf(discovery: DiscoveryFiles, pilot: readonly string[]): string[] {
 	const hosts = new Set<string>()
-	for (const k of discovery.kommuner) {
-		if (!CLAUDEBOT_BLOCKED.includes(k.kommune) || !pilot.includes(k.kommune)) continue
+	for (const kommune of CLAUDEBOT_BLOCKED.filter((k) => pilot.includes(k))) {
+		const k = discovery.kommuner.find((x) => x.kommune === kommune)
 		// Fail closed: without its site, a page of an open kommune's unit on that site would go unmarked.
-		const host = k.site === undefined ? undefined : siteHost(`https://${k.site.host}/`)
+		const host = k?.site === undefined ? undefined : siteHost(`https://${k.site.host}/`)
 		if (host === undefined)
 			throw new ScoreLoadError(
-				`kommune ${k.kommune} blocks ClaudeBot and discover found no site for it: run discover for it first`
+				`kommune ${kommune} blocks ClaudeBot and discover found no site for it: ${DISCOVER_PILOT}`
 			)
 		hosts.add(host)
 	}
@@ -127,8 +145,12 @@ export function loadPilotInput(
 	cacheDir: string,
 	only: readonly string[]
 ): PilotInput {
+	// A fetch that stopped and was never resumed would score kommuner with part of their pages.
+	if (fetchUnfinished(join(cacheDir, "pages")))
+		throw new ScoreLoadError("the last fetch did not finish: run fetch --resume first")
 	const discovery = readDiscoveryFiles(cacheDir)
 	const pilot = [...only].sort(compareText)
+	checkCoverage(discovery, pilot)
 	const extracted: Record<string, PageCount[]> = {}
 	for (const scope of [...pilot, "national"]) {
 		// Read as empty, a missing file would change the report with no lock change.

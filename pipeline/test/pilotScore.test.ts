@@ -6,6 +6,7 @@ import {
 	baseLocks,
 	discovery,
 	droppedField,
+	fullSample,
 	INCLUDE_REVIEW,
 	KEY,
 	keyRow,
@@ -46,15 +47,15 @@ const disagreementCheck = (by: Check["by"], ruling: Check["ruling"], keyId = 2):
 
 describe("the pass mark", () => {
 	it("passes every rule on a pilot that meets the mark", () => {
-		const s = scored(pilotInput())
+		const s = scored(fullSample())
 		expect(s.rules.map((r) => r.status)).toEqual(["pass", "pass", "pass", "pass", "pass"])
 		expect(s.pass).toBe(true)
 		expect(s.rules.map((r) => r.measured)).toEqual([
 			"0 wrong. Differ from the key: 0; ruled key stale or right by me: 0",
-			"0 of 14 units (0%). Waiting for their inclusion answer, not counted: 0",
+			"0 of 31 units (0%). Waiting for their inclusion answer, not counted: 0",
 			"11 of 11 (100%)",
 			"rows that differ: none",
-			"0 wrong. Fields checked by me: 6 of 6; units drawn: 3 of 20",
+			"0 wrong. Fields checked by me: 40 of 40; units drawn: 20 of 20",
 		])
 	})
 })
@@ -161,6 +162,14 @@ describe("rule 2: units with a field in review", () => {
 	const review = (n: number, reason: string) =>
 		named(n, `Tjeneste ${n}`, { phone: reviewField(reason) })
 
+	it("fails with no unit counted: nothing measured is no pass", () => {
+		const locks = baseLocks().map((l) => lock(l.kommune, []))
+		expect(rule(scored(pilotInput({ locks, checks: { checks: [] } })), 2)).toMatchObject({
+			status: "fail",
+			measured: "0 of 0 units (0%). Waiting for their inclusion answer, not counted: 0",
+		})
+	})
+
 	it("allows 1 unit in 10, not 2", () => {
 		const one = withUnits(baseLocks(), "3405", [review(1, "agreement: 1 other source(s) disagree")])
 		expect(rule(scored(pilotInput({ locks: one })), 2)?.status).toBe("pass")
@@ -211,6 +220,11 @@ describe("rule 3: key rows found", () => {
 		})
 		const nine = withoutUnits(ten, "3405", [unitIdOf(9)])
 		expect(rule(scored(pilotInput({ locks: nine })), 3)?.status).toBe("fail")
+	})
+
+	it("fails with no key row in the key kommuner: nothing measured is no pass", () => {
+		const s = scored(pilotInput({ key: { ...KEY, rows: [] } }))
+		expect(rule(s, 3)).toMatchObject({ status: "fail", measured: "0 of 0 (0%)" })
 	})
 
 	it("finds a row whose unit waits for inclusion, or has its name in review", () => {
@@ -296,14 +310,20 @@ describe("rule 5: the sample outside the key", () => {
 	})
 
 	it("waits while a sampled field has no check by me, a proposal included", () => {
-		expect(
-			rule(scored(pilotInput({ checks: { checks: sampleChecks().slice(1) } })), 5)
-		).toMatchObject({
+		const all = fullSample().checks.checks
+		expect(rule(scored(fullSample({ checks: { checks: all.slice(1) } })), 5)).toMatchObject({
 			status: "waiting",
-			measured: "0 wrong. Fields checked by me: 5 of 6; units drawn: 3 of 20",
+			measured: "0 wrong. Fields checked by me: 39 of 40; units drawn: 20 of 20",
 		})
-		const proposed = sampleChecks().map((c, i) => (i === 0 ? { ...c, by: "proposed" as const } : c))
-		expect(rule(scored(pilotInput({ checks: { checks: proposed } })), 5)?.status).toBe("waiting")
+		const proposed = all.map((c, i) => (i === 0 ? { ...c, by: "proposed" as const } : c))
+		expect(rule(scored(fullSample({ checks: { checks: proposed } })), 5)?.status).toBe("waiting")
+	})
+
+	it("fails when fewer than 20 units could be drawn, every one of them checked right", () => {
+		expect(rule(scored(pilotInput()), 5)).toMatchObject({
+			status: "fail",
+			measured: "0 wrong. Fields checked by me: 6 of 6; units drawn: 3 of 20",
+		})
 	})
 
 	it("fails with no unit to sample, and says 0 of 20", () => {
@@ -395,7 +415,7 @@ describe("recall", () => {
 		const traced = [21, 22, 23, 24].map((id) =>
 			keyRow(id, "3405", { website: page(`tjeneste-${id}`) })
 		)
-		const unknown = keyRow(25, "3405", { website: "https://ukjent.eksempel.no/tilbud/" })
+		const unknown = keyRow(25, "3405", { website: "https://ukjent.eksempel.kommune.no/tilbud/" })
 		const dropped = named(
 			30,
 			"Tjeneste 30",
@@ -427,7 +447,11 @@ describe("recall", () => {
 			[22, "noValues", "no values extracted"],
 			[23, "noUnitId", "fetched, no unit id"],
 			[24, "droppedByGate", "dropped by a gate: source: the host is not on the allow list"],
-			[25, "discover", "ukjent.eksempel.no was not found by any register, sitemap or catalogue"],
+			[
+				25,
+				"discover",
+				"ukjent.eksempel.kommune.no was not found by any register, sitemap or catalogue",
+			],
 		])
 		expect(s.recall.lost[0]?.website).toBe(page("tjeneste-21"))
 	})

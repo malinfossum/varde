@@ -239,8 +239,9 @@ function keyValueOf(row: KeyRow, field: FieldName): FieldValue | null {
 	return fields[field] ?? null
 }
 
+// The pass mark names 20 accepted units, so a shorter sample is not the check it names: it fails.
 function sampleStatus(wrong: number, drawn: number, unchecked: number): RuleStatus {
-	if (wrong > 0 || drawn === 0) return "fail"
+	if (wrong > 0 || drawn < SAMPLE_SIZE) return "fail"
 	return unchecked > 0 ? "waiting" : "pass"
 }
 
@@ -518,14 +519,15 @@ export function scorePilot(input: PilotInput): PilotScore | ScoreRefusal {
 			title: "At most 1 unit in 10 with a field in review, in all pilot kommuner",
 			measured: `${withReview} of ${counted} units (${percent(withReview, counted)}%). Waiting for their inclusion answer, not counted: ${waitingTotal}`,
 			target: "at most 1 in 10",
-			status: status(withReview * 10 <= counted),
+			// A rule with nothing to measure has not been met.
+			status: status(counted > 0 && withReview * 10 <= counted),
 		},
 		{
 			rule: 3,
 			title: "At least 9 in 10 key rows found in the key kommuner",
 			measured: `${found.size} of ${inScope.length} (${percent(found.size, inScope.length)}%)`,
 			target: `at least ${Math.ceil((inScope.length * 9) / 10)} of ${inScope.length}`,
-			status: status(found.size * 10 >= inScope.length * 9),
+			status: status(inScope.length > 0 && found.size * 10 >= inScope.length * 9),
 		},
 		{
 			rule: 4,

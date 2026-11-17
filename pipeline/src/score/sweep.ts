@@ -26,6 +26,16 @@ export type SweepLine = {
 // after it still counts as mid-sentence.
 export function sweepLocks(locks: readonly LockFile[], places: readonly string[]): SweepLine[] {
 	const lines = new Map<string, SweepLine>()
+	// isKnownWord builds its place set on every call, so each distinct word is asked once.
+	const known = new Map<string, boolean>()
+	const isKnown = (word: string): boolean => {
+		let answer = known.get(word)
+		if (answer === undefined) {
+			answer = isKnownWord(word, places)
+			known.set(word, answer)
+		}
+		return answer
+	}
 	for (const lock of locks) {
 		for (const unit of lock.units) {
 			for (const field of FIELD_NAMES) {
@@ -38,7 +48,7 @@ export function sweepLocks(locks: readonly LockFile[], places: readonly string[]
 					texts.push(["quote", q])
 				for (const [where, text] of texts) {
 					for (const word of midSentenceWords(text)) {
-						if (isKnownWord(word, places)) continue
+						if (isKnown(word)) continue
 						const line = { kommune: lock.kommune, unitId: unit.unitId, field, where, word }
 						lines.set([lock.kommune, unit.unitId, field, where, word].join("\u0000"), line)
 					}

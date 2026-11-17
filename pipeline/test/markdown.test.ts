@@ -36,7 +36,7 @@ describe("codeBlock", () => {
 describe("cellText", () => {
 	it("sanitises and escapes, the pipe included, so the text stays in its cell", () => {
 		expect(cellText("Kafé | @varde <img> `x`\nny linje")).toBe(
-			"Kafé \\| &#64;varde \\<img\\> \\`x\\` ny linje"
+			"Kafé \\| @<!-- -->varde \\<img\\> \\`x\\` ny linje"
 		)
 	})
 

@@ -142,7 +142,7 @@ describe("loadPilotInput", () => {
 		write(join(cache, "discover", "kommuner", "3403.json"), bare)
 		expect(() => loadPilotInput(root, cache, PILOT_T)).toThrow(
 			new ScoreLoadError(
-				"kommune 3403 blocks ClaudeBot and discover found no site for it: run discover for it first"
+				"kommune 3403 blocks ClaudeBot and discover found no site for it: run npm run discover -- --only pilot"
 			)
 		)
 		// A run that does not include the kommune does not need its site.
@@ -151,6 +151,42 @@ describe("loadPilotInput", () => {
 		expect(loadPilotInput(root, cache, PILOT_T).blockedHosts).toEqual([
 			"proveby.eksempel.kommune.no",
 		])
+	})
+
+	it("stops, naming every pilot kommune, when discover's report covers only part of the pilot", () => {
+		const { root, cache } = layout()
+		const found = discovery()
+		// A later discover with a narrower --only replaced the report: 3403 blocks ClaudeBot.
+		write(join(cache, "discover", "report.json"), { ...found.report, kommuner: ["3405"] })
+		expect(() => loadPilotInput(root, cache, PILOT_T)).toThrow(
+			new ScoreLoadError(
+				"discover/report.json lacks kommune 3401, 3403: run npm run discover -- --only pilot"
+			)
+		)
+	})
+
+	it("stops while the last fetch did not finish, and reads on once it did", () => {
+		const { root, cache } = layout()
+		const run = join(cache, "pages", "run.json")
+		write(run, { runId: "eksempel-run-1", finished: false })
+		expect(() => loadPilotInput(root, cache, PILOT_T)).toThrow(
+			new ScoreLoadError("the last fetch did not finish: run fetch --resume first")
+		)
+		write(run, { runId: "eksempel-run-1", finished: true })
+		expect(loadPilotInput(root, cache, PILOT_T).pilot).toEqual(PILOT_T)
+	})
+
+	it("passes on where a broken checks file is broken, never its text", () => {
+		const { root, cache } = layout()
+		write(join(root, "pipeline", "test", "pilot-checks.json"), { checks: "Kari Nordmann" })
+		let message = ""
+		try {
+			loadPilotInput(root, cache, PILOT_T)
+		} catch (err) {
+			message = err instanceof ScoreLoadError ? err.message : "other error"
+		}
+		expect(message).toMatch(/^test\/pilot-checks\.json does not match its schema \(checks: /)
+		expect(message).not.toContain("Kari")
 	})
 
 	it("says to run discover when the discover folder is missing", () => {
@@ -218,6 +254,17 @@ describe("transientStops", () => {
 		for (const kind of ["timeout", "network", "serverError"] as const) {
 			expect(transientStops(input(kind))).toEqual(["3405"])
 		}
+	})
+
+	it("names a pilot kommune whose own site's www twin stopped on a timeout", () => {
+		const base = input()
+		const crawl = {
+			hosts: [
+				{ host: "eksempel.kommune.no", requests: 3, delayMs: 5_000, stopped: "timeout" as const },
+			],
+			notFetched: [],
+		}
+		expect(transientStops({ ...base, crawl })).toEqual(["3405"])
 	})
 
 	it("leaves out a lasting stop, a site that ran, and a run with no crawl report", () => {

@@ -3,9 +3,10 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { LockFile } from "../src/schema/lock.ts"
-import { formatSweep, runSweep, SWEEP_HEADER, sweepLocks } from "../src/score/sweep.ts"
+import { formatSweep, runSweep, SWEEP_HEADER, sweepLocks, sweepPlaces } from "../src/score/sweep.ts"
 import { isKnownWord } from "../src/text/names.ts"
 import { acceptedField, allGatesPass, T, testInputs } from "./helpers.ts"
+import { discovery } from "./pilotFixture.ts"
 
 const URL = "https://www.eksempel.kommune.no/helsestasjon/"
 const ID = "org:999990001"
@@ -138,6 +139,28 @@ describe("runSweep", () => {
 		const out = runSweep(root, join(root, ".cache"), ["3405"])
 		expect(files(root)).toEqual(before)
 		expect(out.split("\n")[0]).toBe(SWEEP_HEADER)
+		expect(out).not.toContain("Eksempelby")
+		expect(out.endsWith("5 words to read.")).toBe(true)
+	})
+
+	it("reads places from discover's files when the cache has them, before the curated files", () => {
+		const root = mkdtempSync(join(tmpdir(), "varde-sweep-"))
+		const cache = join(root, ".cache")
+		write(join(root, "data", "lock", "3405.json"), LOCK)
+		// The curated file names another place, so only discover's names can hide Eksempelby.
+		write(join(root, "data", "curated", "3405-annenby.json"), {
+			kommune: "3405",
+			name: "Annenby",
+			units: [],
+		})
+		const found = discovery()
+		write(join(cache, "discover", "report.json"), found.report)
+		write(join(cache, "discover", "hosts.json"), found.hosts)
+		write(join(cache, "discover", "national.json"), found.national)
+		for (const k of found.kommuner)
+			write(join(cache, "discover", "kommuner", `${k.kommune}.json`), k)
+		expect(sweepPlaces(root, cache)).toEqual(["Eksempelby", "Prøveby", "Testby"])
+		const out = runSweep(root, cache, ["3405"])
 		expect(out).not.toContain("Eksempelby")
 		expect(out.endsWith("5 words to read.")).toBe(true)
 	})
