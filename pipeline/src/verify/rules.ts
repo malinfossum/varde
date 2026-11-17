@@ -11,7 +11,7 @@ export const RULES_VERSION = 1
 // rulesFingerprint over this repo's rule files when RULES_VERSION was last set. A hash of source
 // code, not of page data.
 export const RULES_FINGERPRINT =
-	"sha256:2e45c45a3a0bb8e18351b3cd2bd89681c0d10e182e9ecceea7c1b805f919a0a1"
+	"sha256:a86045aa45fd0efe4e0f64f23391b44339fb30cf034343e320ecfe167770625c"
 
 // The code that decides a lock's values: every file verify.ts imports, outside src/net/ and
 // src/io/ (ruleGaps checks this). A formatting-only change asks for a bump too: that costs one

@@ -68,21 +68,22 @@ async function saveWhole(
 	}
 }
 
+// The exact text a curated file is saved as. verify hashes this text into the lock's inputs, so a
+// resume right after compares equal, and a review that saves my answers makes it differ.
+export function curatedText(file: CuratedFile): string {
+	const parsed = CuratedFile.safeParse(file)
+	if (!parsed.success)
+		throw new Error("the curated file does not match its schema: nothing was written")
+	return `${JSON.stringify(parsed.data, null, "\t")}\n`
+}
+
 // Each answer is written at once, checked against the schema first.
 export async function writeCuratedFile(
 	path: string,
 	file: CuratedFile,
 	io: RenameIo = {}
 ): Promise<void> {
-	const parsed = CuratedFile.safeParse(file)
-	if (!parsed.success)
-		throw new Error("the curated file does not match its schema: nothing was written")
-	await saveWhole(
-		path,
-		`${JSON.stringify(parsed.data, null, "\t")}\n`,
-		io,
-		(temp) => new CuratedWriteError(temp)
-	)
+	await saveWhole(path, curatedText(file), io, (temp) => new CuratedWriteError(temp))
 }
 
 // The lock file gets the same retry: Windows holds it as readily as the curated file.

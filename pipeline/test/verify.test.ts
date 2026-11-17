@@ -17,7 +17,7 @@ import type { DiscoveredUnit, KommuneDiscovery } from "../src/discover/types.ts"
 import { extractScope } from "../src/extract/extract.ts"
 import { PageCache } from "../src/io/pageCache.ts"
 import { AllowList } from "../src/net/allowList.ts"
-import type { Fetched, Get } from "../src/net/crawler.ts"
+import type { Get } from "../src/net/crawler.ts"
 import { addressQuery } from "../src/registers/kartverket.ts"
 import { readKommuneFiles } from "../src/review/queue.ts"
 import { runReview } from "../src/review/session.ts"
@@ -36,39 +36,21 @@ import {
 	verifyKommune,
 } from "../src/verify/verify.ts"
 import { fakeGet } from "./netHelpers.ts"
+import {
+	address,
+	BV,
+	fetched,
+	H1,
+	html,
+	K,
+	KARTVERKET,
+	kartverket,
+	NOW,
+	UNIT_PAGE,
+	unit,
+} from "./verifyHelpers.ts"
 
-const K = "https://www.eksempel.kommune.no"
-const NOW = "2026-11-06T10:00:00Z"
-const D = "\u2013"
-const html = (body: string) =>
-	`<html><head><meta name="acos-cmscontext" content="x"></head><body><main class="main">${body}</main></body></html>`
-// The default unit: a barneverntjeneste (SN 88.991), one of the codes that include by rule.
-// A helsestasjon goes to review, so it cannot show an automatic include.
-const BV = `${K}/barnevern/`
-const H1 = "<h1>Eksempel barneverntjeneste</h1>"
-const UNIT_PAGE = html(
-	[
-		H1,
-		"<p>Barneverntjenesten er gratis, og du trenger ikke henvisning.</p>",
-		"<h2>Kontakt</h2>",
-		"<p>Telefon: 62 00 00 00</p>",
-		'<p>E-post: <a href="mailto:barnevern@eksempel.kommune.no">barnevern@eksempel.kommune.no</a></p>',
-		"<p>Besøksadresse: Storgata 1, 2609 Lillehammer</p>",
-		"<h2>Åpningstider</h2>",
-		"<p>Mandag 08.00-15.30</p>",
-	].join("")
-)
-const unit = (over: Partial<DiscoveredUnit> = {}): DiscoveredUnit => ({
-	orgNumber: "999999991",
-	name: "EKSEMPEL KOMMUNE BARNEVERNTJENESTE",
-	orgForm: "BEDR",
-	naeringskode: "88.991",
-	address: "Storgata 1, 2609 LILLEHAMMER",
-	kommune: "3405",
-	website: BV,
-	register: "underenheter",
-	...over,
-})
+const D = "–"
 const answer = (
 	decisions: CuratedFile["units"][number]["decisions"],
 	over: Partial<CuratedFile["units"][number]> = {}
@@ -82,39 +64,8 @@ const answer = (
 	decisions,
 	...over,
 })
-const address = (
-	id: string,
-	text: string,
-	postnummer = "2609",
-	poststed: string | null = "LILLEHAMMER"
-) => ({
-	body: JSON.stringify({
-		adresser: [
-			{
-				adresseid: id,
-				adressetekst: text,
-				kommunenummer: "3405",
-				postnummer,
-				...(poststed === null ? {} : { poststed }),
-			},
-		],
-	}),
-})
-const KARTVERKET = {
-	[addressQuery("storgata 1", "3405")]: address("a1", "Storgata 1"),
-	[addressQuery("storgata 2", "3405")]: address("a2", "Storgata 2"),
-}
-const kartverket = fakeGet(KARTVERKET)
-const fetched = (url: string, body: string, fetchedAt = "2026-11-06T09:00:00Z"): Fetched => ({
-	ok: true,
-	url,
-	finalUrl: url,
-	status: 200,
-	contentType: "text/html",
-	headers: {},
-	body,
-	fetchedAt,
-})
+// Inputs for a lock in a test that does not resume: any well-formed hash will do.
+const INPUTS = { extraction: `sha256:${"0".repeat(64)}`, rules: RULES_VERSION }
 
 function setup(o: {
 	pages: Record<string, string>
@@ -751,7 +702,7 @@ describe("verifyKommune", () => {
 describe("verifyAndWrite", () => {
 	it("writes the lock and curated files of a kommune that completes", async () => {
 		const { dir, input } = setup({ pages: { [BV]: UNIT_PAGE }, units: [unit()] })
-		await verifyAndWrite(join(dir, "data"), input)
+		await verifyAndWrite(join(dir, "data"), input, INPUTS)
 		expect(JSON.parse(readFileSync(lockPath(join(dir, "data"), "3405"), "utf8")).kommune).toBe(
 			"3405"
 		)
@@ -762,7 +713,7 @@ describe("verifyAndWrite", () => {
 
 	it("writes files data:check passes for a plain accepted unit", async () => {
 		const { dir, input } = setup({ pages: { [BV]: UNIT_PAGE }, units: [unit()] })
-		const counts = await verifyAndWrite(join(dir, "data"), input)
+		const counts = await verifyAndWrite(join(dir, "data"), input, INPUTS)
 		expect(counts.accepted).toBeGreaterThan(0)
 		expect(checkData(dir)).toEqual([])
 	})
@@ -789,7 +740,7 @@ describe("verifyAndWrite", () => {
 			units: [unit({ address: undefined })],
 			curated,
 		})
-		await verifyAndWrite(join(dir, "data"), input)
+		await verifyAndWrite(join(dir, "data"), input, INPUTS)
 		expect(
 			JSON.parse(readFileSync(lockPath(join(dir, "data"), "3405"), "utf8")).units[0].fields.phone
 				.value
@@ -804,7 +755,9 @@ describe("verifyAndWrite", () => {
 			if (to === lockPath(data, "3405")) throw Object.assign(new Error("full"), { code: "ENOSPC" })
 			renameSync(from, to)
 		}
-		await expect(verifyAndWrite(data, input, { rename })).rejects.toThrow("could not save the lock")
+		await expect(verifyAndWrite(data, input, INPUTS, { rename })).rejects.toThrow(
+			"could not save the lock"
+		)
 		expect(existsSync(join(data, "curated", "3405-lillehammer.json"))).toBe(true)
 		expect(existsSync(lockPath(data, "3405"))).toBe(false)
 	})
@@ -817,7 +770,7 @@ describe("verifyAndWrite", () => {
 		const data = join(dir, "data")
 		mkdirSync(join(data, "lock"), { recursive: true })
 		writeFileSync(lockPath(data, "3405"), '{"kommune":"3405","units":[]}\n')
-		await expect(verifyAndWrite(data, input)).rejects.toThrow()
+		await expect(verifyAndWrite(data, input, INPUTS)).rejects.toThrow()
 		expect(readFileSync(lockPath(data, "3405"), "utf8")).toBe('{"kommune":"3405","units":[]}\n')
 	})
 })
@@ -827,7 +780,7 @@ describe("review then verify", () => {
 		const page = html(`${H1}<h2>Kontakt</h2><p>Telefon: 62 00 00 00</p><p>Telefon: 62 00 00 02</p>`)
 		const { dir, input } = setup({ pages: { [BV]: page }, units: [unit({ address: undefined })] })
 		const data = join(dir, "data")
-		await verifyAndWrite(data, input)
+		await verifyAndWrite(data, input, INPUTS)
 		expect(
 			JSON.parse(readFileSync(lockPath(data, "3405"), "utf8")).units[0].fields.phone.status
 		).toBe("review")
@@ -848,7 +801,7 @@ describe("review then verify", () => {
 		stdin.end("e\n62 00 00 09\n\n")
 		expect(await done).toMatchObject({ outcome: "done", answered: 1 })
 		const curated = JSON.parse(readFileSync(files[0]?.curatedPath ?? "", "utf8")) as CuratedFile
-		await verifyAndWrite(data, { ...input, curated })
+		await verifyAndWrite(data, { ...input, curated }, INPUTS)
 		const phone = JSON.parse(readFileSync(lockPath(data, "3405"), "utf8")).units[0].fields.phone
 		expect(phone).toMatchObject({ status: "accepted", value: "62 00 00 09" })
 		expect(phone.evidence).toMatchObject({ kind: "decision", decidedOn: "2026-11-06" })
@@ -858,6 +811,19 @@ describe("review then verify", () => {
 
 describe("verifyEach", () => {
 	const counts = (kommune: string) => ({ kommune }) as unknown as VerifyCounts
+	it("reports each kommune it finishes, with a running count", async () => {
+		const lines: string[] = []
+		await verifyEach(
+			["3405", "3407", "3411"].map((kommune) => ({ kommune })),
+			async ({ kommune }) => {
+				if (kommune === "3407") throw new VerifyError("3407: the curated file is not valid JSON")
+				return counts(kommune)
+			},
+			(k, at, of) => lines.push(`${k.kommune} ${at} of ${of}`)
+		)
+		expect(lines).toEqual(["3405 1 of 3", "3411 3 of 3"])
+	})
+
 	it("finishes every kommune after one that stops, and names each one not finished", async () => {
 		const run = async ({ kommune }: { kommune: string }) => {
 			if (kommune === "3405") throw new VerifyError("3405: the curated file is not valid JSON")

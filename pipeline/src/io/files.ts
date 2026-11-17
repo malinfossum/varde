@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import {
 	existsSync,
 	mkdirSync,
@@ -38,4 +39,9 @@ export function writeFileAtomic(path: string, data: string | Uint8Array): void {
 
 export function writeJsonAtomic(path: string, value: unknown): void {
 	writeFileAtomic(path, `${JSON.stringify(value, null, "\t")}\n`)
+}
+
+// "sha256:<hex>" of a text or a file's bytes, the form lock files and the page cache use.
+export function sha256Of(data: string | Uint8Array): string {
+	return `sha256:${createHash("sha256").update(data).digest("hex")}`
 }

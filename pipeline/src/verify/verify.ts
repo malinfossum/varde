@@ -2,16 +2,26 @@ import { createHash } from "node:crypto"
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { matchUnits, type UnitGroup } from "../curate/include.ts"
-import { type RenameIo, SaveError, writeCuratedFile, writeLockFile } from "../curate/write.ts"
+import {
+	curatedText,
+	type RenameIo,
+	SaveError,
+	writeCuratedFile,
+	writeLockFile,
+} from "../curate/write.ts"
 import type { KommuneDiscovery } from "../discover/types.ts"
 import { comparable } from "../gates/compare.ts"
 import { norwegianDate } from "../gates/grounding.ts"
 import { runGates } from "../gates/run.ts"
 import type { GateContext, UnitFacts } from "../gates/types.ts"
+import type { AddressCache } from "../io/addressCache.ts"
+import { sha256Of } from "../io/files.ts"
+import { OfflineMissError } from "../io/offline.ts"
 import type { ManifestEntry } from "../io/pageCache.ts"
 import type { AllowList } from "../net/allowList.ts"
 import type { Get } from "../net/crawler.ts"
 import { namesMatch } from "../recall/match.ts"
+import { AddressLookupError } from "../registers/kartverket.ts"
 import type { NklmRow } from "../registers/nklm.ts"
 import type { FieldName } from "../schema/common.ts"
 import {
@@ -57,6 +67,8 @@ export type VerifyInput = {
 	validKommuner: ReadonlySet<string>
 	places: readonly string[]
 	get: Get
+	// Kartverket's answers on disk. Offline it answers from disk alone, and a miss stops the kommune.
+	addressCache?: AddressCache
 	nklm?: { date: string; rows: readonly NklmRow[] }
 	curated?: CuratedFile
 	now: string
@@ -284,7 +296,7 @@ export async function verifyKommune(
 			if (c.field === "address" && typeof c.value === "string") wanted.add(c.value)
 	for (const r of nklmHere) if (r.address !== undefined) wanted.add(r.address)
 	for (const a of editedValues(input.curated, new Set(["address"]))) wanted.add(a)
-	const resolved = await resolveAddresses(input.get, wanted, k.kommune)
+	const resolved = await resolveAddresses(input.get, wanted, k.kommune, input.addressCache)
 	const addresses = new Map(resolved)
 	for (const [a, hit] of resolved)
 		if (hit?.text !== undefined) addresses.set(kartverketForm(a, hit).value, hit)
@@ -396,18 +408,22 @@ export async function verifyKommune(
 // retry. Nothing is written for a kommune that does not complete. The curated file goes first: a
 // lock that fails to save after it leaves extra curated units, which review never walks, while a
 // lock with no curated file would stop the whole review run. The CLI holds the data folder
-// (holdDataDir) for the whole run, so no review writes the curated file in between.
+// (holdDataDir) for the whole run, so no review writes the curated file in between. The lock
+// records the curated file as this run saves it: a resume right after compares equal, and a
+// review that saves my answers later makes it differ.
 export async function verifyAndWrite(
 	dataDir: string,
 	input: VerifyInput,
+	inputs: Omit<LockInputs, "curated">,
 	io: RenameIo = {}
 ): Promise<VerifyCounts> {
 	const { lock, curated, counts } = await verifyKommune(input)
 	const path =
 		findCuratedPath(dataDir, input.kommune.kommune) ??
 		curatedPathFor(dataDir, input.kommune.kommune, input.kommune.name)
+	const recorded: LockInputs = { ...inputs, curated: sha256Of(curatedText(curated)) }
 	await writeCuratedFile(path, curated, io)
-	await writeLockFile(lockPath(dataDir, input.kommune.kommune), lock, io)
+	await writeLockFile(lockPath(dataDir, input.kommune.kommune), { ...lock, inputs: recorded }, io)
 	return counts
 }
 
@@ -419,24 +435,34 @@ export type Unfinished = { kommune: string; reason: string }
 export function unfinishedReason(kommune: string, err: unknown): string {
 	if (err instanceof VerifyError) return err.message
 	if (err instanceof SaveError) return `${kommune}: ${err.message}`
+	// An offline miss names the URL or the search it missed: --offline runs on my PC only. A stopped
+	// Kartverket names no search.
+	if (err instanceof OfflineMissError || err instanceof AddressLookupError) {
+		return `${kommune}: ${err.message}`
+	}
 	return `${kommune}: stopped on an unexpected error`
 }
 
 // Each kommune on its own, as extract runs each scope: one that stops is named in the summary and
 // never stops the next, and the counts of the ones done still print. run gives undefined for a
-// kommune with no extraction file.
+// kommune with no extraction file. onDone hears of each kommune that finished, with its place in
+// the run, for the progress line.
 export async function verifyEach<K extends { kommune: string }>(
 	kommuner: readonly K[],
-	run: (k: K) => Promise<VerifyCounts | undefined>
+	run: (k: K) => Promise<VerifyCounts | undefined>,
+	onDone?: (k: K, at: number, of: number) => void
 ): Promise<{ counts: VerifyCounts[]; missing: string[]; unfinished: Unfinished[] }> {
 	const counts: VerifyCounts[] = []
 	const missing: string[] = []
 	const unfinished: Unfinished[] = []
-	for (const k of kommuner) {
+	for (const [i, k] of kommuner.entries()) {
 		try {
 			const done = await run(k)
 			if (done === undefined) missing.push(k.kommune)
-			else counts.push(done)
+			else {
+				counts.push(done)
+				onDone?.(k, i + 1, kommuner.length)
+			}
 		} catch (err) {
 			unfinished.push({ kommune: k.kommune, reason: unfinishedReason(k.kommune, err) })
 		}

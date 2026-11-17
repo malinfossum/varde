@@ -1,5 +1,7 @@
 import { existsSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs"
 import { join } from "node:path"
+import { writeJsonAtomic } from "../io/files.ts"
+import { OfflineMissError } from "../io/offline.ts"
 import { DAY_MS, MAX_AGE_DAYS, type ManifestEntry, type PageCache } from "../io/pageCache.ts"
 import { isNavOfficeUrl, parseNavOffice } from "../registers/nav.ts"
 import {
@@ -123,14 +125,22 @@ const bump = <K extends string>(counts: Partial<Record<K, number>>, key: K) => {
 	counts[key] = (counts[key] ?? 0) + 1
 }
 
+// --offline: nothing is fetched and nothing expires, so the cache must hold every page the scope
+// lists. A URL that fetch recorded as not fetched (robots, a 404, a stopped host) is no miss: the
+// run that filled the cache never had it either. Any other URL the cache lacks is an error that
+// names it (local only: --offline never runs in Actions).
+export type ExtractOptions = { offline?: boolean; notFetched?: ReadonlySet<string> }
+
 // Every cached page of one scope (a kommune, or "national" for Nav offices). A URL fetch never
-// stored is counted, not read.
+// stored is counted, not read. A scope with no cached page still gives a file, with no pages,
+// so verify can write that kommune's failed lock.
 export function extractScope(
 	scope: string,
 	urls: readonly string[],
 	cache: PageCache,
 	ctx: ExtractContext,
-	now: string
+	now: string,
+	options: ExtractOptions = {}
 ): { file: ExtractionFile; summary: ExtractSummary } {
 	const summary: ExtractSummary = {
 		scope,
@@ -146,6 +156,8 @@ export function extractScope(
 	for (const url of [...new Set(urls)].sort()) {
 		const entry = cache.get(url)
 		if (entry === undefined) {
+			if (options.offline === true && options.notFetched?.has(url) !== true)
+				throw new OfflineMissError(url)
 			summary.notInCache++
 			continue
 		}
@@ -188,27 +200,32 @@ export type ScopeInput = {
 	ctx: ExtractContext
 }
 
-// Every scope in turn, each written whole or not at all (write is writeJsonAtomic in the CLI).
-// One scope that stops never stops the next: it is counted, and its old file stays as it was.
+// Every scope in turn, each written whole or not at all (write is writeJsonAtomic in runExtract).
+// One scope that stops never stops the next: it is counted, and its old file stays as it was. An
+// offline miss is kept apart, with what it missed; any other error gives the scope name only,
+// since its text could quote a page. onDone hears of each scope written, for the progress line.
 export function extractScopes(
 	scopes: readonly ScopeInput[],
 	cache: PageCache,
 	now: string,
-	write: (scope: string, file: ExtractionFile) => void
-): { summaries: ExtractSummary[]; failed: string[] } {
+	write: (scope: string, file: ExtractionFile) => void,
+	options: ExtractOptions & { onDone?: (scope: string, at: number, of: number) => void } = {}
+): { summaries: ExtractSummary[]; failed: string[]; misses: string[] } {
 	const summaries: ExtractSummary[] = []
 	const failed: string[] = []
-	for (const s of scopes) {
+	const misses: string[] = []
+	for (const [i, s] of scopes.entries()) {
 		try {
-			const { file, summary } = extractScope(s.scope, s.urls, cache, s.ctx, now)
+			const { file, summary } = extractScope(s.scope, s.urls, cache, s.ctx, now, options)
 			write(s.scope, file)
 			summaries.push(s.name === undefined ? summary : { ...summary, name: s.name })
-		} catch {
-			// The scope name only: an unexpected error's text could quote a page.
-			failed.push(s.scope)
+			options.onDone?.(s.scope, i + 1, scopes.length)
+		} catch (err) {
+			if (err instanceof OfflineMissError) misses.push(`${s.scope}: ${err.message}`)
+			else failed.push(s.scope)
 		}
 	}
-	return { summaries, failed }
+	return { summaries, failed, misses }
 }
 
 export const extractionPath = (cacheDir: string, scope: string) =>
@@ -251,4 +268,38 @@ export function purgeExtractions(cacheDir: string, nowMs: number): number {
 		}
 	}
 	return removed
+}
+
+export type ExtractRun = {
+	root: string
+	scopes: readonly ScopeInput[]
+	cache: PageCache
+	now: string
+	nowMs: number
+	dryRun?: boolean
+	offline?: boolean
+	notFetched?: ReadonlySet<string>
+	onDone?: (scope: string, at: number, of: number) => void
+}
+
+// The extract command's run, so a test can drive it: purge extraction files over 90 days old
+// (never offline, where nothing expires, and never in a dry run), then every scope, each written
+// whole to <cache>/extract/<scope>.json unless it is a dry run.
+export function runExtract(o: ExtractRun): {
+	purged: number | undefined
+	summaries: ExtractSummary[]
+	failed: string[]
+	misses: string[]
+} {
+	const purged =
+		o.dryRun === true || o.offline === true ? undefined : purgeExtractions(o.root, o.nowMs)
+	const write = (scope: string, file: ExtractionFile) => {
+		if (o.dryRun !== true) writeJsonAtomic(extractionPath(o.root, scope), file)
+	}
+	const result = extractScopes(o.scopes, o.cache, o.now, write, {
+		offline: o.offline,
+		notFetched: o.notFetched,
+		onDone: o.onDone,
+	})
+	return { purged, ...result }
 }

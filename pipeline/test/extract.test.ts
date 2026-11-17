@@ -195,6 +195,24 @@ describe("extractScopes", () => {
 	})
 })
 
+describe("extractScopes: a scope with no cached page", () => {
+	it("still writes its file, with no pages, so verify can write its failed lock", () => {
+		const cache = cacheWith({})
+		const pages: [string, number][] = []
+		const { summaries, failed } = extractScopes(
+			[{ scope: "3405", name: "Lillehammer", urls: [A, B], ctx }],
+			cache,
+			NOW,
+			(scope, file) => {
+				pages.push([scope, file.pages.length])
+			}
+		)
+		expect(failed).toEqual([])
+		expect(pages).toEqual([["3405", 0]])
+		expect(summaries[0]).toMatchObject({ pages: 0, notInCache: 2 })
+	})
+})
+
 describe("purgeExtractions", () => {
 	const DAY = 86_400_000
 	const NOWMS = Date.parse(NOW)
