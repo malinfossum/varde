@@ -84,9 +84,23 @@ export const UNSAFE_DOMAINS: readonly string[] = [
 	"solviksvenner.no",
 	"trysil-knut.org",
 	"vibro.no",
+	// Indonesian gambling spam on the cached page, found by hand on 18.11.2026: the title names
+	// a gambling brand, and suspect-sites gave one a weak sign and the other none.
+	"bylan.net",
+	"theworlddrum.com",
+]
+
+// One unsafe site on a shared platform, where the registrable domain holds everyone else's
+// sites too: the exact host goes, with its subdomains, and the rest of blogspot.com stays.
+export const UNSAFE_HOSTS: readonly string[] = [
+	// Indonesian spam on the cached page, found by hand in the weak tier on 18.11.2026.
+	"hamarjazz.blogspot.com",
 ]
 
 export function isUnsafeHost(host: string): boolean {
-	const lower = host.toLowerCase()
-	return UNSAFE_DOMAINS.includes(getDomain(lower) ?? lower)
+	const lower = host.toLowerCase().replace(/\.$/, "")
+	return (
+		UNSAFE_DOMAINS.includes(getDomain(lower) ?? lower) ||
+		UNSAFE_HOSTS.some((unsafe) => lower === unsafe || lower.endsWith(`.${unsafe}`))
+	)
 }

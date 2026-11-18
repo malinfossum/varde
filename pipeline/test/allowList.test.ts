@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { AllowList, wwwTwin } from "../src/net/allowList.ts"
+import { isUnsafeHost } from "../src/sources/hosts.ts"
 import { asHttpsUrl, foldNorwegian, httpsHost } from "../src/text/normalise.ts"
 
 describe("AllowList", () => {
@@ -105,6 +106,23 @@ describe("AllowList", () => {
 				{ host: "www.amaderjalsha.com", kind: "provider", licence: "ownPage" },
 			]).has("www.amaderjalsha.com")
 		).toBe(false)
+		expect(list.entries()).toEqual([])
+	})
+
+	it("refuses one unsafe site on a shared platform and keeps its neighbors", () => {
+		const list = new AllowList([])
+		expect(list.add("hamarjazz.blogspot.com", "provider", "ownPage")).toBe(false)
+		expect(list.add("www.hamarjazz.blogspot.com", "provider", "ownPage")).toBe(false)
+		expect(isUnsafeHost("HamarJazz.blogspot.com.")).toBe(true)
+		expect(list.entries()).toEqual([])
+		expect(list.add("example.blogspot.com", "provider", "ownPage")).toBe(true)
+		expect(isUnsafeHost("nothamarjazz.blogspot.com")).toBe(false)
+	})
+
+	it("refuses the spam domains found by hand in the weak tier", () => {
+		const list = new AllowList([])
+		expect(list.add("www.bylan.net", "provider", "ownPage")).toBe(false)
+		expect(list.add("www.theworlddrum.com", "provider", "ownPage")).toBe(false)
 		expect(list.entries()).toEqual([])
 	})
 })
