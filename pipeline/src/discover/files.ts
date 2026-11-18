@@ -2,7 +2,8 @@ import { existsSync, readFileSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import type { z } from "zod"
 import { writeJsonAtomic } from "../io/files.ts"
-import type { HostEntry } from "../sources/hosts.ts"
+import { type HostEntry, isUnsafeHost } from "../sources/hosts.ts"
+import { httpsHost } from "../text/normalise.ts"
 import { DiscoverError, type DiscoverRun } from "./discover.ts"
 import { DiscoverReport, HostFile, KommuneDiscovery, NationalDiscovery } from "./types.ts"
 
@@ -44,12 +45,33 @@ function read<S extends z.ZodType>(schema: S, dir: string, name: string): z.outp
 	return parsed.data
 }
 
+const onUnsafeHost = (url: string) => isUnsafeHost(httpsHost(url) ?? url)
+
+// The unsafe lists in src/sources/hosts.ts grow from what fetch finds, so a host can turn unsafe
+// after discover wrote its files. Fetch, extract, verify and score all read the files through
+// here, so they come back as discover would write them today: no page on such a host, and no
+// unit with it as its website. The cached page stays in the cache, unread, until it expires.
+function withoutUnsafeHosts(k: KommuneDiscovery): KommuneDiscovery {
+	return {
+		...k,
+		pages: k.pages.filter((p) => !onUnsafeHost(p.url)),
+		units: k.units.map((u) => {
+			if (u.website === undefined || !onUnsafeHost(u.website)) return u
+			const { website: _unsafe, ...rest } = u
+			return rest
+		}),
+	}
+}
+
 export function readDiscovery(dir: string): DiscoveryFiles {
 	const report = read(DiscoverReport, dir, "report.json")
+	const national = read(NationalDiscovery, dir, "national.json")
 	return {
 		report,
 		hosts: read(HostFile, dir, "hosts.json"),
-		national: read(NationalDiscovery, dir, "national.json"),
-		kommuner: report.kommuner.map((code) => read(KommuneDiscovery, dir, `kommuner/${code}.json`)),
+		national: { ...national, pages: national.pages.filter((p) => !onUnsafeHost(p.url)) },
+		kommuner: report.kommuner.map((code) =>
+			withoutUnsafeHosts(read(KommuneDiscovery, dir, `kommuner/${code}.json`))
+		),
 	}
 }

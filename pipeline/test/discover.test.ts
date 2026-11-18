@@ -266,6 +266,32 @@ describe("discover files", () => {
 		expect(back.hosts).toEqual(allowList.entries())
 	})
 
+	it("leaves out a host that turned unsafe after discover wrote its files", async () => {
+		const { result, report, allowList } = await run()
+		const dir = mkdtempSync(join(tmpdir(), "varde-discover-"))
+		writeDiscovery(dir, result, report, allowList.entries())
+		// The files as an older discover wrote them: the lists in src/sources/hosts.ts grew later.
+		const kommunePath = join(dir, "kommuner", "3405.json")
+		const kommune = JSON.parse(readFileSync(kommunePath, "utf8"))
+		kommune.pages.push(
+			{ url: "https://www.moderne.no/", from: "brreg" },
+			{ url: "https://hamarjazz.blogspot.com/om", from: "brreg" }
+		)
+		kommune.units[0].website = "https://www.moderne.no/"
+		writeFileSync(kommunePath, JSON.stringify(kommune))
+		const nationalPath = join(dir, "national.json")
+		const national = JSON.parse(readFileSync(nationalPath, "utf8"))
+		national.pages.push({ url: "https://kontor.hosjakk.no/", from: "catalogue" })
+		writeFileSync(nationalPath, JSON.stringify(national))
+
+		const back = readDiscovery(dir)
+		expect(back.kommuner[0]?.pages).toEqual(result.kommuner[0]?.pages)
+		expect(back.kommuner[0]?.units[0]?.orgNumber).toBe(result.kommuner[0]?.units[0]?.orgNumber)
+		expect(back.kommuner[0]?.units[0]?.website).toBeUndefined()
+		expect(back.kommuner[0]?.units.slice(1)).toEqual(result.kommuner[0]?.units.slice(1))
+		expect(back.national).toEqual(result.national)
+	})
+
 	it("says what is missing without quoting any file", () => {
 		const dir = mkdtempSync(join(tmpdir(), "varde-discover-"))
 		expect(() => readDiscovery(dir)).toThrow("report.json is missing: run discover first")
