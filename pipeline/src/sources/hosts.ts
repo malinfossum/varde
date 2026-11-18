@@ -54,15 +54,36 @@ export const NOT_PROVIDER_DOMAINS: readonly string[] = [
 	"lovdata.no",
 ]
 
-// Registrable domains that served malicious scripts when the pilot fetched them. Microsoft
-// Defender flagged the cached front pages on 18.11.2026: a tech-support scam (Cryxos), a
-// redirector and a phishing page. The domains are likely expired or hijacked. Brreg still lists
-// them as hjemmeside for Oslo units, so the pipeline never fetches them, lists them as pages or
-// keeps them as a unit's website. A bruker must never be sent there from Varde.
+// Registrable domains that served malicious scripts or gambling spam when the pilot fetched
+// them: likely expired and bought, or hijacked. Brreg still lists them as hjemmeside for units in
+// Oslo and Innlandet, so the pipeline never fetches them, lists them as pages or keeps them as a
+// unit's website. A bruker must never be sent there from Varde. A whole registrable domain goes,
+// subdomains included (hosjakk.no for hedmarksku.hosjakk.no).
 export const UNSAFE_DOMAINS: readonly string[] = [
+	// Microsoft Defender flagged the cached front pages on 18.11.2026: a tech-support scam
+	// (Cryxos), a redirector and a phishing page.
 	"amaderjalsha.com",
 	"climateact.org",
 	"moderne.no",
+	// Gambling spam on the cached page: the strong tier of npm run suspect-sites, 18.11.2026.
+	"barnasbrobygger.com",
+	"chaknews.com",
+	"fantasiforbundet.no",
+	"gulbygningen.com",
+	"hherf.org",
+	"hosjakk.no",
+	"innlandsbordet.org",
+	"klbbn.no",
+	"kulturkampen.no",
+	"kulturklubben.info",
+	"litegjormye.com",
+	"oppland-ornitologene.org",
+	"oslofilmklubb.no",
+	"pechakucha.no",
+	"rcassin.no",
+	"solviksvenner.no",
+	"trysil-knut.org",
+	"vibro.no",
 ]
 
 export function isUnsafeHost(host: string): boolean {
