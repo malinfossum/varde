@@ -37,11 +37,14 @@ const GENERIC = new Set([
 const EXPECTED_LANGUAGES = new Set(["no", "nb", "nn", "en", "se", "sv", "da"])
 
 // Words of the gambling spam that fills most hijacked domains, matched as whole words. One hit
-// is not enough: a museum page or a scout group may use one of them once.
+// is not enough on a page in an expected language: a museum page or a scout group may use one of
+// them once. On a page in any other language one hit is enough: a hijacked page may keep the
+// unit's name in its title and sell under brand names this list does not know.
 const SPAM =
 	/\b(casino|slot|gacor|judi|togel|toto|sbobet|nettcasino|bettingsider|betting|poker online)\b/gi
 
 const SPAM_HITS = 3
+const SPAM_HITS_FOREIGN = 1
 
 const fold = (text: string) => foldNorwegian(normaliseText(text))
 
@@ -77,7 +80,10 @@ export function suspectReason(
 		.join(" ")
 		.replace(/\s+/g, " ")
 		.trim()
-	if ((text.match(SPAM)?.length ?? 0) >= SPAM_HITS) return "spam"
+	const lang = ($("html").attr("lang") ?? "").trim().slice(0, 2).toLowerCase()
+	const foreign = lang !== "" && !EXPECTED_LANGUAGES.has(lang)
+	const spamHits = text.match(SPAM)?.length ?? 0
+	if (spamHits >= (foreign ? SPAM_HITS_FOREIGN : SPAM_HITS)) return "spam"
 	const from = domainOf(unit.website)
 	const to = domainOf(page.finalUrl)
 	if (from !== undefined && to !== undefined && from !== to) return "leftDomain"
@@ -89,6 +95,5 @@ export function suspectReason(
 	if (words.length === 0) return undefined
 	const folded = fold(text)
 	if (words.some((w) => folded.includes(w))) return undefined
-	const lang = ($("html").attr("lang") ?? "").trim().slice(0, 2).toLowerCase()
-	return lang !== "" && !EXPECTED_LANGUAGES.has(lang) ? "foreignLanguage" : "namesNeither"
+	return foreign ? "foreignLanguage" : "namesNeither"
 }

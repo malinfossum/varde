@@ -27,6 +27,18 @@ describe("suspectReason", () => {
 		expect(suspectReason(unit, page(hacked))).toBe("spam")
 	})
 
+	it("calls a page in an unexpected language spam at one gambling word, though it names the unit", () => {
+		const hijacked =
+			'<html lang="id"><title>Eksempel Parkinsonforening Hoki88</title><p>Daftar dan login. Agen sbobet resmi.</p></html>'
+		expect(suspectReason(unit, page(hijacked))).toBe("spam")
+	})
+
+	it("passes a page in an unexpected language that names the unit and sells nothing", () => {
+		const diaspora =
+			'<html lang="es"><h1>Eksempel Parkinsonforening</h1><p>Bienvenidos a nuestra asociación.</p></html>'
+		expect(suspectReason(unit, page(diaspora))).toBeUndefined()
+	})
+
 	it("notes a redirect to another domain, and a page in an unexpected language", () => {
 		expect(suspectReason(unit, page("<p>x</p>", "https://annet.example/"))).toBe("leftDomain")
 		expect(suspectReason(unit, page('<html lang="id"><p>Toko online</p></html>'))).toBe(
