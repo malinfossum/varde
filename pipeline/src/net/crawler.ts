@@ -100,6 +100,12 @@ const TYPE_FITS: Readonly<Record<Kind, (contentType: string, body: string) => bo
 // server's own floor (PACE_MS, else FLOOR_MS); delayMs never goes under it.
 type Queue = { delayMs: number; floorMs: number; next: number; tail: Promise<unknown> }
 
+// The server a host belongs to: its registrable domain, or the host itself when it has none.
+export function serverOf(host: string): string {
+	const key = host.toLowerCase()
+	return getDomain(key) ?? key
+}
+
 // Object.hasOwn, so a host named like an Object method never reads the prototype.
 function floorFor(server: string): number {
 	return Object.hasOwn(PACE_MS, server) ? (PACE_MS[server] ?? FLOOR_MS) : FLOOR_MS
@@ -378,7 +384,7 @@ export class Crawler {
 		const key = host.toLowerCase()
 		let state = this.#hosts.get(key)
 		if (state === undefined) {
-			const server = getDomain(key) ?? key
+			const server = serverOf(key)
 			let queue = this.#queues.get(server)
 			if (queue === undefined) {
 				const floorMs = floorFor(server)

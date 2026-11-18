@@ -11,6 +11,7 @@ import {
 	type HostLine,
 	SKIP_REASONS,
 	type SkipReason,
+	serverOf,
 } from "../net/crawler.ts"
 
 export type FetchSummary = {
@@ -148,11 +149,32 @@ export function readCrawlReport(path: string): CrawlReport | undefined {
 	}
 }
 
-// Fetches every page through the crawler (which keeps one request at a time per host, and
-// re-checks a host's stop and Visit-time when a queued request's turn comes) and stores it
-// with the adapter that read it. The adapter reads the body in hand, not the cache, so a dry
-// run (which writes no file) counts the same as a real one. The page text itself never leaves
-// the cache. onPage hears of each URL once, when it settles, fetched or not.
+// How many servers fetch asks at one time. On 17.11.2026 fetch started all 3,617 hosts of the
+// pilot at once, and 2,941 hosts stopped on a timeout: each request's 30 second timer ran while
+// its name lookup waited behind the others. Looking up the same names at once the day after
+// took 64 seconds. With 20 in flight a lookup waits behind 19 others at most.
+export const SERVERS_IN_FLIGHT = 20
+
+// The pages of each server, in the order listed. The servers are the crawler's own (serverOf), so
+// a server's subdomains wait in one line here as they do there. A URL that does not parse is its
+// own server: the crawler turns it down without a request.
+function byServer(urls: readonly string[]): string[][] {
+	const groups = new Map<string, string[]>()
+	for (const url of urls) {
+		const server = URL.canParse(url) ? serverOf(new URL(url).hostname) : url
+		const group = groups.get(server)
+		if (group === undefined) groups.set(server, [url])
+		else group.push(url)
+	}
+	return [...groups.values()]
+}
+
+// Fetches every page through the crawler (which paces each server, and re-checks a host's stop
+// and Visit-time before each request) and stores it with the adapter that read it. At most
+// SERVERS_IN_FLIGHT servers are asked at one time, each for one page at a time in the order
+// listed. The adapter reads the body in hand, not the cache, so a dry run (which writes no file)
+// counts the same as a real one. The page text itself never leaves the cache. onPage hears of
+// each URL once, when it settles, fetched or not.
 export async function fetchPages(
 	get: Get,
 	cache: PageCache,
@@ -166,31 +188,38 @@ export async function fetchPages(
 	const notFetched: Partial<Record<SkipReason, number>> = {}
 	let fetched = 0
 	let noMainText = 0
-	await Promise.all(
-		urls.map(async (url) => {
-			try {
-				const res = await get(url, "html")
-				if (!res.ok) {
-					notFetched[res.reason] = (notFetched[res.reason] ?? 0) + 1
-					return
-				}
-				// One page that breaks the reader must not cost the run its manifest: it is stored as
-				// a fallback page with no main text, and save() still runs.
-				let page: { adapter: AdapterName; text: string }
-				try {
-					page = readPage(res.body, res.finalUrl)
-				} catch {
-					page = { adapter: "fallback", text: "" }
-				}
-				cache.put(res, { adapter: page.adapter, textLength: page.text.length })
-				fetched++
-				byAdapter[page.adapter]++
-				if (page.text === "") noMainText++
-			} finally {
-				onPage?.(url)
+	const fetchOne = async (url: string): Promise<void> => {
+		try {
+			const res = await get(url, "html")
+			if (!res.ok) {
+				notFetched[res.reason] = (notFetched[res.reason] ?? 0) + 1
+				return
 			}
-		})
-	)
+			// One page that breaks the reader must not cost the run its manifest: it is stored as
+			// a fallback page with no main text, and save() still runs.
+			let page: { adapter: AdapterName; text: string }
+			try {
+				page = readPage(res.body, res.finalUrl)
+			} catch {
+				page = { adapter: "fallback", text: "" }
+			}
+			cache.put(res, { adapter: page.adapter, textLength: page.text.length })
+			fetched++
+			byAdapter[page.adapter]++
+			if (page.text === "") noMainText++
+		} finally {
+			onPage?.(url)
+		}
+	}
+	const servers = byServer(urls)
+	let next = 0
+	// Each worker takes the next server nobody has started and fetches its pages one by one.
+	const worker = async (): Promise<void> => {
+		for (let pages = servers[next++]; pages !== undefined; pages = servers[next++]) {
+			for (const url of pages) await fetchOne(url)
+		}
+	}
+	await Promise.all(Array.from({ length: Math.min(SERVERS_IN_FLIGHT, servers.length) }, worker))
 	return { pages: urls.length, fetched, byAdapter, noMainText, notFetched }
 }
 
