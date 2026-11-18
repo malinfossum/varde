@@ -40,6 +40,14 @@ describe("findInWpPage", () => {
 		for (const text of ["Storgata", "62 00 00 00", "Innlandet"]) expect(out).not.toContain(text)
 	})
 
+	it("skips a link to an unsafe domain", () => {
+		const item = {
+			...dinutveiItem,
+			content: { rendered: '<a href="https://www.moderne.no/">Nettside</a>' },
+		}
+		expect(findInWpPage("dinutvei", [item])).toEqual({ rows: 1, urls: [] })
+	})
+
 	it("takes the entry's own link from Konfliktrådet and Kirkens Bymisjon", () => {
 		const items = [
 			{ id: 1, link: "https://konfliktraadet.no/ditt_konfliktrad/konfliktradet-eksempel/" },

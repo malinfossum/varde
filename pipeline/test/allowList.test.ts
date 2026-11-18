@@ -94,6 +94,19 @@ describe("AllowList", () => {
 		expect(list.add("m.facebook.com", "provider", "ownPage")).toBe(false)
 		expect(list.entries()).toEqual([])
 	})
+
+	it("refuses an unsafe domain for every kind, its www twin and its subdomains", () => {
+		const list = new AllowList([])
+		expect(list.add("www.moderne.no", "provider", "ownPage")).toBe(false)
+		expect(list.add("moderne.no", "kommune", "ownPage")).toBe(false)
+		expect(list.add("shop.climateact.org", "catalogue", "pending")).toBe(false)
+		expect(
+			AllowList.restore([
+				{ host: "www.amaderjalsha.com", kind: "provider", licence: "ownPage" },
+			]).has("www.amaderjalsha.com")
+		).toBe(false)
+		expect(list.entries()).toEqual([])
+	})
 })
 
 describe("URL helpers", () => {

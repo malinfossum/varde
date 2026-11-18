@@ -1,3 +1,4 @@
+import { getDomain } from "tldts"
 import type { LicenceStatus } from "../gates/types.ts"
 import { REGISTER_SOURCES } from "./registers.ts"
 
@@ -52,3 +53,19 @@ export const NOT_PROVIDER_DOMAINS: readonly string[] = [
 	"apple.com",
 	"lovdata.no",
 ]
+
+// Registrable domains that served malicious scripts when the pilot fetched them. Microsoft
+// Defender flagged the cached front pages on 18.11.2026: a tech-support scam (Cryxos), a
+// redirector and a phishing page. The domains are likely expired or hijacked. Brreg still lists
+// them as hjemmeside for Oslo units, so the pipeline never fetches them, lists them as pages or
+// keeps them as a unit's website. A bruker must never be sent there from Varde.
+export const UNSAFE_DOMAINS: readonly string[] = [
+	"amaderjalsha.com",
+	"climateact.org",
+	"moderne.no",
+]
+
+export function isUnsafeHost(host: string): boolean {
+	const lower = host.toLowerCase()
+	return UNSAFE_DOMAINS.includes(getDomain(lower) ?? lower)
+}

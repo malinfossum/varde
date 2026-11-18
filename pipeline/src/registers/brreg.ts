@@ -1,7 +1,8 @@
 import { z } from "zod"
 import { fitsNumberPlan } from "../gates/validity.ts"
 import type { Get } from "../net/crawler.ts"
-import { asHttpsUrl, phoneDigits } from "../text/normalise.ts"
+import { isUnsafeHost } from "../sources/hosts.ts"
+import { asHttpsUrl, httpsHost, phoneDigits } from "../text/normalise.ts"
 import { isMobileDigits } from "../text/phone.ts"
 import { readJson } from "./json.ts"
 
@@ -96,7 +97,9 @@ export function parseBrregPage(
 		if (address !== undefined) unit.address = address
 		if (where?.kommunenummer !== undefined) unit.kommune = where.kommunenummer
 		const website = u.hjemmeside === undefined ? undefined : asHttpsUrl(u.hjemmeside)
-		if (website !== undefined) unit.website = website
+		// A unit whose registered site is on the unsafe list keeps its other fields but no website.
+		if (website !== undefined && !isUnsafeHost(httpsHost(website) ?? website))
+			unit.website = website
 		if (u.overordnetEnhet !== undefined) unit.parent = u.overordnetEnhet
 		const phone = u.telefon?.trim()
 		if (u.organisasjonsform.kode === "KOMM" && phone !== undefined) {

@@ -2,7 +2,7 @@ import { load } from "cheerio/slim"
 import { getDomain } from "tldts"
 import { z } from "zod"
 import type { Get } from "../net/crawler.ts"
-import { NOT_PROVIDER_DOMAINS } from "../sources/hosts.ts"
+import { isUnsafeHost, NOT_PROVIDER_DOMAINS } from "../sources/hosts.ts"
 import { asHttpsUrl, httpsHost } from "../text/normalise.ts"
 
 // A catalogue only points to a provider's own page: the database right (åndsverkloven § 24)
@@ -72,7 +72,7 @@ function providerUrls(html: string, isCatalogue: (host: string) => boolean): str
 		const url = asHttpsUrl(href)
 		const host = url === undefined ? undefined : httpsHost(url)
 		if (url === undefined || host === undefined || isCatalogue(host)) return
-		if (NOT_PROVIDER_DOMAINS.includes(getDomain(host) ?? host)) return
+		if (NOT_PROVIDER_DOMAINS.includes(getDomain(host) ?? host) || isUnsafeHost(host)) return
 		const clean = new URL(url)
 		clean.hash = ""
 		urls.add(clean.href)

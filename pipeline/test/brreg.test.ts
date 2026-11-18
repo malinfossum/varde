@@ -49,6 +49,16 @@ describe("parseBrregPage", () => {
 		}
 	})
 
+	it("keeps a unit but drops a website on an unsafe domain", () => {
+		const body = fixture("units.json") as {
+			_embedded: { underenheter: { hjemmeside?: string }[] }
+		}
+		for (const u of body._embedded.underenheter) u.hjemmeside = "www.moderne.no"
+		const page = parseBrregPage(body, "underenheter")
+		expect(page?.units.map((u) => u.orgNumber)).toEqual(["999999991"])
+		expect(page?.units[0]?.website).toBeUndefined()
+	})
+
 	it("refuses a body that is not a Brreg page", () => {
 		expect(parseBrregPage({ feil: "x" }, "enheter")).toBeUndefined()
 	})

@@ -4,6 +4,7 @@ import {
 	FIXED_HOSTS,
 	type HostEntry,
 	type HostKind,
+	isUnsafeHost,
 	NOT_PROVIDER_DOMAINS,
 } from "../sources/hosts.ts"
 import { httpsHost } from "../text/normalise.ts"
@@ -40,7 +41,7 @@ export class AllowList {
 	// a lenient robots.txt read.
 	add(host: string, kind: HostKind, licence: LicenceStatus): boolean {
 		const clean = httpsHost(`https://${host.toLowerCase()}/`)
-		if (clean === undefined) return false
+		if (clean === undefined || isUnsafeHost(clean)) return false
 		if (kind === "provider" && NOT_PROVIDER_DOMAINS.includes(getDomain(clean) ?? clean)) {
 			return false
 		}
