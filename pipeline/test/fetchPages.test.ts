@@ -128,6 +128,22 @@ describe("fetchPages", () => {
 		expect(existsSync(join(dir, "manifest.json"))).toBe(true)
 	})
 
+	it("stores a page with its scripts made inert, and the reader still knows the CMS", async () => {
+		const evil =
+			'<script>top.location="https://scam.example/"</script><a href="javascript:x()" onclick="x()">Lenke</a>'
+		const crawler = crawlerFor({
+			[`${K}/helse/helsestasjon/`]: html(acos.replace("</body>", `${evil}</body>`)),
+		})
+		const cache = new PageCache(mkdtempSync(join(tmpdir(), "varde-fetch-strip-")))
+		await fetchPages(crawler.get, cache, [`${K}/helse/helsestasjon/`])
+		const entry = cache.get(`${K}/helse/helsestasjon/`)
+		expect(entry).toMatchObject({ adapter: "acos" })
+		const stored = entry === undefined ? "" : (cache.read(entry) ?? "")
+		expect(stored).toContain("Lenke")
+		for (const gone of ["scam.example", "javascript:", "onclick"])
+			expect(stored).not.toContain(gone)
+	})
+
 	it("still reads each page in a dry run, which writes no file", async () => {
 		const crawler = crawlerFor({ [`${K}/helse/helsestasjon/`]: html(acos) })
 		const dir = mkdtempSync(join(tmpdir(), "varde-fetch-dry-"))

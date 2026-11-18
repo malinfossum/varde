@@ -13,6 +13,7 @@ import {
 	type SkipReason,
 	serverOf,
 } from "../net/crawler.ts"
+import { stripScripts } from "./stripScripts.ts"
 
 export type FetchSummary = {
 	pages: number
@@ -196,14 +197,17 @@ export async function fetchPages(
 				return
 			}
 			// One page that breaks the reader must not cost the run its manifest: it is stored as
-			// a fallback page with no main text, and save() still runs.
-			let page: { adapter: AdapterName; text: string }
+			// a fallback page with no main text, and save() still runs. The raw body never reaches
+			// the cache: a page the stripper cannot read is stored empty.
+			let body = ""
+			let page: { adapter: AdapterName; text: string } = { adapter: "fallback", text: "" }
 			try {
-				page = readPage(res.body, res.finalUrl)
+				body = stripScripts(res.body)
+				page = readPage(body, res.finalUrl)
 			} catch {
 				page = { adapter: "fallback", text: "" }
 			}
-			cache.put(res, { adapter: page.adapter, textLength: page.text.length })
+			cache.put({ ...res, body }, { adapter: page.adapter, textLength: page.text.length })
 			fetched++
 			byAdapter[page.adapter]++
 			if (page.text === "") noMainText++
