@@ -22,14 +22,19 @@ npm run typecheck
 npm run data:check    # validates every file in data/; add -- --publish before a publish
 npm run schema        # rewrites schema/*.schema.json after a schema change
 npm run discover -- --only pilot                # Oslo and Innlandet (or --only 34,0301): units and pages, no page text
-npm run fetch -- --only pilot --national        # pages discover listed, into the cache; --resume after a stop
+npm run fetch -- --only pilot --national        # pages discover listed, into the cache, scripts made inert; --resume after a stop
 npm run extract -- --only pilot --national      # field values with their quotes, into the cache
 npm run verify -- --data ../data --only pilot --nklm-fetch   # the five gates, lock and curated files
 npm run review -- --data ../data                # my answers, one item at a time, in a terminal
 npm run score -- --only pilot                   # the pass mark and docs/pilot/pilot-report.md
 npm run sweep -- --only pilot                   # capitalised words left in the locks, for me to read
 npm run recall-report > ../.cache/recall-report.md  # discover's output against the 138-row answer key
+npm run suspect-sites                           # Brreg websites that may have changed hands (--all for weak signs)
 ```
+
+A site in the strong tier of `suspect-sites` (gambling spam) goes into `UNSAFE_DOMAINS` in
+`src/sources/hosts.ts` once I have looked at it. That list is never fetched, listed or kept as
+a website.
 
 `verify` and `review` need `--data <dir>`, a folder holding `curated/` and `lock/`. The pilot
 writes to the repo's own `data/` (`--data ../data`). Only one of them runs in a

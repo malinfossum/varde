@@ -15,6 +15,7 @@
 		"schema": "node src/cli/export-schema.ts",
 		"data:check": "node src/cli/data-check.ts",
 		"key:freeze": "node src/cli/freeze-key.ts",
+		"suspect-sites": "node src/cli/suspect-sites.ts",
 		"discover": "node src/cli/discover.ts",
 		"fetch": "node src/cli/fetch.ts",
 		"extract": "node src/cli/extract.ts",
