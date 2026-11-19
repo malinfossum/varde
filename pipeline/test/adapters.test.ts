@@ -105,6 +105,15 @@ describe("readPage: site rules", () => {
 		})
 	})
 
+	it("reads only office pages by the nav.no rule: any other nav.no page falls back", () => {
+		expect(readPage(page("nav-office.html"), "https://www.nav.no/no/person")).toEqual({
+			adapter: "fallback",
+			origin: "unitPage",
+			fallback: true,
+			text: "",
+		})
+	})
+
 	it("never applies a site rule on another host", () => {
 		expect(readPage(page("sondre-land.html"), K)).toEqual({
 			adapter: "fallback",

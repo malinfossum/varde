@@ -49,7 +49,9 @@ const fallback = ($: CheerioAPI, url: string): PageRead =>
 export function readPageWith(html: string, url: string): PageRead {
 	const $ = load(html)
 	const host = siteHost(url)
-	const rule = SITE_RULES.find((r) => siteHost(`https://${r.host}/`) === host)
+	const rule = SITE_RULES.find(
+		(r) => siteHost(`https://${r.host}/`) === host && (r.only === undefined || r.only(url))
+	)
 	if (rule !== undefined) {
 		const lines = textLines($, rule.selector, url)
 		return lines === undefined ? fallback($, url) : read("siteRule", rule.selector, lines, false)

@@ -6,12 +6,12 @@ import { join } from "node:path"
 // verify --resume re-runs a kommune whose lock holds another one. Bump it with every change to a
 // gate, a field rule, the address rule or Kartverket's reader, and set RULES_FINGERPRINT to match:
 // test/rules.test.ts fails until the two move together.
-export const RULES_VERSION = 5
+export const RULES_VERSION = 6
 
 // rulesFingerprint over this repo's rule files when RULES_VERSION was last set. A hash of source
 // code, not of page data.
 export const RULES_FINGERPRINT =
-	"sha256:1cf55b5537cb76c8a59ad3b79b814bbc8704f0c1cf35a3dc04bd4ed05aa868d8"
+	"sha256:d1eb7ee179de3ff7180429b676ded650444ba1924bc8112652e9604b60d95ca2"
 
 // The code that decides a lock's values: every file verify.ts imports, outside src/net/ and
 // src/io/ (ruleGaps checks this). A formatting-only change asks for a bump too: that costs one
