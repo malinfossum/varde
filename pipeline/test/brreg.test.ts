@@ -59,6 +59,22 @@ describe("parseBrregPage", () => {
 		expect(page?.units[0]?.website).toBeUndefined()
 	})
 
+	it.each([
+		["a c/o line", ["c/o Kari Nordmann", "Storgata 1"]],
+		["a v/ line", ["Storgata 1 v/ Kari Nordmann"]],
+	])("keeps a unit but no address when Brreg lists %s", (_what, adresse) => {
+		const body = fixture("units.json") as {
+			_embedded: { underenheter: { beliggenhetsadresse?: { adresse: string[] } }[] }
+		}
+		const first = body._embedded.underenheter[0]?.beliggenhetsadresse
+		if (first !== undefined) first.adresse = adresse
+		const page = parseBrregPage(body, "underenheter")
+		expect(page?.units.map((u) => u.orgNumber)).toEqual(["999999991"])
+		expect(page?.units[0]?.address).toBeUndefined()
+		expect(page?.units[0]?.kommune).toBe("3405")
+		expect(JSON.stringify(page)).not.toContain("Kari Nordmann")
+	})
+
 	it("refuses a body that is not a Brreg page", () => {
 		expect(parseBrregPage({ feil: "x" }, "enheter")).toBeUndefined()
 	})

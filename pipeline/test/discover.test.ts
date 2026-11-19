@@ -292,6 +292,23 @@ describe("discover files", () => {
 		expect(back.national).toEqual(result.national)
 	})
 
+	it("leaves out an address in someone's care that an older discover wrote", async () => {
+		const { result, report, allowList } = await run()
+		const dir = mkdtempSync(join(tmpdir(), "varde-discover-"))
+		writeDiscovery(dir, result, report, allowList.entries())
+		// The file as discover wrote it before the Brreg reader dropped such an address.
+		const kommunePath = join(dir, "kommuner", "3405.json")
+		const kommune = JSON.parse(readFileSync(kommunePath, "utf8"))
+		kommune.units[0].address = "c/o Kari Nordmann, Storgata 1, 2609 LILLEHAMMER"
+		writeFileSync(kommunePath, JSON.stringify(kommune))
+
+		const back = readDiscovery(dir)
+		expect(back.kommuner[0]?.units[0]?.orgNumber).toBe(result.kommuner[0]?.units[0]?.orgNumber)
+		expect(back.kommuner[0]?.units[0]?.address).toBeUndefined()
+		expect(back.kommuner[0]?.units.slice(1)).toEqual(result.kommuner[0]?.units.slice(1))
+		expect(JSON.stringify(back.kommuner)).not.toContain("Kari Nordmann")
+	})
+
 	it("says what is missing without quoting any file", () => {
 		const dir = mkdtempSync(join(tmpdir(), "varde-discover-"))
 		expect(() => readDiscovery(dir)).toThrow("report.json is missing: run discover first")

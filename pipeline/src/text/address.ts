@@ -13,6 +13,14 @@ export function splitAddress(text: string): AddressParts | undefined {
 	return postcode === undefined ? { street } : { street, postcode }
 }
 
+// An address in someone's care: "c/o" or "v/" at the start of a word, in any case. The name after
+// it is a person's or another unit's, and the street is theirs, often a home. A letter before the
+// "c" or the "v" makes it part of a longer word ("Storelv/Lilleelv"), which is no such mark.
+const CARE_OF = /(?<![\p{L}\p{N}])(?:c\/o|v\/)/iu
+export function isCareOfAddress(text: string): boolean {
+	return CARE_OF.test(text)
+}
+
 // The street as Kartverket compares it: normalised, with a single house letter joined to its
 // number. "Storgata 1 A" and "Storgata 1A" are one address; "Storgata 1 og 2" keeps its space,
 // because "og" is a word, not a letter. So do the one-letter words "i" and "å": "Storgata 1 i

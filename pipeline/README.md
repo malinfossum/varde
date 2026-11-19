@@ -230,6 +230,8 @@ source) and `--national`, which adds Nav offices and catalogue findings.
 - Text I type in review (a reason, a role, an edited value) is public once the curated file is
   committed. Review warns me about a possible person name before it saves one.
 - Brreg sole proprietorships are dropped at the reader, and discover reads no phone or email.
+  A Brreg address with a "c/o" or "v/" line is dropped whole: the line names a person, and the
+  street is theirs. Discover files written before this come back without such an address.
 - A catalogue only points to a provider's own page; no value is taken from it.
 - Do not open or print cached pages. If an AI tool helps with this code, it must never see a
   page from a kommune that blocks ClaudeBot.

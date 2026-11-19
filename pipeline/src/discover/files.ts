@@ -3,6 +3,7 @@ import { join } from "node:path"
 import type { z } from "zod"
 import { writeJsonAtomic } from "../io/files.ts"
 import { type HostEntry, isUnsafeHost } from "../sources/hosts.ts"
+import { isCareOfAddress } from "../text/address.ts"
 import { httpsHost } from "../text/normalise.ts"
 import { DiscoverError, type DiscoverRun } from "./discover.ts"
 import { DiscoverReport, HostFile, KommuneDiscovery, NationalDiscovery } from "./types.ts"
@@ -63,6 +64,19 @@ function withoutUnsafeHosts(k: KommuneDiscovery): KommuneDiscovery {
 	}
 }
 
+// Discover stored an address in someone's care until the Brreg reader dropped it, and the name
+// on that line is a person's. Read through here, a unit in an older file comes back without it.
+function withoutCareOfAddresses(k: KommuneDiscovery): KommuneDiscovery {
+	return {
+		...k,
+		units: k.units.map((u) => {
+			if (u.address === undefined || !isCareOfAddress(u.address)) return u
+			const { address: _inCare, ...rest } = u
+			return rest
+		}),
+	}
+}
+
 export function readDiscovery(dir: string): DiscoveryFiles {
 	const report = read(DiscoverReport, dir, "report.json")
 	const national = read(NationalDiscovery, dir, "national.json")
@@ -71,7 +85,9 @@ export function readDiscovery(dir: string): DiscoveryFiles {
 		hosts: read(HostFile, dir, "hosts.json"),
 		national: { ...national, pages: national.pages.filter((p) => !onUnsafeHost(p.url)) },
 		kommuner: report.kommuner.map((code) =>
-			withoutUnsafeHosts(read(KommuneDiscovery, dir, `kommuner/${code}.json`))
+			withoutCareOfAddresses(
+				withoutUnsafeHosts(read(KommuneDiscovery, dir, `kommuner/${code}.json`))
+			)
 		),
 	}
 }

@@ -2,6 +2,7 @@ import { z } from "zod"
 import { fitsNumberPlan } from "../gates/validity.ts"
 import type { Get } from "../net/crawler.ts"
 import { isUnsafeHost } from "../sources/hosts.ts"
+import { isCareOfAddress } from "../text/address.ts"
 import { asHttpsUrl, httpsHost, phoneDigits } from "../text/normalise.ts"
 import { isMobileDigits } from "../text/phone.ts"
 import { readJson } from "./json.ts"
@@ -59,12 +60,15 @@ function formatAddress(a: z.infer<typeof Address> | undefined): string | undefin
 	const place = [a.postnummer, a.poststed]
 		.filter((p): p is string => p !== undefined && p.trim() !== "")
 		.join(" ")
+	// A unit registered in someone's care has no address of its own to show.
+	if (street.some(isCareOfAddress)) return undefined
 	const text = [...street, place].filter((part) => part !== "").join(", ")
 	return text === "" ? undefined : text
 }
 
 // Person data stops here. A sole proprietorship (ENK) is a person, so it is dropped before
 // anything is stored, and only counted. Closed and malformed units are dropped the same way.
+// An address with a "c/o" or "v/" line names a person, so formatAddress gives the unit none.
 export function parseBrregPage(
 	json: unknown,
 	register: BrregRegister

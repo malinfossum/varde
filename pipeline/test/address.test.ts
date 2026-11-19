@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { guardedLookup, isIpLiteralHost, isPrivateAddress } from "../src/net/address.ts"
-import { quoteHasAddress, streetKey } from "../src/text/address.ts"
+import { isCareOfAddress, quoteHasAddress, streetKey } from "../src/text/address.ts"
 
 describe("isPrivateAddress", () => {
 	it("refuses private, loopback, link-local and other non-public addresses", () => {
@@ -126,5 +126,30 @@ describe("streetKey and quoteHasAddress", () => {
 		expect(quoteHasAddress("Storgata 1, 2610 Lillehammer", "Storgata 1, 2609 Lillehammer")).toBe(
 			false
 		)
+	})
+})
+
+describe("isCareOfAddress", () => {
+	it("knows an address in someone's care by c/o or v/ at the start of a word", () => {
+		for (const address of [
+			"c/o Kari Nordmann, Storgata 1, 2609 LILLEHAMMER",
+			"C/O Eksempel AS, Storgata 1, 2609 LILLEHAMMER",
+			"Storgata 1, c/o Kari Nordmann, 2609 LILLEHAMMER",
+			"Storgata 1 v/ Kari Nordmann, 2609 LILLEHAMMER",
+			"v/Kari Nordmann, Storgata 1, 2609 LILLEHAMMER",
+		]) {
+			expect(isCareOfAddress(address), address).toBe(true)
+		}
+	})
+
+	it("leaves an address of the unit's own alone", () => {
+		for (const address of [
+			"Storgata 1, 2609 LILLEHAMMER",
+			"Eksempel A/S, Storgata 1, 2609 LILLEHAMMER",
+			"Storelv/Lilleelv 1, 2609 LILLEHAMMER",
+			"Disc/ostebua 1, 2609 LILLEHAMMER",
+		]) {
+			expect(isCareOfAddress(address), address).toBe(false)
+		}
 	})
 })
