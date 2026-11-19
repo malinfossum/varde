@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { checkEdit, redact, runGates } from "../src/gates/run.ts"
 import type { Candidate } from "../src/gates/types.ts"
+import { MAX_QUOTE } from "../src/schema/common.ts"
 import { LockField } from "../src/schema/lock.ts"
 import { candidate, context, PAGE, PAGE_URL, T } from "./helpers.ts"
 
@@ -210,6 +211,18 @@ describe("person names", () => {
 		const text = JSON.stringify(field)
 		expect(text).not.toMatch(/Kari|Nordmann|Nord/)
 		expect(text).not.toContain("900")
+		expect(LockField.safeParse(field).success).toBe(true)
+	})
+
+	// "[navn]" is longer than a short name, so a quote near the cap can pass it once redacted. The
+	// lock schema refuses such a quote, and one refused field would stop the whole kommune's lock.
+	it("drops the field when redaction makes a quote longer than the lock stores", () => {
+		const quote = `Avdelingsleder ${"Kari og ".repeat(46)}tlf. 900 00 000`
+		expect(quote.length).toBeLessThanOrEqual(MAX_QUOTE)
+		const field = run(quote)
+		expect(field.status).toBe("dropped")
+		expect(field.reason).toBe(`a quote is over ${MAX_QUOTE} characters after redaction`)
+		expect(JSON.stringify(field)).not.toMatch(/Kari|900/)
 		expect(LockField.safeParse(field).success).toBe(true)
 	})
 

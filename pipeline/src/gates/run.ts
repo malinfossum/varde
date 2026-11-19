@@ -1,3 +1,4 @@
+import { MAX_QUOTE } from "../schema/common.ts"
 import { type Evidence, evidenceQuotes, type LockField } from "../schema/lock.ts"
 import { capitalisedRuns, midSentenceWords } from "../text/names.ts"
 import { normaliseText } from "../text/normalise.ts"
@@ -210,6 +211,15 @@ export function runGates(c: Candidate, ctx: GateContext, verifiedAt: string): Lo
 	const left = [...evidenceQuotes(evidence), ...(role ? [role] : [])]
 	if (nameSurvives(left, names)) {
 		return { ...base, status: "dropped", reason: "person name left after redaction" }
+	}
+	// "[navn]" is longer than a short name, so a quote the grounding gate passed can grow past the
+	// cap. The lock schema refuses it, and one refused field would stop the kommune's whole lock.
+	if (evidenceQuotes(evidence).some((q) => q.length > MAX_QUOTE)) {
+		return {
+			...base,
+			status: "dropped",
+			reason: `a quote is over ${MAX_QUOTE} characters after redaction`,
+		}
 	}
 	const kept = {
 		value: c.value,
