@@ -77,6 +77,14 @@ describe("parseNavOffice", () => {
 		expect(parseNavOffice(officePage(hidden))?.visitingAddress).toBeUndefined()
 	})
 
+	it("keeps the office and leaves out an org number that is empty or not nine digits", () => {
+		for (const organisasjonsnummer of ["", "99999997", "999 999 970"]) {
+			const read = parseNavOffice(officePage({ ...office, organisasjonsnummer }))
+			expect(read?.enhetNr).toBe("0999")
+			expect(read?.orgNumber).toBeUndefined()
+		}
+	})
+
 	it("gives nothing for a page without office data, or with broken data", () => {
 		expect(parseNavOffice("<html><body><main>Kontor</main></body></html>")).toBeUndefined()
 		expect(parseNavOffice('<script id="__NEXT_DATA__">{ ikke json</script>')).toBeUndefined()

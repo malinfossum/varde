@@ -10,6 +10,10 @@ shares: headings, paragraphs, a box after `<main>`) and the `.xlsx` workbooks th
 build in memory (`test/xlsxHelpers.ts`). No CMS box is recorded in `src/extract/cmsBoxes.ts`
 yet, so there are no per-CMS box fixtures. All values are fictional.
 
+PR 4 adds `nav-office.html`: a nav.no office page's shape (no `<main>`, a div with role main,
+the office data in `__NEXT_DATA__`), copied from the pages fetched 18.11.2026. The office is
+fictional.
+
 Two exceptions hold real public data:
 
 - `klass/codes-at-2026-11-03.json`: real KLASS classification 131 codes for Innlandet and

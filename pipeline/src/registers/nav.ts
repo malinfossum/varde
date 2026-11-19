@@ -106,7 +106,9 @@ export function parseNavOffice(html: string): NavOffice | undefined {
 		hours: (first?.aapningstider ?? []).map(toHours),
 		receptions: receptions.length,
 	}
-	if (o.organisasjonsnummer !== undefined) office.orgNumber = o.organisasjonsnummer
+	// NORG2 gives some offices an empty org number. Only nine digits can match a Brreg unit, and
+	// any other value would cost the office its whole page in extraction's schema.
+	if (/^\d{9}$/.test(o.organisasjonsnummer ?? "")) office.orgNumber = o.organisasjonsnummer
 	// Nav hides some offices' location on purpose; Varde follows it.
 	const address =
 		o.beliggenhet?.hideLocation === true ? undefined : formatAddress(first?.besoeksadresse)

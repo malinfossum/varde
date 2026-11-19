@@ -95,6 +95,16 @@ describe("readPage: site rules", () => {
 		})
 	})
 
+	it("reads a nav.no office page by its rule: the text sits in a div with role main, not in <main>", () => {
+		expect(
+			readPage(page("nav-office.html"), "https://www.nav.no/kontor/nav-eksempel")
+		).toMatchObject({
+			adapter: "siteRule",
+			fallback: false,
+			text: lines("Nav Eksempel", "Telefon: 62 00 00 00"),
+		})
+	})
+
 	it("never applies a site rule on another host", () => {
 		expect(readPage(page("sondre-land.html"), K)).toEqual({
 			adapter: "fallback",

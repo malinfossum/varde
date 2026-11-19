@@ -70,6 +70,28 @@ describe("extractPage", () => {
 		expect(p).toMatchObject({ problem: "cacheMismatch", candidates: [], lavterskelQuotes: [] })
 	})
 
+	it("gives a Nav office page the office's own id, address and hours beside the page's values", () => {
+		const url = "https://www.nav.no/kontor/nav-eksempel"
+		const cache = cacheWith({ [url]: page("nav-office.html") })
+		const entry = cache.get(url)
+		if (entry === undefined) throw new Error("no entry")
+		const p = extractPage(entry, cache.read(entry), { places: ["Eksempel"] })
+		const register = { kind: "register", register: "nav", recordId: "0999" }
+		const hours = [formatHours("Mandag 10:00-14:00"), formatHours("Torsdag 10:00-14:00")]
+		expect(p.problem).toBeUndefined()
+		expect(p).toMatchObject({ navOfficeId: "0999", orgNumber: "999999970", fallback: false })
+		expect(p.candidates.map((c) => [c.field, c.value])).toEqual([
+			["name", "Nav Eksempel"],
+			["website", url],
+			["openingHours", hours.map((h) => (h.ok ? h.text : "")).join(", ")],
+			["address", "Storgata 1B, 2609 LILLEHAMMER"],
+		])
+		expect(p.candidates.filter((c) => c.origin === "register").map((c) => c.evidence)).toEqual([
+			register,
+			register,
+		])
+	})
+
 	it("gives a page with no text the reason noText", () => {
 		const cache = cacheWith({ [A]: "<html><body><main></main></body></html>" })
 		const entry = cache.get(A)

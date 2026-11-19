@@ -7,4 +7,7 @@ export const SITE_RULES: readonly { host: string; selector: string }[] = [
 	// Oslo (no CMS marker), checked 03.11.2026 on the helsestasjon hub and the legevakt page:
 	// the h1 and every tel: link sit inside <main>.
 	{ host: "www.oslo.kommune.no", selector: "main" },
+	// Nav (Next.js, no <main>), checked 19.11.2026 on the 260 office pages fetched 18.11.2026:
+	// each has one div with role main and the office's h1 inside it.
+	{ host: "www.nav.no", selector: "[role='main']" },
 ]
