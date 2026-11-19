@@ -71,27 +71,76 @@ describe("navHoursCandidate", () => {
 		expect(c?.review).toBe("Nav lists appointment-only hours")
 	})
 
-	it("sends hours with a note, or an office with more than one reception, to review", () => {
-		const noted = navHoursCandidate(
+	const noted = (note: string) =>
+		navHoursCandidate(
 			office([
-				{
-					day: "Mandag",
-					from: "10:00",
-					to: "14:00",
-					closed: false,
-					appointmentOnly: false,
-					note: "Ring først",
-				},
+				{ day: "Mandag", from: "10:00", to: "14:00", closed: false, appointmentOnly: false, note },
 			])
 		)
-		expect(noted?.review).toBe("Nav lists a note on the hours")
-		const two = navHoursCandidate({
-			...office([
-				{ day: "Mandag", from: "10:00", to: "14:00", closed: false, appointmentOnly: false },
-			]),
-			receptions: 2,
-		})
-		expect(two?.review).toBe("Nav lists more than one reception")
+
+	// Notes as Nav wrote them on the office pages fetched 18.11.2026.
+	it.each([
+		"Åpent for planlagt/avtalt timeavtale 9 - 15",
+		"Åpent for planlagte og avtalte samtaler 09 - 15",
+		"Åpent for avtalte møter kl 09.00-15.30",
+		"Timeavtaler i tidsrommet 08.00-15.30.",
+		"Timeavtalar 10.00-14.00,",
+		"Avtalte brukarmøter 9-15",
+		"Open for avtalte møter kl. 09.00 - 14:00",
+		"Åpent for timeavtaler.",
+		"Timeavtaler også utenom åpningstiden",
+		"Timeavtaler gjennomføres etter avtale kl 9 - 15",
+	])("publishes the drop-in hours when the note only names booked appointments: %s", (note) => {
+		const c = noted(note)
+		expect(c?.value).toBe(`Mandag kl. 10:00${D}14:00`)
+		expect(c?.review).toBeUndefined()
+	})
+
+	it.each([
+		"Åpent for selvbetjening 09:00-14:30",
+		"Tilgang til selvbetjeningsløsningene hver dag mellom 0900 - 1500",
+		"Åpent for bruk av selvhjelpsløsninger mellom kl 9-15",
+		"Åpent for planlagte samtaler 08:00-15:30. Selvbetjeningssone åpen mandag – fredag 08:00-15:00",
+	])("publishes the drop-in hours when the note names self-service times: %s", (note) => {
+		expect(noted(note)?.review).toBeUndefined()
+	})
+
+	it.each(["-", " ", "–"])("reads a note with no word or number in it as no note: '%s'", (note) => {
+		expect(noted(note)?.review).toBeUndefined()
+	})
+
+	it.each([
+		"Ring først",
+		"Drop-in",
+		"9 - 15",
+		"Åpent fra 9 - 15",
+		"Åpent publikumsmottak fra 9 - 15",
+		"Kun åpent for forhåndsavtalte timeavtaler 08.00-15.30.",
+		"Stengt 12-13, timeavtaler 9-15",
+		"Åpent pr. telefon 9-15 og avtalte timeavtaler 8-15.",
+		"Kontakt oss for avtale",
+		"Meld behov på automat utenfor mottak",
+	])("sends any other note to review: %s", (note) => {
+		expect(noted(note)?.review).toBe("Nav lists a note on the hours")
+	})
+
+	it("sends an office with more than one reception to review, with or without an appointment note", () => {
+		const hours = {
+			day: "Mandag",
+			from: "10:00",
+			to: "14:00",
+			closed: false,
+			appointmentOnly: false,
+		}
+		expect(navHoursCandidate({ ...office([hours]), receptions: 2 })?.review).toBe(
+			"Nav lists more than one reception"
+		)
+		expect(
+			navHoursCandidate({
+				...office([{ ...hours, note: "Åpent for timeavtaler." }]),
+				receptions: 2,
+			})?.review
+		).toBe("Nav lists more than one reception")
 	})
 
 	it("is undefined when Nav lists no open day", () => {
